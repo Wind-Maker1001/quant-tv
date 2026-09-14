@@ -118,4 +118,3 @@ def test_update_from_provider_only_fetches_uncovered_ranges(tmp_path):
             pd.Timestamp("2024-01-08"),
         ),
     ]
-
