@@ -1,0 +1,25 @@
+"""Vendor-neutral market-data layer for Qbot FactorLab."""
+
+from .cache import ParquetBarCache
+from .calendar import TradingCalendar, reindex_bars_to_calendar
+from .providers import AKShareProvider, MarketDataProvider
+from .schema import (
+    CANONICAL_BAR_COLUMNS,
+    canonicalize_bars,
+    empty_bars,
+    normalize_symbol,
+    validate_bars,
+)
+
+__all__ = [
+    "AKShareProvider",
+    "CANONICAL_BAR_COLUMNS",
+    "MarketDataProvider",
+    "ParquetBarCache",
+    "TradingCalendar",
+    "canonicalize_bars",
+    "empty_bars",
+    "normalize_symbol",
+    "reindex_bars_to_calendar",
+    "validate_bars",
+]
