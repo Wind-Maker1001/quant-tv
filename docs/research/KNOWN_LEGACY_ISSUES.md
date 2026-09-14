@@ -1,6 +1,6 @@
 # Known Legacy Qbot Issues
 
-> 记录日期：2026-09-13  
+> 记录日期：2026-09-13
 > 状态：仅记录，Phase 1 不重构 Legacy Qbot。
 
 本文只列出审计时在当前恢复快照中实际观察到的问题。FactorLab 通过 `qbot.research` 的单向隔离规避它们；只有问题直接阻断研究核心时才会做最小修复。

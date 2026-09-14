@@ -151,4 +151,3 @@ def test_cross_section_missing_values_are_never_filled():
     result = preprocess_cross_sections(frame, ["F"], minimum_count=2)
     assert pd.isna(result.loc[1, "F"])
     assert pd.isna(result.loc[1, "raw_F"])
-

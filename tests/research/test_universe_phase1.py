@@ -165,4 +165,3 @@ def test_filters_are_applied_after_strict_pit_validation():
 
     with pytest.raises(PointInTimeUniverseError, match="expected 2 unique members"):
         apply_universe_filters(membership.iloc[:1], flags.iloc[:1], dates, 2)
-

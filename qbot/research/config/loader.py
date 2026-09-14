@@ -205,4 +205,3 @@ def _convert_value(value: Any, expected: Any, location: str) -> Any:
 
 
 __all__ = ["discover_repository_root", "load_config"]
-

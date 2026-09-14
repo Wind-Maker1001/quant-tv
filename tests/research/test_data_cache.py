@@ -36,7 +36,6 @@ def test_cache_tracks_covered_ranges_and_incremental_gaps(tmp_path):
     assert cache.missing_ranges("600000.SH", "2024-01-01", "2024-01-10") == [
         (pd.Timestamp("2024-01-06"), pd.Timestamp("2024-01-10"))
     ]
-
     cache.update(
         "600000.SH",
         _bars(["2024-01-08", "2024-01-09"]),

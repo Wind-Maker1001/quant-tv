@@ -8,4 +8,3 @@ from .errors import FactorLabError
 
 __all__ = ["FactorLabError"]
 __version__ = "0.1.0"
-

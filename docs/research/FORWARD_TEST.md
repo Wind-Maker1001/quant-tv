@@ -1,6 +1,6 @@
 # FactorLab Forward Test
 
-> **实现状态：Planned — Phase 4。**  
+> **实现状态：Planned — Phase 4。**
 > 预定真实样本外记录起始日为 2026-09-14。Phase 1 不会生成或冒充该日期的 forward signal。
 
 ## 目的

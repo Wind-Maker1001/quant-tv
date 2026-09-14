@@ -45,4 +45,3 @@ class MarketDataProvider(ABC):
         historical ``as_of`` value.  It must never silently substitute current
         members for a point-in-time request.
         """
-

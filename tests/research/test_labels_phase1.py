@@ -68,4 +68,3 @@ def test_unlabelled_tail_is_preserved_with_missing_values():
     result = build_forward_excess_return_labels(stock, benchmark, holding_days=5)
     assert result["date"].tolist() == list(dates)
     assert result.tail(6)["EXCESS_RET5"].isna().all()
-
