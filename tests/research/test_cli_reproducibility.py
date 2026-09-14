@@ -326,3 +326,78 @@ def test_download_reuses_valid_local_import_instead_of_recollecting_pit(
     assert calls["status"][1:] == (full_start, full_end)
     assert len(calls["stock"]) == 2
     assert all(call[1:] == (full_start, full_end) for call in calls["stock"])
+
+
+def test_download_baostock_does_not_reuse_existing_local_import(
+    tmp_path, monkeypatch
+):
+    config = _config(tmp_path)
+    config.paths.universe_dir.mkdir(parents=True)
+    (config.paths.universe_dir / "manifest.json").write_text(
+        json.dumps({"source": "local-import", "sha256": "stale-local-sha"}),
+        encoding="utf-8",
+    )
+    full_benchmark = _benchmark_bars_with_warmup()
+    research_dates = pd.to_datetime(["2024-01-02", "2024-01-03"])
+    membership = pd.DataFrame(
+        [
+            {"date": day, "symbol": symbol, "is_member": True}
+            for day in research_dates
+            for symbol in ("000001.SZ", "600000.SH")
+        ]
+    )
+    calls = {"collect": 0}
+
+    class FakeCache:
+        def data_path(self, symbol):
+            return tmp_path / (symbol + ".parquet")
+
+        def update_from_provider(self, provider, symbol, start, end, is_index=False):
+            return None
+
+    class FakePit:
+        def __init__(self, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return None
+
+        def get_security_history(self, symbols, start, end):
+            return pd.DataFrame(), pd.DataFrame(), []
+
+    class FakeRun:
+        def __init__(self):
+            self.payload = {}
+
+        def add_output(self, *args):
+            return None
+
+        def add_failures(self, *args):
+            return None
+
+    def fake_collect(*args, **kwargs):
+        calls["collect"] += 1
+        return {"source": "FakePit", "sha256": "baostock-sha"}
+
+    monkeypatch.setattr(cli, "_provider", lambda current: object())
+    monkeypatch.setattr(
+        cli, "_download_benchmark_with_warmup", lambda current, provider: full_benchmark
+    )
+    monkeypatch.setattr(cli, "_benchmark_cache", lambda current: FakeCache())
+    monkeypatch.setattr(cli, "_stock_cache", lambda current: FakeCache())
+    monkeypatch.setattr(
+        cli, "_load_verified_membership", lambda current, calendar: membership
+    )
+    monkeypatch.setattr(cli, "BaoStockPointInTimeProvider", FakePit)
+    monkeypatch.setattr(cli, "collect_point_in_time_universe", fake_collect)
+    monkeypatch.setattr(cli, "_atomic_parquet", lambda *args: None)
+    monkeypatch.setattr(cli, "_atomic_json", lambda *args: None)
+
+    run = FakeRun()
+    cli.command_download(config, run)
+
+    assert calls["collect"] == 1
+    assert run.payload["universe_version"] == "baostock-sha"

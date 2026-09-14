@@ -224,7 +224,7 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
         backoff_seconds=config.network.backoff_seconds,
         request_interval=config.network.request_interval_seconds,
     ) as pit_provider:
-        if existing_manifest.get("source") == "local-import":
+        if universe_provider == "local":
             membership = _load_verified_membership(config, calendar)
             universe_manifest = existing_manifest
             LOGGER.info("Reusing validated local-import PIT universe")
