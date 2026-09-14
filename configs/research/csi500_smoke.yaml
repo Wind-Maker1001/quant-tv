@@ -1,0 +1,74 @@
+# SMOKE TEST ONLY. This short window must not be used for research conclusions.
+project:
+  name: qbot-factorlab-smoke-test-only
+
+seed: 42
+live_trading: false
+
+paths:
+  data_root: data/research
+  results_root: results
+
+data:
+  start: '2024-01-02'
+  end: '2024-04-30'
+  provider: akshare
+  benchmark: 000905.SH
+  adjustment: hfq
+  calendar_source: benchmark
+  warmup_trading_days: 130
+
+universe:
+  name: CSI500
+  index_symbol: 000905.SH
+  provider: baostock
+  point_in_time: true
+  expected_member_count: 500
+  min_listed_days: 120
+  exclude_st: true
+  exclude_suspended: true
+  zero_volume_window_days: 20
+  data_quality_window_days: 60
+  min_valid_ohlcv_ratio: 0.8
+
+cache:
+  format: parquet
+  per_symbol: true
+  skip_existing: true
+  atomic_writes: true
+
+network:
+  max_retries: 3
+  backoff_seconds: [1, 2, 4]
+  request_interval_seconds: 0.25
+  timeout_seconds: 30
+
+label:
+  holding_days: 5
+  entry_price: next_open
+  target: excess_return
+
+preprocessing:
+  winsorization: mad
+  mad_multiplier: 5.0
+  zscore_ddof: 0
+
+evaluation:
+  quantiles: 5
+  min_cross_section: 20
+
+factors:
+  - REV1
+  - REV5
+  - MOM20
+  - MOM60
+  - VOL5
+  - VOL20
+  - VOL60
+  - TURN5
+  - TURN20
+  - VOLUME_RATIO
+  - AMIHU20
+  - PRICE_MA20
+  - MA5_MA20
+  - MA20_MA60

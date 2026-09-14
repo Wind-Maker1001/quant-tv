@@ -146,3 +146,12 @@ pytrader/user_config.sh
 *.parquet
 
 **.DS_Store
+
+# FactorLab downloaded data and reproducible runtime artifacts.
+/data/research/
+/results/runs/
+/results/factors/
+/results/report/
+/.conda-pkgs/
+/.venv-py39/
+# results/forward is intentionally not blanket-ignored (Phase 4 append-only evidence).
