@@ -51,6 +51,45 @@ def _history_success(code):
     )
 
 
+def test_login_uses_the_same_retry_contract_as_data_queries():
+    class LoginResult:
+        def __init__(self, code, message=""):
+            self.error_code = code
+            self.error_msg = message
+
+    class FlakyLoginClient:
+        def __init__(self):
+            self.login_calls = 0
+            self.logout_calls = 0
+
+        def login(self):
+            self.login_calls += 1
+            if self.login_calls == 1:
+                return LoginResult("100", "temporary login failure")
+            return LoginResult("0")
+
+        def logout(self):
+            self.logout_calls += 1
+
+    client = FlakyLoginClient()
+    clock = FakeClock()
+    provider = BaoStockPointInTimeProvider(
+        client=client,
+        retry_count=1,
+        backoff_seconds=(1.0,),
+        request_interval=0.25,
+        sleep_fn=clock.sleep,
+        monotonic_fn=clock.monotonic,
+    )
+
+    with provider as connected:
+        assert connected is provider
+
+    assert client.login_calls == 2
+    assert client.logout_calls == 1
+    assert clock.sleeps == [1.0]
+
+
 def test_status_and_listing_queries_retry_and_share_one_rate_limiter():
     class FlakyClient:
         def __init__(self):

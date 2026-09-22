@@ -7,6 +7,7 @@ import random
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from qbot.research import cli
 from qbot.research.config import (
@@ -17,8 +18,12 @@ from qbot.research.config import (
     UniverseConfig,
 )
 from qbot.research.data.schema import canonicalize_bars
-from qbot.research.errors import ConfigurationError
-from qbot.research.reproducibility import RunManifest, set_random_seed
+from qbot.research.errors import ConfigurationError, PointInTimeUniverseRequiredError
+from qbot.research.reproducibility import (
+    RunManifest,
+    set_random_seed,
+    validate_provenance,
+)
 
 
 def _config(tmp_path, expected_members=2):
@@ -97,11 +102,18 @@ def test_run_manifest_records_lifecycle_outputs_failures_and_seed(tmp_path, monk
         "qbot.research.reproducibility.package_versions",
         lambda: {"numpy": "fixture"},
     )
+    monkeypatch.setattr(
+        "qbot.research.reproducibility.git_worktree_state",
+        lambda root: {"git_dirty": True, "git_diff_sha256": "d" * 64},
+    )
 
     run = RunManifest(config, "unit-test", {"flag": "value"})
     running = json.loads(run.path.read_text(encoding="utf-8"))
     assert running["status"] == "running"
     assert running["git_commit"] == "abc123"
+    assert running["git_dirty"] is True
+    assert running["git_diff_sha256"] == "d" * 64
+    assert running["package_versions"] == {"numpy": "fixture"}
     assert running["universe_version"] == "universe-fixture-sha"
     assert running["factor_list"] == ["REV1"]
     assert running["data_start"] == "2024-01-02"
@@ -121,6 +133,35 @@ def test_run_manifest_records_lifecycle_outputs_failures_and_seed(tmp_path, monk
     first = (random.random(), np.random.random())
     set_random_seed(19)
     assert first == (random.random(), np.random.random())
+
+
+def test_validate_provenance_rejects_missing_or_unknown_values():
+    complete = {
+        "git_commit": "a" * 40,
+        "git_dirty": False,
+        "git_diff_sha256": None,
+        "python_version": "3.9.25",
+        "package_versions": {"numpy": "fixture", "akshare": None},
+    }
+    assert validate_provenance(complete) == complete
+
+    missing = dict(complete)
+    missing.pop("package_versions")
+    with pytest.raises(ValueError, match="missing fields: package_versions"):
+        validate_provenance(missing)
+
+    unknown = dict(complete)
+    unknown["git_dirty"] = None
+    with pytest.raises(ValueError, match="git_dirty is unknown"):
+        validate_provenance(unknown)
+
+    malformed_commit = dict(complete, git_commit="abc123")
+    with pytest.raises(ValueError, match="git_commit is unknown"):
+        validate_provenance(malformed_commit)
+
+    dirty_without_hash = dict(complete, git_dirty=True)
+    with pytest.raises(ValueError, match="git_diff_sha256 is unknown"):
+        validate_provenance(dirty_without_hash)
 
 
 def test_audit_cli_success_creates_completed_manifest(tmp_path, monkeypatch):
@@ -178,8 +219,40 @@ def test_config_load_failure_returns_two_before_manifest_location_is_known(
     assert not (tmp_path / "results" / "runs").exists()
 
 
+def test_manifest_initialisation_failure_is_a_clean_cli_error(tmp_path, monkeypatch):
+    config = _config(tmp_path)
+    monkeypatch.setattr(cli, "load_config", lambda path: config)
+
+    def fail_manifest(*args, **kwargs):
+        raise OSError("fixture manifest failure")
+
+    monkeypatch.setattr(cli, "RunManifest", fail_manifest)
+    assert cli.main(["audit", "--config", "unused.yaml"]) == 2
+
+
+def test_manifest_finalisation_failure_returns_clean_nonzero_status(
+    tmp_path, monkeypatch
+):
+    config = _config(tmp_path)
+    docs = tmp_path / "docs" / "research"
+    docs.mkdir(parents=True)
+    (docs / "ARCHITECTURE_AUDIT.md").write_text("audit", encoding="utf-8")
+    (docs / "KNOWN_LEGACY_ISSUES.md").write_text("known", encoding="utf-8")
+    monkeypatch.setattr(cli, "load_config", lambda path: config)
+    real_manifest = cli.RunManifest
+
+    class BrokenFinaliseManifest(real_manifest):
+        def finish(self, status="success", error=None):
+            raise OSError("fixture finalisation failure")
+
+    monkeypatch.setattr(cli, "RunManifest", BrokenFinaliseManifest)
+
+    assert cli.main(["audit", "--config", "unused.yaml"]) == 1
+
+
 def test_import_universe_cli_orchestrates_without_network(tmp_path, monkeypatch):
     config = _config(tmp_path)
+    object.__setattr__(config.universe, "provider", "local")
     seen = {}
 
     monkeypatch.setattr(cli, "load_config", lambda path: config)
@@ -190,11 +263,14 @@ def test_import_universe_cli_orchestrates_without_network(tmp_path, monkeypatch)
         "qbot.research.reproducibility.package_versions", lambda: {}
     )
 
-    def fake_import(input_path, output_dir, calendar, expected_member_count):
+    def fake_import(
+        input_path, output_dir, calendar, expected_member_count, index_symbol
+    ):
         seen["input_path"] = input_path
         seen["output_dir"] = output_dir
         seen["calendar"] = calendar
         seen["expected_member_count"] = expected_member_count
+        seen["index_symbol"] = index_symbol
         return {
             "sha256": "imported-universe-sha",
             "trading_dates": len(calendar),
@@ -217,6 +293,7 @@ def test_import_universe_cli_orchestrates_without_network(tmp_path, monkeypatch)
     assert seen["input_path"] == Path("membership.csv")
     assert seen["output_dir"] == config.paths.universe_dir
     assert seen["expected_member_count"] == 2
+    assert seen["index_symbol"] == config.universe.index_symbol
     assert seen["calendar"].tolist() == [
         pd.Timestamp("2024-01-02"),
         pd.Timestamp("2024-01-03"),
@@ -225,6 +302,16 @@ def test_import_universe_cli_orchestrates_without_network(tmp_path, monkeypatch)
     assert payload["status"] == "success"
     assert payload["universe_version"] == "imported-universe-sha"
     assert payload["outputs"]["universe"].endswith("csi500_daily.parquet")
+
+
+def test_import_universe_requires_explicit_local_provider(tmp_path):
+    config = _config(tmp_path)
+
+    with pytest.raises(
+        PointInTimeUniverseRequiredError,
+        match="POINT-IN-TIME UNIVERSE REQUIRED.*provider=local",
+    ):
+        cli.command_import_universe(config, object(), "membership.csv")
 
 
 def test_benchmark_warmup_selects_exact_prior_sessions(tmp_path):

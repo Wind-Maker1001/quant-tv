@@ -6,6 +6,7 @@ Current constituents are deliberately never used as a historical fallback.
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import logging
 from numbers import Real
@@ -25,6 +26,7 @@ from .base import PointInTimeUniverse, PointInTimeUniverseProvider
 LOGGER = logging.getLogger(__name__)
 CANONICAL_SYMBOL = re.compile(r"^(?:60|68|00|30|83|87|43)\d{4}\.(?:SH|SZ|BJ)$")
 PIT_REQUIRED = "POINT-IN-TIME UNIVERSE REQUIRED"
+_BAOSTOCK_PIT_SOURCE_VERSION = "baostock-query_zz500_stocks-daily-v1"
 
 
 def canonical_symbol(value: Any) -> str:
@@ -233,9 +235,17 @@ class BaoStockPointInTimeProvider(PointInTimeUniverseProvider):
 
     def __enter__(self) -> "BaoStockPointInTimeProvider":
         client = self._get_client()
-        result = client.login()
-        if getattr(result, "error_code", "0") != "0":
-            raise ProviderError("BaoStock login failed: %s" % getattr(result, "error_msg", "unknown"))
+
+        def login() -> Any:
+            result = client.login()
+            if getattr(result, "error_code", "0") != "0":
+                raise ProviderError(
+                    "BaoStock login failed: %s"
+                    % getattr(result, "error_msg", "unknown")
+                )
+            return result
+
+        self._with_retry(login, "login")
         self._owns_session = True
         return self
 
@@ -442,6 +452,69 @@ def _atomic_json(payload: Dict[str, Any], destination: Path) -> None:
     os.replace(str(temporary), str(destination))
 
 
+def _snapshot_metadata(
+    provider: PointInTimeUniverseProvider,
+    index_symbol: str,
+    date: pd.Timestamp,
+    expected_member_count: int,
+    snapshot: pd.DataFrame,
+) -> Dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "source": provider.__class__.__name__,
+        "source_version": _BAOSTOCK_PIT_SOURCE_VERSION,
+        "index_symbol": index_symbol,
+        "date": pd.Timestamp(date).strftime("%Y-%m-%d"),
+        "expected_member_count": int(expected_member_count),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "sha256": dataframe_sha256(snapshot),
+    }
+
+
+def _load_cached_snapshot(
+    snapshot_path: Path,
+    metadata_path: Path,
+    provider: PointInTimeUniverseProvider,
+    index_symbol: str,
+    date: pd.Timestamp,
+    expected_member_count: int,
+) -> pd.DataFrame:
+    """Load only a snapshot whose source contract and content are auditable."""
+
+    if not snapshot_path.exists() or not metadata_path.exists():
+        raise PointInTimeUniverseError("cached snapshot provenance is missing")
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    if not isinstance(metadata, dict):
+        raise PointInTimeUniverseError("cached snapshot metadata is not a mapping")
+    expected = {
+        "schema_version": 1,
+        "source": provider.__class__.__name__,
+        "source_version": _BAOSTOCK_PIT_SOURCE_VERSION,
+        "index_symbol": index_symbol,
+        "date": pd.Timestamp(date).strftime("%Y-%m-%d"),
+        "expected_member_count": int(expected_member_count),
+    }
+    mismatches = [
+        name for name, value in expected.items() if metadata.get(name) != value
+    ]
+    if mismatches:
+        raise PointInTimeUniverseError(
+            "cached snapshot metadata mismatch: %s" % ", ".join(mismatches)
+        )
+    snapshot = validate_daily_membership(
+        pd.read_parquet(snapshot_path), [date], expected_member_count
+    )
+    digest = metadata.get("sha256")
+    if (
+        not isinstance(digest, str)
+        or len(digest) != 64
+        or any(character not in "0123456789abcdefABCDEF" for character in digest)
+        or digest.lower() != dataframe_sha256(snapshot)
+    ):
+        raise PointInTimeUniverseError("cached snapshot content hash mismatch")
+    return snapshot
+
+
 def collect_point_in_time_universe(
     provider: PointInTimeUniverseProvider,
     index_symbol: str,
@@ -459,6 +532,12 @@ def collect_point_in_time_universe(
     """
 
     output = Path(output_dir)
+    if isinstance(retries, bool) or not isinstance(retries, int) or retries < 0:
+        raise PointInTimeUniverseError("retries must be a non-negative integer")
+    if retries and not backoff_seconds:
+        raise PointInTimeUniverseError(
+            "backoff_seconds must not be empty when retries are enabled"
+        )
     snapshots_dir = output / "snapshots"
     snapshots_dir.mkdir(parents=True, exist_ok=True)
     dates = _normalise_dates(calendar).unique().sort_values()
@@ -466,27 +545,43 @@ def collect_point_in_time_universe(
     parts: List[pd.DataFrame] = []
     for number, date in enumerate(dates):
         snapshot_path = snapshots_dir / (date.strftime("%Y-%m-%d") + ".parquet")
+        metadata_path = snapshots_dir / (date.strftime("%Y-%m-%d") + ".json")
         snapshot: Optional[pd.DataFrame] = None
-        if snapshot_path.exists():
+        if snapshot_path.exists() or metadata_path.exists():
             try:
-                snapshot = validate_daily_membership(
-                    pd.read_parquet(snapshot_path), [date], expected_member_count
+                snapshot = _load_cached_snapshot(
+                    snapshot_path,
+                    metadata_path,
+                    provider,
+                    index_symbol,
+                    date,
+                    expected_member_count,
                 )
             except Exception as exc:
                 LOGGER.warning("Ignoring invalid cached PIT snapshot %s: %s", snapshot_path, exc)
         if snapshot is None:
             last_error: Optional[Exception] = None
-            for attempt in range(max(1, retries)):
+            for attempt in range(retries + 1):
                 try:
                     candidate = provider.get_constituents(index_symbol, date)
                     snapshot = validate_daily_membership(
                         candidate, [date], expected_member_count
                     )
                     _atomic_parquet(snapshot, snapshot_path)
+                    _atomic_json(
+                        _snapshot_metadata(
+                            provider,
+                            index_symbol,
+                            date,
+                            expected_member_count,
+                            snapshot,
+                        ),
+                        metadata_path,
+                    )
                     break
                 except Exception as exc:
                     last_error = exc
-                    if attempt + 1 < max(1, retries):
+                    if attempt < retries:
                         delay = backoff_seconds[min(attempt, len(backoff_seconds) - 1)] if backoff_seconds else 0
                         time.sleep(max(0.0, float(delay)))
             if snapshot is None:
@@ -513,9 +608,10 @@ def collect_point_in_time_universe(
     _atomic_parquet(intervals, interval_path)
     content_hash = dataframe_sha256(daily)
     manifest = {
+        "schema_version": 1,
         "source": provider.__class__.__name__,
         "index_symbol": index_symbol,
-        "source_version": "baostock-query_zz500_stocks-daily-v1",
+        "source_version": _BAOSTOCK_PIT_SOURCE_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "start": dates.min().strftime("%Y-%m-%d"),
         "end": dates.max().strftime("%Y-%m-%d"),
@@ -532,14 +628,22 @@ def import_point_in_time_universe(
     output_dir: Path,
     calendar: Iterable[Any],
     expected_member_count: int = 500,
+    index_symbol: str = "000905.SH",
 ) -> Dict[str, Any]:
     """Validate and materialise user-supplied daily CSV/Parquet membership."""
 
     path = Path(source)
+    try:
+        source_bytes = path.read_bytes()
+    except OSError as exc:
+        raise PointInTimeUniverseError(
+            "%s: cannot read import file %s: %s" % (PIT_REQUIRED, path, exc)
+        ) from exc
+    source_file_sha256 = hashlib.sha256(source_bytes).hexdigest()
     if path.suffix.lower() in {".parquet", ".pq"}:
-        frame = pd.read_parquet(path)
+        frame = pd.read_parquet(io.BytesIO(source_bytes))
     elif path.suffix.lower() == ".csv":
-        frame = pd.read_csv(path)
+        frame = pd.read_csv(io.BytesIO(source_bytes))
     else:
         raise PointInTimeUniverseError(
             "%s: import must be CSV or Parquet" % PIT_REQUIRED
@@ -552,8 +656,12 @@ def import_point_in_time_universe(
     digest = dataframe_sha256(daily)
     dates = _normalise_dates(calendar)
     manifest = {
+        "schema_version": 1,
         "source": "local-import",
+        "source_version": "user-pit-daily-import-v1",
         "source_file": str(path.resolve()),
+        "source_file_sha256": source_file_sha256,
+        "index_symbol": index_symbol,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "start": dates.min().strftime("%Y-%m-%d"),
         "end": dates.max().strftime("%Y-%m-%d"),

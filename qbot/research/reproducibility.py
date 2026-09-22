@@ -1,6 +1,7 @@
 """Reproducible run manifests for every FactorLab CLI invocation."""
 
 import importlib.metadata
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -9,7 +10,7 @@ import random
 import subprocess
 import sys
 from datetime import datetime, timezone
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Mapping, Optional
 import uuid
 
 import numpy as np
@@ -30,6 +31,73 @@ TRACKED_PACKAGES = (
     "pytest",
 )
 
+PROVENANCE_FIELDS = (
+    "git_commit",
+    "git_dirty",
+    "git_diff_sha256",
+    "python_version",
+    "package_versions",
+)
+
+_UNKNOWN_TEXT = frozenset(("unknown", "unavailable", "n/a", "none", "null"))
+
+
+def _known_text(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and bool(value.strip())
+        and value.strip().lower() not in _UNKNOWN_TEXT
+    )
+
+
+def _hex_digest(value: Any, lengths: tuple) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) in lengths
+        and all(character in "0123456789abcdefABCDEF" for character in value)
+    )
+
+
+def validate_provenance(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Return a comparable provenance snapshot or reject unknown values."""
+
+    if not isinstance(payload, Mapping):
+        raise ValueError("provenance payload is not a mapping")
+    missing = [name for name in PROVENANCE_FIELDS if name not in payload]
+    if missing:
+        raise ValueError("missing fields: %s" % ", ".join(missing))
+    if not _hex_digest(payload["git_commit"], (40, 64)):
+        raise ValueError("git_commit is unknown")
+    if not _known_text(payload["python_version"]):
+        raise ValueError("python_version is unknown")
+
+    dirty = payload["git_dirty"]
+    diff_sha256 = payload["git_diff_sha256"]
+    if not isinstance(dirty, bool):
+        raise ValueError("git_dirty is unknown")
+    if dirty and not _hex_digest(diff_sha256, (64,)):
+        raise ValueError("git_diff_sha256 is unknown for a dirty worktree")
+    if not dirty and diff_sha256 is not None:
+        raise ValueError("git_diff_sha256 must be null for a clean worktree")
+
+    versions = payload["package_versions"]
+    if not isinstance(versions, Mapping) or not versions:
+        raise ValueError("package_versions is missing or unknown")
+    for name, version in versions.items():
+        if not _known_text(name):
+            raise ValueError("package_versions contains an unknown package name")
+        # None records a known, reproducible state: the distribution is absent.
+        if version is not None and not _known_text(version):
+            raise ValueError("package version for %s is unknown" % name)
+
+    return {
+        "git_commit": payload["git_commit"],
+        "git_dirty": dirty,
+        "git_diff_sha256": diff_sha256,
+        "python_version": payload["python_version"],
+        "package_versions": dict(versions),
+    }
+
 
 def set_random_seed(seed: int) -> None:
     random.seed(seed)
@@ -49,6 +117,58 @@ def git_commit(repo_root: Path) -> Optional[str]:
     except (OSError, subprocess.SubprocessError):
         return None
     return result.stdout.strip() or None
+
+
+def git_worktree_state(repo_root: Path) -> Dict[str, Any]:
+    """Fingerprint tracked diffs and untracked source files without storing them."""
+
+    root = Path(repo_root).resolve()
+    try:
+        status = subprocess.run(
+            ["git", "status", "--porcelain=v1", "-z"],
+            cwd=str(root),
+            check=True,
+            capture_output=True,
+            timeout=20,
+        ).stdout
+        if not status:
+            return {"git_dirty": False, "git_diff_sha256": None}
+        diff = subprocess.run(
+            ["git", "diff", "--binary", "HEAD"],
+            cwd=str(root),
+            check=True,
+            capture_output=True,
+            timeout=30,
+        ).stdout
+        untracked = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard", "-z"],
+            cwd=str(root),
+            check=True,
+            capture_output=True,
+            timeout=20,
+        ).stdout.split(b"\0")
+    except (OSError, subprocess.SubprocessError):
+        return {"git_dirty": None, "git_diff_sha256": None}
+
+    digest = hashlib.sha256()
+    digest.update(b"STATUS\0")
+    digest.update(status)
+    digest.update(b"DIFF\0")
+    digest.update(diff)
+    for encoded_name in sorted(name for name in untracked if name):
+        digest.update(b"UNTRACKED\0")
+        digest.update(encoded_name)
+        candidate = root / os.fsdecode(encoded_name)
+        try:
+            if candidate.is_symlink():
+                digest.update(os.fsencode(os.readlink(str(candidate))))
+            else:
+                with candidate.open("rb") as stream:
+                    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                        digest.update(chunk)
+        except OSError as exc:
+            digest.update(("<unreadable:%s>" % type(exc).__name__).encode("ascii"))
+    return {"git_dirty": True, "git_diff_sha256": digest.hexdigest()}
 
 
 def package_versions(names: Iterable[str] = TRACKED_PACKAGES) -> Dict[str, Optional[str]]:
@@ -119,6 +239,7 @@ class RunManifest:
             "failures": {},
             "outputs": {},
         }
+        self.payload.update(git_worktree_state(config.repo_root or Path.cwd()))
         _atomic_json(self.payload, self.path)
 
     def add_output(self, name: str, value: Any) -> None:
@@ -137,4 +258,12 @@ class RunManifest:
         _atomic_json(self.payload, self.path)
 
 
-__all__ = ["RunManifest", "git_commit", "package_versions", "set_random_seed"]
+__all__ = [
+    "PROVENANCE_FIELDS",
+    "RunManifest",
+    "git_commit",
+    "git_worktree_state",
+    "package_versions",
+    "set_random_seed",
+    "validate_provenance",
+]

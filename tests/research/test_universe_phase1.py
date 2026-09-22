@@ -1,5 +1,8 @@
 """Offline contracts for the CSI500 point-in-time universe and filters."""
 
+import hashlib
+import json
+
 import pandas as pd
 import pytest
 
@@ -7,7 +10,9 @@ from qbot.research.errors import PointInTimeUniverseError
 from qbot.research.universe.csi500 import (
     DataFramePointInTimeUniverse,
     canonical_symbol,
+    collect_point_in_time_universe,
     compress_membership_intervals,
+    import_point_in_time_universe,
     validate_daily_membership,
 )
 from qbot.research.universe.filters import (
@@ -91,6 +96,143 @@ def test_membership_intervals_preserve_exit_and_reentry_boundaries():
     assert universe.get_members(dates[2]) == ["000001.SZ"]
     with pytest.raises(PointInTimeUniverseError, match="no snapshot"):
         universe.get_members(dates[-1] + pd.offsets.BDay())
+
+
+def test_collected_and_imported_manifests_record_source_provenance(tmp_path):
+    dates = pd.bdate_range("2024-01-02", periods=2)
+    daily = _membership(dates, [["600000.SH", "000001.SZ"]] * len(dates))
+
+    class FixtureProvider:
+        def get_constituents(self, index_symbol, date):
+            assert index_symbol == "000905.SH"
+            return daily.loc[daily["date"] == pd.Timestamp(date)].copy()
+
+    collected_dir = tmp_path / "collected"
+    collected = collect_point_in_time_universe(
+        FixtureProvider(),
+        "000905.SH",
+        dates,
+        collected_dir,
+        expected_member_count=2,
+        retries=1,
+        request_interval_seconds=0.0,
+    )
+    assert collected["schema_version"] == 1
+    assert collected["source"] == "FixtureProvider"
+    assert collected["source_version"] == "baostock-query_zz500_stocks-daily-v1"
+    assert collected["index_symbol"] == "000905.SH"
+    assert collected["expected_member_count"] == 2
+    assert json.loads(
+        (collected_dir / "manifest.json").read_text(encoding="utf-8")
+    ) == collected
+
+    source = tmp_path / "pit.csv"
+    daily.to_csv(source, index=False)
+    imported_dir = tmp_path / "imported"
+    imported = import_point_in_time_universe(
+        source,
+        imported_dir,
+        dates,
+        expected_member_count=2,
+        index_symbol="000905.SH",
+    )
+    assert imported["schema_version"] == 1
+    assert imported["source"] == "local-import"
+    assert imported["source_version"] == "user-pit-daily-import-v1"
+    assert imported["index_symbol"] == "000905.SH"
+    assert imported["source_file_sha256"] == hashlib.sha256(
+        source.read_bytes()
+    ).hexdigest()
+    assert imported["expected_member_count"] == 2
+    assert json.loads(
+        (imported_dir / "manifest.json").read_text(encoding="utf-8")
+    ) == imported
+
+
+def test_collector_never_launders_unprovenanced_cached_snapshots(tmp_path):
+    dates = pd.bdate_range("2024-01-02", periods=2)
+    output = tmp_path / "pit"
+    snapshots = output / "snapshots"
+    snapshots.mkdir(parents=True)
+    stale = _membership(
+        dates,
+        [["600000.SH", "000001.SZ"], ["600000.SH", "000001.SZ"]],
+    )
+    for day in dates:
+        stale.loc[stale["date"] == day].to_parquet(
+            snapshots / (day.strftime("%Y-%m-%d") + ".parquet"),
+            index=False,
+        )
+
+    expected = _membership(
+        dates,
+        [["600000.SH", "000001.SZ"], ["600000.SH", "000002.SZ"]],
+    )
+
+    class CountingProvider:
+        def __init__(self):
+            self.calls = []
+
+        def get_constituents(self, index_symbol, date):
+            self.calls.append(pd.Timestamp(date))
+            return expected.loc[expected["date"] == pd.Timestamp(date)].copy()
+
+    provider = CountingProvider()
+    collect_point_in_time_universe(
+        provider,
+        "000905.SH",
+        dates,
+        output,
+        expected_member_count=2,
+        retries=1,
+        request_interval_seconds=0.0,
+    )
+    assert provider.calls == list(dates)
+    daily = pd.read_parquet(output / "csi500_daily.parquet")
+    assert "000002.SZ" in daily.loc[daily["date"] == dates[1], "symbol"].tolist()
+    assert len(list(snapshots.glob("*.json"))) == len(dates)
+
+    provider.calls.clear()
+    collect_point_in_time_universe(
+        provider,
+        "000905.SH",
+        dates,
+        output,
+        expected_member_count=2,
+        retries=1,
+        request_interval_seconds=0.0,
+    )
+    assert provider.calls == []
+
+
+def test_collector_retry_count_means_retries_after_the_initial_attempt(tmp_path):
+    dates = pd.bdate_range("2024-01-02", periods=1)
+    expected = _membership(dates, [["600000.SH", "000001.SZ"]])
+
+    class OnceFlakyProvider:
+        def __init__(self):
+            self.calls = 0
+
+        def get_constituents(self, index_symbol, date):
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("temporary fixture failure")
+            return expected.copy()
+
+    provider = OnceFlakyProvider()
+    manifest = collect_point_in_time_universe(
+        provider,
+        "000905.SH",
+        dates,
+        tmp_path / "pit",
+        expected_member_count=2,
+        retries=1,
+        backoff_seconds=(0.0,),
+        request_interval_seconds=0.0,
+    )
+
+    assert provider.calls == 2
+    assert manifest["trading_dates"] == 1
 
 
 def test_filter_flags_use_only_past_windows_and_current_status():
