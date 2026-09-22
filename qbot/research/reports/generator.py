@@ -49,6 +49,36 @@ def _quantile_plot(quantiles: pd.DataFrame, destination: Path) -> None:
     plt.close(figure)
 
 
+def _regime_plot(summary: pd.DataFrame, destination: Path) -> None:
+    regimes = summary.loc[summary["scope"] != "ALL"].copy()
+    figure, axis = plt.subplots(figsize=(12, 6))
+    if regimes.empty:
+        axis.text(
+            0.5,
+            0.5,
+            "No market-regime data available",
+            ha="center",
+            va="center",
+            transform=axis.transAxes,
+        )
+        axis.set_xticks([])
+        axis.set_yticks([])
+    else:
+        table = regimes.pivot_table(
+            index="factor",
+            columns="scope",
+            values="RankIC Mean",
+            aggfunc="first",
+        )
+        table.plot(kind="bar", ax=axis)
+        axis.axhline(0.0, color="black", linewidth=0.8)
+        axis.set_title("Factor RankIC by CSI500 market regime")
+        axis.set_ylabel("Mean daily Spearman RankIC")
+    figure.tight_layout()
+    figure.savefig(destination, dpi=150)
+    plt.close(figure)
+
+
 def write_factor_report(evaluation: FactorEvaluation, output_dir: Path) -> Path:
     """Write deterministic Phase-1 factor artifacts and return summary path."""
 
@@ -74,6 +104,7 @@ def write_factor_report(evaluation: FactorEvaluation, output_dir: Path) -> Path:
         _correlation_plot(evaluation.correlation, destination / "factor_correlation.png")
     if not evaluation.quantile_returns.empty:
         _quantile_plot(evaluation.quantile_returns, destination / "quantile_returns.png")
+    _regime_plot(evaluation.summary, destination / "regime_performance.png")
 
     autocorrelation = evaluation.autocorrelation
     turnover = evaluation.turnover

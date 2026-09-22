@@ -1,4 +1,4 @@
-"""Train-only expanding walk-forward execution for Phase 2 models.
+"""Train-only expanding walk-forward execution for FactorLab models.
 
 The runner deliberately keeps model selection and final evaluation separate:
 every candidate is fitted on ``Train`` only, Ridge alpha is selected from
@@ -8,7 +8,8 @@ exactly once.  In particular, no train-plus-validation refit is performed.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import json
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
@@ -22,7 +23,9 @@ from qbot.research.metrics.prediction import (
     evaluate_predictions,
 )
 from qbot.research.models.factor_score import FactorScoreModel
+from qbot.research.models.lightgbm import LightGBMResearchModel
 from qbot.research.models.ridge import RidgeResearchModel
+from qbot.research.models.xgboost import XGBoostResearchModel
 from qbot.research.validation.splitter import (
     ExpandingWalkForwardSplitter,
     WalkForwardError,
@@ -43,6 +46,18 @@ class WalkForwardResult:
     validation_metrics: pd.DataFrame
     coefficients: pd.DataFrame
     model_paths: Tuple[Path, ...]
+    feature_importance: pd.DataFrame = field(
+        default_factory=lambda: pd.DataFrame(
+            columns=[
+                "fold",
+                "model_name",
+                "feature",
+                "importance",
+                "normalized_importance",
+                "selected_parameters",
+            ]
+        )
+    )
 
     @property
     def validation_candidate_metrics(self) -> pd.DataFrame:
@@ -52,12 +67,44 @@ class WalkForwardResult:
     def ridge_coefficients(self) -> pd.DataFrame:
         return self.coefficients
 
+    @property
+    def tree_feature_importance(self) -> pd.DataFrame:
+        return self.feature_importance
+
 
 _SELECTION_METRICS = {
     "prediction_ic_mean",
     "prediction_rank_ic_mean",
     "top_bottom_spread",
 }
+
+_LIGHTGBM_PARAMETER_NAMES = frozenset(
+    {
+        "n_estimators",
+        "learning_rate",
+        "num_leaves",
+        "max_depth",
+        "feature_fraction",
+        "bagging_fraction",
+        "bagging_freq",
+        "reg_alpha",
+        "reg_lambda",
+        "min_child_samples",
+    }
+)
+_XGBOOST_PARAMETER_NAMES = frozenset(
+    {
+        "n_estimators",
+        "learning_rate",
+        "max_depth",
+        "min_child_weight",
+        "subsample",
+        "colsample_bytree",
+        "reg_alpha",
+        "reg_lambda",
+        "gamma",
+    }
+)
 
 
 def _positive_integer(name: str, value: int, minimum: int = 1) -> int:
@@ -102,6 +149,57 @@ def _ridge_alphas(values: Iterable[float]) -> Tuple[float, ...]:
     return tuple(result)
 
 
+def _tree_candidates(
+    model_name: str,
+    values: Optional[Sequence[Mapping[str, object]]],
+) -> Tuple[Dict[str, object], ...]:
+    """Return immutable-by-convention, JSON-auditable tree candidates."""
+
+    if values is None or isinstance(values, (str, bytes, Mapping)):
+        raise WalkForwardRunError(
+            "%s_candidates must be a non-empty sequence of mappings" % model_name
+        )
+    allowed = (
+        _LIGHTGBM_PARAMETER_NAMES
+        if model_name == "lightgbm"
+        else _XGBOOST_PARAMETER_NAMES
+    )
+    result: List[Dict[str, object]] = []
+    fingerprints = set()
+    for number, value in enumerate(values):
+        if not isinstance(value, Mapping):
+            raise WalkForwardRunError(
+                "%s_candidates[%d] must be a mapping" % (model_name, number)
+            )
+        candidate = {str(name): item for name, item in value.items()}
+        unknown = sorted(set(candidate).difference(allowed))
+        if unknown:
+            raise WalkForwardRunError(
+                "%s_candidates[%d] contains unknown parameters: %s"
+                % (model_name, number, ", ".join(unknown))
+            )
+        try:
+            fingerprint = json.dumps(
+                candidate, sort_keys=True, separators=(",", ":"), allow_nan=False
+            )
+        except (TypeError, ValueError) as exc:
+            raise WalkForwardRunError(
+                "%s_candidates[%d] is not JSON-serializable"
+                % (model_name, number)
+            ) from exc
+        if fingerprint in fingerprints:
+            raise WalkForwardRunError(
+                "%s_candidates must not contain duplicates" % model_name
+            )
+        fingerprints.add(fingerprint)
+        result.append(candidate)
+    if not result:
+        raise WalkForwardRunError(
+            "%s_candidates must contain at least one candidate" % model_name
+        )
+    return tuple(result)
+
+
 def _normalise_dates(values: pd.Series, name: str) -> pd.Series:
     try:
         dates = pd.to_datetime(values, errors="raise")
@@ -141,7 +239,12 @@ def _date_boundaries(values: pd.Series) -> Tuple[pd.Timestamp, pd.Timestamp]:
 
 
 class WalkForwardRunner:
-    """Execute FactorScore or Ridge on immutable expanding folds."""
+    """Execute one configured model on immutable expanding folds.
+
+    Candidate selection uses Validation only.  The selected, already-fitted
+    Train model is then evaluated once on Test, identically for linear and
+    tree models.
+    """
 
     def __init__(
         self,
@@ -155,6 +258,10 @@ class WalkForwardRunner:
         ridge_fit_intercept: bool = True,
         ridge_max_iter: int = 10000,
         ridge_tolerance: float = 0.0001,
+        lightgbm_candidates: Optional[Sequence[Mapping[str, object]]] = None,
+        lightgbm_n_jobs: int = 1,
+        xgboost_candidates: Optional[Sequence[Mapping[str, object]]] = None,
+        xgboost_n_jobs: int = 1,
         target_col: str = "EXCESS_RET5",
         date_col: str = "date",
         symbol_col: str = "symbol",
@@ -170,9 +277,14 @@ class WalkForwardRunner:
                 "splitter must be an ExpandingWalkForwardSplitter"
             )
         canonical_model = str(model_name).strip().lower().replace("-", "_")
-        if canonical_model not in {"factor_score", "ridge"}:
+        if canonical_model not in {
+            "factor_score",
+            "ridge",
+            "lightgbm",
+            "xgboost",
+        }:
             raise WalkForwardRunError(
-                "model_name must be either factor_score or ridge"
+                "model_name must be factor_score, ridge, lightgbm, or xgboost"
             )
         self.splitter = splitter
         self.model_name = canonical_model
@@ -237,6 +349,12 @@ class WalkForwardRunner:
         self.ridge_fit_intercept = bool(ridge_fit_intercept)
         self.ridge_max_iter = int(ridge_max_iter)
         self.ridge_tolerance = numeric_tolerance
+        self.lightgbm_n_jobs = _positive_integer(
+            "lightgbm_n_jobs", lightgbm_n_jobs
+        )
+        self.xgboost_n_jobs = _positive_integer(
+            "xgboost_n_jobs", xgboost_n_jobs
+        )
 
         if canonical_model == "factor_score":
             if not isinstance(factor_weights, Mapping) or not factor_weights:
@@ -261,6 +379,33 @@ class WalkForwardRunner:
                 )
             self.factor_weights = None
         self.ridge_alphas = _ridge_alphas(ridge_alphas)
+        self.lightgbm_candidates = (
+            _tree_candidates("lightgbm", lightgbm_candidates)
+            if canonical_model == "lightgbm"
+            else tuple()
+        )
+        self.xgboost_candidates = (
+            _tree_candidates("xgboost", xgboost_candidates)
+            if canonical_model == "xgboost"
+            else tuple()
+        )
+
+        # Validate tree parameter types before any fold starts.  Construction
+        # does not import the optional native packages; those remain lazy.
+        for candidate in self.lightgbm_candidates:
+            LightGBMResearchModel(
+                feature_names=self.feature_names,
+                random_seed=self.random_seed,
+                n_jobs=self.lightgbm_n_jobs,
+                **candidate
+            )
+        for candidate in self.xgboost_candidates:
+            XGBoostResearchModel(
+                feature_names=self.feature_names,
+                random_seed=self.random_seed,
+                n_jobs=self.xgboost_n_jobs,
+                **candidate
+            )
 
     @staticmethod
     def _column_name(name: str, value: str) -> str:
@@ -331,6 +476,7 @@ class WalkForwardRunner:
         fold_rows: List[dict] = []
         candidate_rows: List[dict] = []
         coefficient_rows: List[dict] = []
+        importance_rows: List[dict] = []
         saved_paths: List[Path] = []
 
         for fold in folds:
@@ -347,7 +493,13 @@ class WalkForwardRunner:
                     "fold %d has no finite validation labels" % fold.fold
                 )
 
-            selected_model, selected_alpha, selected_validation, rows = (
+            (
+                selected_model,
+                selected_alpha,
+                selected_parameters,
+                selected_validation,
+                rows,
+            ) = (
                 self._fit_and_select(
                     fold.fold,
                     train_labeled,
@@ -365,6 +517,7 @@ class WalkForwardRunner:
                 test_scores,
                 fold.fold,
                 selected_alpha,
+                selected_parameters,
                 entry_date_col=entry_date_col,
                 exit_date_col=exit_date_col,
             )
@@ -391,6 +544,26 @@ class WalkForwardRunner:
                             "alpha": float(selected_alpha),
                         }
                     )
+            if isinstance(
+                selected_model, (LightGBMResearchModel, XGBoostResearchModel)
+            ):
+                importance = selected_model.feature_importance
+                total_importance = float(importance.sum())
+                for feature, value in importance.items():
+                    importance_rows.append(
+                        {
+                            "fold": fold.fold,
+                            "model_name": self.model_name,
+                            "feature": feature,
+                            "importance": float(value),
+                            "normalized_importance": (
+                                float(value) / total_importance
+                                if total_importance > 0.0
+                                else 0.0
+                            ),
+                            "selected_parameters": selected_parameters,
+                        }
+                    )
 
             train_start, train_end = _date_boundaries(train[self.date_col])
             validation_start, validation_end = _date_boundaries(validation[self.date_col])
@@ -407,6 +580,7 @@ class WalkForwardRunner:
                     "model_name": self.model_name,
                     "fit_scope": "train_only",
                     "selected_alpha": selected_alpha,
+                    "selected_parameters": selected_parameters,
                     "selection_metric": self.selection_metric,
                     "selection_value": selected_validation[self.selection_metric],
                     "train_start": train_start,
@@ -488,6 +662,17 @@ class WalkForwardRunner:
                 columns=["fold", "feature", "coefficient", "alpha"],
             ),
             model_paths=tuple(saved_paths),
+            feature_importance=pd.DataFrame(
+                importance_rows,
+                columns=[
+                    "fold",
+                    "model_name",
+                    "feature",
+                    "importance",
+                    "normalized_importance",
+                    "selected_parameters",
+                ],
+            ),
         )
 
     def _validate_data(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -555,16 +740,35 @@ class WalkForwardRunner:
         *,
         entry_date_col: str,
         exit_date_col: str,
-    ) -> Tuple[object, Optional[float], pd.Series, List[dict]]:
-        candidates: List[Tuple[int, Optional[float], object, pd.Series]] = []
+    ) -> Tuple[object, Optional[float], str, pd.Series, List[dict]]:
+        candidates: List[
+            Tuple[int, Optional[float], str, object, pd.Series]
+        ] = []
         rows: List[dict] = []
-        alphas: Sequence[Optional[float]]
+        specifications: List[Tuple[str, Optional[float], Dict[str, object]]] = []
         if self.model_name == "ridge":
-            alphas = self.ridge_alphas
+            specifications = [
+                (
+                    "alpha=%s" % format(float(alpha), "g"),
+                    float(alpha),
+                    {"alpha": float(alpha)},
+                )
+                for alpha in self.ridge_alphas
+            ]
+        elif self.model_name == "factor_score":
+            specifications = [("fixed_weights", None, {})]
+        elif self.model_name == "lightgbm":
+            specifications = [
+                ("candidate_%d" % number, None, dict(candidate))
+                for number, candidate in enumerate(self.lightgbm_candidates)
+            ]
         else:
-            alphas = (None,)
+            specifications = [
+                ("candidate_%d" % number, None, dict(candidate))
+                for number, candidate in enumerate(self.xgboost_candidates)
+            ]
 
-        for order, alpha in enumerate(alphas):
+        for order, (candidate_name, alpha, parameters) in enumerate(specifications):
             if self.model_name == "ridge":
                 model = RidgeResearchModel(
                     alpha=float(alpha),
@@ -574,13 +778,25 @@ class WalkForwardRunner:
                     max_iter=self.ridge_max_iter,
                     tolerance=self.ridge_tolerance,
                 )
-                candidate_name = "alpha=%s" % format(float(alpha), "g")
-            else:
+            elif self.model_name == "factor_score":
                 model = FactorScoreModel(
                     self.factor_weights,
                     normalize_by_absolute_weight=self.normalize_by_absolute_weight,
                 )
-                candidate_name = "fixed_weights"
+            elif self.model_name == "lightgbm":
+                model = LightGBMResearchModel(
+                    feature_names=self.feature_names,
+                    random_seed=self.random_seed,
+                    n_jobs=self.lightgbm_n_jobs,
+                    **parameters
+                )
+            else:
+                model = XGBoostResearchModel(
+                    feature_names=self.feature_names,
+                    random_seed=self.random_seed,
+                    n_jobs=self.xgboost_n_jobs,
+                    **parameters
+                )
             model.fit(
                 train.loc[:, self.feature_names],
                 train[self.target_col],
@@ -591,6 +807,12 @@ class WalkForwardRunner:
                 validation_scores,
                 fold_number,
                 alpha,
+                json.dumps(
+                    parameters,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                ),
                 entry_date_col=entry_date_col,
                 exit_date_col=exit_date_col,
             )
@@ -600,6 +822,12 @@ class WalkForwardRunner:
                 "model_name": self.model_name,
                 "candidate": candidate_name,
                 "alpha": alpha,
+                "parameters": json.dumps(
+                    parameters,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                ),
                 "fit_scope": "train_only",
                 "train_rows": int(len(train)),
                 "validation_rows": int(len(validation)),
@@ -619,12 +847,14 @@ class WalkForwardRunner:
                 "coverage": overall["coverage"],
             }
             rows.append(row)
-            candidates.append((order, alpha, model, pd.Series(row)))
+            candidates.append(
+                (order, alpha, row["parameters"], model, pd.Series(row))
+            )
 
         finite = [
             candidate
             for candidate in candidates
-            if pd.notna(candidate[3][self.selection_metric])
+            if pd.notna(candidate[4][self.selection_metric])
         ]
         if not finite:
             raise WalkForwardRunError(
@@ -635,12 +865,12 @@ class WalkForwardRunner:
         selected = max(
             finite,
             key=lambda candidate: (
-                float(candidate[3][self.selection_metric]),
+                float(candidate[4][self.selection_metric]),
                 -candidate[0],
             ),
         )
-        _, alpha, model, validation_metrics = selected
-        return model, alpha, validation_metrics, rows
+        _, alpha, parameters, model, validation_metrics = selected
+        return model, alpha, parameters, validation_metrics, rows
 
     def _prediction_frame(
         self,
@@ -648,6 +878,7 @@ class WalkForwardRunner:
         scores: pd.Series,
         fold_number: int,
         alpha: Optional[float],
+        selected_parameters: str,
         *,
         entry_date_col: str,
         exit_date_col: str,
@@ -670,6 +901,7 @@ class WalkForwardRunner:
         result["fold"] = int(fold_number)
         result["model_name"] = self.model_name
         result["selected_alpha"] = alpha
+        result["selected_parameters"] = selected_parameters
         result.sort_values(
             ["date", "score", "symbol"],
             ascending=[True, False, True],

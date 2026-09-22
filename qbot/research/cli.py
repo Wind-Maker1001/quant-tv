@@ -1,6 +1,7 @@
 """Command-line interface for the isolated FactorLab research pipeline."""
 
 import argparse
+from dataclasses import asdict
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -13,7 +14,14 @@ from typing import Any, Dict, Iterable, List, Optional
 
 import pandas as pd
 
-from qbot.research.backtest import FastBacktestConfig, FeeSchedule, run_fast_backtest
+from qbot.research.backtest import (
+    ExecutionBacktestConfig,
+    FastBacktestConfig,
+    FeeSchedule,
+    PriceLimitSchedule,
+    run_execution_backtest,
+    run_fast_backtest,
+)
 from qbot.research.config import ResearchConfig, load_config
 from qbot.research.data import AKShareProvider, ParquetBarCache, TradingCalendar
 from qbot.research.dataset import DatasetBuildOptions, DatasetBuilder
@@ -23,6 +31,7 @@ from qbot.research.metrics import (
     evaluate_factors,
     evaluate_predictions,
 )
+from qbot.research.market import MARKET_FEATURE_COLUMNS, MARKET_REGIMES
 from qbot.research.reports import (
     write_factor_report,
     write_model_comparison_report,
@@ -64,7 +73,9 @@ def _parser() -> argparse.ArgumentParser:
     walk_forward = subparsers.add_parser("walk-forward")
     walk_forward.add_argument("--config", required=True)
     walk_forward.add_argument(
-        "--model", required=True, choices=("factor_score", "ridge")
+        "--model",
+        required=True,
+        choices=("factor_score", "ridge", "lightgbm", "xgboost"),
     )
     comparison = subparsers.add_parser("compare-models")
     comparison.add_argument("--config", required=True)
@@ -149,6 +160,7 @@ def _dataset_contract_from_snapshot(snapshot: Dict[str, Any]) -> Dict[str, Any]:
         "universe": universe,
         "label": label,
         "preprocessing": preprocessing,
+        "market_regime": snapshot.get("market_regime", {"enabled": False}),
         "minimum_cross_section": minimum_cross_section,
         "factor_list": factor_list,
     }
@@ -492,6 +504,7 @@ def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
         winsorization=config.preprocessing.winsorization,
         mad_multiplier=config.preprocessing.mad_multiplier,
         minimum_cross_section=config.evaluation.min_cross_section,
+        include_market_regime=config.market_regime.enabled,
         filter_config=filter_config,
     )
     builder = DatasetBuilder(options)
@@ -545,6 +558,7 @@ def command_evaluate(config: ResearchConfig, run: RunManifest) -> None:
         target=target,
         quantiles=config.evaluation.quantiles,
         minimum_cross_section=config.evaluation.min_cross_section,
+        group_column=("MARKET_REGIME" if config.market_regime.enabled else None),
     )
     summary = write_factor_report(evaluation, config.paths.factor_results_dir)
     run.add_output("factor_report", summary)
@@ -686,6 +700,8 @@ def _load_verified_dataset(
         "exit_date",
         _target_column(config),
     }.union(config.factors)
+    if config.market_regime.enabled:
+        required.update(MARKET_FEATURE_COLUMNS)
     missing = sorted(required.difference(dataset.columns))
     if missing:
         raise FactorLabError(
@@ -699,6 +715,22 @@ def _load_verified_dataset(
     result.reset_index(drop=True, inplace=True)
     if result.duplicated(["date", "symbol"]).any():
         raise FactorLabError("Dataset contains duplicate (date, symbol) rows")
+    if config.market_regime.enabled:
+        if result["MARKET_REGIME"].isna().any():
+            raise FactorLabError("Dataset contains missing MARKET_REGIME values")
+        invalid_regimes = sorted(
+            set(result["MARKET_REGIME"].astype(str)).difference(MARKET_REGIMES)
+        )
+        if invalid_regimes:
+            raise FactorLabError(
+                "Dataset contains invalid MARKET_REGIME values: %s"
+                % ", ".join(invalid_regimes)
+            )
+        regime_counts = result.groupby("date")["MARKET_REGIME"].nunique()
+        if not regime_counts.eq(1).all():
+            raise FactorLabError(
+                "MARKET_REGIME must have exactly one value per trading date"
+            )
     if manifest.get("rows") != len(result) or manifest.get("dates") != result["date"].nunique():
         raise FactorLabError("Dataset manifest row/date counts do not match the data")
     return result, dataset_sha256, universe_version
@@ -724,12 +756,28 @@ def _model_hyperparameters(config: ResearchConfig, model_name: str) -> Dict[str,
                 config.models.factor_score.normalize_by_absolute_weight
             ),
         }
-    return {
-        "alphas": list(config.models.ridge.alphas),
-        "fit_intercept": config.models.ridge.fit_intercept,
-        "max_iter": config.models.ridge.max_iter,
-        "tolerance": config.models.ridge.tolerance,
-    }
+    if model_name == "ridge":
+        return {
+            "alphas": list(config.models.ridge.alphas),
+            "fit_intercept": config.models.ridge.fit_intercept,
+            "max_iter": config.models.ridge.max_iter,
+            "tolerance": config.models.ridge.tolerance,
+        }
+    if model_name == "lightgbm":
+        return {
+            "candidates": [
+                asdict(candidate) for candidate in config.models.lightgbm.candidates
+            ],
+            "n_jobs": config.models.lightgbm.n_jobs,
+        }
+    if model_name == "xgboost":
+        return {
+            "candidates": [
+                asdict(candidate) for candidate in config.models.xgboost.candidates
+            ],
+            "n_jobs": config.models.xgboost.n_jobs,
+        }
+    raise FactorLabError("Unsupported model: %s" % model_name)
 
 
 def _json_metrics(values: Dict[str, float]) -> Dict[str, Optional[float]]:
@@ -760,12 +808,75 @@ def _backtest_window(
     return selected_bars, selected_benchmark
 
 
+def _attach_execution_status(
+    config: ResearchConfig, bars: pd.DataFrame
+) -> pd.DataFrame:
+    """Join date-effective BaoStock ST/trading status to cached price rows."""
+
+    required_status = {"date", "symbol", "trade_status", "is_st"}
+    if required_status.issubset(bars.columns):
+        return bars.copy()
+    status_path = config.paths.universe_dir / "security_status.parquet"
+    if not status_path.is_file():
+        raise FactorLabError(
+            "Execution backtest requires security_status.parquet; run download-data"
+        )
+    status = pd.read_parquet(status_path)
+    missing = sorted(required_status.difference(status.columns))
+    if missing:
+        raise FactorLabError(
+            "Execution status cache is missing columns: %s" % ", ".join(missing)
+        )
+    status = status.loc[:, sorted(required_status)].copy()
+    status["date"] = pd.to_datetime(status["date"], errors="raise").dt.normalize()
+    status["symbol"] = status["symbol"].astype(str)
+    if status.duplicated(["date", "symbol"]).any():
+        raise FactorLabError(
+            "Execution status cache contains duplicate (date, symbol) rows"
+        )
+    price_data = bars.drop(
+        columns=[name for name in ("trade_status", "is_st") if name in bars],
+        errors="ignore",
+    ).copy()
+    price_data["date"] = pd.to_datetime(
+        price_data["date"], errors="raise"
+    ).dt.normalize()
+    symbols = set(price_data["symbol"].astype(str))
+    start = price_data["date"].min()
+    end = price_data["date"].max()
+    relevant_status = status.loc[
+        status["symbol"].isin(symbols) & status["date"].between(start, end)
+    ].copy()
+    joined = relevant_status.merge(
+        price_data,
+        on=["date", "symbol"],
+        how="outer",
+        validate="one_to_one",
+        indicator=True,
+    )
+    missing_rows = joined["_merge"].eq("right_only")
+    if missing_rows.any():
+        sample = joined.loc[missing_rows, ["date", "symbol"]].head(5)
+        raise FactorLabError(
+            "Execution status cache does not cover price rows: %s"
+            % ", ".join(
+                "%s/%s" % (row.date.date(), row.symbol)
+                for row in sample.itertuples(index=False)
+            )
+        )
+    return (
+        joined.drop(columns="_merge")
+        .sort_values(["date", "symbol"], kind="mergesort")
+        .reset_index(drop=True)
+    )
+
+
 def command_walk_forward(
     config: ResearchConfig,
     run: RunManifest,
     model_name: str,
 ) -> None:
-    """Run a leakage-audited Phase-2 model and its fast OOS backtest."""
+    """Run one leakage-audited model and both out-of-sample backtests."""
 
     benchmark = _load_benchmark_with_warmup(config)
     full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
@@ -784,6 +895,9 @@ def command_walk_forward(
         "minimum_cross_section": config.evaluation.min_cross_section,
         "random_seed": config.seed,
         "model_directory": model_dir,
+        "regime_col": (
+            "MARKET_REGIME" if config.market_regime.enabled else None
+        ),
     }
     if model_name == "factor_score":
         weights = config.models.factor_score.weights
@@ -804,8 +918,24 @@ def command_walk_forward(
             ridge_max_iter=config.models.ridge.max_iter,
             ridge_tolerance=config.models.ridge.tolerance,
         )
+    elif model_name == "lightgbm":
+        runner_options.update(
+            lightgbm_candidates=tuple(
+                asdict(candidate)
+                for candidate in config.models.lightgbm.candidates
+            ),
+            lightgbm_n_jobs=config.models.lightgbm.n_jobs,
+        )
+    elif model_name == "xgboost":
+        runner_options.update(
+            xgboost_candidates=tuple(
+                asdict(candidate)
+                for candidate in config.models.xgboost.candidates
+            ),
+            xgboost_n_jobs=config.models.xgboost.n_jobs,
+        )
     else:
-        raise FactorLabError("Phase 2 implements factor_score and ridge only")
+        raise FactorLabError("Unsupported model: %s" % model_name)
 
     walk_forward = WalkForwardRunner(
         _walk_forward_splitter(config), **runner_options
@@ -816,6 +946,7 @@ def command_walk_forward(
         top_k=config.portfolio.top_k,
         minimum_cross_section=config.evaluation.min_cross_section,
         fold_col="fold",
+        regime_col=("MARKET_REGIME" if config.market_regime.enabled else None),
     )
     overall = prediction.overall
     if overall.empty or int(overall.iloc[0]["rank_ic_valid_dates"]) == 0:
@@ -849,6 +980,40 @@ def command_walk_forward(
         periods_per_year=config.backtest.annualization_days,
         risk_free_rate=config.backtest.risk_free_rate,
     )
+    execution_bars = _attach_execution_status(config, bars)
+    execution_bars_sha256 = dataframe_sha256(execution_bars)
+    execution = run_execution_backtest(
+        walk_forward.predictions[["date", "symbol", "score"]],
+        execution_bars,
+        backtest_benchmark,
+        config=ExecutionBacktestConfig(
+            top_k=config.portfolio.top_k,
+            rebalance_days=config.portfolio.rebalance_days,
+            minimum_cross_section=config.evaluation.min_cross_section,
+            initial_cash=config.backtest.initial_cash,
+            board_lot=config.backtest.board_lot,
+            t_plus_one=config.backtest.t_plus_one,
+            reject_suspended=config.backtest.reject_suspended,
+            price_limit_tolerance_bps=(
+                config.backtest.price_limit_tolerance_bps
+            ),
+            open_price_column="raw_open",
+            close_price_column="raw_close",
+            benchmark_open_price_column="adj_open",
+            benchmark_close_price_column="adj_close",
+        ),
+        fee_schedule=FeeSchedule.from_config(config.fees),
+        price_limit_schedule=PriceLimitSchedule.from_config(
+            config.backtest.price_limits
+        ),
+    )
+    execution_metrics = calculate_portfolio_metrics(
+        execution.nav,
+        execution.trades,
+        execution.positions,
+        periods_per_year=config.backtest.annualization_days,
+        risk_free_rate=config.backtest.risk_free_rate,
+    )
     summary_path = write_model_report(
         model_name,
         walk_forward,
@@ -856,6 +1021,8 @@ def command_walk_forward(
         backtest,
         portfolio_metrics,
         output_dir,
+        execution_backtest=execution,
+        execution_metrics=execution_metrics,
     )
 
     run.payload["model"] = model_name
@@ -863,6 +1030,7 @@ def command_walk_forward(
     run.payload["universe_version"] = universe_version
     run.payload["backtest_stock_bars_sha256"] = backtest_stock_bars_sha256
     run.payload["backtest_benchmark_sha256"] = backtest_benchmark_sha256
+    run.payload["execution_bars_sha256"] = execution_bars_sha256
     run.payload["hyperparameters"] = _model_hyperparameters(config, model_name)
     run.payload["walk_forward_folds"] = int(len(walk_forward.fold_summary))
     run.payload["out_of_sample_prediction_rows"] = int(
@@ -874,6 +1042,10 @@ def command_walk_forward(
         if key not in {"scope", "period"}
     }
     run.payload["portfolio_metrics"] = _json_metrics(portfolio_metrics)
+    run.payload["execution_portfolio_metrics"] = _json_metrics(
+        execution_metrics
+    )
+    run.payload["execution_rejections"] = int(len(execution.rejections))
     prediction_path = output_dir / "predictions.parquet"
     run.payload["predictions_sha256"] = _file_sha256(prediction_path)
     run.payload["model_artifact_sha256"] = _artifact_sha256(output_dir)
@@ -881,6 +1053,10 @@ def command_walk_forward(
     run.add_output("predictions", prediction_path)
     run.add_output("walk_forward_results", output_dir / "walk_forward_results.csv")
     run.add_output("nav", output_dir / "nav.csv")
+    run.add_output("execution_nav", output_dir / "execution_nav.csv")
+    run.add_output(
+        "execution_rejections", output_dir / "execution_rejections.csv"
+    )
     LOGGER.info(
         "%s completed: %d folds, %d OOS predictions",
         model_name,
@@ -895,6 +1071,9 @@ def _latest_model_output(config: ResearchConfig, model_name: str) -> Path:
         "predictions.parquet",
         "prediction_summary.csv",
         "portfolio_metrics.csv",
+        "execution_nav.csv",
+        "execution_portfolio_metrics.csv",
+        "execution_rejections.csv",
         "walk_forward_results.csv",
         "summary.md",
     )
@@ -1029,6 +1208,9 @@ def _verify_model_artifacts(
         "predictions.parquet",
         "prediction_summary.csv",
         "portfolio_metrics.csv",
+        "execution_nav.csv",
+        "execution_portfolio_metrics.csv",
+        "execution_rejections.csv",
         "walk_forward_results.csv",
         "summary.md",
     }
@@ -1078,13 +1260,61 @@ def _comparison_record(model_name: str, output_dir: Path) -> Dict[str, Any]:
         }
     )
     record.update(dict(zip(metrics["metric"], metrics["value"])))
+    execution_metrics_path = output_dir / "execution_portfolio_metrics.csv"
+    if not execution_metrics_path.is_file():
+        raise FactorLabError(
+            "%s execution portfolio metrics are missing" % model_name
+        )
+    execution_metrics = pd.read_csv(execution_metrics_path)
+    if not {"metric", "value"}.issubset(execution_metrics.columns):
+        raise FactorLabError(
+            "%s execution portfolio metrics are malformed" % model_name
+        )
+    record.update(
+        {
+            "execution_%s" % metric: value
+            for metric, value in zip(
+                execution_metrics["metric"], execution_metrics["value"]
+            )
+        }
+    )
     return record
 
 
-def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
-    """Compare latest completed Phase-2 runs without selecting a winner."""
+def _combine_model_tables(
+    outputs: Dict[str, Path],
+    filename: str,
+    *,
+    required: bool,
+) -> pd.DataFrame:
+    parts: List[pd.DataFrame] = []
+    for model_name, output_dir in outputs.items():
+        path = output_dir / filename
+        if not path.is_file():
+            if required:
+                raise FactorLabError(
+                    "%s report is missing %s" % (model_name, filename)
+                )
+            continue
+        try:
+            table = pd.read_csv(path)
+        except Exception as exc:
+            raise FactorLabError(
+                "%s report has unreadable %s" % (model_name, filename)
+            ) from exc
+        table.insert(0, "source_run_id", output_dir.name)
+        if "model_name" not in table:
+            table.insert(1, "model_name", model_name)
+        parts.append(table)
+    if not parts:
+        return pd.DataFrame(columns=["source_run_id", "model_name"])
+    return pd.concat(parts, ignore_index=True, sort=False)
 
-    model_names = ("factor_score", "ridge")
+
+def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
+    """Compare all four pre-registered models without selecting a winner."""
+
+    model_names = ("factor_score", "ridge", "lightgbm", "xgboost")
     outputs = {name: _latest_model_output(config, name) for name in model_names}
     manifests = {
         name: json.loads(
@@ -1153,6 +1383,16 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         raise FactorLabError(
             "Model reports use different or unknown backtest benchmark inputs"
         )
+    execution_bar_versions = {
+        payload.get("execution_bars_sha256") for payload in manifests.values()
+    }
+    if (
+        len(execution_bar_versions) != 1
+        or not _is_sha256(next(iter(execution_bar_versions), None))
+    ):
+        raise FactorLabError(
+            "Model reports use different or unknown execution-bar inputs"
+        )
     oos_keys = {
         name: _prediction_oos_keys(
             name,
@@ -1162,7 +1402,10 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         )
         for name in model_names
     }
-    if not oos_keys[model_names[0]].equals(oos_keys[model_names[1]]):
+    reference_keys = oos_keys[model_names[0]]
+    if any(
+        not reference_keys.equals(oos_keys[name]) for name in model_names[1:]
+    ):
         raise FactorLabError(
             "Model reports do not use identical out-of-sample keys, label "
             "windows, and realised targets"
@@ -1171,17 +1414,38 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         [_comparison_record(name, outputs[name]) for name in model_names]
     )
     comparison_dir = config.paths.report_dir / run.run_id
-    summary_path = write_model_comparison_report(comparison, comparison_dir)
-    folds = []
-    for name, path in outputs.items():
-        table = pd.read_csv(path / "walk_forward_results.csv")
-        table.insert(0, "source_run_id", path.name)
-        if "model_name" not in table:
-            table.insert(1, "model_name", name)
-        folds.append(table)
-    combined_folds = pd.concat(folds, ignore_index=True, sort=False)
+    combined_folds = _combine_model_tables(
+        outputs, "walk_forward_results.csv", required=True
+    )
+    detail_files = {
+        "prediction_summary": ("prediction_summary.csv", True),
+        "validation_results": ("validation_results.csv", True),
+        "nav": ("nav.csv", True),
+        "trades": ("trades.csv", True),
+        "positions": ("positions.csv", True),
+        "signals": ("signals.csv", True),
+        "execution_nav": ("execution_nav.csv", True),
+        "execution_trades": ("execution_trades.csv", True),
+        "execution_positions": ("execution_positions.csv", True),
+        "execution_rejections": ("execution_rejections.csv", True),
+        "feature_importance": ("feature_importance.csv", False),
+        "ridge_coefficients": ("ridge_coefficients.csv", False),
+    }
+    details = {
+        "walk_forward_results": combined_folds,
+        **{
+            output_name: _combine_model_tables(
+                outputs, filename, required=required
+            )
+            for output_name, (filename, required) in detail_files.items()
+        },
+    }
+    summary_path = write_model_comparison_report(
+        comparison,
+        comparison_dir,
+        details=details,
+    )
     fold_path = comparison_dir / "walk_forward_results.csv"
-    _atomic_csv(combined_folds, fold_path)
     run.payload["compared_models"] = list(model_names)
     run.payload["source_model_runs"] = {
         name: path.name for name, path in outputs.items()
@@ -1200,13 +1464,17 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
     run.payload["backtest_benchmark_sha256"] = next(
         iter(backtest_benchmark_versions)
     )
+    run.payload["execution_bars_sha256"] = next(iter(execution_bar_versions))
     run.payload["comparison_artifact_sha256"] = _artifact_sha256(comparison_dir)
     run.add_output(
         "model_comparison", comparison_dir / "model_comparison.csv"
     )
     run.add_output("walk_forward_results", fold_path)
     run.add_output("summary", summary_path)
-    LOGGER.info("Compared FactorScore and Ridge without automatic model selection")
+    LOGGER.info(
+        "Compared FactorScore, Ridge, LightGBM, and XGBoost without "
+        "automatic model selection"
+    )
 
 
 def main(argv: Optional[List[str]] = None) -> int:

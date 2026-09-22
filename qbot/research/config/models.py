@@ -141,9 +141,96 @@ class RidgeConfig:
 
 
 @dataclass(frozen=True)
+class LightGBMParameters:
+    """One deliberately small LightGBM validation candidate."""
+
+    num_leaves: int = 15
+    max_depth: int = 4
+    learning_rate: float = 0.05
+    n_estimators: int = 200
+    feature_fraction: float = 0.8
+    bagging_fraction: float = 0.8
+    bagging_freq: int = 1
+    reg_alpha: float = 0.0
+    reg_lambda: float = 1.0
+    min_child_samples: int = 20
+
+
+def _default_lightgbm_candidates() -> Tuple[LightGBMParameters, ...]:
+    return (
+        LightGBMParameters(),
+        LightGBMParameters(
+            num_leaves=31,
+            max_depth=6,
+            learning_rate=0.03,
+            n_estimators=300,
+            reg_alpha=0.1,
+            reg_lambda=2.0,
+        ),
+    )
+
+
+@dataclass(frozen=True)
+class LightGBMConfig:
+    """Validation-only LightGBM candidates; no final-Test tuning."""
+
+    candidates: Tuple[LightGBMParameters, ...] = field(
+        default_factory=_default_lightgbm_candidates
+    )
+    n_jobs: int = 1
+
+
+@dataclass(frozen=True)
+class XGBoostParameters:
+    """One deliberately small XGBoost validation candidate."""
+
+    max_depth: int = 4
+    learning_rate: float = 0.05
+    n_estimators: int = 200
+    subsample: float = 0.8
+    colsample_bytree: float = 0.8
+    reg_alpha: float = 0.0
+    reg_lambda: float = 1.0
+    min_child_weight: float = 1.0
+
+
+def _default_xgboost_candidates() -> Tuple[XGBoostParameters, ...]:
+    return (
+        XGBoostParameters(),
+        XGBoostParameters(
+            max_depth=6,
+            learning_rate=0.03,
+            n_estimators=300,
+            reg_alpha=0.1,
+            reg_lambda=2.0,
+            min_child_weight=2.0,
+        ),
+    )
+
+
+@dataclass(frozen=True)
+class XGBoostConfig:
+    """Validation-only XGBoost candidates; no final-Test tuning."""
+
+    candidates: Tuple[XGBoostParameters, ...] = field(
+        default_factory=_default_xgboost_candidates
+    )
+    n_jobs: int = 1
+
+
+@dataclass(frozen=True)
 class ModelsConfig:
     factor_score: FactorScoreConfig = field(default_factory=FactorScoreConfig)
     ridge: RidgeConfig = field(default_factory=RidgeConfig)
+    lightgbm: LightGBMConfig = field(default_factory=LightGBMConfig)
+    xgboost: XGBoostConfig = field(default_factory=XGBoostConfig)
+
+
+@dataclass(frozen=True)
+class MarketRegimeConfig:
+    """Enable the pre-registered CSI500 MA20/MA60 regime definition."""
+
+    enabled: bool = True
 
 
 @dataclass(frozen=True)
@@ -164,11 +251,60 @@ class PortfolioConfig:
 
 
 @dataclass(frozen=True)
+class PriceLimitPeriod:
+    board: str
+    start: date
+    end: Optional[date]
+    normal_limit_pct: float
+    st_limit_pct: float
+    tick_size: float = 0.01
+
+
+def _default_price_limits() -> Tuple[PriceLimitPeriod, ...]:
+    return (
+        PriceLimitPeriod(
+            board="main",
+            start=date(1990, 1, 1),
+            end=None,
+            normal_limit_pct=0.10,
+            st_limit_pct=0.05,
+        ),
+        PriceLimitPeriod(
+            board="chinext",
+            start=date(2009, 10, 30),
+            end=date(2020, 8, 23),
+            normal_limit_pct=0.10,
+            st_limit_pct=0.05,
+        ),
+        PriceLimitPeriod(
+            board="chinext",
+            start=date(2020, 8, 24),
+            end=None,
+            normal_limit_pct=0.20,
+            st_limit_pct=0.20,
+        ),
+        PriceLimitPeriod(
+            board="star",
+            start=date(2019, 7, 22),
+            end=None,
+            normal_limit_pct=0.20,
+            st_limit_pct=0.20,
+        ),
+    )
+
+
+@dataclass(frozen=True)
 class BacktestConfig:
     initial_cash: float = 1_000_000.0
     board_lot: int = 100
     annualization_days: int = 252
     risk_free_rate: float = 0.0
+    t_plus_one: bool = True
+    reject_suspended: bool = True
+    price_limit_tolerance_bps: float = 5.0
+    price_limits: Tuple[PriceLimitPeriod, ...] = field(
+        default_factory=_default_price_limits
+    )
 
 
 @dataclass(frozen=True)
@@ -213,6 +349,7 @@ class ResearchConfig:
     preprocessing: PreprocessingConfig = field(default_factory=PreprocessingConfig)
     evaluation: EvaluationConfig = field(default_factory=EvaluationConfig)
     models: ModelsConfig = field(default_factory=ModelsConfig)
+    market_regime: MarketRegimeConfig = field(default_factory=MarketRegimeConfig)
     validation: ValidationConfig = field(default_factory=ValidationConfig)
     portfolio: PortfolioConfig = field(default_factory=PortfolioConfig)
     backtest: BacktestConfig = field(default_factory=BacktestConfig)
@@ -374,6 +511,8 @@ class ResearchConfig:
             raise ConfigurationError("models.ridge.max_iter must be positive")
         if not math.isfinite(ridge.tolerance) or ridge.tolerance <= 0:
             raise ConfigurationError("models.ridge.tolerance must be positive")
+        self._validate_lightgbm()
+        self._validate_xgboost()
         validation_values = {
             "initial_train_months": self.validation.initial_train_months,
             "validation_months": self.validation.validation_months,
@@ -410,6 +549,19 @@ class ResearchConfig:
             raise ConfigurationError("backtest.annualization_days must be positive")
         if not math.isfinite(self.backtest.risk_free_rate):
             raise ConfigurationError("backtest.risk_free_rate must be finite")
+        if type(self.backtest.t_plus_one) is not bool or not self.backtest.t_plus_one:
+            raise ConfigurationError("backtest.t_plus_one must be true")
+        if type(self.backtest.reject_suspended) is not bool:
+            raise ConfigurationError("backtest.reject_suspended must be boolean")
+        if (
+            not math.isfinite(self.backtest.price_limit_tolerance_bps)
+            or self.backtest.price_limit_tolerance_bps < 0
+            or self.backtest.price_limit_tolerance_bps >= 10_000
+        ):
+            raise ConfigurationError(
+                "backtest.price_limit_tolerance_bps must be in [0, 10000)"
+            )
+        self._validate_price_limits()
         fee_values = {
             "commission_bps": self.fees.commission_bps,
             "minimum_commission_cny": self.fees.minimum_commission_cny,
@@ -450,6 +602,166 @@ class ResearchConfig:
         if final_end is not None and final_end < self.data.end:
             raise ConfigurationError("fees.stamp_duty does not cover data.end")
 
+    def _validate_lightgbm(self) -> None:
+        config = self.models.lightgbm
+        if not config.candidates:
+            raise ConfigurationError(
+                "models.lightgbm.candidates must not be empty"
+            )
+        if config.n_jobs <= 0:
+            raise ConfigurationError("models.lightgbm.n_jobs must be positive")
+        for number, candidate in enumerate(config.candidates):
+            prefix = "models.lightgbm.candidates[%d]" % number
+            if candidate.num_leaves < 2:
+                raise ConfigurationError("%s.num_leaves must be at least 2" % prefix)
+            if candidate.max_depth == 0 or candidate.max_depth < -1:
+                raise ConfigurationError(
+                    "%s.max_depth must be -1 or positive" % prefix
+                )
+            if candidate.n_estimators <= 0:
+                raise ConfigurationError(
+                    "%s.n_estimators must be positive" % prefix
+                )
+            if candidate.bagging_freq < 0:
+                raise ConfigurationError(
+                    "%s.bagging_freq must be non-negative" % prefix
+                )
+            if candidate.min_child_samples <= 0:
+                raise ConfigurationError(
+                    "%s.min_child_samples must be positive" % prefix
+                )
+            self._validate_fraction(
+                prefix + ".learning_rate", candidate.learning_rate, upper=None
+            )
+            self._validate_fraction(
+                prefix + ".feature_fraction", candidate.feature_fraction
+            )
+            self._validate_fraction(
+                prefix + ".bagging_fraction", candidate.bagging_fraction
+            )
+            self._validate_non_negative(
+                prefix + ".reg_alpha", candidate.reg_alpha
+            )
+            self._validate_non_negative(
+                prefix + ".reg_lambda", candidate.reg_lambda
+            )
+
+    def _validate_xgboost(self) -> None:
+        config = self.models.xgboost
+        if not config.candidates:
+            raise ConfigurationError(
+                "models.xgboost.candidates must not be empty"
+            )
+        if config.n_jobs <= 0:
+            raise ConfigurationError("models.xgboost.n_jobs must be positive")
+        for number, candidate in enumerate(config.candidates):
+            prefix = "models.xgboost.candidates[%d]" % number
+            if candidate.max_depth <= 0:
+                raise ConfigurationError("%s.max_depth must be positive" % prefix)
+            if candidate.n_estimators <= 0:
+                raise ConfigurationError(
+                    "%s.n_estimators must be positive" % prefix
+                )
+            self._validate_fraction(
+                prefix + ".learning_rate", candidate.learning_rate, upper=None
+            )
+            self._validate_fraction(prefix + ".subsample", candidate.subsample)
+            self._validate_fraction(
+                prefix + ".colsample_bytree", candidate.colsample_bytree
+            )
+            self._validate_non_negative(
+                prefix + ".reg_alpha", candidate.reg_alpha
+            )
+            self._validate_non_negative(
+                prefix + ".reg_lambda", candidate.reg_lambda
+            )
+            self._validate_non_negative(
+                prefix + ".min_child_weight", candidate.min_child_weight
+            )
+
+    def _validate_price_limits(self) -> None:
+        periods = self.backtest.price_limits
+        if not periods:
+            raise ConfigurationError("backtest.price_limits must not be empty")
+        supported = {"main", "chinext", "star"}
+        by_board: Dict[str, list] = {board: [] for board in supported}
+        for number, period in enumerate(periods):
+            prefix = "backtest.price_limits[%d]" % number
+            board = period.board.strip().lower()
+            if board not in supported:
+                raise ConfigurationError("%s.board is unsupported" % prefix)
+            if period.end is not None and period.end < period.start:
+                raise ConfigurationError("%s.end must be on or after start" % prefix)
+            for name, value in (
+                ("normal_limit_pct", period.normal_limit_pct),
+                ("st_limit_pct", period.st_limit_pct),
+            ):
+                if (
+                    isinstance(value, bool)
+                    or not math.isfinite(value)
+                    or not 0 < value < 1
+                ):
+                    raise ConfigurationError("%s.%s must be in (0, 1)" % (prefix, name))
+            if (
+                isinstance(period.tick_size, bool)
+                or not math.isfinite(period.tick_size)
+                or period.tick_size <= 0
+            ):
+                raise ConfigurationError("%s.tick_size must be positive" % prefix)
+            by_board[board].append(period)
+        for board, board_periods in by_board.items():
+            if not board_periods:
+                raise ConfigurationError(
+                    "backtest.price_limits must cover board %s" % board
+                )
+            ordered = sorted(board_periods, key=lambda value: value.start)
+            for previous, current in zip(ordered, ordered[1:]):
+                if previous.end is None or previous.end >= current.start:
+                    raise ConfigurationError(
+                        "backtest.price_limits for %s must not overlap" % board
+                    )
+                if current.start != previous.end + timedelta(days=1):
+                    raise ConfigurationError(
+                        "backtest.price_limits for %s must be contiguous" % board
+                    )
+            matches = [
+                period
+                for period in ordered
+                if period.start <= self.data.start
+                and (period.end is None or self.data.start <= period.end)
+            ]
+            if len(matches) != 1:
+                raise ConfigurationError(
+                    "backtest.price_limits must cover data.start for %s exactly once"
+                    % board
+                )
+            end_matches = [
+                period
+                for period in ordered
+                if period.start <= self.data.end
+                and (period.end is None or self.data.end <= period.end)
+            ]
+            if len(end_matches) != 1:
+                raise ConfigurationError(
+                    "backtest.price_limits must cover data.end for %s exactly once"
+                    % board
+                )
+
+    @staticmethod
+    def _validate_fraction(
+        name: str, value: float, upper: Optional[float] = 1.0
+    ) -> None:
+        if not math.isfinite(value) or value <= 0 or (
+            upper is not None and value > upper
+        ):
+            suffix = "in (0, 1]" if upper == 1.0 else "positive"
+            raise ConfigurationError("%s must be finite and %s" % (name, suffix))
+
+    @staticmethod
+    def _validate_non_negative(name: str, value: float) -> None:
+        if not math.isfinite(value) or value < 0:
+            raise ConfigurationError("%s must be finite and non-negative" % name)
+
     def to_dict(self) -> Dict[str, Any]:
         """Return a JSON-serializable snapshot suitable for run manifests."""
 
@@ -480,11 +792,15 @@ __all__ = [
     "BacktestConfig",
     "FactorScoreConfig",
     "FeesConfig",
+    "LightGBMConfig",
+    "LightGBMParameters",
     "LabelConfig",
+    "MarketRegimeConfig",
     "ModelsConfig",
     "NetworkConfig",
     "PathsConfig",
     "PortfolioConfig",
+    "PriceLimitPeriod",
     "PreprocessingConfig",
     "ProjectConfig",
     "ResearchConfig",
@@ -492,4 +808,6 @@ __all__ = [
     "StampDutyPeriod",
     "UniverseConfig",
     "ValidationConfig",
+    "XGBoostConfig",
+    "XGBoostParameters",
 ]

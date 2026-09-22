@@ -11,6 +11,10 @@ from qbot.research.errors import ConfigurationError, SchemaError
 from qbot.research.factors.preprocess import preprocess_cross_sections
 from qbot.research.factors.registry import compute_factors
 from qbot.research.labels.forward_return import build_forward_excess_return_labels
+from qbot.research.market.regime import (
+    MARKET_FEATURE_COLUMNS,
+    build_market_regime_features,
+)
 from qbot.research.universe.csi500 import validate_daily_membership
 from qbot.research.universe.filters import (
     UniverseFilterConfig,
@@ -30,6 +34,7 @@ class DatasetBuildOptions:
     lower_quantile: float = 0.01
     upper_quantile: float = 0.99
     minimum_cross_section: int = 20
+    include_market_regime: bool = True
     filter_config: UniverseFilterConfig = UniverseFilterConfig()
 
 
@@ -118,6 +123,24 @@ class DatasetBuilder:
         selected = selected.merge(
             labels, on=["date", "symbol"], how="left", validate="one_to_one"
         )
+        if self.options.include_market_regime:
+            market = build_market_regime_features(benchmark)
+            market_dates = pd.DatetimeIndex(market["date"])
+            missing_market_dates = research_dates.difference(market_dates)
+            if len(missing_market_dates):
+                raise SchemaError(
+                    "Benchmark market-regime features are missing research dates: %s"
+                    % ", ".join(
+                        value.date().isoformat()
+                        for value in missing_market_dates[:5]
+                    )
+                )
+            selected = selected.merge(
+                market.loc[:, list(MARKET_FEATURE_COLUMNS)],
+                on="date",
+                how="left",
+                validate="many_to_one",
+            )
         selected = preprocess_cross_sections(
             selected,
             self.options.factor_names,

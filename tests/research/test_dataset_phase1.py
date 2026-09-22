@@ -44,6 +44,7 @@ def _dataset_inputs(periods=10):
         {
             "date": dates,
             "adj_open": [100.0 + number for number in range(periods)],
+            "adj_close": [100.5 + number for number in range(periods)],
         }
     )
     listings = pd.DataFrame(
@@ -91,6 +92,11 @@ def test_dataset_is_sorted_unique_and_keeps_raw_processed_and_label_audit_column
         "STOCK_FWD_RET2",
         "BENCHMARK_FWD_RET2",
         "EXCESS_RET2",
+        "MARKET_REGIME",
+        "INDEX_RET5",
+        "INDEX_RET20",
+        "INDEX_RET60",
+        "INDEX_VOL20",
     }.issubset(result.columns)
     assert len(result) == len(dates) * 2
     assert result.groupby("symbol").tail(3)["EXCESS_RET2"].isna().all()

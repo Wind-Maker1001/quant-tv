@@ -121,6 +121,12 @@ def test_formal_and_smoke_configs_load():
     assert formal.validation.purge_days == 5
     assert formal.portfolio.top_k == 20
     assert formal.models.ridge.alphas == (0.1, 1.0, 10.0, 100.0)
+    assert len(formal.models.lightgbm.candidates) == 2
+    assert len(formal.models.xgboost.candidates) == 2
+    assert formal.market_regime.enabled is True
+    assert formal.backtest.t_plus_one is True
+    assert formal.backtest.board_lot == 100
+    assert len(formal.backtest.price_limits) == 4
     assert set(formal.models.factor_score.weights) == set(formal.factors)
     assert formal.fees.stamp_duty[0].sell_bps == 10.0
     assert formal.fees.stamp_duty[1].sell_bps == 5.0
@@ -156,6 +162,38 @@ def test_phase2_nested_unknown_field_is_rejected(tmp_path):
     path = _write_config(tmp_path, document)
 
     with pytest.raises(ConfigurationError, match="future_hint"):
+        load_config(path, repo_root=tmp_path)
+
+
+def test_phase3_tree_candidate_unknown_field_is_rejected(tmp_path):
+    document = _valid_document()
+    document["models"] = {
+        "lightgbm": {
+            "candidates": [{"n_estimators": 10, "tune_on_test": True}]
+        }
+    }
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="tune_on_test"):
+        load_config(path, repo_root=tmp_path)
+
+
+def test_price_limit_rules_must_cover_every_supported_board(tmp_path):
+    document = _valid_document()
+    document["backtest"] = {
+        "price_limits": [
+            {
+                "board": "main",
+                "start": "1990-01-01",
+                "end": None,
+                "normal_limit_pct": 0.1,
+                "st_limit_pct": 0.05,
+            }
+        ]
+    }
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="cover board"):
         load_config(path, repo_root=tmp_path)
 
 

@@ -27,6 +27,8 @@ TRACKED_PACKAGES = (
     "matplotlib",
     "akshare",
     "baostock",
+    "lightgbm",
+    "xgboost",
     "PyYAML",
     "pytest",
 )

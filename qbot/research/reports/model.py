@@ -1,7 +1,7 @@
-"""Deterministic, headless reporting for Phase-2 model experiments.
+"""Deterministic, headless reporting for FactorLab model experiments.
 
-The writer consumes only already-produced out-of-sample predictions and fast
-backtest results.  It does not fit a model, select hyperparameters, or infer a
+The writer consumes only already-produced out-of-sample predictions and
+backtest results. It does not fit a model, select hyperparameters, or infer a
 "winner" from test performance.  Every tabular artifact is written both as
 CSV (easy to inspect) and Parquet (lossless and efficient to reload).
 """
@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 
 from qbot.research.backtest.fast import FastBacktestResult
+from qbot.research.backtest.execution import ExecutionBacktestResult
 from qbot.research.metrics.prediction import PredictionEvaluation
 from qbot.research.validation.walk_forward import WalkForwardResult
 
@@ -271,6 +272,63 @@ def _plot_coefficients(coefficients: pd.DataFrame, destination: Path) -> None:
     _save_figure(figure, destination)
 
 
+def _plot_feature_importance(
+    importance: pd.DataFrame, destination: Path
+) -> None:
+    figure, axis = plt.subplots(figsize=(10, 6))
+    required = {"feature", "normalized_importance"}
+    if importance.empty or not required.issubset(importance.columns):
+        _placeholder(axis, "Mean tree feature importance")
+        _save_figure(figure, destination)
+        return
+    table = importance.copy()
+    table["normalized_importance"] = pd.to_numeric(
+        table["normalized_importance"], errors="coerce"
+    )
+    values = (
+        table.groupby("feature", sort=True)["normalized_importance"]
+        .mean()
+        .dropna()
+        .sort_values()
+    )
+    if values.empty:
+        _placeholder(axis, "Mean tree feature importance")
+    else:
+        values.plot(kind="barh", ax=axis, color="#35618f")
+        axis.set_xlabel("Mean normalized gain importance")
+        axis.set_title("Mean tree feature importance across walk-forward folds")
+        axis.grid(axis="x", alpha=0.2)
+    _save_figure(figure, destination)
+
+
+def _plot_regime_performance(summary: pd.DataFrame, destination: Path) -> None:
+    figure, axis = plt.subplots(figsize=(9, 5.5))
+    required = {"scope", "period", "prediction_rank_ic_mean"}
+    if summary.empty or not required.issubset(summary.columns):
+        _placeholder(axis, "Prediction RankIC by market regime")
+        _save_figure(figure, destination)
+        return
+    regimes = summary.loc[summary["scope"] == "REGIME"].copy()
+    regimes["prediction_rank_ic_mean"] = pd.to_numeric(
+        regimes["prediction_rank_ic_mean"], errors="coerce"
+    )
+    regimes.dropna(subset=["prediction_rank_ic_mean"], inplace=True)
+    if regimes.empty:
+        _placeholder(axis, "Prediction RankIC by market regime")
+    else:
+        regimes.sort_values("period", kind="mergesort", inplace=True)
+        axis.bar(
+            regimes["period"].astype(str),
+            regimes["prediction_rank_ic_mean"],
+            color="#527a5a",
+        )
+        axis.axhline(0.0, color="black", linewidth=0.8)
+        axis.set_ylabel("Mean daily RankIC")
+        axis.set_title("Prediction RankIC by market regime")
+        axis.grid(axis="y", alpha=0.2)
+    _save_figure(figure, destination)
+
+
 def _metric_frame(metrics: Mapping[str, Any]) -> pd.DataFrame:
     if not isinstance(metrics, Mapping):
         raise ModelReportError("portfolio_metrics must be a mapping")
@@ -440,11 +498,146 @@ def _plot_model_ic(comparison: pd.DataFrame, destination: Path) -> None:
     _save_figure(figure, destination)
 
 
+def _plot_comparison_nav(nav: pd.DataFrame, destination: Path) -> None:
+    figure, axis = plt.subplots(figsize=(11, 5.5))
+    required = {"date", "model_name", "strategy_nav", "benchmark_nav"}
+    if nav.empty or not required.issubset(nav.columns):
+        _placeholder(axis, "Out-of-sample NAV comparison")
+        _save_figure(figure, destination)
+        return
+    table = nav.copy()
+    table["date"] = pd.to_datetime(table["date"], errors="coerce")
+    for model_name, values in table.groupby("model_name", sort=True):
+        values = values.sort_values("date", kind="mergesort")
+        axis.plot(values["date"], values["strategy_nav"], label=str(model_name))
+    benchmark = table.sort_values("date", kind="mergesort").drop_duplicates("date")
+    axis.plot(
+        benchmark["date"],
+        benchmark["benchmark_nav"],
+        label="CSI500",
+        color="black",
+        linestyle="--",
+        linewidth=1.2,
+    )
+    axis.set_title("Out-of-sample NAV comparison")
+    axis.set_ylabel("NAV")
+    axis.grid(alpha=0.2)
+    axis.legend()
+    _save_figure(figure, destination)
+
+
+def _plot_comparison_drawdown(nav: pd.DataFrame, destination: Path) -> None:
+    figure, axis = plt.subplots(figsize=(11, 5.0))
+    required = {"date", "model_name", "strategy_nav"}
+    if nav.empty or not required.issubset(nav.columns):
+        _placeholder(axis, "Out-of-sample drawdown comparison")
+        _save_figure(figure, destination)
+        return
+    for model_name, values in nav.groupby("model_name", sort=True):
+        values = values.copy()
+        values["date"] = pd.to_datetime(values["date"], errors="coerce")
+        values.sort_values("date", kind="mergesort", inplace=True)
+        series = pd.to_numeric(values["strategy_nav"], errors="coerce")
+        drawdown = series / series.cummax() - 1.0
+        axis.plot(values["date"], drawdown, label=str(model_name))
+    axis.set_title("Out-of-sample drawdown comparison")
+    axis.set_ylabel("Drawdown")
+    axis.grid(alpha=0.2)
+    axis.legend()
+    _save_figure(figure, destination)
+
+
+def _plot_comparison_daily_metric(
+    nav: pd.DataFrame,
+    column: str,
+    title: str,
+    ylabel: str,
+    destination: Path,
+) -> None:
+    figure, axis = plt.subplots(figsize=(11, 5.0))
+    required = {"date", "model_name", column}
+    if nav.empty or not required.issubset(nav.columns):
+        _placeholder(axis, title)
+        _save_figure(figure, destination)
+        return
+    for model_name, values in nav.groupby("model_name", sort=True):
+        values = values.copy()
+        values["date"] = pd.to_datetime(values["date"], errors="coerce")
+        values.sort_values("date", kind="mergesort", inplace=True)
+        axis.plot(
+            values["date"],
+            pd.to_numeric(values[column], errors="coerce").fillna(0.0),
+            label=str(model_name),
+            linewidth=0.9,
+        )
+    axis.set_title(title)
+    axis.set_ylabel(ylabel)
+    axis.grid(alpha=0.2)
+    axis.legend()
+    _save_figure(figure, destination)
+
+
+def _plot_comparison_feature_importance(
+    importance: pd.DataFrame, destination: Path
+) -> None:
+    figure, axis = plt.subplots(figsize=(12, 6))
+    required = {"model_name", "feature", "normalized_importance"}
+    if importance.empty or not required.issubset(importance.columns):
+        _placeholder(axis, "Tree feature importance comparison")
+        _save_figure(figure, destination)
+        return
+    table = importance.pivot_table(
+        index="feature",
+        columns="model_name",
+        values="normalized_importance",
+        aggfunc="mean",
+    ).fillna(0.0)
+    table.plot(kind="bar", ax=axis)
+    axis.set_title("Mean feature importance across walk-forward folds")
+    axis.set_ylabel("Normalized gain importance")
+    axis.grid(axis="y", alpha=0.2)
+    _save_figure(figure, destination)
+
+
+def _plot_comparison_regime(
+    prediction_summary: pd.DataFrame, destination: Path
+) -> None:
+    figure, axis = plt.subplots(figsize=(10, 5.5))
+    required = {
+        "model_name",
+        "scope",
+        "period",
+        "prediction_rank_ic_mean",
+    }
+    if prediction_summary.empty or not required.issubset(prediction_summary.columns):
+        _placeholder(axis, "Prediction RankIC by model and regime")
+        _save_figure(figure, destination)
+        return
+    regimes = prediction_summary.loc[
+        prediction_summary["scope"] == "REGIME"
+    ]
+    table = regimes.pivot_table(
+        index="period",
+        columns="model_name",
+        values="prediction_rank_ic_mean",
+        aggfunc="first",
+    )
+    if table.empty:
+        _placeholder(axis, "Prediction RankIC by model and regime")
+    else:
+        table.plot(kind="bar", ax=axis)
+        axis.axhline(0.0, color="black", linewidth=0.8)
+        axis.set_title("Prediction RankIC by model and market regime")
+        axis.set_ylabel("Mean daily RankIC")
+        axis.grid(axis="y", alpha=0.2)
+    _save_figure(figure, destination)
+
+
 def _comparison_markdown(
     comparison: pd.DataFrame, disclaimer: Optional[str] = None
 ) -> str:
     lines = [
-        "# FactorLab Phase 2 模型比较",
+        "# FactorLab Phase 3 模型比较",
         "",
     ]
     if disclaimer:
@@ -474,6 +667,11 @@ def _comparison_markdown(
         "information_ratio",
         "portfolio_turnover",
         "total_transaction_cost",
+        "execution_cumulative_return",
+        "execution_excess_return",
+        "execution_sharpe_ratio",
+        "execution_maximum_drawdown",
+        "execution_total_transaction_cost",
     ]
     columns = [name for name in preferred if name in comparison.columns]
     if "model_name" not in columns:
@@ -493,6 +691,8 @@ def _summary_markdown(
     backtest: FastBacktestResult,
     metrics: pd.DataFrame,
     disclaimer: Optional[str] = None,
+    execution_backtest: Optional[ExecutionBacktestResult] = None,
+    execution_metrics: Optional[pd.DataFrame] = None,
 ) -> str:
     fold_count = (
         int(walk_forward.fold_summary["fold"].nunique())
@@ -503,7 +703,7 @@ def _summary_markdown(
     nav_rows = len(backtest.nav)
     trade_rows = len(backtest.trades)
     lines = [
-        "# FactorLab Phase 2 模型报告",
+        "# FactorLab Phase 3 模型报告",
         "",
     ]
     if disclaimer:
@@ -554,6 +754,29 @@ def _summary_markdown(
         lines.extend(["| Metric | Value |", "|---|---:|"])
         for row in metrics.itertuples(index=False):
             lines.append("| %s | %s |" % (row.metric, _format_value(row.value)))
+    if execution_backtest is not None:
+        lines.extend(
+            [
+                "",
+                "## Rule-aware execution performance",
+                "",
+                "该层使用次日开盘、T+1、100股整数手、现金约束、停牌和涨跌停日线近似。"
+                "日线无法重建盘口队列，拒单记录见 `execution_rejections.csv`。",
+                "",
+                "- Executed trades: %d" % len(execution_backtest.trades),
+                "- Rejected order fragments: %d"
+                % len(execution_backtest.rejections),
+                "",
+            ]
+        )
+        if execution_metrics is None or execution_metrics.empty:
+            lines.append("No execution metrics are available.")
+        else:
+            lines.extend(["| Metric | Value |", "|---|---:|"])
+            for row in execution_metrics.itertuples(index=False):
+                lines.append(
+                    "| %s | %s |" % (row.metric, _format_value(row.value))
+                )
     lines.extend(
         [
             "",
@@ -576,8 +799,10 @@ def write_model_report(
     portfolio_metrics: Mapping[str, Any],
     output_dir: Path,
     disclaimer: Optional[str] = None,
+    execution_backtest: Optional[ExecutionBacktestResult] = None,
+    execution_metrics: Optional[Mapping[str, Any]] = None,
 ) -> Path:
-    """Write one model''s complete Phase-2 artifact directory.
+    """Write one model's complete Phase-3 artifact directory.
 
     Returns the path to ``summary.md``.  Mandatory plots are still created for
     empty inputs, using an explicit ``No data available`` marker.  Ridge
@@ -594,6 +819,16 @@ def write_model_report(
         )
     if not isinstance(backtest, FastBacktestResult):
         raise ModelReportError("backtest must be a FastBacktestResult")
+    if execution_backtest is not None and not isinstance(
+        execution_backtest, ExecutionBacktestResult
+    ):
+        raise ModelReportError(
+            "execution_backtest must be an ExecutionBacktestResult"
+        )
+    if execution_backtest is None and execution_metrics is not None:
+        raise ModelReportError(
+            "execution_metrics require execution_backtest"
+        )
 
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
@@ -613,6 +848,28 @@ def write_model_report(
     for name in _TABLE_NAMES:
         _write_table(tables[name].copy(), name, destination)
 
+    execution_metric_table = pd.DataFrame(columns=["metric", "value"])
+    if execution_backtest is not None:
+        execution_metric_table = _metric_frame(execution_metrics or {})
+        execution_tables = {
+            "execution_nav": execution_backtest.nav,
+            "execution_trades": execution_backtest.trades,
+            "execution_positions": execution_backtest.positions,
+            "execution_rejections": execution_backtest.rejections,
+            "execution_signals": execution_backtest.signals,
+            "execution_portfolio_metrics": execution_metric_table,
+        }
+        for name, table in execution_tables.items():
+            _write_table(table.copy(), name, destination)
+        _plot_nav(
+            execution_backtest.nav,
+            destination / "execution_nav_curve.png",
+        )
+        _plot_drawdown(
+            execution_backtest.nav,
+            destination / "execution_drawdown.png",
+        )
+
     if not walk_forward.coefficients.empty:
         _write_table(
             walk_forward.coefficients.copy(),
@@ -624,11 +881,26 @@ def write_model_report(
             destination / "ridge_coefficients.png",
         )
 
+    if not walk_forward.feature_importance.empty:
+        _write_table(
+            walk_forward.feature_importance.copy(),
+            "feature_importance",
+            destination,
+        )
+        _plot_feature_importance(
+            walk_forward.feature_importance,
+            destination / "feature_importance.png",
+        )
+
     _plot_nav(backtest.nav, destination / "nav_curve.png")
     _plot_drawdown(backtest.nav, destination / "drawdown.png")
     _plot_prediction_ic(
         prediction_evaluation.daily,
         destination / "prediction_ic.png",
+    )
+    _plot_regime_performance(
+        prediction_evaluation.summary,
+        destination / "regime_performance.png",
     )
     _plot_daily_bar(
         backtest.nav,
@@ -654,6 +926,8 @@ def write_model_report(
             backtest,
             metric_table,
             disclaimer,
+            execution_backtest,
+            execution_metric_table,
         ),
         summary_path,
     )
@@ -664,6 +938,7 @@ def write_model_comparison_report(
     comparison: Any,
     output_dir: Path,
     disclaimer: Optional[str] = None,
+    details: Optional[Mapping[str, pd.DataFrame]] = None,
 ) -> Path:
     """Write an objective, non-selecting comparison of completed model runs.
 
@@ -679,6 +954,47 @@ def write_model_comparison_report(
     destination.mkdir(parents=True, exist_ok=True)
     _atomic_csv(comparison, destination / "model_comparison.csv")
     _plot_model_ic(comparison, destination / "model_ic_comparison.png")
+    detail_tables: Dict[str, pd.DataFrame] = {}
+    if details is not None:
+        if not isinstance(details, Mapping):
+            raise ModelReportError("details must be a mapping of DataFrames")
+        for raw_name, table in details.items():
+            name = str(raw_name)
+            if (
+                not name
+                or Path(name).name != name
+                or not name.replace("_", "").isalnum()
+            ):
+                raise ModelReportError("detail table name is unsafe: %r" % raw_name)
+            if not isinstance(table, pd.DataFrame):
+                raise ModelReportError("detail table %s must be a DataFrame" % name)
+            detail_tables[name] = table.copy()
+            _write_table(detail_tables[name], name, destination)
+    nav = detail_tables.get("nav", pd.DataFrame())
+    _plot_comparison_nav(nav, destination / "nav_curve.png")
+    _plot_comparison_drawdown(nav, destination / "drawdown.png")
+    _plot_comparison_daily_metric(
+        nav,
+        "turnover",
+        "Daily portfolio turnover by model",
+        "Turnover",
+        destination / "turnover.png",
+    )
+    _plot_comparison_daily_metric(
+        nav,
+        "transaction_cost",
+        "Daily transaction cost by model",
+        "CNY",
+        destination / "transaction_cost.png",
+    )
+    _plot_comparison_feature_importance(
+        detail_tables.get("feature_importance", pd.DataFrame()),
+        destination / "feature_importance.png",
+    )
+    _plot_comparison_regime(
+        detail_tables.get("prediction_summary", pd.DataFrame()),
+        destination / "regime_performance.png",
+    )
     summary_path = destination / "summary.md"
     _atomic_text(_comparison_markdown(comparison, disclaimer), summary_path)
     return summary_path

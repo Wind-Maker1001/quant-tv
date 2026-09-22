@@ -13,6 +13,8 @@ from qbot.research.config import (
     DataConfig,
     EvaluationConfig,
     FactorScoreConfig,
+    LightGBMConfig,
+    LightGBMParameters,
     ModelsConfig,
     PathsConfig,
     PortfolioConfig,
@@ -21,6 +23,8 @@ from qbot.research.config import (
     RidgeConfig,
     UniverseConfig,
     ValidationConfig,
+    XGBoostConfig,
+    XGBoostParameters,
 )
 from qbot.research.data.schema import canonicalize_bars
 from qbot.research.errors import FactorLabError
@@ -68,11 +72,25 @@ def _inputs():
                     "entry_date": entry,
                     "exit_date": exit_,
                     "EXCESS_RET5": target if pd.notna(exit_) else np.nan,
+                    "MARKET_REGIME": "BULL" if wave >= 0 else "BEAR",
+                    "INDEX_RET5": wave * 0.01,
+                    "INDEX_RET20": wave * 0.02,
+                    "INDEX_RET60": wave * 0.03,
+                    "INDEX_VOL20": 0.01 + abs(wave) * 0.005,
                 }
             )
             price = 10.0 + symbol_number + date_number * (0.003 + symbol_number * 0.0001)
             bar_rows.append(
-                {"date": trading_date, "symbol": symbol, "adj_open": price}
+                {
+                    "date": trading_date,
+                    "symbol": symbol,
+                    "adj_open": price,
+                    "raw_open": price,
+                    "raw_close": price,
+                    "volume": 100_000.0,
+                    "trade_status": 1,
+                    "is_st": False,
+                }
             )
     benchmark_price = 5000.0 + np.arange(len(dates), dtype=float) * 0.8
     benchmark = canonicalize_bars(
@@ -118,6 +136,28 @@ def _config(tmp_path):
                 normalize_by_absolute_weight=True,
             ),
             ridge=RidgeConfig(alphas=(0.1, 1.0)),
+            lightgbm=LightGBMConfig(
+                candidates=(
+                    LightGBMParameters(
+                        num_leaves=7,
+                        max_depth=3,
+                        n_estimators=8,
+                        min_child_samples=2,
+                    ),
+                    LightGBMParameters(
+                        num_leaves=7,
+                        max_depth=3,
+                        n_estimators=12,
+                        min_child_samples=2,
+                    ),
+                )
+            ),
+            xgboost=XGBoostConfig(
+                candidates=(
+                    XGBoostParameters(max_depth=2, n_estimators=8),
+                    XGBoostParameters(max_depth=3, n_estimators=12),
+                )
+            ),
         ),
         validation=ValidationConfig(
             initial_train_months=4,
@@ -461,15 +501,39 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
 
     factor_run = _Run("20200101T000000-factor-score")
     ridge_run = _Run("20200102T000000-ridge")
-    cli.command_walk_forward(config, factor_run, "factor_score")
-    cli.command_walk_forward(config, ridge_run, "ridge")
-    assert observed_minimum_cross_sections == [config.evaluation.min_cross_section] * 2
+    lightgbm_run = _Run("20200103T000000-lightgbm")
+    xgboost_run = _Run("20200104T000000-xgboost")
+    runs = {
+        "factor_score": factor_run,
+        "ridge": ridge_run,
+        "lightgbm": lightgbm_run,
+        "xgboost": xgboost_run,
+    }
+    for model_name, model_run in runs.items():
+        cli.command_walk_forward(config, model_run, model_name)
+    assert observed_minimum_cross_sections == [
+        config.evaluation.min_cross_section
+    ] * 4
 
-    for model_name, run in (("factor_score", factor_run), ("ridge", ridge_run)):
+    for model_name, run in runs.items():
         output = config.paths.model_results_dir / model_name / run.run_id
         assert (output / "summary.md").is_file()
         assert (output / "predictions.parquet").is_file()
         assert (output / "nav.csv").is_file()
+        assert (output / "execution_nav.csv").is_file()
+        assert (output / "execution_rejections.csv").is_file()
+        prediction_summary = pd.read_csv(output / "prediction_summary.csv")
+        assert {"BULL", "BEAR"}.issubset(
+            set(
+                prediction_summary.loc[
+                    prediction_summary["scope"] == "REGIME", "period"
+                ]
+            )
+        )
+        assert (output / "regime_performance.png").is_file()
+        if model_name in {"lightgbm", "xgboost"}:
+            assert (output / "feature_importance.csv").is_file()
+            assert (output / "feature_importance.png").is_file()
         predictions = pd.read_parquet(output / "predictions.parquet")
         trades = pd.read_csv(output / "trades.csv", parse_dates=["signal_date", "execution_date"])
         assert not predictions.empty
@@ -479,6 +543,7 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
         assert run.payload["walk_forward_folds"] > 0
         assert run.payload["prediction_metrics"]["rank_ic_valid_dates"] > 0
         assert run.payload["portfolio_metrics"]["number_of_trades"] > 0
+        assert run.payload["execution_portfolio_metrics"]["number_of_trades"] > 0
         assert run.payload["predictions_sha256"] == cli._file_sha256(
             output / "predictions.parquet"
         )
@@ -497,6 +562,7 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
                 "backtest_benchmark_sha256": run.payload[
                     "backtest_benchmark_sha256"
                 ],
+                "execution_bars_sha256": run.payload["execution_bars_sha256"],
                 "predictions_sha256": run.payload["predictions_sha256"],
                 "model_artifact_sha256": run.payload[
                     "model_artifact_sha256"
@@ -506,17 +572,48 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
             config.paths.runs_dir / run.run_id / "manifest.json",
         )
 
-    comparison_run = _Run("20200103T000000-compare")
+    comparison_run = _Run("20200105T000000-compare")
     cli.command_compare_models(config, comparison_run)
     comparison_dir = config.paths.report_dir / comparison_run.run_id
     comparison = pd.read_csv(comparison_dir / "model_comparison.csv")
-    assert comparison["model_name"].tolist() == ["factor_score", "ridge"]
+    assert comparison["model_name"].tolist() == [
+        "factor_score",
+        "lightgbm",
+        "ridge",
+        "xgboost",
+    ]
     assert (comparison_dir / "walk_forward_results.csv").is_file()
     assert (comparison_dir / "model_ic_comparison.png").is_file()
-    assert comparison_run.payload["compared_models"] == ["factor_score", "ridge"]
+    for name in (
+        "nav.csv",
+        "trades.csv",
+        "positions.csv",
+        "execution_nav.csv",
+        "execution_trades.csv",
+        "execution_positions.csv",
+        "execution_rejections.csv",
+        "prediction_summary.csv",
+        "feature_importance.csv",
+        "nav_curve.png",
+        "drawdown.png",
+        "feature_importance.png",
+        "regime_performance.png",
+        "turnover.png",
+        "transaction_cost.png",
+    ):
+        assert (comparison_dir / name).is_file()
+    assert "execution_cumulative_return" in comparison.columns
+    assert comparison_run.payload["compared_models"] == [
+        "factor_score",
+        "ridge",
+        "lightgbm",
+        "xgboost",
+    ]
     assert comparison_run.payload["source_predictions_sha256"] == {
         "factor_score": factor_run.payload["predictions_sha256"],
         "ridge": ridge_run.payload["predictions_sha256"],
+        "lightgbm": lightgbm_run.payload["predictions_sha256"],
+        "xgboost": xgboost_run.payload["predictions_sha256"],
     }
     assert comparison_run.payload["source_model_artifact_sha256"]["ridge"] == (
         ridge_run.payload["model_artifact_sha256"]

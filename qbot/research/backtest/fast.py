@@ -2,8 +2,9 @@
 
 This engine intentionally operates on target weights rather than exchange
 orders or board lots.  It is the fast experiment layer: daily bars cannot
-reconstruct an order book, limit queues, or intraday liquidity.  The stricter
-execution simulator belongs in a later phase.
+reconstruct an order book, limit queues, or intraday liquidity.  Use the
+separate rule-aware execution simulator when T+1, board lots, cash, suspension,
+and opening price-limit approximations are required.
 """
 
 from __future__ import annotations

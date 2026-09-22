@@ -28,7 +28,7 @@ def calculate_portfolio_metrics(
     periods_per_year: int = 252,
     risk_free_rate: float = 0.0,
 ) -> Dict[str, float]:
-    """Calculate the Phase-2 portfolio metric set from a daily NAV table."""
+    """Calculate the portfolio metric set from a daily NAV table."""
 
     if periods_per_year <= 0:
         raise ConfigurationError("periods_per_year must be positive")
