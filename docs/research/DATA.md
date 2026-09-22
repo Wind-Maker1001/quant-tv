@@ -1,15 +1,15 @@
 # FactorLab 数据规范
 
-本文定义 Phase 1 的数据边界。其中 PIT 股票池、benchmark 和 Schema 是正式研究的硬前置，不允许静默降级。
+本文保留 Phase 1 建立的原始数据边界，并补充 Phase 3 的市场状态与规则执行输入合同。其中 PIT 股票池、benchmark、证券状态和 Schema 是正式研究的硬前置，不允许静默降级。
 
 ## 数据源与责任边界
 
-| 数据 | Phase 1 来源 | 用途 |
+| 数据 | 来源/生成方式 | 用途 |
 | --- | --- | --- |
 | A 股日线 | AKShare `stock_zh_a_hist` | 原始/后复权 OHLC、量、额、换手率 |
-| 中证500指数日线 | AKShare 指数端点 | benchmark、交易日历、超额收益标签 |
+| 中证500指数日线 | AKShare 指数端点 | benchmark、交易日历、超额收益标签、Phase 3 市场状态 |
 | 中证500历史成分 | BaoStock `query_zz500_stocks(date=...)` | 逐交易日 Point-in-Time 股票池 |
-| ST/交易状态、上市日期 | BaoStock | 当日可交易性过滤 |
+| ST/交易状态、上市日期 | BaoStock | 当日可交易性过滤、Phase 3 停牌/涨跌停执行判断 |
 | 用户历史成分表 | CSV/Parquet 导入 | BaoStock 的可验证替代路径 |
 
 因子、标签和数据集代码不直接调用任何数据供应商，只消费统一 Provider/Schema 输出。AKShare 当前成分快照不得用于历史日期。
@@ -27,7 +27,7 @@
 | --- | --- |
 | `date` | tz-naive 交易日 |
 | `symbol` | canonical symbol |
-| `open/high/low/close` | 原始、未复权价；也是未来执行仿真的价格边界 |
+| `open/high/low/close` | 原始、未复权价；也是规则执行仿真的价格边界 |
 | `volume` | 股；AKShare 返回的“手”乘以 100 |
 | `amount` | 人民币元 |
 | `turnover` | 小数；AKShare 百分数除以 100 |
@@ -44,7 +44,7 @@ Schema 验证包括：必需列、日期类型、symbol 格式、排序、主键
 个股下载同时请求未复权和配置的复权序列，并严格要求两者的交易日完全一致。
 
 - 收益、技术因子和标签：仅使用 `adj_*`。
-- 未来涨跌停判断和成交仿真：使用 `raw_*`。
+- 涨跌停判断和成交仿真：使用 `raw_*`。
 - 这两类价格不允许在研究代码中隐式替换。
 
 ## 交易日历与停牌
@@ -58,6 +58,16 @@ Schema 验证包括：必需列、日期类型、symbol 格式、排序、主键
 - 禁止 `bfill`。
 - 不用价格 `ffill` 伪造交易。
 - rolling 窗口遇到缺失时不伪造完整历史。
+
+## Phase 3 市场状态与指数特征
+
+`build_market_regime_features` 对按日期严格递增、无重复且属于 `000905.SH` 的 benchmark 序列计算：
+
+- `MARKET_REGIME`：`adj_close > MA60` 且 `MA20 > MA60` 为 BULL；`adj_close < MA60` 且 `MA20 < MA60` 为 BEAR；其余为 SIDEWAYS；
+- `INDEX_RET5/20/60`：当前 `adj_close` 相对 5/20/60 个交易日前的收益；
+- `INDEX_VOL20`：日收益的 20 个交易日样本标准差。
+
+全部特征仅使用 t 日及以前的 benchmark。最初不足 60 个有效观测的状态归为 SIDEWAYS，无法计算的数值特征保留 `NaN`；benchmark 缺口不使用未来或原始价补齐。状态表按 `date` many-to-one 合并到 PIT 过滤后的横截面，因此同一交易日所有股票必须只有一个状态。`market_regime.enabled=true` 时，这些列进入数据集合同和后续模型/报告校验。
 
 ## 单股 Parquet 缓存
 
@@ -103,17 +113,29 @@ Schema 验证包括：必需列、日期类型、symbol 格式、排序、主键
 
 ## 数据集输出
 
-Builder 先验证完整 PIT，再重建股票-日历网格、过滤、计算因子和标签，最后按日横截面预处理。产物为：
+Builder 先验证完整 PIT，再重建股票-日历网格、过滤、计算因子、标签和可选市场状态，最后按日横截面预处理。产物为：
 
 - `features/raw_factors.parquet`：`date,symbol,raw_<factor>`。
 - `features/processed_factors.parquet`：`date,symbol,<factor>`。
-- `processed/dataset.parquet`：过滤后长表，同时含原始/预处理因子、标签、`entry_date`、`exit_date`。
+- `processed/dataset.parquet`：过滤后长表，同时含原始/预处理因子、标签、`entry_date`、`exit_date`；Phase 3 默认还含 `MARKET_REGIME`、`INDEX_RET5/20/60` 和 `INDEX_VOL20`。
 - `processed/dataset_manifest.json`：绑定数据集文件 SHA-256、PIT 股票池哈希、因子/标签及会影响数据集内容的配置合同，并保存生成该数据集的 run_id、Git commit、工作区 diff、Python 和包版本；模型阶段不允许在代码、环境、数据文件或该数据集合同改变后静默复用旧数据集。模型、验证、组合与费用等不改变数据集内容的配置由各模型 run 的完整配置另行审计。
 
 区间尾部无法观测完整持有期的标签保留为缺失，不在 Builder 中删除。评价和后续训练按用途过滤标签缺失样本。
+
+## Phase 3 规则执行输入与版本
+
+规则执行回测不复用复权研究价伪造成交。每个实际 OOS 窗口需要：
+
+- 个股 `raw_open`、`raw_close` 和 `volume`，用次日开盘尝试成交、收盘估值并识别无成交量状态；
+- 与 `(date,symbol)` 一一对应的 `trade_status` 和 `is_st`，由 `security_status.parquet` 补齐；缺少对应价格行的状态覆盖会停止 CLI；
+- 中证500 `adj_open` 与 `adj_close`：benchmark 也从首个执行日开盘开始暴露，此后与策略一样按收盘估值；
+- YAML 中按主板/创业板/科创板及生效日期冻结的涨跌停比例，以及同一费用日程。
+
+执行器从每只股票此前最后一个有效 `raw_close` 构造当日涨跌停参考价，只把它用于规则判断，不写回行情或因子。每次模型 run 分别记录 Fast Backtest 股票行情、benchmark 与附加状态后的 Execution bars 哈希；四模型统一比较要求这些版本完全一致。成交、持仓、现金、净值和拒单是模型报告产物，不会写回原始数据缓存。
 
 ## 已知限制
 
 - 公开数据端点可能变更字段、限频或事后修订；缓存与 manifest 只提供工程可审计性，不等于交易所授权的不可变数据。
 - BaoStock 的历史快照必须经真实日期烟雾验证；无法完整获取时，正式回测必须停止。
-- 日线数据不能重建盘中路径、集合竞价或委托队列；这属于后续 Execution Backtest 的显式局限。
+- 日线规则执行已经实现，但不能重建盘中路径、集合竞价、委托队列、部分成交或冲击成本；开盘涨跌停拒单是保守近似。
+- 截至 2026-09-22，真实下载尝试仅留下部分 benchmark 缓存；BaoStock PIT 登录失败，AKShare 单股票端点仍发生断连，真实股票与状态链路未完成。因此尚无正式五年数据集或四模型实证结果，离线/synthetic 验收不能替代该前置。

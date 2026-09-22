@@ -83,13 +83,13 @@
 
 本仓库还包含独立于 Legacy GUI/实盘链路的 `qbot.research`。FactorLab 仅用于可复现的 A 股横截面历史研究和后续 Paper/Forward Test，默认且强制 `live_trading=false`，不会发送真实订单。
 
-- Phase 1/2 的数据、PIT 股票池、因子、标签、FactorScore、Ridge、Walk-Forward 和快速回测代码已实现；
-- LightGBM、XGBoost、Market Regime、订单级执行回测和 Forward Test 仍为 planned；
+- Phase 1–3 的数据/PIT/因子、四模型 Walk-Forward、Market Regime、Fast Backtest 和日线规则执行回测代码已实现；
+- append-only Forward Test 仍为 planned，且不得对已过去的 2026-09-14 事后回填；
 - 当前没有完成的真实五年实验，也没有可用于论文结论的模型收益结果；synthetic 示例只验证软件链路。
 
-入口：[FactorLab 快速开始](docs/research/GETTING_STARTED.md) · [Phase 2 交付与验收](docs/research/PHASE2_DELIVERY_REPORT.md)
+入口：[FactorLab 快速开始](docs/research/GETTING_STARTED.md) · [Phase 3 交付与验收](docs/research/PHASE3_DELIVERY_REPORT.md) · [Phase 2 历史验收](docs/research/PHASE2_DELIVERY_REPORT.md)
 
-以下 Quick Start 描述的是 Legacy Qbot 平台，不代表 FactorLab 已具备实盘或上述 planned 能力。
+以下 Quick Start 描述的是 Legacy Qbot 平台，不代表 FactorLab 已具备实盘或 append-only Forward Test 能力。
 
 Qbot是一个免费的量化投研平台，提供从数据获取、交易策略开发、策略回测、模拟交易到最终实盘交易的全闭环流程。在实盘接入前，有股票、基金评测和策略回测，在模拟环境下做交易验证，近乎实盘的时延、滑点仿真。故，本平台提供GUI前端/客户端（部分功能也支持网页），后端做数据处理、交易调度，实现事件驱动的交易流程。对于策略研究部分，尤其强调机器学习、强化学习的AI策略，结合多因子模型提高收益比。
 

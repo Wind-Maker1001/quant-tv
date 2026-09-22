@@ -1,6 +1,6 @@
 # FactorLab 回测
 
-> **实现状态：Phase 2 Fast Research Backtest 已实现；Phase 3 Execution Backtest 仍为 Planned。**
+> **实现状态：Fast Research Backtest 与独立的 A 股规则执行回测均已实现。**
 
 ## 目标与两级边界
 
@@ -9,7 +9,7 @@
 两级设计的边界是：
 
 - Level 1（已实现）：Pandas/NumPy 目标权重研究回测，用于快速比较模型与 fold；
-- Level 2（Planned: Phase 3）：订单、股数、现金和成交限制驱动的执行回测。
+- Level 2（已实现）：订单、股数、现金和成交限制驱动的日线执行回测。
 
 ## Phase 2 Fast Research Backtest
 
@@ -67,28 +67,31 @@ FeeSchedule 按包含首尾的生效日期区间选择唯一费率规则。每�
 - Win Rate、Portfolio Turnover、Total Transaction Cost；
 - Number of Trades、Average Holdings。
 
-模型层另外报告每日 Prediction IC/RankIC、ICIR/RankICIR、Top-K/Bottom-K future return 和 Top-Bottom spread，并按年、季度与 Walk-Forward fold 分解。Market Regime 分解将在 Phase 3 有状态列后启用。只展示策略 NAV 而隐藏预测能力或成本，不符合研究报告要求。
+模型层另外报告每日 Prediction IC/RankIC、ICIR/RankICIR、Top-K/Bottom-K future return 和 Top-Bottom spread，并按年、季度、Walk-Forward fold 与 BULL/BEAR/SIDEWAYS 分解。只展示策略 NAV 而隐藏预测能力或成本，不符合研究报告要求。
 
-## Planned: Phase 3 Execution Backtest
+## Level 2：规则执行回测
 
-快速层**尚未实现**以下交易约束：
+`AShareExecutionBacktester` 与因子/模型完全解耦，不导入 Legacy Backtrader。它消费相同的 Test-only score、原始日线和日期有效状态，按以下顺序执行：
 
-- A 股 T+1 可卖数量；
-- 100 股整数手；
-- 真实现金余额和下单数量约束；
-- 停牌时的订单延后或撤销；
-- 涨停无法正常买入、跌停无法正常卖出的日线近似；
-- ST、主板、创业板/科创板等不同涨跌幅和历史规则；
-- 委托、部分成交和失败订单生命周期。
+1. t 日收盘后生成 Top-K 目标，映射到 t+1 基准交易日开盘；
+2. 先卖后买，股数按 100 股整数手确定；
+3. 当日买入 lot 在当日 `sellable_shares=0`，下一交易日才可卖；
+4. 每笔订单按真实现金检查，现金不足时用确定性的整数手二分计算可买数量；
+5. `trade_status=0`、成交量为零或缺失的证券保守拒单；
+6. 按前一已知原始收盘价和日期有效涨跌幅计算上下限，开盘接近涨停拒买、接近跌停拒卖；
+7. 卖出所得先扣费用再进入现金，买入名义金额与费用均不得使现金为负；
+8. 每个完整成交和拒绝片段分别写入 `execution_trades` 与 `execution_rejections`。
 
-虽然配置中预留了 board_lot，Phase 2 快速层不会使用它做股数取整。不得据此宣称已通过“100 股/T+1/现金约束”回测。Phase 3 将在独立适配层评估 Legacy Qbot/Backtrader 的可复用边界，且不能让 Factor/Model Engine 依赖执行框架。
+涨跌幅配置覆盖主板、创业板和科创板；创业板 2020-08-24 前后规则分段，ST 上下限独立。研究区间内的规则、100 股整手、T+1、拒停牌和 tolerance 都进入 YAML。费用继续复用日期有效 `FeeSchedule`，因此执行层同样反映 2023-08-28 印花税调整。
+
+执行层使用 raw open 成交、raw close 估值；价格限制也只看原始价。benchmark 从首个执行日 `adj_open` 开始，随后按 `adj_close` 每日估值，与策略首次暴露时点对齐。因子、标签和快速研究层继续使用复权价。公司行为导致的现金红利、送转股和零股处理无法仅凭当前日线 Schema 精确重建，因此执行层是“规则敏感的研究近似”，不是券商级账本。
 
 ## 日线成交限制
 
 > Daily-bar backtest cannot perfectly reconstruct order-book liquidity.
 
-即使 Phase 3 增加开盘接近涨停时买单失败、接近跌停时卖单失败的规则，日线也无法识别封单队列、集合竞价、盘中打开、部分成交或订单队列优先级。报告必须把它列为近似，而不是把日线模拟描述成真实可成交证明。
+当前实现能识别开盘接近涨停/跌停的保守拒单，但日线无法识别封单队列、集合竞价、盘中打开、部分成交或订单队列优先级。新股无涨跌幅阶段、除权现金流和临时特别规则也可能需要更细的交易所事件数据。报告必须把它列为近似，而不是把日线模拟描述成真实可成交证明。
 
 ## 结果纪律
 
-Fast Backtest 已实现不代表已经完成正式五年实验。synthetic demo 和 smoke 配置只验证接口、时点、费用与产物，不得用于课程结论。只有正式 PIT 股票池、正式五年缓存、冻结配置和完整 manifest 下的 Test 结果，才可进入论文；策略亏损、成本侵蚀全部 Alpha 或 Ridge 未优于 FactorScore 都必须原样报告。
+两级回测已实现不代表已经完成正式五年实验。synthetic demo 和 smoke 配置只验证接口、时点、费用与产物，不得用于课程结论。只有正式 PIT 股票池、正式五年缓存、冻结配置和完整 manifest 下的 Test 结果，才可进入论文；策略亏损、成本侵蚀全部 Alpha 或复杂模型未优于简单模型都必须原样报告。

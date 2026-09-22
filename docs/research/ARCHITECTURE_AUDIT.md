@@ -1,6 +1,6 @@
 # Qbot FactorLab 架构审计
 
-> 审计基线：UFund-Me/Qbot 上游提交 f0425ae4ae8bd02b79656b8f7039f4cd6874095e（2026-03-11）。2026-09-14 已通过官方 origin 获取完整 Git 对象；当前 `factorlab/phase-1` 直接以该上游提交为基线重放 FactorLab 提交。早期归档恢复历史完整保留在 `factorlab/phase-1-archive`，其中本地基线 `58dc392` 仅用于追溯，不属于当前分支祖先。
+> 审计基线：UFund-Me/Qbot 上游提交 f0425ae4ae8bd02b79656b8f7039f4cd6874095e（2026-03-11）。2026-09-14 已通过官方 origin 获取完整 Git 对象；当前 `factorlab/phase-1` 分支直接以该上游提交为基线重放 FactorLab 历史提交，现已在同一隔离架构上推进至 Phase 3。早期归档恢复历史完整保留在 `factorlab/phase-1-archive`，其中本地基线 `58dc392` 仅用于追溯，不属于当前分支祖先。
 
 ## 审计范围
 
@@ -12,8 +12,8 @@
 - qbot/gui 与 qbot/engine 承载桌面界面和旧回测入口；配置、数据源与界面耦合较重。
 - qbot/data 主要是 Qlib 数据 dump/转换脚本。其中 dump_pit.py 的 PIT 指财务数据修订版本，不是指数历史成分股。
 - pytrader/easyquant、pytrader/strategies 和 qbot/strategies 包含行情、策略和交易示例，部分代码依赖 JQData、Tushare、TA-Lib 或平台全局对象。
-- Backtrader 集成分散在 pytrader 与策略示例中，可在第三阶段作为执行层参考，不适合作为因子、模型或快速研究回测的依赖。
-- Qlib 工作流和 Alpha158/LightGBM 示例可供后续模型阶段参考，但依赖重、标签与本研究 next-open 时点不一致。
+- Backtrader 集成分散在 pytrader 与策略示例中，不适合作为因子、模型或两级研究回测的依赖；Phase 3 最终没有复用它。
+- Qlib 工作流和 Alpha158/LightGBM 示例只作为历史参考；其依赖、特征和标签时点与本研究不一致，Phase 3 树模型没有复用 Qlib 工作流。
 - qbot_main.py 含硬编码环境假设和循环式在线流程，不能被研究模块导入。
 - qbot/common/config.py 与 qbot/engine/config.py 存在重复及导入期文件系统副作用。
 - tests 目录多为联网、GUI、邮件或实盘演示脚本，缺少安全的离线单元测试边界。
@@ -22,7 +22,7 @@
 
 - 根 LICENSE（MIT）及原项目版权声明必须原样保留。
 - 现有行情/策略代码可作为字段语义和执行行为的参考资料。
-- Backtrader、easyquant 和 Qlib 只可能在未来执行/扩展阶段通过适配器复用，不进入 FactorLab 核心依赖。
+- Backtrader、easyquant 和 Qlib 不进入 FactorLab 核心依赖；若未来确需复用，也只能通过显式适配器并保持研究时点合同。
 - 研究文档在 docs/research 独立维护，并已从根 README 与 docs/_sidebar.md 增加入口；不得用 Legacy Qbot 的实盘/模型库说明替代 FactorLab 的实际阶段状态。
 
 ## 不适合直接复用的内容
@@ -46,7 +46,7 @@
 - 根依赖未形成适用于研究流水线的可复现锁定，混合 wxPython、Qlib、交易与 GUI 依赖。
 - dev/environment.yaml 是旧平台导出，含不可移植信息。
 - 当前执行机为 Python 3.12；目标研究环境是 Python 3.9。研究依赖须单独固定，AKShare 使用最后支持 Python 3.9 的 1.18.88。
-- LightGBM、XGBoost、Qlib、SHAP 不进入第一阶段强制依赖。
+- LightGBM/XGBoost 在 Phase 3 研究环境中固定版本，但由各自模型在拟合时延迟导入，不影响 FactorScore/Ridge 或基础包导入；Qlib、SHAP 仍不进入 FactorLab 依赖。
 
 ### 测试与自动化
 
@@ -80,11 +80,23 @@ Phase 2 延续同一隔离边界，没有重构 Legacy Qbot：
 - metrics/reports：样本外预测指标、组合风险/收益/成本指标、逐模型报告和非自动选优的模型比较；
 - examples/research：完全离线的 synthetic 端到端软件示例，产物强制标记为非研究结论。
 
-第二阶段仍不导入 wxPython、Qlib、Backtrader、easyquant 或实盘交易模块。LightGBM/XGBoost、Market Regime 与订单级 Execution Backtest 留在 Phase 3，append-only Forward Test 留在 Phase 4。
+第二阶段的上述交付状态是历史事实；当时留待 Phase 3 的 LightGBM/XGBoost、Market Regime 与规则执行回测现已完成。append-only Forward Test 仍留在 Phase 4。
+
+## 第三阶段增量模块
+
+Phase 3 继续沿用 `qbot.research` 单向隔离，不重构或导入 Legacy 交易链路：
+
+- market：从中证500 `adj_close` 向后计算 MA20/MA60、`INDEX_RET5/20/60` 与 `INDEX_VOL20`，冻结 BULL/BEAR/SIDEWAYS 定义并并入数据集；
+- models：新增延迟导入的 LightGBM/XGBoost 适配器，使用 Train-only median imputer、固定随机种子、单线程配置、本地模型持久化和 gain feature importance；
+- validation：沿用 Phase 2 的 Expanding Walk-Forward，在 Validation 预注册候选集内选择树模型参数，Test 只预测一次；
+- backtest/rules：新增独立的 Pandas/NumPy 日线执行层，处理次日开盘、FIFO T+1、100 股整手、现金、停牌、费用和按板块/日期生效的开盘涨跌停拒单；
+- reports/cli：每次四模型运行同时输出 Fast 与 Execution 两级回测；统一比较报告强制核对四次源运行的配置、代码/环境、数据/PIT/价格与状态哈希、产物哈希和 OOS 身份，再并列预测、净值、执行与市场状态结果，不自动选优。
+
+Phase 3 的“完成”指软件路径和离线正确性守卫已经实现，不表示已经取得真实五年数据或论文结论。当前公开网络/PIT 链路未完成正式数据集，真实五年四模型实验仍待数据前置满足。
 
 ## 计划避免修改的 Legacy 模块
 
-Phase 1/2 不修改 main.py、qbot_main.py、qbot/gui、qbot/engine、qbot/data 的 Qlib dump、pytrader/easyquant、pytrader/strategies、qbot/strategies、qbot/plugins、Legacy tests 以及任何真实交易配置。只有直接阻断 FactorLab 且无法通过隔离解决时才考虑最小修复，并记录原因。
+Phase 1–3 不修改 main.py、qbot_main.py、qbot/gui、qbot/engine、qbot/data 的 Qlib dump、pytrader/easyquant、pytrader/strategies、qbot/strategies、qbot/plugins、Legacy tests 以及任何真实交易配置。只有直接阻断 FactorLab 且无法通过隔离解决时才考虑最小修复，并记录原因。
 
 ## 强制边界与失败策略
 
@@ -92,9 +104,11 @@ Phase 1/2 不修改 main.py、qbot_main.py、qbot/gui、qbot/engine、qbot/data 
 - PIT 股票池缺日、成员数异常或哈希不一致时抛出包含 POINT-IN-TIME UNIVERSE REQUIRED 的错误，绝不退化为当前成分股。
 - 日期为无时区 datetime64[ns]，股票代码唯一采用 600000.SH / 000001.SZ，主键为 date,symbol。
 - 不允许 bfill；价格不因停牌而前向填充。横截面预处理只在单日内部进行。
-- Phase 2 只实现 FactorScore、Ridge、Walk-Forward 与目标权重 Fast Backtest；不把它描述为已经实现 T+1、整手、现金、涨跌停或订单生命周期。
-- Market Regime、LightGBM、XGBoost、Execution Backtest、Forward Test 和 GUI 仍不提供虚假占位实现。
+- 保留 Phase 2 历史边界：FactorScore、Ridge、Walk-Forward 与目标权重 Fast Backtest 是当时交付，不倒写成包含执行约束。
+- Phase 3 已实现 Market Regime、LightGBM、XGBoost 和独立规则执行回测；日线执行不能冒充盘口队列、部分成交、冲击成本或跨日委托生命周期。
+- Forward Test 和 FactorLab GUI 未实现；Phase 4 之前不得生成、补写或冒充真实 forward signal，FactorLab 永久保持 `live_trading=false`。
+- 正式数据集仍要求完整真实五年行情、证券状态与逐日 PIT 股票池；软件测试或 synthetic 产物不能替代这些输入。
 
 ## 分阶段复用决策
 
-第一阶段完成隔离的数据与因子核心；第二阶段已经以 Pandas/NumPy 实现与 Legacy 无关的模型验证和快速回测。第三阶段再以可选依赖接入 LightGBM/XGBoost，并单独评估是否需要为 Level 2 Execution Backtest 封装 Backtrader。第四阶段实现 append-only Forward Signal；即使 Legacy 提供实盘能力，FactorLab 也永久默认 live_trading=false，不发送真实订单。
+第一阶段完成隔离的数据与因子核心；第二阶段以 Pandas/NumPy 实现与 Legacy 无关的基线模型验证和快速回测；第三阶段以延迟导入的 LightGBM/XGBoost 扩展同一模型接口，并直接实现不依赖 Backtrader 的规则执行回测和四模型统一比较。第四阶段才实现 append-only Forward Signal；即使 Legacy 提供实盘能力，FactorLab 也永久默认 `live_trading=false`，不发送真实订单。

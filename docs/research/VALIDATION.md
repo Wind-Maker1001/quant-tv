@@ -10,8 +10,11 @@ Phase 1 已实现数据、Point-in-Time 股票池、因子、标签、数据集�
 - 交易日级 Purge、Embargo 和 entry_date/exit_date 标签窗口审计；
 - Train → Validation 选参 → Test 仅评估一次；
 - Test 样本的 Prediction IC、RankIC、Top-K/Bottom-K 与分组汇总。
+- Train-only median imputer 的 LightGBM/XGBoost，以及 Validation-only 小候选选择；
+- 只依赖 t 及以前 CSI500 数据的 Market Regime 和按状态评价；
+- T+1、整手、现金、停牌和开盘涨跌停拒单的执行回测测试。
 
-LightGBM、XGBoost、Market Regime 属于 **Planned: Phase 3**；真实 Forward Test 属于 **Planned: Phase 4**。实现模型验证能力不等于已经取得五年正式研究结果。
+LightGBM、XGBoost、Market Regime 和规则执行回测已经实现；真实 Forward Test 属于 **Planned: Phase 4**。实现模型验证能力不等于已经取得五年正式研究结果。
 
 ## 信息时点合同
 
@@ -41,6 +44,7 @@ entry_date 和 exit_date 连同标签保存以便审计 off-by-one。任一入�
 - Dataset Builder 保留尾部缺标签行，不用未来补值伪造完整目标。
 - 禁止 train_test_split(shuffle=True) 或任何随机金融时序切分。
 - Ridge 的中位数缺失值处理器与 StandardScaler 只 fit(Train)；Validation/Test 仅 transform。
+- LightGBM/XGBoost 的中位数缺失值处理器也只 fit(Train)，固定随机种子与单线程设置进入清单。
 - PCA、特征选择、中性化和未来新增的训练期估计量也必须遵守相同边界。
 - 最终 Test 禁止用于选因子、超参数、模型、Top-K、费用或市场状态定义。
 
@@ -86,6 +90,10 @@ FactorScore 使用 YAML 中预先固定的 14 个因子权重，输入是逐日�
 
 Ridge 会保存标准化特征空间中的逐 fold 系数；模型持久化文件只应加载本项目自己生成且可信的本地文件。
 
+### LightGBM 与 XGBoost
+
+两个树模型使用 YAML 中预注册的克制候选集。每个候选只在 Train 拟合，使用 Validation 平均 Prediction RankIC 选择；胜出模型不读取 Test 标签，也不因 Test 收益重新拟合或调参。逐 fold 保存所选 JSON 参数和 gain feature importance。LightGBM/XGBoost 是稳健性比较，不是无界参数搜索；与 Ridge 表现相近时应优先简单模型。
+
 ## 样本外预测评价
 
 Prediction IC 和 Spearman RankIC 均先按 Test 交易日做横截面 complete-case 相关，再在时间维度汇总。Top-K 与 Bottom-K 的成员先仅由当日有限 score 固定，再观察其未来标签；未来标签缺失不能把下一名事后补进组合。评价表同时报告 score coverage、Top/Bottom 标签覆盖率和实际已成熟标签数，避免把尚未实现的尾部误当成完整组合。结果支持：
@@ -94,7 +102,7 @@ Prediction IC 和 Spearman RankIC 均先按 Test 交易日做横截面 complete-
 - Year；
 - Quarter；
 - Walk-Forward Fold；
-- 可选 Regime（Phase 3 产生市场状态列后启用）。
+- Regime（BULL、BEAR、SIDEWAYS）。
 
 缺失标签保留在覆盖率分母中，但不进入已实现收益统计，也不改变 Top/Bottom 成员。因子五分位同样先按当日因子值分组，再汇总已成熟标签并报告每组标签覆盖率。指标为负、模型落后 benchmark 或复杂模型没有优势，均是有效研究结果，不是软件失败。
 
@@ -104,7 +112,7 @@ Prediction IC 和 Spearman RankIC 均先按 Test 交易日做横截面 complete-
 
     python -m pytest -q
 
-pytest.ini 限制 testpaths=tests/research，并默认使用 -m "not network"。单元测试使用人工 DataFrame、供应商 mock 和小型 fixture，不要求真实账户、GUI 或网络。除 Phase 1 的 Schema、Cache、Universe、Factor、Label、Dataset/Metrics 测试外，Phase 2 已覆盖：
+pytest.ini 限制 testpaths=tests/research，并默认使用 -m "not network"。单元测试使用人工 DataFrame、供应商 mock 和小型 fixture，不要求真实账户、GUI 或网络。除 Phase 1 的 Schema、Cache、Universe、Factor、Label、Dataset/Metrics 测试外，当前离线门禁已覆盖：
 
 - fold 日期严格有序且 Train/Validation/Test 不重叠；
 - Purge/Embargo 的交易日数量；
@@ -115,12 +123,16 @@ pytest.ini 限制 testpaths=tests/research，并默认使用 -m "not network"。
 - target/entry/exit 等语义列不能被当作模型特征；
 - 未来标签缺失不会改变 Top-K 或因子分位成员；
 - 预测 IC/RankIC、尾部分组、标签覆盖率和 fold 审计汇总。
+- 修改未来 benchmark 价格不会改变过去 Market Regime/指数特征；
+- LightGBM/XGBoost Test 标签突变不改变所选候选或 Test score；
+- 四模型使用相同 OOS 键与输入版本后才允许比较；
+- T+1 当日不可卖、100 股整手、现金不为负、停牌/涨跌停拒单及历史板块规则。
 
 显式网络测试：
 
     python -m pytest -q -m network
 
-AKShare/BaoStock 公开端点可能受代理、限频、断连或字段变化影响。2026-09-22 的真实 `download-data` 尝试整体为 failed：在 BaoStock 登录失败前只完成 benchmark 子步骤。尝试后本地缓存有 330 个 benchmark 交易日（研究开始日前 242 日、smoke 研究区间 88 日），下游从前者只选最后 130 日作为预热；这不表示 130+88 是整个缓存行数。AKShare 单股票网络测试仍发生 RemoteDisconnected，PIT 与个股链路均未完成。因此离线测试或 benchmark 子步骤成功不能冒充真实五年验证。真实运行的覆盖范围、失败股票和 manifest 必须据实报告。
+AKShare/BaoStock 公开端点可能受代理、限频、断连或字段变化影响。最新真实 `download-data` run `20260922T121535.543754Z-download-data-82695c7f` 整体为 failed：benchmark 缓存可读，但 BaoStock 登录连续 4 次返回网络接收错误。本地缓存有 330 个 benchmark 交易日（研究开始日前 242 日、smoke 研究区间 88 日），下游从前者只选最后 130 日作为预热；这不表示 130+88 是整个缓存行数。AKShare 单股票网络测试仍发生 RemoteDisconnected，PIT 与个股链路均未完成。因此离线测试或 benchmark 子步骤成功不能冒充真实五年验证。真实运行的覆盖范围、失败股票和 manifest 必须据实报告。
 
 ## 研究完整性
 

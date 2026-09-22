@@ -3,6 +3,7 @@
   - [快速开始](research/GETTING_STARTED.md)
   - [研究方法](research/RESEARCH_METHODOLOGY.md)
   - [Phase 2 交付与验收](research/PHASE2_DELIVERY_REPORT.md)
+  - [Phase 3 交付与验收](research/PHASE3_DELIVERY_REPORT.md)
 - 序言
   - [AI量化交易之美]()
 - 01 新手指引

@@ -75,7 +75,7 @@ rolling 窗口使用 `min_periods=window`。历史不足或窗口内缺失时保
 - 因子最高分位等权组合的 `0.5 * sum(abs(w_t-w_{t-1}))` 换手率。
 - 每日横截面 Pearson 因子相关矩阵的跨日平均。
 
-评价器可接收可选 `group_column`。Phase 1 只输出 `ALL`；Phase 3 加入 `MARKET_REGIME` 后可复用同一接口分解 BULL/BEAR/SIDEWAYS。
+评价器接收 `MARKET_REGIME` 分组列，同时输出 `ALL` 与 BULL/BEAR/SIDEWAYS。状态只由当日及此前 CSI500 `adj_close` 生成；缺少完整 MA60 的早期日期归为 SIDEWAYS，不使用未来补齐。
 
 ## 报告产物
 
@@ -84,6 +84,7 @@ rolling 窗口使用 `min_periods=window`。历史不足或窗口内缺失时保
 - `factor_report.csv`、`daily_ic.csv`、`quantile_returns.csv`。
 - `factor_autocorrelation.csv`、`factor_turnover.csv`、`factor_correlation.csv`。
 - `factor_ic.png`、`rank_ic.png`、`factor_correlation.png`、`quantile_returns.png`。
+- `regime_performance.png`。
 - `summary.md`。
 
 绘图使用 Matplotlib `Agg` 后端，不需要 GUI。报告只陈述配置所指数据，不因结果不好而自动调整因子方向或参数。

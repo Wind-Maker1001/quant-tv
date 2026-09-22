@@ -2,11 +2,11 @@
 
 本文定义《基于多因子与机器学习的 A 股横截面收益预测研究——以中证500为例》的研究合同。合同优先保证时点正确、可复现和可审计；盈利与否不是软件验收条件。
 
-> **实现状态：Phase 1 已实现数据至因子评价链路；Phase 2 已实现 FactorScore、Ridge、Expanding Walk-Forward、样本外预测评价和 Fast Research Backtest。** LightGBM、XGBoost、Market Regime 和 Execution Backtest 属于 **Planned: Phase 3**；真实 Forward Test 属于 **Planned: Phase 4**。实现研究管线不等于已经取得正式五年实证结果。
+> **实现状态：Phase 1–3 研究软件已实现：数据/因子、四模型 Expanding Walk-Forward、市场状态、样本外预测评价、Fast Research Backtest 与规则执行回测。** 真实 append-only Forward Test 属于 **Planned: Phase 4**。实现研究管线不等于已经取得正式五年实证结果。
 
 ## 1. 研究问题与预注册边界
 
-研究考察：使用截至交易日 t 收盘已知的价格、成交量、换手率、波动率，以及后续阶段加入的市场状态，能否预测中证500成分股未来 5 个交易日的相对收益。最终论文应回答：
+研究考察：使用截至交易日 t 收盘已知的价格、成交量、换手率、波动率，以及由中证500指数同期信息构造的市场状态，能否预测中证500成分股未来 5 个交易日的相对收益。最终论文应回答：
 
 1. Reversal、Momentum、Low Volatility、Liquidity 和 Trend 因子是否具有稳定的横截面预测能力？
 2. 因子有效性是否随 BULL、BEAR、SIDEWAYS 市场状态改变？
@@ -104,19 +104,19 @@ EXCESS_RET5        = STOCK_FWD_RET5 - BENCHMARK_FWD_RET5
 - 最高分位等权持仓的单边权重换手率；
 - 每日横截面 Pearson 因子相关矩阵的跨日平均。
 
-评价接口接受可选分组列。Phase 1 只产生 `ALL`；Phase 3 加入市场状态后，使用同一指标分别报告 BULL、BEAR、SIDEWAYS，而不改变历史总体定义。因子符号不会因测试结果不好而事后翻转。
+评价接口使用市场状态分组列，同时报告 `ALL`、BULL、BEAR、SIDEWAYS，而不改变历史总体定义。因子符号不会因测试结果不好而事后翻转。
 
-## 8. Planned: Market Regime
+## 8. Market Regime
 
-第三阶段拟以中证500构造简单、可解释且只依赖 t 及以前数据的状态：
+系统以中证500构造简单、可解释且只依赖 t 及以前数据的状态：
 
 - BULL：`close > MA60` 且 `MA20 > MA60`；
 - BEAR：`close < MA60` 且 `MA20 < MA60`；
 - SIDEWAYS：其他情况。
 
-同时加入 `INDEX_RET5/20/60` 和 `INDEX_VOL20`。状态定义必须在最终 Test 前冻结，不因模型或策略收益修改。
+同时加入 `INDEX_RET5/20/60` 和 `INDEX_VOL20`。MA、收益和波动率全部向后滚动；早期 MA60 不完整时归为 SIDEWAYS，数值特征保留缺失，不向过去填充。状态定义在最终 Test 前冻结，不因模型或策略收益修改。
 
-## 9. Walk-Forward 与 Phase 2 模型
+## 9. Walk-Forward 与四模型
 
 第二阶段采用 Expanding Walk-Forward：正式配置初始训练 24 个月、验证 3 个月、测试 3 个月、每 3 个月前移。训练起点固定并逐 fold 扩大，窗口按中证500实际交易日历映射，行从不随机打乱。
 
@@ -131,14 +131,21 @@ EXCESS_RET5        = STOCK_FWD_RET5 - BENCHMARK_FWD_RET5
 
 当前实现有意不做 Train+Validation 重拟合，使每个模型的拟合范围直接可审计。Scaler、缺失处理、未来的特征选择/中性化/PCA 和模型参数只能在 Train 上拟合。禁止根据最终 Test 选择因子、模型、Top-K、费用或状态定义。
 
-Phase 2 的两个模型为：
+Phase 2 交付并冻结了两个基线模型：
 
 - FactorScore：使用 YAML 预先冻结的 14 因子权重求加权和，默认除以绝对权重和；缺失因子贡献为中性值 0，权重不学习。
 - Ridge：Train 内按列拟合 median imputer 和 StandardScaler，再拟合 Ridge；由 Validation 的平均 Prediction RankIC 在 alpha 候选中选参，保存标准化特征空间的逐 fold 系数。
 
-样本外评价先在每个 Test 日期计算 Prediction IC、Spearman RankIC、Top-K/Bottom-K future return 和 Top-Bottom spread，再报告 Overall、Year、Quarter 和 Fold。IC 使用有限 score/label 的 complete cases；Top/Bottom 成员只由当日 score 固定，未来标签缺失只能降低已实现标签覆盖率，不能改变当时的选股。Phase 3 加入市场状态后，同一接口再增加 Regime 分解。
+Phase 3 在相同 `ResearchModel` 与 Walk-Forward 合同下加入：
 
-LightGBM 和 XGBoost 仍为 **Planned: Phase 3**。最终模型比较顺序仍预注册为 FactorScore、Ridge、LightGBM、XGBoost；Phase 2 的 compare-models 只客观并列 FactorScore 与 Ridge 的最新完整运行，不自动选赢家。正式使用前须核对两次 run 的数据、配置和 PIT 哈希一致。简单模型与复杂模型相近时优先保留简单模型；若全部模型落后 benchmark，应原样报告。
+- LightGBM：Train-only median imputer，固定随机种子和单线程配置；Validation 仅在 YAML 预注册的小候选集中按平均 Prediction RankIC 选择，保存逐 fold gain importance。
+- XGBoost：使用同样的 Train-only 缺失处理、Validation-only 候选选择、固定随机种子和逐 fold gain importance 合同。
+
+LightGBM/XGBoost 运行库延迟到实际拟合时导入；研究环境在 `dev/requirements-research.txt` 固定版本。缺少本地运行库会明确失败，不会退化为其他估计器或伪造树模型结果。两个树模型用于稳健性比较，不进行无界超参数搜索；与简单模型表现相近时优先保留简单模型。
+
+样本外评价先在每个 Test 日期计算 Prediction IC、Spearman RankIC、Top-K/Bottom-K future return 和 Top-Bottom spread，再报告 Overall、Year、Quarter、Fold 和 Regime。IC 使用有限 score/label 的 complete cases；Top/Bottom 成员只由当日 score 固定，未来标签缺失只能降低已实现标签覆盖率，不能改变当时的选股。
+
+Phase 3 的 `compare-models` 固定比较 FactorScore、Ridge、LightGBM、XGBoost 四个模型，不自动选赢家。它要求四次源运行具有完全相同的配置、代码与工作区指纹、Python/包环境、数据集/PIT/回测输入哈希、模型产物哈希，以及实际 OOS `(date,symbol,fold)`、标签窗口和已实现目标；随后统一输出预测指标、Fast Backtest、规则执行回测、市场状态和特征重要性/系数对照。若任何身份不一致即停止；若全部模型落后 benchmark，也必须原样报告。
 
 ## 10. 组合与交易假设
 
@@ -148,21 +155,21 @@ Phase 2 Fast Research Backtest 已实现：在 t 日收盘后按样本外 score 
 
 费用按生效日期查表并逐交易记录佣金、最低佣金、卖出印花税、过户费、买卖附加费和滑点。卖出印花税区分 2021-09-13 至 2023-08-27 的 10 bps 与 2023-08-28 起的 5 bps，其他费率由 YAML 独立配置。
 
-Phase 2 尚未执行 board_lot 配置，也不模拟 T+1 可卖数量、100 股整手、真实现金订单、停牌延迟、涨跌停成交失败或订单生命周期；这些属于 **Planned: Phase 3 Execution Backtest**。Factor/Model Engine 不会因此依赖 Backtrader。
+Phase 3 已实现独立的日线规则执行回测：同一批 Test-only Top-K 信号在 t+1 `raw_open` 尝试成交，先卖后买，以 FIFO lot 记录 T+1 可卖数量，买单按 100 股整手和可用现金缩量，并逐笔计费。执行层使用 `volume`、`trade_status`、`is_st`、上一有效 `raw_close` 和按板块/日期生效的涨跌停表；停牌、缺 bar/开盘价/前收盘价、开盘触及买卖方向涨跌停、T+1、整手和现金造成的未成交数量均写入拒单表。该实现直接使用 Pandas/NumPy，不依赖 Legacy Backtrader，也不发送订单到券商。
 
 > Daily-bar backtest cannot perfectly reconstruct order-book liquidity.
 
-即使第三阶段加入涨跌停近似，日线也无法还原封单队列、集合竞价、部分成交和盘中路径。所有绩效必须同时展示 benchmark、成本、换手、风险指标和预测排序能力，不能只展示一条策略净值。
+规则执行层只在目标执行日尝试订单，不把日线开盘价等同于真实可成交队列，也不模拟挂单跨日生命周期。日线无法还原封单队列、集合竞价、部分成交、冲击成本和盘中路径。所有绩效必须同时展示 benchmark、成本、换手、风险指标、拒单和预测排序能力，不能只展示一条策略净值。
 
 ## 11. Planned: Forward Test
 
 第四阶段原计划从 2026-09-14 开始在每日收盘后记录真实样本外 Top 20 信号，但该日期已经过去且 Phase 4 未启动。系统不得补写这些历史日期；正式启用时须批准并冻结新的未来起始日。记录仅用于 Paper Trading，不发送真实订单，并包含信号日、数据截至日、生成时间、模型与版本、Git SHA、股票池哈希、symbol、score、rank 和目标权重。
 
-信号采用 append-only 语义：重跑旧日期生成新版本，不覆盖原始记录；实现收益在标签成熟后另行追加关联记录。Phase 1/2 不生成或伪造 forward signal。
+信号采用 append-only 语义：重跑旧日期生成新版本，不覆盖原始记录；实现收益在标签成熟后另行追加关联记录。Phase 1–3 不生成或伪造 forward signal。
 
 ## 12. 可复现性与审计
 
-配置成功加载后的每条 CLI 命令创建 `results/runs/<run_id>/manifest.json`，记录命令、状态、完整配置、固定随机种子、Python/包版本、Git SHA、工作区是否有未提交改动及其内容指纹、审计的上游提交、数据区间、因子列表、股票池哈希、产物路径和失败摘要；配置解析失败发生在 run 创建前，不生成实验 manifest。随机种子默认为 42。`dataset_manifest.json` 另将数据集 Parquet 的 SHA-256、PIT 版本及数据/股票池/标签/预处理配置合同，与生成数据集时的 run_id、成功 build-dataset 清单及 Git/工作区/Python/包版本绑定；因子评价和模型运行发现任一不一致即停止。每次模型运行保存模型目录全部文件以及实际回测股票行情与 benchmark 输入的 SHA-256。`compare-models` 只接受代码/工作区/Python/包环境、完整配置、数据/PIT/回测价格输入版本一致，模型产物未被修改，且实际 OOS 键、标签窗口与已实现目标完全相同的源运行；比较结果按自己的 run_id 隔离存放，避免覆盖历史证据。Phase 2 的模型报告另存每个 fold 的已选模型、验证候选指标、Test-only predictions、Ridge 系数、Fast Backtest 表和图。
+配置成功加载后的每条 CLI 命令创建 `results/runs/<run_id>/manifest.json`，记录命令、状态、完整配置、固定随机种子、Python/包版本、Git SHA、工作区是否有未提交改动及其内容指纹、审计的上游提交、数据区间、因子列表、股票池哈希、产物路径和失败摘要；配置解析失败发生在 run 创建前，不生成实验 manifest。随机种子默认为 42。`dataset_manifest.json` 另将数据集 Parquet 的 SHA-256、PIT 版本及数据/股票池/标签/预处理配置合同，与生成数据集时的 run_id、成功 build-dataset 清单及 Git/工作区/Python/包版本绑定；因子评价和模型运行发现任一不一致即停止。每次模型运行保存模型目录全部文件以及实际 Fast/Execution 回测股票行情、benchmark 和证券状态输入的 SHA-256。`compare-models` 只接受代码/工作区/Python/包环境、完整配置、数据/PIT/回测输入版本一致，模型产物未被修改，且实际 OOS 键、标签窗口与已实现目标完全相同的源运行；比较结果按自己的 run_id 隔离存放，避免覆盖历史证据。逐模型报告保存已选候选、Validation 指标、Test-only predictions、Ridge 系数或树模型 gain importance、市场状态分解，以及 Fast/Execution 两级回测表、图片和拒单明细。
 
 正式课程结果至少应归档：使用的 YAML、成功 manifest、PIT universe manifest、因子报告、失败股票清单和生成时间。原始网络端点可能修订数据，因此相同代码并不保证多年后重新下载得到逐字节相同内容；内容哈希用于识别而不是掩盖这种差异。
 
@@ -178,16 +185,18 @@ Phase 2 尚未执行 board_lot 配置，也不模拟 T+1 可卖数量、100 股�
 - 验证 Purge/Embargo 后日期有序且标签窗口不重叠；
 - 验证 Train-only imputer/scaler、Validation-only alpha 选择和 Test-only 输出；
 - 验证 2023-08-27/28 费用边界、Top-K 等权、next-open 执行和组合指标；
-- Phase 3 再验证 T+1、整手、现金和涨跌停执行约束。
+- 验证市场状态与指数衍生特征只依赖 t 及以前数据，未来价格变化不改变过去输出；
+- 验证 LightGBM/XGBoost 的 Train-only imputer、Validation-only 候选选择、Test 标签隔离和特征重要性；
+- 验证 T+1、整手、现金、停牌和按日期/板块生效的涨跌停执行约束及明确拒单。
 
-默认 `pytest` 只收集安全的 `tests/research` 且排除 network marker。真实网络烟雾运行必须单独执行并据实记录，mock 单测和 `python -m examples.research.phase2_synthetic_demo` 只能证明软件链路可执行，不能冒充真实数据成功或形成研究结论。
+默认 `pytest` 只收集安全的 `tests/research` 且排除 network marker。真实网络烟雾运行必须单独执行并据实记录，mock 单测和 `python -m examples.research.phase3_synthetic_demo` 只能证明软件链路可执行，不能冒充真实数据成功或形成研究结论。
 
 ## 14. 局限性与结论纪律
 
 - AKShare/BaoStock 是公开接口，可能限频、变更字段或事后修订；它们不等同于交易所级不可变行情库。
 - 2026-09-22 的真实 `download-data` 尝试整体失败：BaoStock 登录失败前只完成 benchmark 子步骤。尝试后缓存有 330 个 benchmark 交易日（研究开始日前 242 日、smoke 研究区间 88 日），下游仅选最后 130 个研究前交易日作预热；AKShare 单股票网络测试仍断连，PIT 与真实股票数据链路未完成，尚未生成正式五年实证结果。
 - 日线无法精确还原盘口流动性、停复牌盘中时点和成交优先级。
-- Phase 2 快速回测是目标权重近似，不包含 T+1、整数手、真实现金订单或涨跌停成交限制。
+- Phase 2 快速回测仍是目标权重近似；Phase 3 规则执行回测另行近似 T+1、整数手、现金、停牌和开盘涨跌停，两层结果不可混称。
 - 五年、单一指数和少量价量因子的统计功效有限，结果不应外推为所有 A 股时期或股票池的普遍规律。
 - 横截面样本在日期内相关，ICIR 和组合检验需结合时间序列稳定性，不能把股票-日行数误当作完全独立样本量。
 - 多次研究决策会增加数据窥探风险；任何探索性变更都应标记并在新验证期或 Forward Test 中复核。
