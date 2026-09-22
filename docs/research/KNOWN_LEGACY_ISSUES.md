@@ -1,7 +1,7 @@
 # Known Legacy Qbot Issues
 
 > 记录日期：2026-09-13
-> 状态：仅记录，Phase 1 不重构 Legacy Qbot。
+> 状态：仅记录，FactorLab Phase 1/2 均未重构 Legacy Qbot。
 
 本文只列出审计时在当前恢复快照中实际观察到的问题。FactorLab 通过 `qbot.research` 的单向隔离规避它们；只有问题直接阻断研究核心时才会做最小修复。
 
@@ -29,7 +29,7 @@
 
 `qbot/engine/trade/` 和 `pytrader/easyquant/` 包含券商、easytrader、浏览器/客户端自动化、账户配置和网络行情代码。这些路径不应在论文实验的数据或因子构建期执行。
 
-**FactorLab 处置：** 永久默认 `live_trading: false`；Phase 1 不读券商账户、不要求 API 密钥、不发送真实订单。
+**FactorLab 处置：** 永久默认 `live_trading: false`；Phase 1/2 不读券商账户、不要求 API 密钥、不发送真实订单。
 
 ## 中风险：依赖、配置与包结构
 
@@ -43,7 +43,7 @@
 
 `requirements.txt` 和 `dev/requirements.txt` 大多数包没有版本约束，同时包含老版 `matplotlib==3.2.2`、`pyglet==1.5.0`、GitHub 直装 pyfolio，以及 wxPython、TA-Lib、TensorFlow、Backtrader、加密货币和桌面相关工具链。`dev/environment.yaml` 是大型平台环境导出，`dev/` 还同时携带 Python 3.8/3.9 和多平台 wheel。
 
-**FactorLab 处置：** 仅安装 `dev/requirements-research.txt`；目标 Python 3.9，不在 Phase 1 升级整个 Legacy 环境。
+**FactorLab 处置：** 仅安装 `dev/requirements-research.txt`；目标 Python 3.9，不因 FactorLab 升级整个 Legacy 环境。
 
 ### 6. 包元数据与根许可证不一致
 
@@ -75,7 +75,7 @@
 
 `qbot/engine/backtest/backtest_base.py` 使用单标的 bar 和简单 position signal 计算收益；`backtest_main.py` 在顶层请求 JQData 并打开图表。这些路径没有 PIT 横截面股票池、next-open 交易时点、交易日 purge 边界或本课题需要的 A 股细则。
 
-**FactorLab 处置：** Phase 1 因子和模型引擎不依赖 Backtrader。Phase 2 用 Pandas/NumPy 实现快速研究回测，再把 Legacy/Backtrader 限定为 Level 2 执行适配参考。
+**FactorLab 处置：** 因子和模型引擎不依赖 Backtrader。Phase 2 已用 Pandas/NumPy 实现目标权重 Fast Research Backtest；Legacy/Backtrader 仅作为 Planned Phase 3 Level 2 执行适配的评估对象。
 
 ## 低风险与文档偏差
 

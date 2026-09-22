@@ -1,7 +1,7 @@
 # FactorLab Forward Test
 
 > **实现状态：Planned — Phase 4。**
-> 预定真实样本外记录起始日为 2026-09-14。Phase 1 不会生成或冒充该日期的 forward signal。
+> 原协议把真实样本外记录起始日设为 2026-09-14，但该日期已经过去且 Phase 4 未启动。Phase 1/2 没有生成当时信号，也绝不会事后补写或冒充该日期的 Forward Test。正式启用必须另行冻结一个未来起始日。
 
 ## 目的
 
@@ -64,4 +64,4 @@ Forward Test 仅是 Paper Trading/信号记录：
 
 ## 当前阶段的文件策略
 
-Phase 1 不创建任何真实 forward 记录，也不用历史数据伪造 2026-09-14 之后的“当时预测”。`results/forward/` 的 Git 与存储策略将在 Phase 4 连同 append-only 写入实现、锁和冲突规则一起冻结。
+Phase 1/2 不创建任何真实 forward 记录，也不用历史数据伪造 2026-09-14 之后的“当时预测”。已经错过的日期永久留空；`results/forward/` 的 Git 与存储策略将在 Phase 4 连同新的未来起始日、append-only 写入实现、锁和冲突规则一起冻结。

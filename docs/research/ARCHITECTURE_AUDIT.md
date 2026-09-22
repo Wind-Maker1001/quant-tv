@@ -12,7 +12,7 @@
 - qbot/gui 与 qbot/engine 承载桌面界面和旧回测入口；配置、数据源与界面耦合较重。
 - qbot/data 主要是 Qlib 数据 dump/转换脚本。其中 dump_pit.py 的 PIT 指财务数据修订版本，不是指数历史成分股。
 - pytrader/easyquant、pytrader/strategies 和 qbot/strategies 包含行情、策略和交易示例，部分代码依赖 JQData、Tushare、TA-Lib 或平台全局对象。
-- Backtrader 集成分散在 pytrader 与策略示例中，适合第二阶段作为执行层参考，不适合作为第一阶段因子引擎的依赖。
+- Backtrader 集成分散在 pytrader 与策略示例中，可在第三阶段作为执行层参考，不适合作为因子、模型或快速研究回测的依赖。
 - Qlib 工作流和 Alpha158/LightGBM 示例可供后续模型阶段参考，但依赖重、标签与本研究 next-open 时点不一致。
 - qbot_main.py 含硬编码环境假设和循环式在线流程，不能被研究模块导入。
 - qbot/common/config.py 与 qbot/engine/config.py 存在重复及导入期文件系统副作用。
@@ -22,8 +22,8 @@
 
 - 根 LICENSE（MIT）及原项目版权声明必须原样保留。
 - 现有行情/策略代码可作为字段语义和执行行为的参考资料。
-- Backtrader、easyquant 和 Qlib 只在未来阶段通过适配器复用，不进入 FactorLab 核心依赖。
-- 现有文档站点可在研究文档稳定后增加入口；第一阶段直接在 docs/research 独立维护。
+- Backtrader、easyquant 和 Qlib 只可能在未来执行/扩展阶段通过适配器复用，不进入 FactorLab 核心依赖。
+- 研究文档在 docs/research 独立维护，并已从根 README 与 docs/_sidebar.md 增加入口；不得用 Legacy Qbot 的实盘/模型库说明替代 FactorLab 的实际阶段状态。
 
 ## 不适合直接复用的内容
 
@@ -69,9 +69,22 @@ FactorLab 使用 qbot/research 独立命名空间，核心模块不得导入 wxP
 
 运行时大数据写入 data/research，实验产物写入 results；配置、测试 fixture 和文档进入 Git。
 
+## 第二阶段增量模块
+
+Phase 2 延续同一隔离边界，没有重构 Legacy Qbot：
+
+- models：统一 ResearchModel 接口、固定配置权重 FactorScore、Train-only 缺失值处理/标准化的 Ridge 和本地模型持久化；
+- validation：按实际交易日映射的 Expanding Walk-Forward、Purge/Embargo、标签窗口审计及 Train → Validation → Test runner；
+- portfolio/backtest：确定性 Top-K 等权目标和 Pandas/NumPy Fast Research Backtest；
+- backtest/fees：按生效日期选择的佣金、最低佣金、印花税、过户费、附加费与滑点；
+- metrics/reports：样本外预测指标、组合风险/收益/成本指标、逐模型报告和非自动选优的模型比较；
+- examples/research：完全离线的 synthetic 端到端软件示例，产物强制标记为非研究结论。
+
+第二阶段仍不导入 wxPython、Qlib、Backtrader、easyquant 或实盘交易模块。LightGBM/XGBoost、Market Regime 与订单级 Execution Backtest 留在 Phase 3，append-only Forward Test 留在 Phase 4。
+
 ## 计划避免修改的 Legacy 模块
 
-第一阶段不修改 main.py、qbot_main.py、qbot/gui、qbot/engine、qbot/data 的 Qlib dump、pytrader/easyquant、pytrader/strategies、qbot/strategies、qbot/plugins、Legacy tests 以及任何真实交易配置。只有直接阻断 FactorLab 且无法通过隔离解决时才考虑最小修复，并记录原因。
+Phase 1/2 不修改 main.py、qbot_main.py、qbot/gui、qbot/engine、qbot/data 的 Qlib dump、pytrader/easyquant、pytrader/strategies、qbot/strategies、qbot/plugins、Legacy tests 以及任何真实交易配置。只有直接阻断 FactorLab 且无法通过隔离解决时才考虑最小修复，并记录原因。
 
 ## 强制边界与失败策略
 
@@ -79,8 +92,9 @@ FactorLab 使用 qbot/research 独立命名空间，核心模块不得导入 wxP
 - PIT 股票池缺日、成员数异常或哈希不一致时抛出包含 POINT-IN-TIME UNIVERSE REQUIRED 的错误，绝不退化为当前成分股。
 - 日期为无时区 datetime64[ns]，股票代码唯一采用 600000.SH / 000001.SZ，主键为 date,symbol。
 - 不允许 bfill；价格不因停牌而前向填充。横截面预处理只在单日内部进行。
-- 第一阶段不实现模型、Walk-Forward、回测、Market Regime、Forward Test 或 GUI 占位代码。
+- Phase 2 只实现 FactorScore、Ridge、Walk-Forward 与目标权重 Fast Backtest；不把它描述为已经实现 T+1、整手、现金、涨跌停或订单生命周期。
+- Market Regime、LightGBM、XGBoost、Execution Backtest、Forward Test 和 GUI 仍不提供虚假占位实现。
 
 ## 分阶段复用决策
 
-第一阶段完全隔离研究核心。第二阶段可将快速回测保持为 Pandas/NumPy，并只为 Level 2 执行回测封装 Backtrader。第三阶段再以可选依赖接入 LightGBM/XGBoost。第四阶段实现 append-only Forward Signal；即使 Legacy 提供实盘能力，FactorLab 也永久默认 live_trading=false，不发送真实订单。
+第一阶段完成隔离的数据与因子核心；第二阶段已经以 Pandas/NumPy 实现与 Legacy 无关的模型验证和快速回测。第三阶段再以可选依赖接入 LightGBM/XGBoost，并单独评估是否需要为 Level 2 Execution Backtest 封装 Backtrader。第四阶段实现 append-only Forward Signal；即使 Legacy 提供实盘能力，FactorLab 也永久默认 live_trading=false，不发送真实订单。

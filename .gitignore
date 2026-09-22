@@ -151,7 +151,10 @@ pytrader/user_config.sh
 /data/research/
 /results/runs/
 /results/factors/
+/results/models/
 /results/report/
+/results/examples/
 /.conda-pkgs/
 /.venv-py39/
+/.venv-research/
 # results/forward is intentionally not blanket-ignored (Phase 4 append-only evidence).

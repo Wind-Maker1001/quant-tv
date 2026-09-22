@@ -73,7 +73,7 @@ Schema 验证包括：必需列、日期类型、symbol 格式、排序、主键
 
 ## Point-in-Time CSI500 股票池
 
-正式流程对交易日历的每一日请求 BaoStock 历史快照。单日快照独立缓存，下载失败可以续跑；但物化正式股票池前必须同时满足：
+正式流程对交易日历的每一日请求 BaoStock 历史快照。单日快照以 Parquet 加配套 JSON 独立缓存；JSON 绑定 provider 类、来源版本、指数、日期、预期成员数和内容 SHA-256。缺少或不匹配来源元数据的旧快照不会被信任，而会重新请求，避免把预置的“当前成分股”文件洗成历史 BaoStock 证据。下载失败可以续跑；但物化正式股票池前必须同时满足：
 
 1. 覆盖全部请求交易日，无缺日、无额外日。
 2. 每日恢复的 `is_member=true` 成员恰有 500 个唯一 symbol。
@@ -83,11 +83,11 @@ Schema 验证包括：必需列、日期类型、symbol 格式、排序、主键
 
 - `csi500_daily.parquet`：`date,symbol,is_member`。
 - `csi500_intervals.parquet`：`symbol,entry_date,exit_date,interval`，首尾均包含；退出后再进入会形成新区间。
-- `manifest.json`：来源、版本、生成时间、范围、交易日数、预期成员数和基于规范化 CSV 表达的稳定 SHA-256。
+- `manifest.json`：schema、来源、来源版本、指数代码、生成时间、范围、交易日数、预期成员数和基于规范化 CSV 表达的稳定 SHA-256。消费端逐项与当前配置和 benchmark 日历核对，不只检查内容哈希。
 
 任一不满足都抛出含 `POINT-IN-TIME UNIVERSE REQUIRED` 的错误。失败日期写入 `failures.json`。
 
-如使用 `import-universe`，可把 `universe.provider` 设为 `local`。随后 `download-data` 会校验并复用该导入股票池，绝不以 BaoStock 快照覆盖；BaoStock 在 Phase 1 中仍用于 ST、停牌状态和上市日期。
+如使用 `import-universe`，必须先把 `universe.provider` 设为 `local`。导入 manifest 还记录原始文件绝对路径和 SHA-256；随后 `download-data` 会校验并复用该导入股票池，绝不以 BaoStock 快照覆盖。BaoStock 在 Phase 1 中仍用于 ST、停牌状态和上市日期。使用 `provider=baostock` 的配置不能消费本地导入 manifest，反之亦然。
 
 ## 当日过滤
 
@@ -108,6 +108,7 @@ Builder 先验证完整 PIT，再重建股票-日历网格、过滤、计算因�
 - `features/raw_factors.parquet`：`date,symbol,raw_<factor>`。
 - `features/processed_factors.parquet`：`date,symbol,<factor>`。
 - `processed/dataset.parquet`：过滤后长表，同时含原始/预处理因子、标签、`entry_date`、`exit_date`。
+- `processed/dataset_manifest.json`：绑定数据集文件 SHA-256、PIT 股票池哈希、因子/标签及会影响数据集内容的配置合同，并保存生成该数据集的 run_id、Git commit、工作区 diff、Python 和包版本；模型阶段不允许在代码、环境、数据文件或该数据集合同改变后静默复用旧数据集。模型、验证、组合与费用等不改变数据集内容的配置由各模型 run 的完整配置另行审计。
 
 区间尾部无法观测完整持有期的标签保留为缺失，不在 Builder 中删除。评价和后续训练按用途过滤标签缺失样本。
 

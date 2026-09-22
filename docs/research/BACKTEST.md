@@ -1,76 +1,94 @@
-# FactorLab 回测设计
+# FactorLab 回测
 
-> **实现状态：Planned — Phase 2/3。**
-> Phase 1 没有组合回测引擎，本文是已冻结的后续设计边界，不是已产生绩效的声明。
+> **实现状态：Phase 2 Fast Research Backtest 已实现；Phase 3 Execution Backtest 仍为 Planned。**
 
-## 目标
+## 目标与两级边界
 
-回测用于回答“在可实现的交易时点、成本和 A 股限制下，历史横截面排序能保留多少 Alpha”，而不是通过忽略执行问题制造正收益。
+回测用于回答“在可实现的信号时点和显式成本下，历史横截面排序还能保留多少 Alpha”，而不是通过忽略成本制造正收益。Factor Engine、Model Engine 和快速回测均保持与 Backtrader、wxPython、easyquant 和实盘接口隔离。
 
-Factor Engine 和 Model Engine 保持与 Backtrader 无关，共用 Phase 1 的 PIT 股票池、canonical schema、next-open 标签和交易日历。
+两级设计的边界是：
 
-## Planned: Phase 2 快速研究回测
+- Level 1（已实现）：Pandas/NumPy 目标权重研究回测，用于快速比较模型与 fold；
+- Level 2（Planned: Phase 3）：订单、股数、现金和成交限制驱动的执行回测。
 
-Pandas/NumPy 引擎用于快速比较 fold 和模型：
+## Phase 2 Fast Research Backtest
 
-- 在 t 日收盘后生成 `symbol,score,rank`。
-- 下一个可交易日开盘进入，不假设能以 t 日收盘价成交。
-- 默认选 Top 20，等权 5%，每 5 个交易日调仓。
-- 与中证500同时线对齐，输出 Strategy NAV、Benchmark NAV 和 Excess NAV。
-- 对换手、佣金、印花税、过户费和滑点做显式记账。
+### 信号与调仓
 
-快速引擎用于研究迭代，不声称完全复原真实订单成交。Top-K、调仓频率、权重和费用都必须由配置固定，不能根据最终 Test 修改。
+快速引擎消费样本外的 date、symbol、score，并使用中证500 benchmark 日期作为交易日历：
 
-## Planned: Phase 3 执行回测
+1. t 日收盘后按 score 从高到低排序；
+2. 分数相同时按 canonical symbol 排序，确保结果确定；
+3. 按交易日历每 5 个交易日选取一次调仓信号；
+4. 默认选择 Top 20，并对选中股票等权；
+5. 在 t 的下一个基准交易日 open 执行，不使用 t 日收盘成交。
 
-第二级引擎将在适配层考察 Legacy Qbot/Backtrader，模拟：
+正式调仓日的有限 score 数量必须至少达到 `max(Top-K, evaluation.min_cross_section)`；否则立即失败并报告日期、实际数量和要求数量。通过守卫后，Top 20 等权为每只 5%，不会把异常稀疏横截面静默变成少数股票的集中组合。
 
-- 订单、现金、持仓和成交失败。
-- A 股 T+1：当日买入的股份当日不可卖出。
-- 100 股整手、现金约束与最低佣金。
-- 停牌以及涨停无法正常买入、跌停无法正常卖出的日线近似。
-- ST 与不同板块的涨跌幅、历史规则生效日和 configurable tolerance。
+快速层默认使用 adj_open 计算持仓收益和 benchmark NAV，与 next-open 标签时点一致。它按理论目标权重和交易名义金额记账，适合模型横向比较，但不产生整数股数。
 
-Legacy Backtrader 示例不直接成为 FactorLab 数据或模型依赖。适配前必须用与快速引擎共用的交易事件和费用合同进行回归测试。
+### 费用
 
-## 日线成交限制
+FeeSchedule 按包含首尾的生效日期区间选择唯一费率规则。每个买卖名义金额分别记录：
 
-> Daily-bar backtest cannot perfectly reconstruct order-book liquidity.
+- 佣金及最低佣金；
+- 卖出印花税；
+- 过户费；
+- 独立买入/卖出附加费；
+- 滑点。
 
-日线数据只能用开盘价与按历史规则计算的涨跌停价作近似。开盘价接近涨停价时将买单视为无法成交，接近跌停价时将卖单视为无法成交；但这不能识别封单队列、盘中打开或个人订单的队列优先级。报告必须把该近似列为限制。
-
-## Planned FeeSchedule
-
-费用不写在策略代码中，而是按生效日区间查表。至少包含：
-
-```text
-effective_from, effective_to
-commission, minimum_commission
-buy_fee, sell_fee
-stamp_duty, transfer_fee
-slippage
-```
-
-印花税卖出费率的默认研究边界：
+默认卖出印花税边界为：
 
 | 区间 | 卖出印花税 |
 | --- | ---: |
 | 2021-09-13 至 2023-08-27 | 10 bps |
 | 2023-08-28 起 | 5 bps |
 
-其他费率必须独立配置。正式运行应在 manifest 中存档整个费用表，并用边界日期单测确认 2023-08-27 与 2023-08-28 的卖出成本不同。
+佣金、最低佣金、过户费、买卖附加费和滑点均由 YAML 独立配置。费率区间必须覆盖整个研究期且不能重叠或留空；2023-08-27/28 边界已有单元测试。快速引擎通过迭代求解“扣费后的组合价值 → 目标名义金额 → 费用”，而不是事后忽略费用。
 
-## Planned 绩效产物
+### 行情缺失处理
 
-组合层至少输出：
+调仓执行日若目标或待卖股票缺少开盘价，回测直接失败，不假设能够成交。非调仓持仓若开盘价缺失，组合保持该股票最后一个有效标记价并冻结当日收益；复牌出现新价格时，一次性确认“复牌价 / 停牌前最后有效价”的累计变化。这里保存的是持仓估值状态，不会把价格写回行情、不会让因子读取填充值，也不会静默丢失复牌跳空。更严格的停牌订单延迟与撤单逻辑仍留给执行回测。
 
-- Cumulative/Annualized Return、Annualized Volatility、Sharpe、Sortino、Maximum Drawdown、Calmar。
-- Benchmark Return、Excess Return、Tracking Error、Information Ratio、Win Rate。
-- Portfolio Turnover、Total Transaction Cost、Number of Trades、Average Holdings。
-- `trades.csv`、`positions.csv`、`nav.csv`，以及 NAV、回撤、换手和成本图。
+### 产物与指标
 
-模型层同时报告 Prediction IC/RankIC、ICIR、Top-K/Bottom-K 未来收益和 Top-Bottom spread，按年、季度、市场状态和 Walk-Forward fold 分解。不允许只展示策略 NAV。
+核心引擎返回四张审计表：
 
-## 还未产生的内容
+- nav：Strategy NAV、CSI500 Benchmark NAV、Excess NAV、日收益、成本、换手和持仓数；
+- trades：信号日、执行日、方向、排名、目标权重、名义金额、价格和分项费用；
+- positions：每日 symbol、当前理论权重（非调仓日会随价格漂移）、理论市值和标记价；
+- signals：实际被接受并映射到下一交易日的 Top-K 信号。
 
-Phase 1 不会生成 `nav.csv`、`trades.csv`、`positions.csv`、模型绩效或交易成本结果。如在本阶段看到这些文件，应确认它们是否来自 Legacy Qbot，不得当作 FactorLab Phase 1 产物。
+组合指标包括：
+
+- Cumulative Return、Annualized Return、Annualized Volatility；
+- Sharpe Ratio、Sortino Ratio、Maximum Drawdown、Calmar Ratio；
+- Benchmark Return、Excess Return、Tracking Error、Information Ratio；
+- Win Rate、Portfolio Turnover、Total Transaction Cost；
+- Number of Trades、Average Holdings。
+
+模型层另外报告每日 Prediction IC/RankIC、ICIR/RankICIR、Top-K/Bottom-K future return 和 Top-Bottom spread，并按年、季度与 Walk-Forward fold 分解。Market Regime 分解将在 Phase 3 有状态列后启用。只展示策略 NAV 而隐藏预测能力或成本，不符合研究报告要求。
+
+## Planned: Phase 3 Execution Backtest
+
+快速层**尚未实现**以下交易约束：
+
+- A 股 T+1 可卖数量；
+- 100 股整数手；
+- 真实现金余额和下单数量约束；
+- 停牌时的订单延后或撤销；
+- 涨停无法正常买入、跌停无法正常卖出的日线近似；
+- ST、主板、创业板/科创板等不同涨跌幅和历史规则；
+- 委托、部分成交和失败订单生命周期。
+
+虽然配置中预留了 board_lot，Phase 2 快速层不会使用它做股数取整。不得据此宣称已通过“100 股/T+1/现金约束”回测。Phase 3 将在独立适配层评估 Legacy Qbot/Backtrader 的可复用边界，且不能让 Factor/Model Engine 依赖执行框架。
+
+## 日线成交限制
+
+> Daily-bar backtest cannot perfectly reconstruct order-book liquidity.
+
+即使 Phase 3 增加开盘接近涨停时买单失败、接近跌停时卖单失败的规则，日线也无法识别封单队列、集合竞价、盘中打开、部分成交或订单队列优先级。报告必须把它列为近似，而不是把日线模拟描述成真实可成交证明。
+
+## 结果纪律
+
+Fast Backtest 已实现不代表已经完成正式五年实验。synthetic demo 和 smoke 配置只验证接口、时点、费用与产物，不得用于课程结论。只有正式 PIT 股票池、正式五年缓存、冻结配置和完整 manifest 下的 Test 结果，才可进入论文；策略亏损、成本侵蚀全部 Alpha 或 Ridge 未优于 FactorScore 都必须原样报告。
