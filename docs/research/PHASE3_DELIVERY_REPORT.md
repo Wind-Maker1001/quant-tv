@@ -67,6 +67,12 @@ Legacy Qbot 路径、根 `LICENSE` 与版权声明未修改。
 
 两者通过。检索未发现 `qbot/research` 使用 `train_test_split`、`shuffle=True`、`bfill`，也未导入 wxPython、Qlib、Backtrader、easyquant 或实盘模块。
 
+文档提交后在干净工作区实际执行：
+
+    .\.venv-py39\python.exe -m qbot.research.cli audit --config configs/research/csi500_smoke.yaml
+
+成功 run_id 为 `20260922T163240.966727Z-audit-a039b923`。manifest 记录 Python 3.9.25、`git_commit=988694217d82d45e0aeb6aa607ad71c3e102279b`、`git_dirty=false`、状态 `success`，上游审计基线仍为 `f0425ae4ae8bd02b79656b8f7039f4cd6874095e`。
+
 ## 离线端到端验收
 
 实际执行：
@@ -108,8 +114,9 @@ run_id：
 代码/测试提交：
 
 - `415f375` `feat(research): add phase 3 models and execution`
+- `9886942` `docs(research): document phase 3 workflow and limits`
 
-上述提交仅在本地 `factorlab/phase-1` 分支；没有 push、force-push、改写历史或删除分支。文档与最终验收证据在后续本地提交中保存。
+上述提交仅在本地 `factorlab/phase-1` 分支；没有 push、force-push、改写历史或删除分支。本次干净工作区 audit 证据由单独的本地验收记录提交补充，不改写上述历史。
 
 下一步优先级：
 
@@ -118,4 +125,3 @@ run_id：
 3. 用冻结的正式配置跑完五年四模型与两级回测，不因 Test 结果改参数；
 4. 论文结果诚实回答 Q1–Q5，包括负结果或复杂模型无优势；
 5. 再实现 Phase 4 append-only Forward Test，并冻结新的未来启用日。
-
