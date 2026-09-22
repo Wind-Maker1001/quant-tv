@@ -63,6 +63,25 @@ def test_factor_evaluation_reports_coverage_and_invalid_small_cross_sections():
     assert pd.isna(first["IC"])
 
 
+def test_quantile_membership_does_not_depend_on_future_label_availability():
+    frame = _evaluation_frame().loc[
+        lambda value: value["date"] == pd.Timestamp("2024-01-02")
+    ].copy()
+    frame.loc[frame["F1"] == 9.0, "EXCESS_RET5"] = None
+
+    evaluation = evaluate_factors(
+        frame, ["F1"], quantiles=5, minimum_cross_section=5
+    )
+    top = evaluation.quantile_returns.query(
+        "scope == 'ALL' and factor == 'F1' and quantile == 'Q5'"
+    ).iloc[0]
+
+    assert top["observations"] == 2
+    assert top["labeled_observations"] == 1
+    assert top["label_coverage"] == pytest.approx(0.5)
+    assert top["future_return"] == pytest.approx(8.0)
+
+
 def test_report_writes_required_csv_markdown_and_png_artifacts(tmp_path):
     evaluation = evaluate_factors(
         _evaluation_frame(), ["F1", "F2"], quantiles=5, minimum_cross_section=5

@@ -1,4 +1,5 @@
-# Qbot FactorLab formal five-year research configuration.
+# Qbot FactorLab formal five-year research protocol/configuration only.
+# No completed real five-year run or research conclusion exists yet.
 project:
   name: qbot-factorlab
 
@@ -56,6 +57,64 @@ preprocessing:
 evaluation:
   quantiles: 5
   min_cross_section: 20
+
+models:
+  factor_score:
+    normalize_by_absolute_weight: true
+    weights:
+      REV1: 1.0
+      REV5: 1.0
+      MOM20: 1.0
+      MOM60: 1.0
+      VOL5: -1.0
+      VOL20: -1.0
+      VOL60: -1.0
+      TURN5: 0.5
+      TURN20: 0.5
+      VOLUME_RATIO: 0.5
+      AMIHU20: -1.0
+      PRICE_MA20: 1.0
+      MA5_MA20: 1.0
+      MA20_MA60: 1.0
+  ridge:
+    alphas: [0.1, 1.0, 10.0, 100.0]
+    fit_intercept: true
+    max_iter: 10000
+    tolerance: 0.0001
+
+validation:
+  initial_train_months: 24
+  validation_months: 3
+  test_months: 3
+  step_months: 3
+  purge_days: 5
+  embargo_days: 5
+
+portfolio:
+  top_k: 20
+  rebalance_days: 5
+  weighting: equal
+
+backtest:
+  initial_cash: 1000000
+  board_lot: 100
+  annualization_days: 252
+  risk_free_rate: 0.0
+
+fees:
+  commission_bps: 3
+  minimum_commission_cny: 5
+  slippage_bps: 5
+  transfer_fee_bps: 0
+  buy_fee_bps: 0
+  sell_fee_bps: 0
+  stamp_duty:
+    - start: '2021-09-13'
+      end: '2023-08-27'
+      sell_bps: 10
+    - start: '2023-08-28'
+      end: null
+      sell_bps: 5
 
 factors:
   - REV1

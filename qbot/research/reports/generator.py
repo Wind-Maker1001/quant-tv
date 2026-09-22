@@ -91,6 +91,7 @@ def write_factor_report(evaluation: FactorEvaluation, output_dir: Path) -> Path:
         "# FactorLab Phase 1 因子评价摘要",
         "",
         "本报告仅描述配置所指数据，不依据最终测试收益调参。ICIR 定义为日度 IC 均值除以日度 IC 标准差，未年化。",
+        "分位成员只由当日因子值确定；quantile_returns.csv 同时记录未来标签已成熟数量与覆盖率，缺失标签不会触发事后补位。",
         "",
         "| Factor | IC Mean | ICIR | RankIC Mean | RankICIR | Coverage | Autocorr | Top-Q Turnover |",
         "|---|---:|---:|---:|---:|---:|---:|---:|",

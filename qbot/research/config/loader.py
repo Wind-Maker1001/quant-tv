@@ -145,6 +145,16 @@ def _convert_value(value: Any, expected: Any, location: str) -> Any:
 
     origin = get_origin(expected)
     arguments = get_args(expected)
+    if origin is dict:
+        if not isinstance(value, Mapping):
+            raise ConfigurationError("{0} must be a mapping".format(location))
+        key_type, value_type = arguments
+        return {
+            _convert_value(key, key_type, "{0}.<key>".format(location)): _convert_value(
+                item, value_type, "{0}.{1}".format(location, key)
+            )
+            for key, item in value.items()
+        }
     if origin in (tuple, Tuple):
         if not isinstance(value, (list, tuple)):
             raise ConfigurationError("{0} must be a sequence".format(location))

@@ -117,8 +117,17 @@ def test_formal_and_smoke_configs_load():
     assert formal.data.end.isoformat() == "2026-09-11"
     assert formal.data.warmup_trading_days == 130
     assert formal.live_trading is False
+    assert formal.validation.initial_train_months == 24
+    assert formal.validation.purge_days == 5
+    assert formal.portfolio.top_k == 20
+    assert formal.models.ridge.alphas == (0.1, 1.0, 10.0, 100.0)
+    assert set(formal.models.factor_score.weights) == set(formal.factors)
+    assert formal.fees.stamp_duty[0].sell_bps == 10.0
+    assert formal.fees.stamp_duty[1].sell_bps == 5.0
     assert smoke.project.name.endswith("smoke-test-only")
     assert smoke.data.end < formal.data.end
+    assert smoke.data.end.isoformat() == "2024-05-17"
+    assert smoke.validation.initial_train_months == 2
 
 
 def test_warmup_must_cover_listing_and_quality_windows(tmp_path):
@@ -139,3 +148,74 @@ def test_manifest_snapshot_is_json_serializable(tmp_path):
     assert snapshot["factors"] == ["REV1", "MOM20"]
     assert "repo_root" not in snapshot
     assert "config_path" not in snapshot
+
+
+def test_phase2_nested_unknown_field_is_rejected(tmp_path):
+    document = _valid_document()
+    document["models"] = {"ridge": {"alphas": [1.0], "future_hint": True}}
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="future_hint"):
+        load_config(path, repo_root=tmp_path)
+
+
+@pytest.mark.parametrize(
+    "section,field,bad_symbol",
+    [
+        ("data", "benchmark", "000300.SH"),
+        ("universe", "index_symbol", "000300.SH"),
+        ("data", "benchmark", "sh000905"),
+    ],
+)
+def test_csi500_benchmark_and_universe_symbol_are_fixed(
+    tmp_path, section, field, bad_symbol
+):
+    document = _valid_document()
+    document[section][field] = bad_symbol
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="both be canonical 000905.SH"):
+        load_config(path, repo_root=tmp_path)
+
+
+def test_factor_score_weights_must_match_enabled_factors(tmp_path):
+    document = _valid_document()
+    document["models"] = {
+        "factor_score": {"weights": {"REV1": 1.0}},
+    }
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="must match the enabled factor list"):
+        load_config(path, repo_root=tmp_path)
+
+
+def test_unregistered_factor_is_rejected_before_pipeline_execution(tmp_path):
+    document = _valid_document()
+    document["factors"] = ["REV1", "NOT_A_REAL_FACTOR"]
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="unregistered names"):
+        load_config(path, repo_root=tmp_path)
+
+
+def test_purge_must_cover_forward_label_horizon(tmp_path):
+    document = _valid_document()
+    document["validation"] = {"purge_days": 4}
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="purge_days must be at least"):
+        load_config(path, repo_root=tmp_path)
+
+
+def test_stamp_duty_schedule_must_be_contiguous(tmp_path):
+    document = _valid_document()
+    document["fees"] = {
+        "stamp_duty": [
+            {"start": "2021-01-01", "end": "2023-08-27", "sell_bps": 10},
+            {"start": "2023-08-29", "end": None, "sell_bps": 5},
+        ]
+    }
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="contiguous"):
+        load_config(path, repo_root=tmp_path)

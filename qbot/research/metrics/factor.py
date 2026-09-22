@@ -102,19 +102,30 @@ def _quantile_returns(
     labels = ["Q%d" % number for number in range(1, quantiles + 1)]
     for date, cross_section in frame.groupby("date", sort=True):
         for factor in factors:
-            pairs = cross_section[[factor, target]].replace([np.inf, -np.inf], np.nan).dropna()
-            if len(pairs) < max(minimum_cross_section, quantiles):
+            # Quantile membership is formed from the contemporaneous factor
+            # only.  Whether a future label later becomes observable cannot
+            # change bucket boundaries or promote another security.
+            available = cross_section[[factor, target]].replace(
+                [np.inf, -np.inf], np.nan
+            )
+            available = available.loc[available[factor].notna()].copy()
+            if len(available) < max(minimum_cross_section, quantiles):
                 continue
             try:
                 buckets = pd.qcut(
-                    pairs[factor].rank(method="first"),
+                    available[factor].rank(method="first"),
                     q=quantiles,
                     labels=labels,
                 )
             except ValueError:
                 continue
-            means = pairs.groupby(buckets, observed=False)[target].mean()
+            realised = available[target].notna()
+            means = available.groupby(buckets, observed=False)[target].mean()
+            bucket_counts = buckets.value_counts(sort=False)
+            label_counts = buckets[realised].value_counts(sort=False)
             for label in labels:
+                selected_count = int(bucket_counts.get(label, 0))
+                labelled_count = int(label_counts.get(label, 0))
                 rows.append(
                     {
                         "scope": scope,
@@ -122,9 +133,21 @@ def _quantile_returns(
                         "factor": factor,
                         "quantile": label,
                         "future_return": means.get(label, np.nan),
-                        "observations": int((buckets == label).sum()),
+                        "observations": selected_count,
+                        "labeled_observations": labelled_count,
+                        "label_coverage": (
+                            labelled_count / float(selected_count)
+                            if selected_count
+                            else np.nan
+                        ),
                     }
                 )
+            tail_selected = int(
+                bucket_counts.get(labels[-1], 0) + bucket_counts.get(labels[0], 0)
+            )
+            tail_labelled = int(
+                label_counts.get(labels[-1], 0) + label_counts.get(labels[0], 0)
+            )
             rows.append(
                 {
                     "scope": scope,
@@ -132,7 +155,13 @@ def _quantile_returns(
                     "factor": factor,
                     "quantile": "Q%d-Q1" % quantiles,
                     "future_return": means.get(labels[-1], np.nan) - means.get(labels[0], np.nan),
-                    "observations": len(pairs),
+                    "observations": tail_selected,
+                    "labeled_observations": tail_labelled,
+                    "label_coverage": (
+                        tail_labelled / float(tail_selected)
+                        if tail_selected
+                        else np.nan
+                    ),
                 }
             )
     return pd.DataFrame(rows)
@@ -266,7 +295,16 @@ def evaluate_factors(
         pd.concat(quantile_parts, ignore_index=True)
         if any(not part.empty for part in quantile_parts)
         else pd.DataFrame(
-            columns=["scope", "date", "factor", "quantile", "future_return", "observations"]
+            columns=[
+                "scope",
+                "date",
+                "factor",
+                "quantile",
+                "future_return",
+                "observations",
+                "labeled_observations",
+                "label_coverage",
+            ]
         )
     )
     autocorrelation_frame = (
