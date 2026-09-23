@@ -14,7 +14,7 @@ Phase 1 已实现数据、Point-in-Time 股票池、因子、标签、数据集�
 - 只依赖 t 及以前 CSI500 数据的 Market Regime 和按状态评价；
 - T+1、整手、现金、停牌和开盘涨跌停拒单的执行回测测试。
 
-LightGBM、XGBoost、Market Regime 和规则执行回测已经实现；真实 Forward Test 属于 **Planned: Phase 4**。实现模型验证能力不等于已经取得五年正式研究结果。
+LightGBM、XGBoost、Market Regime、规则执行回测和 Phase 4 append-only Paper Signal 核心已经实现；真实 Forward Test 尚未激活。实现模型验证与记录能力不等于已经取得五年正式研究结果或真实样本外结果。
 
 ## 信息时点合同
 

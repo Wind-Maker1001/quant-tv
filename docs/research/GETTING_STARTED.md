@@ -13,11 +13,11 @@ Qbot FactorLab 是 Qbot 内部隔离的 A 股横截面研究模块。它仅用�
 | FactorScore、Ridge、Expanding Walk-Forward、Purge/Embargo | Phase 2 已实现 |
 | Test 预测指标、Top-K、Fast Backtest、费用与模型报告 | Phase 2 已实现 |
 | LightGBM、XGBoost、Market Regime、规则执行回测 | Phase 3 已实现 |
-| Append-only Forward Test | **Planned: Phase 4** |
+| 未来激活、冻结模型、append-only Paper Signal | Phase 4 核心已实现，尚未正式激活 |
 
 每次模型运行同时生成快速目标权重回测和规则执行回测。执行层包含 T+1、100 股整数手、现金、停牌及开盘涨跌停拒单；但日线仍无法还原盘口队列、部分成交和盘中路径。
 
-当前第三阶段验收与仍存在的真实数据阻塞见 [PHASE3_DELIVERY_REPORT.md](PHASE3_DELIVERY_REPORT.md)。
+当前第三阶段验收与仍存在的真实数据阻塞见 [PHASE3_DELIVERY_REPORT.md](PHASE3_DELIVERY_REPORT.md)；正式启用协议见 [FORWARD_TEST.md](FORWARD_TEST.md)。
 
 ## 1. 创建独立环境
 
@@ -62,7 +62,7 @@ pytest.ini 默认只收集 tests/research，并排除 network marker。这个边
 
     python -m pytest -q -m network
 
-网络测试可因数据源限频、端点改动、代理或本地网络而失败，不取代离线正确性测试。最新真实 `download-data` 尝试（run `20260922T121535.543754Z-download-data-82695c7f`）整体状态为 `failed`：benchmark 缓存可读，但 BaoStock 登录连续 4 次返回网络接收错误。本地 benchmark 缓存有 330 个交易日（2023-01-03 至 2024-05-17），其中 smoke 研究区间 88 日、研究开始日前 242 日；流水线实际只会从这些历史日中选择最后 130 日作为预热。AKShare 单股票端点的独立网络测试仍发生 RemoteDisconnected，PIT 股票池和真实股票数据链路尚未完成。不能把 benchmark 子步骤成功或离线测试通过描述成真实端到端或五年数据已经验证。
+网络测试可因数据源限频、端点改动、代理或本地网络而失败，不取代离线正确性测试。最新真实 `download-data` 尝试（run `20260923T024112.174238Z-download-data-ec762717`）整体状态为 `failed`：benchmark 缓存可读并确认 88 个研究交易日和 130 个精确预热交易日，但 BaoStock 登录连续 4 次返回网络接收错误。本地 benchmark 缓存有 330 个交易日（2023-01-03 至 2024-05-17），其中 smoke 研究区间 88 日、研究开始日前 242 日；流水线实际只会从这些历史日中选择最后 130 日作为预热。AKShare 单股票端点的独立网络测试仍发生 RemoteDisconnected，PIT 股票池和真实股票数据链路尚未完成。不能把 benchmark 子步骤成功或离线测试通过描述成真实端到端或五年数据已经验证。
 
 ## 3. 选择配置
 
@@ -118,6 +118,25 @@ smoke 配置、mock fixture 和 synthetic demo 均不得用于论文收益、因
 
 compare-models 不自动挑选“赢家”，也不据 Test 调参。它读取 FactorScore、Ridge、LightGBM、XGBoost 各自最新的完整输出，并强制核对完整配置、数据/PIT 哈希、Fast/Execution 行情哈希、Git commit、工作区 diff 指纹、Python 与包版本、模型目录全部产物 SHA-256，以及 OOS 键、标签窗口和已实现目标一致；源 run_id 会写进比较结果。任一来源未知、被修改或不一致都会停止。
 
+### 5.1 Phase 4 Paper Forward Test
+
+正式配置默认仍关闭 Forward Test，避免系统擅自把已经过去的 `2026-09-14`
+伪装成真实起点。研究者审核一个尚未到来的新起点、训练截止日、模型版本和候选索引
+并提交干净工作区后，依次执行：
+
+    python -m qbot.research.cli activate-forward --date YYYY-MM-DD --config configs/research/csi500_5y.yaml
+
+    python -m qbot.research.cli freeze-forward-model --config configs/research/csi500_5y.yaml
+
+    python -m qbot.research.cli forward-signal --date YYYY-MM-DD --config configs/research/csi500_5y.yaml
+
+每日信号命令会在全流程独占锁内把运行时 `data.end` 固定到请求日，增量下载、重建
+并验证数据集；任一下载失败或当日特征缺失都会停止。随后加载与 activation 共同绑定
+源码摘要、且在 activation 日前冻结的模型，生成 Top-K 等权记录。旧日期只能带
+`--reissue-reason` 生成明确的
+`LATE_REISSUE` 新版本，不能覆盖旧文件或称为 `ON_TIME`。完整的提交顺序、目录和
+证据局限见 [FORWARD_TEST.md](FORWARD_TEST.md)。该流程不发送真实订单。
+
 ## 6. 离线 synthetic 端到端示例
 
 无需下载 A 股数据即可验证第三阶段软件链路：
@@ -134,6 +153,15 @@ compare-models 不自动挑选“赢家”，也不据 Test 调参。它读取 F
 
 这个示例的数据关系是人为构造的；任何正 IC、正收益或模型差异都不能支持关于 CSI500、A 股 Alpha、预期收益或模型优越性的结论。
 历史 `phase2_synthetic_demo` 仍保留用于回归 Phase 2 基线，但不覆盖树模型、市场状态或规则执行层。
+
+Phase 4 另提供不联网的软件生命周期示例：
+
+    python -m examples.research.phase4_synthetic_demo --output results/examples/phase4_synthetic
+
+它使用远未来的虚构 activation、合成 Ridge 数据和虚构股票，演示 advance-only 收据、
+成熟标签冻结、`ON_TIME`、`LATE_REISSUE` 以及 producer completion receipt。所有产物
+均醒目标记 `SYNTHETIC SOFTWARE DEMO ONLY - NOT A RESEARCH RESULT`，不得引用为真实
+Forward Test 或论文实证。
 
 ## 7. 数据与模型产物
 
@@ -199,6 +227,14 @@ compare-models 以 run_id 隔离写入，历史比较证据不会被后一次运
     ├── turnover.png / transaction_cost.png
     └── summary.md
 
+Phase 4 的激活收据、冻结模型和每日信号位于：
+
+    results/forward/
+    ├── activations/<activation_id>/
+    ├── models/<model_name>/<model_version>/
+    └── signals/YYYY-MM-DD/vNNNNNN/
+        └── completion/                 # 成功 producer run 的不可变快照与摘要
+
 配置成功加载后的每次 CLI 命令另写 results/runs/<run_id>/manifest.json，记录命令状态、Git SHA、未提交工作区内容指纹、完整配置、随机种子、Python/包版本、数据区间、PIT/数据集/模型产物哈希、模型参数、关键指标和产物路径。若配置本身无法解析，命令在建立 run 之前以状态码 2 失败，因此不会产生误导性的实验 manifest。
 
 ## 8. 常见失败
@@ -223,4 +259,4 @@ Schema 错误表示 symbol、日期、主键、OHLC 关系或数值单位不符�
 - Test 未参与研究选择；
 - 费用、执行拒单和日线近似局限性如实披露。
 
-Phase 4 的 append-only Forward Test 尚未实现。任何模型都可能亏损或落后 benchmark；这不构成修改 Test 后参数的理由。当前公开数据端点仍未提供可验证的完整真实五年输入，因此不得把离线验收当成正式实证结果。
+Phase 4 核心软件已经实现，但正式配置尚未激活，也没有真实 forward signal。任何模型都可能亏损或落后 benchmark；这不构成修改 Test 后参数的理由。当前公开数据端点仍未提供可验证的完整真实五年输入，因此不得把离线验收当成正式实证结果。

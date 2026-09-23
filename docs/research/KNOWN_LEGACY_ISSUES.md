@@ -105,7 +105,8 @@ Legacy 示例同时使用 `print`、`logging`、`loguru`、GUI 控件和桌面�
 这些边界不是 Legacy 缺陷已被修复的证明：
 
 - Phase 3 的 Market Regime、LightGBM、XGBoost、规则执行回测和四模型统一比较报告已经在隔离命名空间实现；
+- Phase 4 的未来激活收据、冻结模型与 append-only Paper Signal 也已在隔离命名空间实现，不调用 Legacy 实盘接口；
 - 真实五年行情、证券状态和逐日 PIT 股票池仍未因公开端点/网络前置完成，因此没有可用于论文结论的正式五年实验结果；
-- append-only Forward Test 属于 Phase 4，当前未实现，也不得用历史重跑或 Legacy 模拟/实盘能力冒充。
+- 正式 Forward Test 尚未激活且没有真实信号；已经错过的 2026-09-14 不得用历史重跑或 Legacy 模拟/实盘能力冒充。
 
 如后续必须触及上述 Legacy 路径，应先新建独立 issue，记录责任边界、副作、回归测试和许可证影响。

@@ -80,7 +80,7 @@ Phase 2 延续同一隔离边界，没有重构 Legacy Qbot：
 - metrics/reports：样本外预测指标、组合风险/收益/成本指标、逐模型报告和非自动选优的模型比较；
 - examples/research：完全离线的 synthetic 端到端软件示例，产物强制标记为非研究结论。
 
-第二阶段的上述交付状态是历史事实；当时留待 Phase 3 的 LightGBM/XGBoost、Market Regime 与规则执行回测现已完成。append-only Forward Test 仍留在 Phase 4。
+第二阶段的上述交付状态是历史事实；当时留待 Phase 3 的 LightGBM/XGBoost、Market Regime 与规则执行回测现已完成。Phase 4 又在同一隔离边界内加入了未来激活收据、冻结模型和 append-only Paper Signal，但尚未正式激活真实日期。
 
 ## 第三阶段增量模块
 
@@ -94,9 +94,23 @@ Phase 3 继续沿用 `qbot.research` 单向隔离，不重构或导入 Legacy �
 
 Phase 3 的“完成”指软件路径和离线正确性守卫已经实现，不表示已经取得真实五年数据或论文结论。当前公开网络/PIT 链路未完成正式数据集，真实五年四模型实验仍待数据前置满足。
 
+## 第四阶段增量模块
+
+Phase 4 继续不导入 Legacy 实盘链路：
+
+- `forward/contract.py` 冻结因子、标签、预处理、验证、费用/执行、模型候选、训练截止日与 Top-K 研究合同，仅允许每日 `data.end` 滚动；
+- `forward/activation.py` 要求在新起点之前原子创建激活收据，已经错过的 2026-09-14 无法补注册；
+- `forward/integrity.py` 绑定研究源码与依赖摘要、拒绝 symlink/reparse 路径，并串行化完整日终流水线；
+- `forward/model_bundle.py` 只拟合一个显式模型，以 `exit_date <= training_asof` 阻止未成熟标签进入训练，并用内部身份摘要绑定训练审计字段；
+- `forward/policy.py` 以 Asia/Shanghai 收盘时点区分 `ON_TIME` 与必须说明原因的 `LATE_REISSUE`；
+- `forward/signal_recorder.py` 使用日期锁、锁内版本分配、staging 与原子目录发布，并只在 producer run 成功后追加自包含 completion 收据；
+- CLI 的 `forward-signal` 先运行独立 download/build 子清单，再核对当日 benchmark、PIT、数据集、模型和契约哈希，只输出 Paper Top-K。
+
+正式 YAML 仍保持关闭；这表示软件路径完成但真实实验尚未启动，而不是 Phase 4 结果已经存在。
+
 ## 计划避免修改的 Legacy 模块
 
-Phase 1–3 不修改 main.py、qbot_main.py、qbot/gui、qbot/engine、qbot/data 的 Qlib dump、pytrader/easyquant、pytrader/strategies、qbot/strategies、qbot/plugins、Legacy tests 以及任何真实交易配置。只有直接阻断 FactorLab 且无法通过隔离解决时才考虑最小修复，并记录原因。
+Phase 1–4 不修改 main.py、qbot_main.py、qbot/gui、qbot/engine、qbot/data 的 Qlib dump、pytrader/easyquant、pytrader/strategies、qbot/strategies、qbot/plugins、Legacy tests 以及任何真实交易配置。只有直接阻断 FactorLab 且无法通过隔离解决时才考虑最小修复，并记录原因。
 
 ## 强制边界与失败策略
 
@@ -106,9 +120,9 @@ Phase 1–3 不修改 main.py、qbot_main.py、qbot/gui、qbot/engine、qbot/dat
 - 不允许 bfill；价格不因停牌而前向填充。横截面预处理只在单日内部进行。
 - 保留 Phase 2 历史边界：FactorScore、Ridge、Walk-Forward 与目标权重 Fast Backtest 是当时交付，不倒写成包含执行约束。
 - Phase 3 已实现 Market Regime、LightGBM、XGBoost 和独立规则执行回测；日线执行不能冒充盘口队列、部分成交、冲击成本或跨日委托生命周期。
-- Forward Test 和 FactorLab GUI 未实现；Phase 4 之前不得生成、补写或冒充真实 forward signal，FactorLab 永久保持 `live_trading=false`。
+- Forward Test 核心记录层已实现但尚未正式激活；激活日前信号、旧日期 `ON_TIME` 和覆盖已有版本都会失败，FactorLab 永久保持 `live_trading=false`。
 - 正式数据集仍要求完整真实五年行情、证券状态与逐日 PIT 股票池；软件测试或 synthetic 产物不能替代这些输入。
 
 ## 分阶段复用决策
 
-第一阶段完成隔离的数据与因子核心；第二阶段以 Pandas/NumPy 实现与 Legacy 无关的基线模型验证和快速回测；第三阶段以延迟导入的 LightGBM/XGBoost 扩展同一模型接口，并直接实现不依赖 Backtrader 的规则执行回测和四模型统一比较。第四阶段才实现 append-only Forward Signal；即使 Legacy 提供实盘能力，FactorLab 也永久默认 `live_trading=false`，不发送真实订单。
+第一阶段完成隔离的数据与因子核心；第二阶段以 Pandas/NumPy 实现与 Legacy 无关的基线模型验证和快速回测；第三阶段以延迟导入的 LightGBM/XGBoost 扩展同一模型接口，并直接实现不依赖 Backtrader 的规则执行回测和四模型统一比较；第四阶段在独立 `forward/` 中实现预注册、冻结和 append-only Forward Signal。即使 Legacy 提供实盘能力，FactorLab 也永久默认 `live_trading=false`，不发送真实订单。
