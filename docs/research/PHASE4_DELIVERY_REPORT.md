@@ -104,8 +104,8 @@ python -m qbot.research.cli forward-signal --date YYYY-MM-DD --config ...
 # 两个版本均有 completion receipt；明确标记 SYNTHETIC SOFTWARE DEMO ONLY
 
 .\.venv-py39\python.exe -m qbot.research.cli download-data --config configs/research/csi500_smoke.yaml
-# failed safely at BaoStock login after 4 attempts:
-# 20260923T024112.174238Z-download-data-ec762717
+# failed safely at BaoStock login after 4 attempts on clean commit 47f1564:
+# 20260923T165405.262372Z-download-data-9af5efa1
 ```
 
 `pytest` 默认按 `pytest.ini` 排除两个 network marker。13 条 warning 均来自当前
@@ -152,8 +152,8 @@ Phase 4 新测试覆盖：
 
 ## 真实数据与真实信号状态
 
-本阶段没有用 synthetic 或历史重跑冒充真实结果。2026-09-23 再次执行真实 smoke
-下载，run 为 `20260923T024112.174238Z-download-data-ec762717`：benchmark 缓存可读，
+本阶段没有用 synthetic 或历史重跑冒充真实结果。2026-09-24 再次执行真实 smoke
+下载，run 为 `20260923T165405.262372Z-download-data-9af5efa1`：benchmark 缓存可读，
 确认 88 个研究交易日和 130 个精确预热交易日，但 BaoStock 登录连续四次网络接收
 错误后以 `failed` 结束。因此 PIT 股票池、个股数据、真实数据集、正式模型和真实
 RankIC/NAV 仍不存在。安全失败没有退化为当前成分股。
