@@ -257,3 +257,106 @@ def test_stamp_duty_schedule_must_be_contiguous(tmp_path):
 
     with pytest.raises(ConfigurationError, match="contiguous"):
         load_config(path, repo_root=tmp_path)
+
+
+def test_forward_defaults_to_disabled_without_a_fake_activation(tmp_path):
+    path = _write_config(tmp_path, _valid_document())
+
+    config = load_config(path, repo_root=tmp_path)
+
+    assert config.forward.enabled is False
+    assert config.forward.activation_date is None
+    assert config.forward.model_version is None
+    assert config.live_trading is False
+
+
+def test_enabled_forward_requires_complete_frozen_contract(tmp_path):
+    document = _valid_document()
+    document["forward"] = {"enabled": True}
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="activation_date is required"):
+        load_config(path, repo_root=tmp_path)
+
+
+def test_enabled_forward_accepts_explicit_future_contract(tmp_path):
+    document = _valid_document()
+    document["forward"] = {
+        "enabled": True,
+        "activation_date": "2024-05-02",
+        "model_name": "ridge",
+        "model_version": "ridge-forward-v1",
+        "training_asof": "2024-04-30",
+        "parameter_candidate_index": 1,
+        "timezone": "Asia/Shanghai",
+        "market_close_hour": 15,
+        "market_close_minute": 30,
+        "require_clean_worktree": True,
+    }
+    path = _write_config(tmp_path, document)
+
+    config = load_config(path, repo_root=tmp_path)
+
+    assert config.forward.enabled is True
+    assert config.forward.activation_date.isoformat() == "2024-05-02"
+    assert config.forward.training_asof.isoformat() == "2024-04-30"
+
+
+@pytest.mark.parametrize(
+    "forward,match",
+    [
+        (
+            {
+                "enabled": True,
+                "activation_date": "2024-05-02",
+                "training_asof": "2024-04-30",
+                "model_version": "../unsafe",
+            },
+            "safe non-empty identifier",
+        ),
+        (
+            {"model_name": "ridge", "parameter_candidate_index": 99},
+            "outside the configured ridge candidates",
+        ),
+        (
+            {"model_name": "Ridge"},
+            "canonical lowercase underscore form",
+        ),
+        (
+            {"market_close_hour": 9, "market_close_minute": 0},
+            "fixed at 15:30",
+        ),
+        (
+            {
+                "enabled": True,
+                "activation_date": "2024-05-02",
+                "training_asof": "2024-04-30",
+                "model_version": "ridge-v1",
+                "require_clean_worktree": False,
+            },
+            "must be true when enabled",
+        ),
+    ],
+)
+def test_forward_contract_rejects_unsafe_values(tmp_path, forward, match):
+    document = _valid_document()
+    document["forward"] = forward
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match=match):
+        load_config(path, repo_root=tmp_path)
+
+
+def test_enabled_factor_score_forward_requires_pre_registered_weights(tmp_path):
+    document = _valid_document()
+    document["forward"] = {
+        "enabled": True,
+        "activation_date": "2024-05-02",
+        "training_asof": "2024-04-30",
+        "model_name": "factor_score",
+        "model_version": "factor-score-v1",
+    }
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="requires fixed configured weights"):
+        load_config(path, repo_root=tmp_path)
