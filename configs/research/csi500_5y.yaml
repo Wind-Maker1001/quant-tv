@@ -127,6 +127,21 @@ models:
 market_regime:
   enabled: true
 
+# Phase 4 remains disabled until a future activation date and a frozen model
+# version are deliberately registered. Never set this to the missed
+# 2026-09-14 date or backfill signals as if they had existed then.
+forward:
+  enabled: false
+  activation_date: null
+  model_name: ridge
+  model_version: null
+  training_asof: null
+  parameter_candidate_index: 0
+  timezone: Asia/Shanghai
+  market_close_hour: 15
+  market_close_minute: 30
+  require_clean_worktree: true
+
 validation:
   initial_train_months: 24
   validation_months: 3

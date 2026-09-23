@@ -59,6 +59,18 @@ class PathsConfig:
     def report_dir(self) -> Path:
         return self.results_root / "report"
 
+    @property
+    def forward_dir(self) -> Path:
+        """Append-only paper-signal evidence and activation receipts."""
+
+        return self.results_root / "forward"
+
+    @property
+    def forward_models_dir(self) -> Path:
+        """Immutable model bundles used by the forward workflow."""
+
+        return self.forward_dir / "models"
+
 
 @dataclass(frozen=True)
 class DataConfig:
@@ -234,6 +246,27 @@ class MarketRegimeConfig:
 
 
 @dataclass(frozen=True)
+class ForwardConfig:
+    """Frozen, research-only controls for append-only forward signals.
+
+    The default is deliberately disabled.  Enabling the workflow requires a
+    separately pre-registered future activation date and an immutable model
+    version; configuration alone never sends an order.
+    """
+
+    enabled: bool = False
+    activation_date: Optional[date] = None
+    model_name: str = "ridge"
+    model_version: Optional[str] = None
+    training_asof: Optional[date] = None
+    parameter_candidate_index: int = 0
+    timezone: str = "Asia/Shanghai"
+    market_close_hour: int = 15
+    market_close_minute: int = 30
+    require_clean_worktree: bool = True
+
+
+@dataclass(frozen=True)
 class ValidationConfig:
     initial_train_months: int = 24
     validation_months: int = 3
@@ -350,6 +383,7 @@ class ResearchConfig:
     evaluation: EvaluationConfig = field(default_factory=EvaluationConfig)
     models: ModelsConfig = field(default_factory=ModelsConfig)
     market_regime: MarketRegimeConfig = field(default_factory=MarketRegimeConfig)
+    forward: ForwardConfig = field(default_factory=ForwardConfig)
     validation: ValidationConfig = field(default_factory=ValidationConfig)
     portfolio: PortfolioConfig = field(default_factory=PortfolioConfig)
     backtest: BacktestConfig = field(default_factory=BacktestConfig)
@@ -513,6 +547,7 @@ class ResearchConfig:
             raise ConfigurationError("models.ridge.tolerance must be positive")
         self._validate_lightgbm()
         self._validate_xgboost()
+        self._validate_forward()
         validation_values = {
             "initial_train_months": self.validation.initial_train_months,
             "validation_months": self.validation.validation_months,
@@ -645,6 +680,101 @@ class ResearchConfig:
             self._validate_non_negative(
                 prefix + ".reg_lambda", candidate.reg_lambda
             )
+
+    def _validate_forward(self) -> None:
+        config = self.forward
+        if type(config.enabled) is not bool:
+            raise ConfigurationError("forward.enabled must be boolean")
+        if type(config.require_clean_worktree) is not bool:
+            raise ConfigurationError(
+                "forward.require_clean_worktree must be boolean"
+            )
+        model_name = str(config.model_name).strip().lower().replace("-", "_")
+        supported = {"factor_score", "ridge", "lightgbm", "xgboost"}
+        if model_name not in supported:
+            raise ConfigurationError(
+                "forward.model_name must be factor_score, ridge, lightgbm, or xgboost"
+            )
+        if config.model_name != model_name:
+            raise ConfigurationError(
+                "forward.model_name must use canonical lowercase underscore form"
+            )
+        if type(config.parameter_candidate_index) is not int:
+            raise ConfigurationError(
+                "forward.parameter_candidate_index must be an integer"
+            )
+        if config.parameter_candidate_index < 0:
+            raise ConfigurationError(
+                "forward.parameter_candidate_index must be non-negative"
+            )
+        candidate_counts = {
+            "factor_score": 1,
+            "ridge": len(self.models.ridge.alphas),
+            "lightgbm": len(self.models.lightgbm.candidates),
+            "xgboost": len(self.models.xgboost.candidates),
+        }
+        if config.parameter_candidate_index >= candidate_counts[model_name]:
+            raise ConfigurationError(
+                "forward.parameter_candidate_index is outside the configured %s candidates"
+                % model_name
+            )
+        if config.timezone != "Asia/Shanghai":
+            raise ConfigurationError(
+                "forward.timezone must be Asia/Shanghai for A-share close checks"
+            )
+        if type(config.market_close_hour) is not int:
+            raise ConfigurationError("forward.market_close_hour must be an integer")
+        if type(config.market_close_minute) is not int:
+            raise ConfigurationError(
+                "forward.market_close_minute must be an integer"
+            )
+        # Phase 4 evidence is intentionally tied to a conservative, fixed
+        # post-close release boundary.  Allowing an arbitrary configurable
+        # time (for example 09:00) would let a same-day pre-close run be
+        # labelled ON_TIME even though its cross-section was not final.
+        if (config.market_close_hour, config.market_close_minute) != (15, 30):
+            raise ConfigurationError(
+                "forward market close boundary is fixed at 15:30 Asia/Shanghai"
+            )
+        version = config.model_version
+        if version is not None:
+            if (
+                not isinstance(version, str)
+                or not version.strip()
+                or version != version.strip()
+                or any(
+                    character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
+                    for character in version
+                )
+            ):
+                raise ConfigurationError(
+                    "forward.model_version must be a safe non-empty identifier"
+                )
+        if config.enabled:
+            if config.activation_date is None:
+                raise ConfigurationError(
+                    "forward.activation_date is required when forward.enabled=true"
+                )
+            if config.training_asof is None:
+                raise ConfigurationError(
+                    "forward.training_asof is required when forward.enabled=true"
+                )
+            if version is None:
+                raise ConfigurationError(
+                    "forward.model_version is required when forward.enabled=true"
+                )
+            if config.training_asof >= config.activation_date:
+                raise ConfigurationError(
+                    "forward.training_asof must be before forward.activation_date"
+                )
+            if not config.require_clean_worktree:
+                raise ConfigurationError(
+                    "forward.require_clean_worktree must be true when enabled"
+                )
+            if model_name == "factor_score" and not self.models.factor_score.weights:
+                raise ConfigurationError(
+                    "enabled factor_score forward model requires fixed configured weights"
+                )
 
     def _validate_xgboost(self) -> None:
         config = self.models.xgboost
@@ -792,6 +922,7 @@ __all__ = [
     "BacktestConfig",
     "FactorScoreConfig",
     "FeesConfig",
+    "ForwardConfig",
     "LightGBMConfig",
     "LightGBMParameters",
     "LabelConfig",

@@ -1,9 +1,10 @@
 """Command-line interface for the isolated FactorLab research pipeline."""
 
 import argparse
-from dataclasses import asdict
-from datetime import datetime, timezone
+from dataclasses import asdict, replace
+from datetime import date, datetime, timezone
 import hashlib
+import io
 import json
 import logging
 import math
@@ -11,6 +12,7 @@ import os
 from pathlib import Path
 import sys
 from typing import Any, Dict, Iterable, List, Optional
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 
@@ -26,12 +28,27 @@ from qbot.research.config import ResearchConfig, load_config
 from qbot.research.data import AKShareProvider, ParquetBarCache, TradingCalendar
 from qbot.research.dataset import DatasetBuildOptions, DatasetBuilder
 from qbot.research.errors import FactorLabError, PointInTimeUniverseRequiredError
+from qbot.research.forward import (
+    activation_id,
+    classify_forward_timing,
+    fit_final_model,
+    finalize_signal_record,
+    forward_contract_sha256,
+    load_forward_activation,
+    load_model_bundle,
+    record_signals,
+    register_forward_activation,
+    save_model_bundle,
+    selected_forward_model_parameters,
+)
+from qbot.research.forward.integrity import research_source_sha256, workflow_lock
 from qbot.research.metrics import (
     calculate_portfolio_metrics,
     evaluate_factors,
     evaluate_predictions,
 )
 from qbot.research.market import MARKET_FEATURE_COLUMNS, MARKET_REGIMES
+from qbot.research.portfolio import select_top_k
 from qbot.research.reports import (
     write_factor_report,
     write_model_comparison_report,
@@ -40,6 +57,8 @@ from qbot.research.reports import (
 from qbot.research.reproducibility import (
     PROVENANCE_FIELDS,
     RunManifest,
+    git_commit,
+    git_worktree_state,
     set_random_seed,
     validate_provenance,
 )
@@ -55,6 +74,20 @@ from qbot.research.validation import ExpandingWalkForwardSplitter, WalkForwardRu
 
 
 LOGGER = logging.getLogger("qbot.research")
+
+
+def _manifest_arguments(arguments: argparse.Namespace) -> Dict[str, Any]:
+    """Convert argparse values to stable JSON scalars for RunManifest."""
+
+    result: Dict[str, Any] = {}
+    for name, value in vars(arguments).items():
+        if isinstance(value, (date, datetime)):
+            result[name] = value.isoformat()
+        elif isinstance(value, Path):
+            result[name] = str(value)
+        else:
+            result[name] = value
+    return result
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -79,6 +112,16 @@ def _parser() -> argparse.ArgumentParser:
     )
     comparison = subparsers.add_parser("compare-models")
     comparison.add_argument("--config", required=True)
+    activation = subparsers.add_parser("activate-forward")
+    activation.add_argument("--config", required=True)
+    activation.add_argument("--date", required=True, type=date.fromisoformat)
+    freeze_model = subparsers.add_parser("freeze-forward-model")
+    freeze_model.add_argument("--config", required=True)
+    forward_signal = subparsers.add_parser("forward-signal")
+    forward_signal.add_argument("--config", required=True)
+    forward_signal.add_argument("--date", required=True, type=date.fromisoformat)
+    forward_signal.add_argument("--reissue-reason")
+    forward_signal.add_argument("--version")
     return parser
 
 
@@ -592,7 +635,14 @@ def _load_verified_dataset(
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, ValueError, AttributeError) as exc:
         raise FactorLabError("Dataset manifest is unreadable") from exc
-    dataset_sha256 = _file_sha256(dataset_path)
+    # Read the exact bytes that will be parsed.  Hashing the path and opening
+    # it again later creates a TOCTOU window when another process atomically
+    # replaces dataset.parquet between those two operations.
+    try:
+        dataset_content = dataset_path.read_bytes()
+    except OSError as exc:
+        raise FactorLabError("Dataset is unreadable") from exc
+    dataset_sha256 = hashlib.sha256(dataset_content).hexdigest()
     expected = {
         "schema_version": 2,
         "dataset_sha256": dataset_sha256,
@@ -692,7 +742,10 @@ def _load_verified_dataset(
             )
         run.payload["dataset_producer_run_id"] = producer_run_id
         run.payload["dataset_producer_provenance"] = producer_provenance
-    dataset = pd.read_parquet(dataset_path)
+    try:
+        dataset = pd.read_parquet(io.BytesIO(dataset_content))
+    except (OSError, ValueError, TypeError) as exc:
+        raise FactorLabError("Dataset Parquet content is unreadable") from exc
     required = {
         "date",
         "symbol",
@@ -1477,6 +1530,495 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
     )
 
 
+def _forward_runtime_config(
+    config: ResearchConfig, signal_date: date
+) -> ResearchConfig:
+    """Pin a daily forward run to exactly its requested information date."""
+
+    if signal_date < config.data.start:
+        raise FactorLabError("forward signal date is before data.start")
+    runtime = replace(config, data=replace(config.data, end=signal_date))
+    object.__setattr__(runtime, "config_path", config.config_path)
+    object.__setattr__(runtime, "repo_root", config.repo_root)
+    runtime.validate()
+    return runtime
+
+
+def _forward_now() -> datetime:
+    """Internal clock seam for pre-activation freeze enforcement."""
+
+    return datetime.now(timezone.utc)
+
+
+def _require_pre_activation_freeze(config: ResearchConfig) -> None:
+    activation = config.forward.activation_date
+    if activation is None:
+        raise FactorLabError("forward.activation_date is required")
+    now = _forward_now()
+    if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
+        raise FactorLabError("internal forward clock must be timezone-aware")
+    if now.astimezone(ZoneInfo("Asia/Shanghai")).date() >= activation:
+        raise FactorLabError(
+            "Forward model must be frozen strictly before its activation date"
+        )
+
+
+def _forward_identity(
+    config: ResearchConfig, run: RunManifest
+) -> tuple:
+    if not config.forward.enabled:
+        raise FactorLabError(
+            "Forward Test is disabled; pre-register a future activation in config"
+        )
+    if config.live_trading:
+        raise FactorLabError("Forward Test is paper-only; live_trading must be false")
+    try:
+        provenance = validate_provenance(run.payload)
+    except ValueError as exc:
+        raise FactorLabError("Forward run provenance is incomplete: %s" % exc) from exc
+    if config.forward.require_clean_worktree and provenance["git_dirty"]:
+        raise FactorLabError(
+            "Forward Test requires a clean committed worktree before publication"
+        )
+    _assert_current_forward_worktree(config, provenance)
+    if config.forward.activation_date is None:
+        raise FactorLabError("forward.activation_date is required")
+    contract = forward_contract_sha256(config)
+    identifier = activation_id(config.forward.activation_date, contract)
+    source = research_source_sha256(config.repo_root or Path.cwd())
+    return provenance, contract, identifier, source
+
+
+def _assert_current_forward_worktree(
+    config: ResearchConfig, expected_provenance: Dict[str, Any]
+) -> None:
+    """Recheck code identity immediately before publishing forward evidence."""
+
+    root = config.repo_root or Path.cwd()
+    current_commit = git_commit(root)
+    current_state = git_worktree_state(root)
+    if current_commit != expected_provenance["git_commit"]:
+        raise FactorLabError(
+            "Git commit changed during the forward run; no evidence was published"
+        )
+    if current_state.get("git_dirty") is not False:
+        raise FactorLabError(
+            "Git worktree changed during the forward run; no evidence was published"
+        )
+    if current_state.get("git_diff_sha256") is not None:
+        raise FactorLabError("Clean forward worktree must not have a diff hash")
+
+
+def _registered_forward_context(
+    config: ResearchConfig, run: RunManifest
+) -> tuple:
+    provenance, contract, identifier, source = _forward_identity(config, run)
+    activation = load_forward_activation(
+        config.paths.forward_dir,
+        identifier,
+        expected_contract_sha256=contract,
+        expected_source_sha256=source,
+    )
+    if activation.activation_date != config.forward.activation_date:
+        raise FactorLabError("Forward activation date differs from current config")
+    return provenance, contract, activation, source
+
+
+def command_activate_forward(
+    config: ResearchConfig,
+    run: RunManifest,
+    requested_date: date,
+) -> None:
+    """Create an immutable receipt before a genuine future experiment starts."""
+
+    provenance, contract, identifier, source = _forward_identity(config, run)
+    if requested_date != config.forward.activation_date:
+        raise FactorLabError(
+            "--date must exactly match forward.activation_date in the reviewed config"
+        )
+    _assert_current_forward_worktree(config, provenance)
+    receipt = register_forward_activation(
+        config.paths.forward_dir,
+        activation_date=requested_date,
+        contract_sha256=contract,
+        source_sha256=source,
+        git_commit=provenance["git_commit"],
+        config_path=config.config_path or "<in-memory-config>",
+        timezone_name=config.forward.timezone,
+    )
+    if receipt.activation_id != identifier:
+        raise FactorLabError("Forward activation receipt identity is inconsistent")
+    run.payload["activation_id"] = receipt.activation_id
+    run.payload["activation_manifest_sha256"] = receipt.manifest_sha256
+    run.payload["research_contract_sha256"] = contract
+    run.payload["source_sha256"] = source
+    run.add_output("forward_activation", receipt.path / "manifest.json")
+    LOGGER.info(
+        "Registered paper-only Forward Test activation %s for %s",
+        receipt.activation_id,
+        requested_date,
+    )
+
+
+def command_freeze_forward_model(
+    config: ResearchConfig,
+    run: RunManifest,
+) -> None:
+    """Fit one pre-specified model using only labels mature by training_asof."""
+
+    provenance, contract, activation, source = _registered_forward_context(config, run)
+    _require_pre_activation_freeze(config)
+    training_asof = config.forward.training_asof
+    model_version = config.forward.model_version
+    if training_asof is None or model_version is None:
+        raise FactorLabError("Forward model freeze settings are incomplete")
+    if config.data.end != training_asof:
+        raise FactorLabError(
+            "freeze-forward-model requires data.end to equal forward.training_asof"
+        )
+
+    benchmark = _load_benchmark_with_warmup(config)
+    full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
+    research_calendar = _research_calendar(config, full_calendar)
+    dataset, dataset_sha256, universe_version = _load_verified_dataset(
+        config, research_calendar, run
+    )
+    parameters = selected_forward_model_parameters(config)
+    fitted = fit_final_model(
+        dataset,
+        model_name=config.forward.model_name,
+        params=parameters,
+        feature_names=config.factors,
+        target=_target_column(config),
+        training_asof=training_asof,
+        seed=config.seed,
+    )
+    # Fitting can take minutes for tree models.  Recheck time, Git state, and
+    # executable source immediately before the immutable directory appears.
+    _require_pre_activation_freeze(config)
+    _assert_current_forward_worktree(config, provenance)
+    if research_source_sha256(config.repo_root or Path.cwd()) != source:
+        raise FactorLabError(
+            "FactorLab source changed during model fitting; no bundle was published"
+        )
+    bundle = save_model_bundle(
+        fitted,
+        config.paths.forward_models_dir,
+        source_dataset_sha256=dataset_sha256,
+        source_sha256=source,
+        universe_version=universe_version,
+        research_contract_sha256=contract,
+        git_commit=provenance["git_commit"],
+        model_version=model_version,
+    )
+    run.payload.update(
+        {
+            "activation_id": activation.activation_id,
+            "activation_manifest_sha256": activation.manifest_sha256,
+            "research_contract_sha256": contract,
+            "source_sha256": source,
+            "model": config.forward.model_name,
+            "model_version": model_version,
+            "model_parameters": parameters,
+            "model_bundle_sha256": bundle.metadata["content_sha256"],
+            "dataset_sha256": dataset_sha256,
+            "universe_version": universe_version,
+            "training_rows": bundle.metadata["training_rows"],
+            "max_label_exit_date": bundle.metadata["max_label_exit_date"],
+            "frozen_at": bundle.metadata["frozen_at"],
+        }
+    )
+    run.add_output("forward_model_bundle", bundle.path)
+    LOGGER.info(
+        "Frozen %s model %s on %d mature observations",
+        bundle.model_name,
+        bundle.model_version,
+        bundle.metadata["training_rows"],
+    )
+
+
+def _run_forward_child(
+    config: ResearchConfig,
+    parent: RunManifest,
+    command: str,
+    operation: Any,
+    *,
+    require_no_failures: bool = False,
+) -> RunManifest:
+    """Run one existing pipeline stage with its own truthful producer manifest."""
+
+    child = RunManifest(
+        config,
+        command,
+        {"parent_run_id": parent.run_id, "forward_refresh": True},
+    )
+    try:
+        operation(config, child)
+        if require_no_failures:
+            failures = child.payload.get("failures", {})
+            nonempty = sorted(
+                name
+                for name, values in failures.items()
+                if values not in (None, {}, [], ())
+            )
+            if nonempty:
+                raise FactorLabError(
+                    "Forward refresh is incomplete (%s); no signal may be published"
+                    % ", ".join(nonempty)
+                )
+        child.finish("success")
+    except Exception as exc:
+        try:
+            child.finish("failed", "%s: %s" % (type(exc).__name__, exc))
+        except Exception:
+            LOGGER.exception("Cannot finalise failed %s child manifest", command)
+        raise
+    parent.payload.setdefault("child_run_ids", {})[command] = child.run_id
+    return child
+
+
+def command_forward_signal(
+    config: ResearchConfig,
+    run: RunManifest,
+    signal_date: date,
+    *,
+    reissue_reason: Optional[str] = None,
+    version: Optional[str] = None,
+    generated_at: Optional[datetime] = None,
+    refresh_data: bool = True,
+) -> None:
+    """Serialize the full refresh/build/score/publish transaction."""
+
+    lock_path = config.paths.data_root / ".locks" / "forward-workflow.lock"
+    with workflow_lock(lock_path, timeout_seconds=0.0):
+        _command_forward_signal_locked(
+            config,
+            run,
+            signal_date,
+            reissue_reason=reissue_reason,
+            version=version,
+            generated_at=generated_at,
+            refresh_data=refresh_data,
+        )
+
+
+def _command_forward_signal_locked(
+    config: ResearchConfig,
+    run: RunManifest,
+    signal_date: date,
+    *,
+    reissue_reason: Optional[str] = None,
+    version: Optional[str] = None,
+    generated_at: Optional[datetime] = None,
+    refresh_data: bool = True,
+) -> None:
+    """Refresh data, score one close-known cross-section, and append a signal."""
+
+    provenance, contract, activation, source = _registered_forward_context(config, run)
+    if config.data.end != signal_date:
+        raise FactorLabError("Forward runtime data.end must equal --date")
+    preflight_timing = classify_forward_timing(
+        signal_date,
+        activation_date=activation.activation_date,
+        generated_at=generated_at,
+        timezone_name=config.forward.timezone,
+        market_close_hour=config.forward.market_close_hour,
+        market_close_minute=config.forward.market_close_minute,
+        reissue_reason=reissue_reason,
+    )
+
+    model_version = config.forward.model_version
+    if model_version is None:
+        raise FactorLabError("forward.model_version is required")
+    bundle_path = (
+        config.paths.forward_models_dir
+        / config.forward.model_name
+        / model_version
+    )
+    bundle = load_model_bundle(
+        bundle_path,
+        expected_model_name=config.forward.model_name,
+        expected_feature_names=config.factors,
+        expected_source_sha256=source,
+    )
+    bundle_expected = {
+        "model_version": model_version,
+        "target": _target_column(config),
+        "training_asof": config.forward.training_asof.isoformat()
+        if config.forward.training_asof is not None
+        else None,
+        "research_contract_sha256": contract,
+        "source_sha256": source,
+        "seed": config.seed,
+        "parameters": selected_forward_model_parameters(config),
+    }
+    mismatches = [
+        name
+        for name, expected in bundle_expected.items()
+        if bundle.metadata.get(name) != expected
+    ]
+    if mismatches:
+        raise FactorLabError(
+            "Forward model bundle differs from the registered contract (%s)"
+            % ", ".join(mismatches)
+        )
+    try:
+        frozen_at = datetime.strptime(
+            bundle.metadata["frozen_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
+        ).replace(tzinfo=timezone.utc)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise FactorLabError("Forward model bundle has an invalid frozen_at") from exc
+    if (
+        frozen_at.astimezone(ZoneInfo(config.forward.timezone)).date()
+        >= activation.activation_date
+    ):
+        raise FactorLabError(
+            "Forward model bundle was not frozen before the activation date"
+        )
+
+    if refresh_data:
+        _run_forward_child(
+            config,
+            run,
+            "download-data",
+            command_download,
+            require_no_failures=True,
+        )
+        _run_forward_child(config, run, "build-dataset", command_build_dataset)
+
+    benchmark = _load_benchmark_with_warmup(config)
+    full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
+    research_calendar = _research_calendar(config, full_calendar)
+    normalized_day = pd.Timestamp(signal_date)
+    if normalized_day not in research_calendar:
+        raise FactorLabError("--date is not a CSI500 benchmark trading session")
+    if research_calendar.max() != normalized_day:
+        raise FactorLabError(
+            "Benchmark data_asof does not reach exactly the requested signal date"
+        )
+    dataset, dataset_sha256, universe_version = _load_verified_dataset(
+        config, research_calendar, run
+    )
+    cross_section = dataset.loc[dataset["date"].eq(normalized_day)].copy()
+    if cross_section.empty:
+        raise FactorLabError("Dataset contains no eligible rows on the signal date")
+    required_coverage = max(
+        config.evaluation.min_cross_section,
+        int(
+            math.ceil(
+                config.universe.expected_member_count
+                * config.universe.min_valid_ohlcv_ratio
+            )
+        ),
+    )
+    if len(cross_section) < required_coverage:
+        raise FactorLabError(
+            "Signal-day eligible cross-section has only %d rows; at least %d are "
+            "required by the PIT/data-quality coverage contract"
+            % (len(cross_section), required_coverage)
+        )
+    finite_features = cross_section.loc[:, list(config.factors)].apply(
+        pd.to_numeric, errors="coerce"
+    )
+    invalid_rows = ~finite_features.apply(lambda column: column.map(math.isfinite)).all(axis=1)
+    if invalid_rows.any():
+        invalid_symbols = cross_section.loc[invalid_rows, "symbol"].astype(str).tolist()
+        raise FactorLabError(
+            "Signal-day factors are incomplete for %d eligible securities; "
+            "no model-side imputation is allowed (%s)"
+            % (len(invalid_symbols), ", ".join(invalid_symbols[:10]))
+        )
+    scores = bundle.predict(finite_features)
+    ranked = select_top_k(
+        pd.DataFrame(
+            {
+                "date": normalized_day,
+                "symbol": cross_section["symbol"].to_numpy(),
+                "score": scores.to_numpy(dtype=float),
+            }
+        ),
+        top_k=config.portfolio.top_k,
+        rebalance_every=1,
+        trading_dates=[normalized_day],
+        minimum_cross_section=config.evaluation.min_cross_section,
+    )
+    signal_values = ranked[["symbol", "score", "rank", "target_weight"]]
+    # When the CLI uses the real clock, record publication time after the
+    # potentially long network/build stages.  If midnight was crossed the
+    # run must be reclassified (and cannot silently remain ON_TIME).
+    timing = (
+        preflight_timing
+        if generated_at is not None
+        else classify_forward_timing(
+            signal_date,
+            activation_date=activation.activation_date,
+            timezone_name=config.forward.timezone,
+            market_close_hour=config.forward.market_close_hour,
+            market_close_minute=config.forward.market_close_minute,
+            reissue_reason=reissue_reason,
+        )
+    )
+    _assert_current_forward_worktree(config, provenance)
+    if research_source_sha256(config.repo_root or Path.cwd()) != source:
+        raise FactorLabError(
+            "FactorLab source changed during the forward workflow; no signal was published"
+        )
+    record = record_signals(
+        signal_values,
+        config.paths.forward_dir / "signals",
+        activation_date=activation.activation_date,
+        signal_date=signal_date,
+        data_asof=signal_date,
+        generated_at=timing.generated_at,
+        model_name=config.forward.model_name,
+        model_version=model_version,
+        model_bundle_sha256=bundle.metadata["content_sha256"],
+        dataset_sha256=dataset_sha256,
+        git_commit=provenance["git_commit"],
+        run_id=run.run_id,
+        universe_version=universe_version,
+        activation_id=activation.activation_id,
+        activation_manifest_sha256=activation.manifest_sha256,
+        research_contract_sha256=contract,
+        source_sha256=source,
+        timeliness=timing.timeliness,
+        reissue_reason=timing.reissue_reason,
+        version=version,
+    )
+    run.payload.update(
+        {
+            "activation_id": activation.activation_id,
+            "activation_manifest_sha256": activation.manifest_sha256,
+            "research_contract_sha256": contract,
+            "source_sha256": source,
+            "model": config.forward.model_name,
+            "model_version": model_version,
+            "model_bundle_sha256": bundle.metadata["content_sha256"],
+            "model_training_dataset_sha256": bundle.metadata[
+                "source_dataset_sha256"
+            ],
+            "dataset_sha256": dataset_sha256,
+            "universe_version": universe_version,
+            "signal_date": signal_date.isoformat(),
+            "data_asof": signal_date.isoformat(),
+            "timeliness": timing.timeliness,
+            "signal_version": record.version,
+            "signal_sha256": record.sha256,
+            "signal_manifest_sha256": record.manifest_sha256,
+            "signal_rows": record.row_count,
+        }
+    )
+    run.add_output("forward_signals", record.signals_path)
+    run.add_output("forward_signal_manifest", record.manifest_path)
+    LOGGER.info(
+        "Published paper-only %s signal %s/%s with %d holdings",
+        timing.timeliness,
+        signal_date,
+        record.version,
+        record.row_count,
+    )
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = _parser()
     arguments = parser.parse_args(argv)
@@ -1486,12 +2028,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     try:
         config = load_config(arguments.config)
+        if arguments.command == "forward-signal":
+            config = _forward_runtime_config(config, arguments.date)
     except FactorLabError as exc:
         LOGGER.error("%s", exc)
         return 2
     try:
         set_random_seed(config.seed)
-        run = RunManifest(config, arguments.command, vars(arguments))
+        run = RunManifest(config, arguments.command, _manifest_arguments(arguments))
     except Exception as exc:
         LOGGER.error(
             "Cannot initialise reproducible run manifest: %s: %s",
@@ -1515,6 +2059,18 @@ def main(argv: Optional[List[str]] = None) -> int:
             command_walk_forward(config, run, arguments.model)
         elif arguments.command == "compare-models":
             command_compare_models(config, run)
+        elif arguments.command == "activate-forward":
+            command_activate_forward(config, run, arguments.date)
+        elif arguments.command == "freeze-forward-model":
+            command_freeze_forward_model(config, run)
+        elif arguments.command == "forward-signal":
+            command_forward_signal(
+                config,
+                run,
+                arguments.date,
+                reissue_reason=arguments.reissue_reason,
+                version=arguments.version,
+            )
         else:  # argparse prevents this branch
             raise FactorLabError("Unsupported command %s" % arguments.command)
     except (FactorLabError, OSError, ValueError) as exc:
@@ -1544,9 +2100,24 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 1
     try:
         run.finish("success")
+        if arguments.command == "forward-signal":
+            signals_path = run.payload.get("outputs", {}).get("forward_signals")
+            if not isinstance(signals_path, str) or not signals_path:
+                raise FactorLabError(
+                    "Forward signal run has no published signal output to finalize"
+                )
+            finalized = finalize_signal_record(Path(signals_path).parent, run.path)
+            LOGGER.info(
+                "Finalized append-only forward signal receipt: %s",
+                finalized.completion_path,
+            )
     except Exception as exc:
+        try:
+            run.finish("failed", "signal/run finalization failed: %s" % exc)
+        except Exception:
+            LOGGER.exception("Cannot mark failed signal finalization in run manifest")
         LOGGER.error(
-            "Command completed but the success manifest could not be finalised: %s: %s",
+            "Command completed but its success evidence could not be finalised: %s: %s",
             type(exc).__name__,
             exc,
         )

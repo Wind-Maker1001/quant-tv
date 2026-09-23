@@ -128,6 +128,19 @@ models:
 market_regime:
   enabled: true
 
+# Disabled in smoke: synthetic/offline runs are never forward evidence.
+forward:
+  enabled: false
+  activation_date: null
+  model_name: ridge
+  model_version: null
+  training_asof: null
+  parameter_candidate_index: 0
+  timezone: Asia/Shanghai
+  market_close_hour: 15
+  market_close_minute: 30
+  require_clean_worktree: true
+
 validation:
   initial_train_months: 2
   validation_months: 1

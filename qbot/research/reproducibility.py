@@ -31,6 +31,7 @@ TRACKED_PACKAGES = (
     "xgboost",
     "PyYAML",
     "pytest",
+    "tzdata",
 )
 
 PROVENANCE_FIELDS = (
