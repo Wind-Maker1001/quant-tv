@@ -89,7 +89,7 @@ python -m qbot.research.cli forward-signal --date YYYY-MM-DD --config ...
 
 ```text
 .\.venv-py39\python.exe -m pytest -q
-291 passed, 2 deselected, 13 warnings in 120.65s
+292 passed, 2 deselected, 13 warnings in 109.75s
 
 .\.venv-py39\python.exe -m compileall -q qbot/research examples/research tests/research
 
@@ -97,9 +97,9 @@ python -m qbot.research.cli forward-signal --date YYYY-MM-DD --config ...
 # 已列出 activate-forward / freeze-forward-model / forward-signal
 
 .\.venv-py39\python.exe -m qbot.research.cli audit --config configs/research/csi500_smoke.yaml
-# success: 20260923T164110.454601Z-audit-664a5cca
+# success on clean commit 528c39f: 20260923T165306.531462Z-audit-61c9c053
 
-.\.venv-py39\python.exe -m examples.research.phase4_synthetic_demo --output results/examples/phase4_synthetic_acceptance_20260924_v2
+.\.venv-py39\python.exe -m examples.research.phase4_synthetic_demo --output results/examples/phase4_synthetic_acceptance_20260924_final
 # success: 2099 年 synthetic activation，Ridge bundle，ON_TIME v000001，LATE_REISSUE v000002
 # 两个版本均有 completion receipt；明确标记 SYNTHETIC SOFTWARE DEMO ONLY
 
