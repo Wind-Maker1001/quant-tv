@@ -65,6 +65,7 @@ from qbot.research.reproducibility import (
 from qbot.research.universe.csi500 import (
     BaoStockPointInTimeProvider,
     collect_point_in_time_universe,
+    compress_membership_intervals,
     dataframe_sha256,
     import_point_in_time_universe,
     validate_daily_membership,
@@ -102,7 +103,15 @@ def _parser() -> argparse.ArgumentParser:
         command.add_argument("--config", required=True)
     importer = subparsers.add_parser("import-universe")
     importer.add_argument("--config", required=True)
-    importer.add_argument("--input", required=True, dest="input_path")
+    importer.add_argument(
+        "--input",
+        required=True,
+        dest="input_path",
+        help=(
+            "CSV/Parquet with exact date,symbol snapshots or explicit "
+            "inclusive symbol,entry_date,exit_date intervals"
+        ),
+    )
     walk_forward = subparsers.add_parser("walk-forward")
     walk_forward.add_argument("--config", required=True)
     walk_forward.add_argument(
@@ -323,19 +332,59 @@ def _load_verified_membership(
     dates = pd.DatetimeIndex(pd.to_datetime(calendar, errors="raise")).normalize()
     source = config.universe.provider.lower()
     if source == "baostock":
-        expected_source = "BaoStockPointInTimeProvider"
-        expected_source_version = "baostock-query_zz500_stocks-daily-v1"
+        expected_identity = {
+            "schema_version": 1,
+            "source": "BaoStockPointInTimeProvider",
+            "source_version": "baostock-query_zz500_stocks-daily-v1",
+        }
     elif source == "local":
-        expected_source = "local-import"
-        expected_source_version = "user-pit-daily-import-v1"
+        identity = (
+            manifest.get("schema_version"),
+            manifest.get("source"),
+            manifest.get("source_version"),
+        )
+        supported_identities = {
+            (1, "local-import", "user-pit-daily-import-v1"),
+            (2, "local-import", "user-pit-import-v2"),
+        }
+        if identity not in supported_identities:
+            raise PointInTimeUniverseRequiredError(
+                "unsupported local universe manifest version; re-import the PIT universe"
+            )
+        expected_identity = {
+            "schema_version": identity[0],
+            "source": identity[1],
+            "source_version": identity[2],
+        }
+        if identity[0] == 2:
+            layout = manifest.get("input_layout")
+            expected_semantics = {
+                "daily": "exact-trading-date-snapshot",
+                "inclusive-intervals": "entry_date <= trading_date <= exit_date",
+            }
+            if layout not in expected_semantics:
+                raise PointInTimeUniverseRequiredError(
+                    "local universe manifest input_layout is invalid"
+                )
+            if manifest.get("membership_semantics") != expected_semantics[layout]:
+                raise PointInTimeUniverseRequiredError(
+                    "local universe manifest membership_semantics is invalid"
+                )
+            if manifest.get("daily_sha256") != manifest.get("sha256"):
+                raise PointInTimeUniverseRequiredError(
+                    "local universe manifest daily_sha256 is invalid"
+                )
+            intervals_digest = manifest.get("intervals_sha256")
+            if not _is_sha256(intervals_digest):
+                raise PointInTimeUniverseRequiredError(
+                    "local universe manifest intervals_sha256 is invalid"
+                )
     else:
         raise PointInTimeUniverseRequiredError(
             "universe.provider must be baostock or local"
         )
     expected = {
-        "schema_version": 1,
-        "source": expected_source,
-        "source_version": expected_source_version,
+        **expected_identity,
         "index_symbol": config.universe.index_symbol,
         "start": dates.min().strftime("%Y-%m-%d"),
         "end": dates.max().strftime("%Y-%m-%d"),
@@ -374,6 +423,47 @@ def _load_verified_membership(
     digest = manifest.get("sha256")
     if not _is_sha256(digest) or digest.lower() != dataframe_sha256(membership):
         raise PointInTimeUniverseRequiredError("universe content hash mismatch")
+    daily_digest = manifest.get("daily_sha256")
+    if daily_digest is not None and (
+        not _is_sha256(daily_digest) or daily_digest.lower() != digest.lower()
+    ):
+        raise PointInTimeUniverseRequiredError(
+            "universe daily_sha256 does not match the canonical content hash"
+        )
+    intervals_digest = manifest.get("intervals_sha256")
+    verify_intervals = intervals_digest is not None or source == "local"
+    if verify_intervals:
+        if intervals_digest is not None and not _is_sha256(intervals_digest):
+            raise PointInTimeUniverseRequiredError(
+                "universe intervals_sha256 is invalid"
+            )
+        intervals_path = config.paths.universe_dir / "csi500_intervals.parquet"
+        if not intervals_path.is_file():
+            raise PointInTimeUniverseRequiredError(
+                "universe intervals artifact is missing"
+            )
+        try:
+            intervals = pd.read_parquet(intervals_path)
+        except Exception as exc:
+            raise PointInTimeUniverseRequiredError(
+                "universe intervals artifact is unreadable"
+            ) from exc
+        expected_intervals = compress_membership_intervals(membership)
+        actual_intervals_digest = dataframe_sha256(intervals)
+        expected_intervals_digest = dataframe_sha256(expected_intervals)
+        if intervals_digest is None:
+            intervals_mismatch = (
+                actual_intervals_digest != expected_intervals_digest
+            )
+        else:
+            intervals_mismatch = (
+                actual_intervals_digest != intervals_digest.lower()
+                or expected_intervals_digest != intervals_digest.lower()
+            )
+        if intervals_mismatch:
+            raise PointInTimeUniverseRequiredError(
+                "universe intervals content hash mismatch"
+            )
     return membership
 
 
@@ -497,7 +587,14 @@ def command_import_universe(
         index_symbol=config.universe.index_symbol,
     )
     run.payload["universe_version"] = manifest["sha256"]
+    run.payload["universe_input_layout"] = manifest["input_layout"]
+    run.payload["universe_source_file_sha256"] = manifest["source_file_sha256"]
     run.add_output("universe", config.paths.universe_dir / "csi500_daily.parquet")
+    run.add_output(
+        "universe_intervals",
+        config.paths.universe_dir / "csi500_intervals.parquet",
+    )
+    run.add_output("universe_manifest", config.paths.universe_dir / "manifest.json")
     LOGGER.info("Imported and validated %d PIT sessions", manifest["trading_dates"])
 
 

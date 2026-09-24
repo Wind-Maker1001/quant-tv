@@ -274,6 +274,8 @@ def test_import_universe_cli_orchestrates_without_network(tmp_path, monkeypatch)
         return {
             "sha256": "imported-universe-sha",
             "trading_dates": len(calendar),
+            "input_layout": "inclusive-intervals",
+            "source_file_sha256": "a" * 64,
         }
 
     monkeypatch.setattr(cli, "import_point_in_time_universe", fake_import)
@@ -301,7 +303,13 @@ def test_import_universe_cli_orchestrates_without_network(tmp_path, monkeypatch)
     payload = json.loads(_manifest_files(config)[0].read_text(encoding="utf-8"))
     assert payload["status"] == "success"
     assert payload["universe_version"] == "imported-universe-sha"
+    assert payload["universe_input_layout"] == "inclusive-intervals"
+    assert payload["universe_source_file_sha256"] == "a" * 64
     assert payload["outputs"]["universe"].endswith("csi500_daily.parquet")
+    assert payload["outputs"]["universe_intervals"].endswith(
+        "csi500_intervals.parquet"
+    )
+    assert payload["outputs"]["universe_manifest"].endswith("manifest.json")
 
 
 def test_import_universe_requires_explicit_local_provider(tmp_path):

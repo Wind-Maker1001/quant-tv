@@ -203,6 +203,10 @@ def _write_verified_inputs(
         config.paths.universe_dir / "csi500_daily.parquet", index=False
     )
     universe_version = cli.dataframe_sha256(membership)
+    intervals = cli.compress_membership_intervals(membership)
+    intervals.to_parquet(
+        config.paths.universe_dir / "csi500_intervals.parquet", index=False
+    )
     if write_universe_manifest:
         cli._atomic_json(
             {
@@ -471,6 +475,163 @@ def test_verified_local_membership_requires_import_source_provenance(
     cli._atomic_json(manifest, manifest_path)
 
     with pytest.raises(FactorLabError, match="POINT-IN-TIME UNIVERSE REQUIRED"):
+        cli._load_verified_membership(config, dates)
+
+
+@pytest.mark.parametrize(
+    "schema_version,source_version,extra",
+    [
+        (1, "user-pit-daily-import-v1", {}),
+        (
+            2,
+            "user-pit-import-v2",
+            {
+                "input_layout": "daily",
+                "membership_semantics": "exact-trading-date-snapshot",
+            },
+        ),
+        (
+            2,
+            "user-pit-import-v2",
+            {
+                "input_layout": "inclusive-intervals",
+                "membership_semantics": "entry_date <= trading_date <= exit_date",
+            },
+        ),
+    ],
+)
+def test_verified_local_membership_accepts_allowlisted_manifest_versions(
+    tmp_path, schema_version, source_version, extra
+):
+    dates, dataset, _, _ = _inputs()
+    config = _config(tmp_path)
+    object.__setattr__(config.universe, "provider", "local")
+    _, expected, _ = _write_verified_inputs(config, dataset)
+    manifest_path = config.paths.universe_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest.update(
+        {
+            "schema_version": schema_version,
+            "source": "local-import",
+            "source_version": source_version,
+            "source_file": str(tmp_path / "pit.csv"),
+            "source_file_sha256": "c" * 64,
+            **extra,
+        }
+    )
+    if schema_version == 2:
+        manifest["daily_sha256"] = manifest["sha256"]
+        manifest["intervals_sha256"] = cli.dataframe_sha256(
+            cli.compress_membership_intervals(expected)
+        )
+    cli._atomic_json(manifest, manifest_path)
+
+    actual = cli._load_verified_membership(config, dates)
+    pd.testing.assert_frame_equal(actual, expected)
+
+
+@pytest.mark.parametrize(
+    "updates,match",
+    [
+        ({"schema_version": 3}, "unsupported local universe manifest version"),
+        ({"input_layout": "opt-out-intervals"}, "input_layout is invalid"),
+        ({"membership_semantics": "exclusive"}, "membership_semantics is invalid"),
+        ({"daily_sha256": "d" * 64}, "daily_sha256 is invalid"),
+        ({"intervals_sha256": None}, "intervals_sha256 is invalid"),
+    ],
+)
+def test_verified_local_membership_rejects_unknown_v2_contract(
+    tmp_path, updates, match
+):
+    dates, dataset, _, _ = _inputs()
+    config = _config(tmp_path)
+    object.__setattr__(config.universe, "provider", "local")
+    _write_verified_inputs(config, dataset)
+    manifest_path = config.paths.universe_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest.update(
+        {
+            "schema_version": 2,
+            "source": "local-import",
+            "source_version": "user-pit-import-v2",
+            "source_file": str(tmp_path / "pit.csv"),
+            "source_file_sha256": "c" * 64,
+            "input_layout": "inclusive-intervals",
+            "membership_semantics": "entry_date <= trading_date <= exit_date",
+            "daily_sha256": manifest["sha256"],
+            "intervals_sha256": cli.dataframe_sha256(
+                cli.compress_membership_intervals(
+                    cli.validate_daily_membership(
+                        pd.read_parquet(
+                            config.paths.universe_dir / "csi500_daily.parquet"
+                        ),
+                        dates,
+                        config.universe.expected_member_count,
+                    )
+                )
+            ),
+            **updates,
+        }
+    )
+    cli._atomic_json(manifest, manifest_path)
+
+    with pytest.raises(FactorLabError, match=match):
+        cli._load_verified_membership(config, dates)
+
+
+def test_verified_local_membership_rejects_tampered_intervals(tmp_path):
+    dates, dataset, _, _ = _inputs()
+    config = _config(tmp_path)
+    object.__setattr__(config.universe, "provider", "local")
+    _, membership, _ = _write_verified_inputs(config, dataset)
+    intervals = cli.compress_membership_intervals(membership)
+    manifest_path = config.paths.universe_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest.update(
+        {
+            "schema_version": 2,
+            "source": "local-import",
+            "source_version": "user-pit-import-v2",
+            "source_file": str(tmp_path / "pit.csv"),
+            "source_file_sha256": "c" * 64,
+            "input_layout": "inclusive-intervals",
+            "membership_semantics": "entry_date <= trading_date <= exit_date",
+            "daily_sha256": manifest["sha256"],
+            "intervals_sha256": cli.dataframe_sha256(intervals),
+        }
+    )
+    cli._atomic_json(manifest, manifest_path)
+    intervals.loc[0, "exit_date"] = intervals.loc[0, "entry_date"]
+    intervals.to_parquet(
+        config.paths.universe_dir / "csi500_intervals.parquet", index=False
+    )
+
+    with pytest.raises(FactorLabError, match="intervals content hash mismatch"):
+        cli._load_verified_membership(config, dates)
+
+
+def test_verified_legacy_local_membership_also_checks_intervals(tmp_path):
+    dates, dataset, _, _ = _inputs()
+    config = _config(tmp_path)
+    object.__setattr__(config.universe, "provider", "local")
+    _write_verified_inputs(config, dataset)
+    manifest_path = config.paths.universe_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest.update(
+        {
+            "source": "local-import",
+            "source_version": "user-pit-daily-import-v1",
+            "source_file": str(tmp_path / "pit.csv"),
+            "source_file_sha256": "c" * 64,
+        }
+    )
+    cli._atomic_json(manifest, manifest_path)
+    intervals_path = config.paths.universe_dir / "csi500_intervals.parquet"
+    tampered = pd.read_parquet(intervals_path)
+    tampered.loc[0, "exit_date"] = tampered.loc[0, "entry_date"]
+    tampered.to_parquet(intervals_path, index=False)
+
+    with pytest.raises(FactorLabError, match="intervals content hash mismatch"):
         cli._load_verified_membership(config, dates)
 
 

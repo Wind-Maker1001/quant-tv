@@ -6,6 +6,7 @@ from .csi500 import (
     DataFramePointInTimeUniverse,
     collect_point_in_time_universe,
     compress_membership_intervals,
+    expand_membership_intervals,
     import_point_in_time_universe,
     validate_daily_membership,
 )
@@ -17,6 +18,7 @@ __all__ = [
     "PointInTimeUniverseProvider",
     "collect_point_in_time_universe",
     "compress_membership_intervals",
+    "expand_membership_intervals",
     "import_point_in_time_universe",
     "validate_daily_membership",
 ]

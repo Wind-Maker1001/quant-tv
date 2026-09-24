@@ -5,6 +5,8 @@ Current constituents are deliberately never used as a historical fallback.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+from datetime import date, datetime, time as datetime_time, timezone
 import hashlib
 import io
 import json
@@ -13,9 +15,9 @@ from numbers import Real
 import os
 import re
 import time
-from datetime import datetime, timezone
+import uuid
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 import pandas as pd
 
@@ -173,6 +175,171 @@ def compress_membership_intervals(daily: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=columns).sort_values(
         ["symbol", "entry_date"], kind="mergesort"
     ).reset_index(drop=True)
+
+
+def _strict_import_date(value: Any, name: str) -> pd.Timestamp:
+    """Parse a local trading date without numeric or timezone coercion."""
+
+    if value is None or value is pd.NaT or value is pd.NA or (
+        isinstance(value, float) and pd.isna(value)
+    ):
+        raise PointInTimeUniverseError(
+            "%s: %s must not be missing" % (PIT_REQUIRED, name)
+        )
+    if isinstance(value, (bool, Real)) and not isinstance(value, (date, datetime)):
+        raise PointInTimeUniverseError(
+            "%s: %s must not be a numeric timestamp" % (PIT_REQUIRED, name)
+        )
+    if isinstance(value, str):
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+            raise PointInTimeUniverseError(
+                "%s: %s must use canonical YYYY-MM-DD form"
+                % (PIT_REQUIRED, name)
+            )
+        try:
+            return pd.Timestamp(date.fromisoformat(value))
+        except ValueError as exc:
+            raise PointInTimeUniverseError(
+                "%s: %s is not a valid calendar date" % (PIT_REQUIRED, name)
+            ) from exc
+    # ``pandas.Timestamp`` subclasses ``datetime``.  Handle it first so
+    # nanosecond precision cannot slip through ``datetime.time()`` unnoticed.
+    if isinstance(value, pd.Timestamp):
+        if pd.isna(value):
+            raise PointInTimeUniverseError(
+                "%s: %s must not be missing" % (PIT_REQUIRED, name)
+            )
+        if value.tzinfo is not None:
+            raise PointInTimeUniverseError(
+                "%s: %s must be timezone-naive" % (PIT_REQUIRED, name)
+            )
+        if value != value.normalize():
+            raise PointInTimeUniverseError(
+                "%s: %s must not contain a time-of-day" % (PIT_REQUIRED, name)
+            )
+        return value.normalize()
+    if isinstance(value, datetime):
+        if value.tzinfo is not None or value.utcoffset() is not None:
+            raise PointInTimeUniverseError(
+                "%s: %s must be timezone-naive" % (PIT_REQUIRED, name)
+            )
+        if value.time() != datetime_time.min:
+            raise PointInTimeUniverseError(
+                "%s: %s must not contain a time-of-day" % (PIT_REQUIRED, name)
+            )
+        return pd.Timestamp(value)
+    if isinstance(value, date):
+        return pd.Timestamp(value)
+    raise PointInTimeUniverseError(
+        "%s: %s must be a canonical trading date" % (PIT_REQUIRED, name)
+    )
+
+
+def expand_membership_intervals(
+    intervals: pd.DataFrame,
+    calendar: Iterable[Any],
+    expected_member_count: Optional[int] = 500,
+) -> pd.DataFrame:
+    """Expand inclusive membership intervals over an exact trading calendar.
+
+    Input rows mean ``entry_date <= trading_date <= exit_date``.  Both bounds
+    are mandatory effective dates.  No inference is made from announcement
+    dates, adjustment-base dates, or an ``opt-out`` convention; callers must
+    convert official source material to these explicit semantics first.
+    """
+
+    required = {"symbol", "entry_date", "exit_date"}
+    missing = sorted(required.difference(intervals.columns))
+    if missing:
+        raise PointInTimeUniverseError(
+            "%s: interval import missing columns %s" % (PIT_REQUIRED, missing)
+        )
+    if intervals.empty:
+        raise PointInTimeUniverseError("%s: interval import is empty" % PIT_REQUIRED)
+    result = intervals.copy()
+    result["symbol"] = result["symbol"].map(canonical_symbol)
+    if "is_member" in result.columns:
+        flags = result["is_member"].map(_membership_flag)
+        if not flags.all():
+            raise PointInTimeUniverseError(
+                "%s: interval rows must all represent active membership"
+                % PIT_REQUIRED
+            )
+    result["entry_date"] = pd.Series(
+        [
+            _strict_import_date(value, "entry_date")
+            for value in result["entry_date"].tolist()
+        ],
+        index=result.index,
+        dtype="datetime64[ns]",
+    )
+    result["exit_date"] = pd.Series(
+        [
+            _strict_import_date(value, "exit_date")
+            for value in result["exit_date"].tolist()
+        ],
+        index=result.index,
+        dtype="datetime64[ns]",
+    )
+    invalid_order = result["exit_date"].notna() & (
+        result["exit_date"] < result["entry_date"]
+    )
+    if invalid_order.any():
+        raise PointInTimeUniverseError(
+            "%s: exit_date must be on or after entry_date" % PIT_REQUIRED
+        )
+    if result.duplicated(["symbol", "entry_date", "exit_date"]).any():
+        raise PointInTimeUniverseError(
+            "%s: duplicate membership intervals" % PIT_REQUIRED
+        )
+    ordered = result.sort_values(
+        ["symbol", "entry_date", "exit_date"], kind="mergesort"
+    )
+    previous_exit = ordered.groupby("symbol", sort=False)["exit_date"].shift()
+    overlaps = previous_exit.notna() & ordered["entry_date"].le(previous_exit)
+    if overlaps.any():
+        examples = ordered.loc[
+            overlaps, ["symbol", "entry_date", "exit_date"]
+        ].head(5)
+        raise PointInTimeUniverseError(
+            "%s: overlapping inclusive intervals: %s"
+            % (PIT_REQUIRED, examples.to_dict("records"))
+        )
+
+    dates = _normalise_dates(calendar).unique().sort_values()
+    if dates.empty:
+        raise PointInTimeUniverseError(
+            "%s: requested trading calendar is empty" % PIT_REQUIRED
+        )
+    calendar_values = set(dates)
+    for column in ("entry_date", "exit_date"):
+        boundary = ordered[column].dropna()
+        in_research_span = boundary.between(dates.min(), dates.max())
+        invalid = boundary.loc[in_research_span & ~boundary.isin(calendar_values)]
+        if not invalid.empty:
+            raise PointInTimeUniverseError(
+                "%s: %s inside the requested span must be a benchmark "
+                "trading date: %s"
+                % (
+                    PIT_REQUIRED,
+                    column,
+                    [value.strftime("%Y-%m-%d") for value in invalid.head(5)],
+                )
+            )
+    date_values = dates.to_numpy(dtype="datetime64[ns]")
+    entry_values = ordered["entry_date"].to_numpy(dtype="datetime64[ns]")
+    exit_values = ordered["exit_date"].to_numpy(dtype="datetime64[ns]")
+    active = entry_values[:, None] <= date_values[None, :]
+    active &= date_values[None, :] <= exit_values[:, None]
+    interval_positions, date_positions = active.nonzero()
+    daily = pd.DataFrame(
+        {
+            "date": dates.take(date_positions),
+            "symbol": ordered["symbol"].to_numpy()[interval_positions],
+            "is_member": True,
+        }
+    )
+    return validate_daily_membership(daily, dates, expected_member_count)
 
 
 class DataFramePointInTimeUniverse(PointInTimeUniverse):
@@ -440,16 +607,98 @@ def dataframe_sha256(frame: pd.DataFrame) -> str:
 
 def _atomic_parquet(frame: pd.DataFrame, destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = destination.with_name(destination.name + ".tmp")
-    frame.to_parquet(temporary, index=False)
-    os.replace(str(temporary), str(destination))
+    temporary = destination.with_name(
+        ".%s.tmp-%s" % (destination.name, uuid.uuid4().hex)
+    )
+    try:
+        frame.to_parquet(temporary, index=False)
+        os.replace(str(temporary), str(destination))
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def _atomic_json(payload: Dict[str, Any], destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = destination.with_name(destination.name + ".tmp")
-    temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    os.replace(str(temporary), str(destination))
+    temporary = destination.with_name(
+        ".%s.tmp-%s" % (destination.name, uuid.uuid4().hex)
+    )
+    try:
+        temporary.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        os.replace(str(temporary), str(destination))
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
+
+
+@contextmanager
+def _universe_write_lock(output_dir: Path) -> Iterator[Path]:
+    """Serialize publication of the three PIT universe artifacts.
+
+    An abandoned lock is deliberately not deleted automatically: guessing that
+    a writer is dead could let two generations interleave.  The error names the
+    exact lock so recovery remains an explicit operator action.
+    """
+
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+    lock_path = output / ".universe-write.lock"
+    descriptor: Optional[int] = None
+    owned_identity: Optional[Tuple[int, int]] = None
+    token = uuid.uuid4().hex
+    payload = (
+        "token=%s pid=%d generated_at=%s\n"
+        % (token, os.getpid(), datetime.now(timezone.utc).isoformat())
+    ).encode("ascii")
+    try:
+        descriptor = os.open(
+            str(lock_path),
+            os.O_CREAT
+            | os.O_EXCL
+            | os.O_WRONLY
+            | getattr(os, "O_BINARY", 0),
+        )
+        os.write(descriptor, payload)
+        # Use the same path-based stat API here and during cleanup.  On some
+        # Windows/Python builds ``fstat`` and path ``stat`` expose different
+        # inode representations for the same file.
+        lock_stat = os.stat(str(lock_path), follow_symlinks=False)
+        owned_identity = (lock_stat.st_dev, lock_stat.st_ino)
+    except FileExistsError as exc:
+        raise PointInTimeUniverseError(
+            "%s: universe writer lock already exists: %s"
+            % (PIT_REQUIRED, lock_path)
+        ) from exc
+    except Exception:
+        if descriptor is not None:
+            os.close(descriptor)
+        try:
+            lock_path.unlink()
+        except FileNotFoundError:
+            pass
+        raise
+    try:
+        yield lock_path
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+            descriptor = None
+        try:
+            current_stat = os.stat(str(lock_path), follow_symlinks=False)
+            current_identity = (current_stat.st_dev, current_stat.st_ino)
+            if (
+                current_identity == owned_identity
+                and lock_path.read_bytes() == payload
+            ):
+                lock_path.unlink()
+        except (FileNotFoundError, OSError):
+            pass
 
 
 def _snapshot_metadata(
@@ -604,9 +853,8 @@ def collect_point_in_time_universe(
     intervals = compress_membership_intervals(daily)
     daily_path = output / "csi500_daily.parquet"
     interval_path = output / "csi500_intervals.parquet"
-    _atomic_parquet(daily, daily_path)
-    _atomic_parquet(intervals, interval_path)
     content_hash = dataframe_sha256(daily)
+    intervals_hash = dataframe_sha256(intervals)
     manifest = {
         "schema_version": 1,
         "source": provider.__class__.__name__,
@@ -618,8 +866,13 @@ def collect_point_in_time_universe(
         "trading_dates": int(len(dates)),
         "expected_member_count": int(expected_member_count),
         "sha256": content_hash,
+        "daily_sha256": content_hash,
+        "intervals_sha256": intervals_hash,
     }
-    _atomic_json(manifest, output / "manifest.json")
+    with _universe_write_lock(output):
+        _atomic_parquet(intervals, interval_path)
+        _atomic_parquet(daily, daily_path)
+        _atomic_json(manifest, output / "manifest.json")
     return manifest
 
 
@@ -630,7 +883,13 @@ def import_point_in_time_universe(
     expected_member_count: int = 500,
     index_symbol: str = "000905.SH",
 ) -> Dict[str, Any]:
-    """Validate and materialise user-supplied daily CSV/Parquet membership."""
+    """Validate and materialise a user-supplied PIT membership artifact.
+
+    Accepted layouts are exact daily snapshots (``date,symbol,is_member``) or
+    explicit inclusive intervals (``symbol,entry_date,exit_date``).  Interval
+    endpoints must already be effective trading dates.  Ambiguous announcement
+    or ``opt-in``/``opt-out`` conventions are deliberately not inferred.
+    """
 
     path = Path(source)
     try:
@@ -648,17 +907,78 @@ def import_point_in_time_universe(
         raise PointInTimeUniverseError(
             "%s: import must be CSV or Parquet" % PIT_REQUIRED
         )
-    daily = validate_daily_membership(frame, calendar, expected_member_count)
-    output = Path(output_dir)
-    _atomic_parquet(daily, output / "csi500_daily.parquet")
+    dates = _normalise_dates(calendar).unique().sort_values()
+    if dates.empty:
+        raise PointInTimeUniverseError(
+            "%s: requested trading calendar is empty" % PIT_REQUIRED
+        )
+    columns = set(frame.columns)
+    lower_columns = {str(column).strip().lower() for column in columns}
+    if lower_columns.intersection({"opt-in", "opt-out", "opt_in", "opt_out"}):
+        raise PointInTimeUniverseError(
+            "%s: opt-in/opt-out dates are ambiguous; convert audited "
+            "effective dates to inclusive entry_date/exit_date first"
+            % PIT_REQUIRED
+        )
+    daily_required = {"date", "symbol"}
+    interval_required = {"symbol", "entry_date", "exit_date"}
+    daily_allowed = daily_required | {"is_member"}
+    interval_allowed = interval_required | {"is_member", "interval"}
+    daily_layout = daily_required.issubset(columns)
+    interval_layout = interval_required.issubset(columns)
+    has_interval_column = bool({"entry_date", "exit_date"}.intersection(columns))
+    if daily_layout and has_interval_column:
+        raise PointInTimeUniverseError(
+            "%s: import layout is ambiguous; provide either daily snapshots "
+            "or inclusive intervals" % PIT_REQUIRED
+        )
+    if daily_layout:
+        unexpected = sorted(columns.difference(daily_allowed))
+        if unexpected:
+            raise PointInTimeUniverseError(
+                "%s: unsupported daily import columns %s"
+                % (PIT_REQUIRED, unexpected)
+            )
+        input_layout = "daily"
+        membership_semantics = "exact-trading-date-snapshot"
+        strict_daily = frame.copy()
+        strict_daily["date"] = pd.Series(
+            [
+                _strict_import_date(value, "date")
+                for value in strict_daily["date"].tolist()
+            ],
+            index=strict_daily.index,
+            dtype="datetime64[ns]",
+        )
+        daily = validate_daily_membership(
+            strict_daily, dates, expected_member_count
+        )
+    elif interval_layout:
+        unexpected = sorted(columns.difference(interval_allowed))
+        if unexpected:
+            raise PointInTimeUniverseError(
+                "%s: unsupported interval import columns %s"
+                % (PIT_REQUIRED, unexpected)
+            )
+        input_layout = "inclusive-intervals"
+        membership_semantics = "entry_date <= trading_date <= exit_date"
+        daily = expand_membership_intervals(
+            frame, dates, expected_member_count
+        )
+    else:
+        raise PointInTimeUniverseError(
+            "%s: import requires date,symbol or "
+            "symbol,entry_date,exit_date columns" % PIT_REQUIRED
+        )
     intervals = compress_membership_intervals(daily)
-    _atomic_parquet(intervals, output / "csi500_intervals.parquet")
     digest = dataframe_sha256(daily)
-    dates = _normalise_dates(calendar)
+    intervals_digest = dataframe_sha256(intervals)
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "source": "local-import",
-        "source_version": "user-pit-daily-import-v1",
+        "source_version": "user-pit-import-v2",
+        "input_layout": input_layout,
+        "membership_semantics": membership_semantics,
         "source_file": str(path.resolve()),
         "source_file_sha256": source_file_sha256,
         "index_symbol": index_symbol,
@@ -668,6 +988,12 @@ def import_point_in_time_universe(
         "trading_dates": int(len(dates.unique())),
         "expected_member_count": int(expected_member_count),
         "sha256": digest,
+        "daily_sha256": digest,
+        "intervals_sha256": intervals_digest,
     }
-    _atomic_json(manifest, output / "manifest.json")
+    output = Path(output_dir)
+    with _universe_write_lock(output):
+        _atomic_parquet(intervals, output / "csi500_intervals.parquet")
+        _atomic_parquet(daily, output / "csi500_daily.parquet")
+        _atomic_json(manifest, output / "manifest.json")
     return manifest
