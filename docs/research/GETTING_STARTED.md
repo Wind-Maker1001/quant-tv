@@ -86,9 +86,11 @@ smoke 配置、mock fixture 和 synthetic demo 均不得用于论文收益、因
 如已经有经独立来源验证的逐日历史成分数据，先复制所需配置并明确把
 `universe.provider` 改为 `local`，再用该配置导入：
 
-    python -m qbot.research.cli import-universe --config path/to/csi500_local.yaml --input path/to/csi500_daily.csv
+    python -m qbot.research.cli import-universe --config path/to/csi500_local.yaml --input path/to/csi500_daily_or_intervals.csv
 
-导入文件必须至少有 date,symbol,is_member，覆盖配置区间的每个基准交易日，且每日恢复为 500 个唯一成员。这不是导入“当前成分列表”的入口。`import-universe` 只接受 `universe.provider=local` 的配置；成功导入后，`download-data` 会复用并校验该股票池，同时仍从 BaoStock 获取 ST、停牌与上市日期。不要使用未修改、仍声明 `provider=baostock` 的正式或 smoke 配置导入本地股票池。
+导入文件可采用日级 `date,symbol[,is_member]`，也可采用显式闭区间 `symbol,entry_date,exit_date[,is_member,interval]`。闭区间首尾均包含且不得为空；仍有效的成员也必须显式提供研究期末或之后的退出边界。可选 `is_member` 必须逐行明确为真，`interval` 会在规范化输出时重新编号。研究区间内的边界必须是基准交易日。两种格式最终都必须覆盖配置区间的每个基准交易日，且每日恢复为 500 个唯一成员。系统拒绝未声明的附加列、混合布局、重叠区间、模糊日期以及未经转换的 `opt-in/opt-out` 语义。
+
+这不是导入“当前成分列表”的入口。导入前应保留并核对官方来源、调样生效日和历史证券代码；第三方档案若使用公告日、排他退出日或当前代码回填历史，必须先人工审计并转换。`import-universe` 只接受 `universe.provider=local` 的配置；成功导入后，`download-data` 会复用并校验该股票池，同时仍从 BaoStock 获取 ST、停牌与上市日期。不要使用未修改、仍声明 `provider=baostock` 的正式或 smoke 配置导入本地股票池。
 
 ## 5. 运行四模型与两级回测
 

@@ -10,7 +10,7 @@
 | 中证500指数日线 | AKShare 指数端点 | benchmark、交易日历、超额收益标签、Phase 3 市场状态 |
 | 中证500历史成分 | BaoStock `query_zz500_stocks(date=...)` | 逐交易日 Point-in-Time 股票池 |
 | ST/交易状态、上市日期 | BaoStock | 当日可交易性过滤、Phase 3 停牌/涨跌停执行判断 |
-| 用户历史成分表 | CSV/Parquet 导入 | BaoStock 的可验证替代路径 |
+| 用户历史成分表 | 日级快照或显式闭区间 CSV/Parquet 导入 | BaoStock 的可验证替代路径 |
 
 因子、标签和数据集代码不直接调用任何数据供应商，只消费统一 Provider/Schema 输出。AKShare 当前成分快照不得用于历史日期。
 
@@ -97,7 +97,16 @@ Schema 验证包括：必需列、日期类型、symbol 格式、排序、主键
 
 任一不满足都抛出含 `POINT-IN-TIME UNIVERSE REQUIRED` 的错误。失败日期写入 `failures.json`。
 
-如使用 `import-universe`，必须先把 `universe.provider` 设为 `local`。导入 manifest 还记录原始文件绝对路径和 SHA-256；随后 `download-data` 会校验并复用该导入股票池，绝不以 BaoStock 快照覆盖。BaoStock 在 Phase 1 中仍用于 ST、停牌状态和上市日期。使用 `provider=baostock` 的配置不能消费本地导入 manifest，反之亦然。
+如使用 `import-universe`，必须先把 `universe.provider` 设为 `local`。导入器只接受两种互斥布局：
+
+- 日级快照：`date,symbol[,is_member]`；
+- 显式闭区间：`symbol,entry_date,exit_date[,is_member,interval]`，语义严格为 `entry_date <= trading_date <= exit_date`；首尾都必须显式填写。若提供 `is_member`，每行都必须明确为真；`interval` 只作为输入审计列，输出会重新编号。仍有效的成员应把 `exit_date` 填为研究期末或之后的已核验日期，不能用空值代替证据。
+
+区间只在当前 benchmark 交易日历上展开；研究区间内的首尾边界必须本身是 benchmark 交易日，不能把周末、节假日或公告日静默平移。日级和区间日期字符串都必须使用 `YYYY-MM-DD`，带时间、时区或数值时间戳会被拒绝。同一股票的闭区间不能重叠；展开后仍必须逐日恢复恰好 500 个唯一成员。输入同时含日级和区间列、包含未声明的附加列，或使用语义未定义的 `opt-in/opt-out` 列时会 fail fast，必须先依据可核验来源转换为真实生效日的闭区间。
+
+导入 manifest v2 记录输入布局、成员语义、原始文件绝对路径与 SHA-256，并分别绑定规范化逐日表和重新压缩区间表的内容哈希；消费端会同时校验两份产物及其相互一致性。因此等价的日级和区间输入得到相同股票池版本。写入使用独占 writer lock、唯一临时文件并以 manifest 最后发布；残留锁不会被自动删除，以免两个写者错误并发。消费端为已有产物保留对严格 `user-pit-daily-import-v1` 的只读兼容；即使旧 manifest 没有区间哈希，也会把其区间表与逐日表重新压缩结果对比。新导入统一写 v2。随后 `download-data` 会校验并复用该导入股票池，绝不以 BaoStock 快照覆盖。BaoStock 在 Phase 1 中仍用于 ST、停牌状态和上市日期。使用 `provider=baostock` 的配置不能消费本地导入 manifest，反之亦然。
+
+三个正式文件分别原子替换，manifest 最后发布，但普通文件系统无法把三个路径作为单一事务切换。进程若在中间被强制终止，消费端会因哈希不一致而 fail closed，旧版本也可能暂时不可用；应确认没有存活 writer、人工检查残留锁后重新运行导入。后续可用不可变 generation 目录加单一原子指针进一步提高故障后的可用性，这不改变当前“绝不消费混合代数据”的正确性边界。
 
 ## 当日过滤
 
@@ -137,5 +146,7 @@ Builder 先验证完整 PIT，再重建股票-日历网格、过滤、计算因�
 
 - 公开数据端点可能变更字段、限频或事后修订；缓存与 manifest 只提供工程可审计性，不等于交易所授权的不可变数据。
 - BaoStock 的历史快照必须经真实日期烟雾验证；无法完整获取时，正式回测必须停止。
+- 通用第三方成分区间档案可能使用公告日、调样基准日、排他性退出日，或把证券当前代码反向套用到全部历史。这些文件不能直接导入；必须先逐项核对官方调样生效日和历史证券代码，再转换为上述显式闭区间。系统不会猜测其语义。
+- 2026-09-24 对一个公开候选档案的复核已经发现提前一个交易日调样和历史 ticker 回填，详见 [PIT_SOURCE_AUDIT.md](PIT_SOURCE_AUDIT.md)；该档案未被复制或接入。
 - 日线规则执行已经实现，但不能重建盘中路径、集合竞价、委托队列、部分成交或冲击成本；开盘涨跌停拒单是保守近似。
 - 截至 2026-09-24，最新干净提交上的 smoke 运行 `20260923T165405.262372Z-download-data-9af5efa1` 已验证 benchmark 覆盖，但 BaoStock PIT 登录连续四次网络接收错误后安全失败；此前 AKShare 单股票端点也曾断连。真实股票与状态链路未完成，因此尚无正式五年数据集或四模型实证结果，离线/synthetic 验收不能替代该前置。
