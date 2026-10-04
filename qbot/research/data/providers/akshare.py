@@ -31,7 +31,7 @@ _COLUMN_ALIASES: Dict[str, Tuple[str, ...]] = {
     "low": ("low", "最低"),
     "close": ("close", "收盘"),
     "volume": ("volume", "成交量"),
-    "amount": ("amount", "成交额"),
+    "amount": ("amount", "成交额", "成交金额"),
     "turnover": ("turnover", "换手率"),
 }
 
@@ -275,7 +275,25 @@ class AKShareProvider(MarketDataProvider):
         code = vendor_code(canonical_symbol)
 
         volume_multiplier = 100.0
-        if hasattr(self.akshare, "index_zh_a_hist"):
+        amount_multiplier = 1.0
+        csindex_official = (
+            canonical_symbol == "000905.SH"
+            and hasattr(self.akshare, "stock_zh_index_hist_csindex")
+        )
+        if csindex_official:
+            vendor_frame = self._call(
+                self.akshare.stock_zh_index_hist_csindex,
+                symbol=code,
+                start_date=_format_api_date(start_ts),
+                end_date=_format_api_date(end_ts),
+            )
+            # The CSI endpoint documents volume as ten-thousand hands and
+            # amount as CNY 100m.  Some endpoint revisions already return
+            # volume in shares, so the scale is resolved below from the
+            # amount/volume ratio and then validated conservatively.
+            volume_multiplier = 1.0
+            amount_multiplier = 100_000_000.0
+        elif hasattr(self.akshare, "index_zh_a_hist"):
             vendor_frame = self._call(
                 self.akshare.index_zh_a_hist,
                 symbol=code,
@@ -302,6 +320,24 @@ class AKShareProvider(MarketDataProvider):
             from qbot.research.data.schema import empty_bars
 
             return empty_bars()
+        volume = normalised["volume"] * volume_multiplier
+        amount = normalised["amount"] * amount_multiplier
+        if csindex_official:
+            observed = pd.DataFrame({"volume": volume, "amount": amount}).dropna()
+            observed = observed.loc[
+                observed["volume"].gt(0.0) & observed["amount"].gt(0.0)
+            ]
+            if not observed.empty:
+                raw_implied_price = float(
+                    (observed["amount"] / observed["volume"]).median()
+                )
+                if raw_implied_price > 100_000.0:
+                    volume = volume * 1_000_000.0
+                    raw_implied_price /= 1_000_000.0
+                if not 0.01 <= raw_implied_price <= 100_000.0:
+                    raise ProviderError(
+                        "CSI index volume/amount units cannot be validated"
+                    )
         result = pd.DataFrame(
             {
                 "date": normalised["date"],
@@ -310,8 +346,8 @@ class AKShareProvider(MarketDataProvider):
                 "high": normalised["high"],
                 "low": normalised["low"],
                 "close": normalised["close"],
-                "volume": normalised["volume"] * volume_multiplier,
-                "amount": normalised["amount"],
+                "volume": volume,
+                "amount": amount,
                 "turnover": normalised["turnover"],
             }
         )

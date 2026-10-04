@@ -141,3 +141,57 @@ def test_index_provider_uses_alternate_only_when_primary_attribute_is_absent():
         pd.Timestamp("2024-01-03"),
     ]
     assert bars.loc[0, "volume"] == 12.0
+
+
+@pytest.mark.parametrize(
+    "reported_volume,expected_volume",
+    [
+        ([1_200_000_000.0, 1_500_000_000.0], [1_200_000_000.0, 1_500_000_000.0]),
+        ([120.0, 150.0], [120_000_000.0, 150_000_000.0]),
+    ],
+    ids=("shares", "ten-thousand-hands"),
+)
+def test_csi500_prefers_official_index_endpoint_and_normalises_units(
+    reported_volume, expected_volume
+):
+    class OfficialCSI:
+        __version__ = "test"
+
+        def __init__(self):
+            self.official_calls = []
+
+        def stock_zh_index_hist_csindex(self, **kwargs):
+            self.official_calls.append(kwargs)
+            return pd.DataFrame(
+                {
+                    "日期": ["2024-01-02", "2024-01-03"],
+                    "开盘": [10.0, 11.0],
+                    "最高": [11.0, 12.0],
+                    "最低": [9.0, 10.0],
+                    "收盘": [10.5, 11.5],
+                    "成交量": reported_volume,
+                    "成交金额": [126.0, 172.5],
+                }
+            )
+
+        def index_zh_a_hist(self, **kwargs):
+            raise AssertionError("CSI500 must use the official index endpoint")
+
+    fake = OfficialCSI()
+    provider = AKShareProvider(
+        akshare_module=fake, retry_count=0, request_interval=0
+    )
+
+    bars = provider.get_index_bars(
+        "000905.SH", "2024-01-01", "2024-01-04"
+    )
+
+    assert fake.official_calls == [
+        {
+            "symbol": "000905",
+            "start_date": "20240101",
+            "end_date": "20240104",
+        }
+    ]
+    assert bars["volume"].tolist() == expected_volume
+    assert bars["amount"].tolist() == [12_600_000_000.0, 17_250_000_000.0]

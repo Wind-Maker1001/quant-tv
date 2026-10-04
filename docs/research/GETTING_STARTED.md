@@ -62,7 +62,7 @@ pytest.ini 默认只收集 tests/research，并排除 network marker。这个边
 
     python -m pytest -q -m network
 
-网络测试可因数据源限频、端点改动、代理或本地网络而失败，不取代离线正确性测试。最新真实 `download-data` 尝试（干净提交 `067bc396`，run `20260924T052738.474084Z-download-data-a0cd6342`）整体状态为 `failed`：benchmark 缓存可读并确认 88 个研究交易日和 130 个精确预热交易日，但 BaoStock 登录连续 4 次返回网络接收错误，manifest 明确记录 `universe_version=null`。本地 benchmark 缓存有 330 个交易日（2023-01-03 至 2024-05-17），其中 smoke 研究区间 88 日、研究开始日前 242 日；流水线实际只会从这些历史日中选择最后 130 日作为预热。AKShare 单股票端点的独立网络测试仍发生 RemoteDisconnected，PIT 股票池和真实股票数据链路尚未完成。不能把 benchmark 子步骤成功或离线测试通过描述成真实端到端或五年数据已经验证。
+网络测试可因数据源限频、端点改动、代理或本地网络而失败，不取代离线正确性测试。2026-10-04 的最新复核中，AKShare 中证官方接口已真实返回正式五年区间的 1211 行 `000905.SH` 基准行情；东方财富个股后复权端点仍发生 `RemoteDisconnected`，BaoStock 登录连续 4 次后仍为 socket 错误，因此 PIT 股票池和真实股票数据链路尚未完成。测试时 Windows 系统代理还指向未响应的 `127.0.0.1:10808`；若错误栈显示该地址，应先确认本机代理程序和 Windows 代理设置一致，不要通过关闭数据校验来“修复”网络。不能把 benchmark 子步骤成功或 369 项离线测试通过描述成真实端到端或五年数据已经验证。
 
 ## 3. 选择配置
 
