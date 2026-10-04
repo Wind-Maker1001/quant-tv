@@ -249,7 +249,11 @@ def test_freeze_and_signal_lifecycle_is_explicit_and_append_only(tmp_path, monke
     monkeypatch.setattr(
         cli,
         "_load_verified_dataset",
-        lambda config, calendar, run=None: (dataset.copy(), "b" * 64, "c" * 64),
+        lambda config, calendar, run=None, **kwargs: (
+            dataset.copy(),
+            "b" * 64,
+            "c" * 64,
+        ),
     )
 
     freeze_run = _Run("freeze")

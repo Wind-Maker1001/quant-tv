@@ -18,7 +18,11 @@ from qbot.research.config import (
     UniverseConfig,
 )
 from qbot.research.data.schema import canonicalize_bars
-from qbot.research.errors import ConfigurationError, PointInTimeUniverseRequiredError
+from qbot.research.errors import (
+    ConfigurationError,
+    PointInTimeUniverseRequiredError,
+    SecurityStatusDataError,
+)
 from qbot.research.reproducibility import (
     RunManifest,
     set_random_seed,
@@ -133,6 +137,41 @@ def test_run_manifest_records_lifecycle_outputs_failures_and_seed(tmp_path, monk
     first = (random.random(), np.random.random())
     set_random_seed(19)
     assert first == (random.random(), np.random.random())
+
+
+def _membership():
+    research_dates = pd.to_datetime(["2024-01-02", "2024-01-03"])
+    return pd.DataFrame(
+        [
+            {"date": day, "symbol": symbol, "is_member": True}
+            for day in research_dates
+            for symbol in ("000001.SZ", "600000.SH")
+        ]
+    )
+
+
+def _complete_security_data(calendar):
+    dates = pd.DatetimeIndex(calendar)
+    symbols = ("000001.SZ", "600000.SH")
+    status = pd.DataFrame(
+        [
+            {
+                "date": day,
+                "symbol": symbol,
+                "trade_status": 1,
+                "is_st": False,
+            }
+            for day in dates
+            for symbol in symbols
+        ]
+    )
+    listings = pd.DataFrame(
+        {
+            "symbol": symbols,
+            "listing_date": ["1991-04-03", "1999-11-10"],
+        }
+    )
+    return status, listings
 
 
 def test_validate_provenance_rejects_missing_or_unknown_values():
@@ -322,6 +361,121 @@ def test_import_universe_requires_explicit_local_provider(tmp_path):
         cli.command_import_universe(config, object(), "membership.csv")
 
 
+def test_import_security_data_cli_orchestrates_without_baostock(
+    tmp_path, monkeypatch
+):
+    config = _config(tmp_path)
+    object.__setattr__(config.universe, "status_provider", "local")
+    full_benchmark = _benchmark_bars_with_warmup()
+    membership = _membership()
+    seen = {}
+
+    monkeypatch.setattr(cli, "load_config", lambda path: config)
+    monkeypatch.setattr(
+        cli, "_load_benchmark_with_warmup", lambda current: full_benchmark
+    )
+    monkeypatch.setattr(
+        cli, "_load_verified_membership", lambda current, calendar: membership
+    )
+    monkeypatch.setattr(
+        "qbot.research.reproducibility.package_versions", lambda: {}
+    )
+
+    def fake_import(
+        status_path,
+        listings_path,
+        *,
+        output_dir,
+        calendar,
+        membership,
+        universe_sha256,
+    ):
+        seen.update(
+            {
+                "status_path": status_path,
+                "listings_path": listings_path,
+                "output_dir": output_dir,
+                "calendar": calendar,
+                "membership": membership,
+                "universe_sha256": universe_sha256,
+            }
+        )
+        return {
+            "security_data_version": "c" * 64,
+            "source": "local-import",
+            "source_version": "user-security-data-import-v1",
+            "status_sha256": "d" * 64,
+            "listings_sha256": "e" * 64,
+            "input_sha256": {"status": "f" * 64, "listings": "0" * 64},
+            "input_files": {
+                "status": str(Path("status.csv").resolve()),
+                "listings": str(Path("listings.csv").resolve()),
+            },
+            "status_rows": 264,
+            "symbols": 2,
+        }
+
+    class ExplodingBaoStock:
+        def __init__(self, **kwargs):
+            raise AssertionError("import-security-data must not construct BaoStock")
+
+    monkeypatch.setattr(cli, "import_security_data", fake_import)
+    monkeypatch.setattr(cli, "BaoStockPointInTimeProvider", ExplodingBaoStock)
+
+    assert (
+        cli.main(
+            [
+                "import-security-data",
+                "--config",
+                "unused.yaml",
+                "--status",
+                "status.csv",
+                "--listings",
+                "listings.csv",
+            ]
+        )
+        == 0
+    )
+
+    assert seen["status_path"] == Path("status.csv")
+    assert seen["listings_path"] == Path("listings.csv")
+    assert seen["output_dir"] == config.paths.universe_dir
+    assert seen["calendar"].equals(pd.DatetimeIndex(full_benchmark["date"]))
+    assert seen["universe_sha256"] == cli.dataframe_sha256(membership)
+    payload = json.loads(_manifest_files(config)[0].read_text(encoding="utf-8"))
+    assert payload["status"] == "success"
+    assert payload["security_data_version"] == "c" * 64
+    assert payload["security_status_sha256"] == "d" * 64
+    assert payload["listing_dates_sha256"] == "e" * 64
+    assert payload["outputs"]["security_data_manifest"].endswith(
+        "security_data_manifest.json"
+    )
+    assert json.loads(
+        (config.paths.universe_dir / "status_failures.json").read_text(
+            encoding="utf-8"
+        )
+    ) == {
+        "symbols": [],
+        "error": None,
+        "security_data_version": "c" * 64,
+    }
+
+
+def test_import_security_data_requires_local_status_provider(tmp_path):
+    config = _config(tmp_path)
+
+    with pytest.raises(
+        SecurityStatusDataError,
+        match="SECURITY STATUS DATA REQUIRED.*status_provider=local",
+    ):
+        cli.command_import_security_data(
+            config,
+            object(),
+            "status.csv",
+            "listings.csv",
+        )
+
+
 def test_benchmark_warmup_selects_exact_prior_sessions(tmp_path):
     config = _config(tmp_path)
     selected = cli._select_benchmark_with_warmup(
@@ -375,7 +529,8 @@ def test_download_reuses_valid_local_import_instead_of_recollecting_pit(
 
         def get_security_history(self, symbols, start, end):
             calls["status"] = (tuple(symbols), pd.Timestamp(start), pd.Timestamp(end))
-            return pd.DataFrame(), pd.DataFrame(), []
+            status, listings = _complete_security_data(full_benchmark["date"])
+            return status, listings, []
 
     class FakeRun:
         def __init__(self):
@@ -412,7 +567,8 @@ def test_download_reuses_valid_local_import_instead_of_recollecting_pit(
 
     full_start = full_benchmark["date"].min()
     full_end = full_benchmark["date"].max()
-    assert run.payload["universe_version"] == "local-sha"
+    assert run.payload["universe_version"] == cli.dataframe_sha256(membership)
+    assert len(run.payload["security_data_version"]) == 64
     assert calls["provider_options"] == {
         "retry_count": config.network.max_retries,
         "backoff_seconds": config.network.backoff_seconds,
@@ -461,7 +617,8 @@ def test_download_baostock_does_not_reuse_existing_local_import(
             return None
 
         def get_security_history(self, symbols, start, end):
-            return pd.DataFrame(), pd.DataFrame(), []
+            status, listings = _complete_security_data(full_benchmark["date"])
+            return status, listings, []
 
     class FakeRun:
         def __init__(self):
@@ -495,4 +652,196 @@ def test_download_baostock_does_not_reuse_existing_local_import(
     cli.command_download(config, run)
 
     assert calls["collect"] == 1
-    assert run.payload["universe_version"] == "baostock-sha"
+    assert run.payload["universe_version"] == cli.dataframe_sha256(membership)
+    assert len(run.payload["security_data_version"]) == 64
+
+
+def test_download_local_membership_and_status_never_constructs_baostock(
+    tmp_path, monkeypatch
+):
+    config = _config(tmp_path)
+    object.__setattr__(config.universe, "provider", "local")
+    object.__setattr__(config.universe, "status_provider", "local")
+    config.paths.universe_dir.mkdir(parents=True)
+    (config.paths.universe_dir / "manifest.json").write_text(
+        json.dumps({"source": "local-import", "sha256": "local-sha"}),
+        encoding="utf-8",
+    )
+    full_benchmark = _benchmark_bars_with_warmup()
+    membership = _membership()
+    status, listings = _complete_security_data(full_benchmark["date"])
+    security_manifest = cli.publish_security_data(
+        status,
+        listings,
+        output_dir=config.paths.universe_dir,
+        calendar=pd.DatetimeIndex(full_benchmark["date"]),
+        membership=membership,
+        universe_sha256=cli.dataframe_sha256(membership),
+        source="local-import",
+        source_version="user-security-data-import-v1",
+        input_hashes={"status": "a" * 64, "listings": "b" * 64},
+        input_files={
+            "status": str((tmp_path / "status.csv").resolve()),
+            "listings": str((tmp_path / "listings.csv").resolve()),
+        },
+    )
+    stock_calls = []
+
+    class FakeCache:
+        def data_path(self, symbol):
+            return tmp_path / (symbol + ".parquet")
+
+        def update_from_provider(self, provider, symbol, start, end, is_index=False):
+            stock_calls.append(symbol)
+
+    class ExplodingBaoStock:
+        def __init__(self, **kwargs):
+            raise AssertionError("local+local must not construct BaoStock")
+
+    class FakeRun:
+        def __init__(self):
+            self.payload = {}
+
+        def add_output(self, *args):
+            return None
+
+        def add_failures(self, *args):
+            return None
+
+    monkeypatch.setattr(cli, "_provider", lambda current: object())
+    monkeypatch.setattr(
+        cli, "_download_benchmark_with_warmup", lambda current, provider: full_benchmark
+    )
+    monkeypatch.setattr(cli, "_benchmark_cache", lambda current: FakeCache())
+    monkeypatch.setattr(cli, "_stock_cache", lambda current: FakeCache())
+    monkeypatch.setattr(
+        cli, "_load_verified_membership", lambda current, calendar: membership
+    )
+    monkeypatch.setattr(cli, "BaoStockPointInTimeProvider", ExplodingBaoStock)
+    monkeypatch.setattr(
+        cli,
+        "collect_point_in_time_universe",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("local PIT must not be overwritten")
+        ),
+    )
+
+    run = FakeRun()
+    cli.command_download(config, run)
+
+    assert stock_calls == ["000001.SZ", "600000.SH"]
+    assert run.payload["security_data_version"] == security_manifest[
+        "security_data_version"
+    ]
+    status_diagnostics = json.loads(
+        (config.paths.universe_dir / "status_failures.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert status_diagnostics == {
+        "symbols": [],
+        "error": None,
+        "security_data_version": security_manifest["security_data_version"],
+    }
+
+
+def test_partial_baostock_status_refresh_does_not_replace_complete_bundle(
+    tmp_path, monkeypatch
+):
+    config = _config(tmp_path)
+    full_benchmark = _benchmark_bars_with_warmup()
+    old_membership = _membership()
+    old_status, old_listings = _complete_security_data(full_benchmark["date"])
+    cli.publish_security_data(
+        old_status,
+        old_listings,
+        output_dir=config.paths.universe_dir,
+        calendar=pd.DatetimeIndex(full_benchmark["date"]),
+        membership=old_membership,
+        universe_sha256=cli.dataframe_sha256(old_membership),
+        source="BaoStockPointInTimeProvider",
+        source_version="baostock-security-history-v1",
+    )
+    protected_paths = [
+        config.paths.universe_dir / "security_status.parquet",
+        config.paths.universe_dir / "listing_dates.parquet",
+        config.paths.universe_dir / "security_data_manifest.json",
+    ]
+    before = {path.name: path.read_bytes() for path in protected_paths}
+    current_membership = old_membership.copy()
+    current_membership.loc[
+        current_membership["symbol"].eq("000001.SZ"), "symbol"
+    ] = "000002.SZ"
+
+    class FakeCache:
+        def data_path(self, symbol):
+            return tmp_path / (symbol + ".parquet")
+
+        def update_from_provider(self, provider, symbol, start, end, is_index=False):
+            return None
+
+    class FakePit:
+        def __init__(self, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return None
+
+        def get_security_history(self, symbols, start, end):
+            partial_status = old_status.loc[
+                old_status["symbol"].eq("600000.SH")
+            ].reset_index(drop=True)
+            partial_listings = old_listings.loc[
+                old_listings["symbol"].eq("600000.SH")
+            ].reset_index(drop=True)
+            return partial_status, partial_listings, ["000002.SZ"]
+
+    class FakeRun:
+        def __init__(self):
+            self.run_id = "20240101T000000-download-data"
+            self.payload = {}
+            self.failures = {}
+
+        def add_output(self, *args):
+            return None
+
+        def add_failures(self, name, values):
+            self.failures[name] = values
+
+    monkeypatch.setattr(cli, "_provider", lambda current: object())
+    monkeypatch.setattr(
+        cli, "_download_benchmark_with_warmup", lambda current, provider: full_benchmark
+    )
+    monkeypatch.setattr(cli, "_benchmark_cache", lambda current: FakeCache())
+    monkeypatch.setattr(cli, "_stock_cache", lambda current: FakeCache())
+    monkeypatch.setattr(
+        cli,
+        "_load_verified_membership",
+        lambda current, calendar: current_membership,
+    )
+    monkeypatch.setattr(cli, "BaoStockPointInTimeProvider", FakePit)
+    monkeypatch.setattr(
+        cli,
+        "collect_point_in_time_universe",
+        lambda *args, **kwargs: {"sha256": "f" * 64},
+    )
+
+    run = FakeRun()
+    with pytest.raises(
+        SecurityStatusDataError, match="complete bundle not published"
+    ):
+        cli.command_download(config, run)
+
+    after = {path.name: path.read_bytes() for path in protected_paths}
+    assert after == before
+    assert (
+        config.paths.universe_dir
+        / "security_status.partial.20240101T000000-download-data.parquet"
+    ).exists()
+    assert not (
+        config.paths.universe_dir / "security_status.partial.parquet"
+    ).exists()
+    assert run.failures["security_status"]["symbols"] == ["000002.SZ"]

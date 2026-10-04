@@ -14,7 +14,7 @@ from qbot.research.backtest import (
     classify_board,
     run_execution_backtest,
 )
-from qbot.research.errors import ConfigurationError
+from qbot.research.errors import ConfigurationError, SchemaError
 
 
 def _bars(dates, symbols, *, overrides=None):
@@ -111,6 +111,38 @@ def test_execution_uses_next_open_board_lots_cash_and_t_plus_one():
     assert first_day_positions["sellable_shares"].eq(0).all()
     assert {"buy", "sell"}.issubset(set(result.trades["side"]))
     assert result.nav["holdings"].max() == 1
+
+
+def test_execution_fails_fast_when_an_actual_order_lacks_status_evidence():
+    dates = pd.bdate_range("2024-01-02", periods=4)
+    symbols = ["000001.SZ", "000002.SZ"]
+    bars = _bars(
+        dates,
+        symbols,
+        overrides={(dates[1], "000001.SZ"): {"trade_status": pd.NA}},
+    )
+
+    with pytest.raises(SchemaError, match="execution status is missing"):
+        run_execution_backtest(
+            _scores(dates, symbols),
+            bars,
+            _benchmark(dates),
+            config=_config(),
+        )
+
+
+@pytest.mark.parametrize("column", ["trade_status", "is_st"])
+def test_execution_requires_explicit_status_columns(column):
+    dates = pd.bdate_range("2024-01-02", periods=4)
+    symbols = ["000001.SZ", "000002.SZ"]
+
+    with pytest.raises(SchemaError, match="execution bars missing columns"):
+        run_execution_backtest(
+            _scores(dates, symbols),
+            _bars(dates, symbols).drop(columns=column),
+            _benchmark(dates),
+            config=_config(),
+        )
 
 
 def test_suspension_and_opening_price_limits_create_explicit_rejections():

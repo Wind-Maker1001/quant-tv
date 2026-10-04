@@ -177,7 +177,7 @@ def compress_membership_intervals(daily: pd.DataFrame) -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
-def _strict_import_date(value: Any, name: str) -> pd.Timestamp:
+def strict_import_date(value: Any, name: str) -> pd.Timestamp:
     """Parse a local trading date without numeric or timezone coercion."""
 
     if value is None or value is pd.NaT or value is pd.NA or (
@@ -267,7 +267,7 @@ def expand_membership_intervals(
             )
     result["entry_date"] = pd.Series(
         [
-            _strict_import_date(value, "entry_date")
+            strict_import_date(value, "entry_date")
             for value in result["entry_date"].tolist()
         ],
         index=result.index,
@@ -275,7 +275,7 @@ def expand_membership_intervals(
     )
     result["exit_date"] = pd.Series(
         [
-            _strict_import_date(value, "exit_date")
+            strict_import_date(value, "exit_date")
             for value in result["exit_date"].tolist()
         ],
         index=result.index,
@@ -554,10 +554,25 @@ class BaoStockPointInTimeProvider(PointInTimeUniverseProvider):
                     "query_stock_basic",
                     "stock basic %s" % symbol,
                     code=bs_symbol,
-                    required_fields=("ipoDate",),
+                    required_fields=("code", "ipoDate"),
                 )
                 basic_data = pd.DataFrame(basic_rows, columns=basic_fields)
-                listing_date = pd.Timestamp(basic_data.iloc[0]["ipoDate"])
+                if len(basic_data) != 1:
+                    raise ProviderError(
+                        "stock basic %s returned %d rows"
+                        % (symbol, len(basic_data))
+                    )
+                basic_symbols = {
+                    canonical_symbol(value) for value in basic_data["code"]
+                }
+                if basic_symbols != {symbol}:
+                    raise ProviderError(
+                        "stock basic %s returned mismatched code(s) %s"
+                        % (symbol, sorted(basic_symbols))
+                    )
+                listing_date = strict_import_date(
+                    basic_data.iloc[0]["ipoDate"], "ipoDate"
+                )
                 history_fields, rows = self._query_rows(
                     "query_history_k_data_plus",
                     "security status %s" % symbol,
@@ -570,10 +585,22 @@ class BaoStockPointInTimeProvider(PointInTimeUniverseProvider):
                     required_fields=("date", "code", "tradestatus", "isST"),
                 )
                 part = pd.DataFrame(rows, columns=history_fields)
+                history_symbols = {
+                    canonical_symbol(value) for value in part["code"]
+                }
+                if history_symbols != {symbol}:
+                    raise ProviderError(
+                        "security status %s returned mismatched code(s) %s"
+                        % (symbol, sorted(history_symbols))
+                    )
+                history_dates = [
+                    strict_import_date(value, "date")
+                    for value in part["date"].tolist()
+                ]
                 status_parts.append(
                     pd.DataFrame(
                         {
-                            "date": pd.to_datetime(part["date"]),
+                            "date": history_dates,
                             "symbol": symbol,
                             "trade_status": pd.to_numeric(
                                 part["tradestatus"], errors="coerce"
@@ -944,7 +971,7 @@ def import_point_in_time_universe(
         strict_daily = frame.copy()
         strict_daily["date"] = pd.Series(
             [
-                _strict_import_date(value, "date")
+                strict_import_date(value, "date")
                 for value in strict_daily["date"].tolist()
             ],
             index=strict_daily.index,

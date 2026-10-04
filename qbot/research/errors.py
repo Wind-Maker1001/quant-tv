@@ -4,6 +4,7 @@ from typing import Optional
 
 
 POINT_IN_TIME_UNIVERSE_REQUIRED = "POINT-IN-TIME UNIVERSE REQUIRED"
+SECURITY_STATUS_DATA_REQUIRED = "SECURITY STATUS DATA REQUIRED"
 
 
 class FactorLabError(Exception):
@@ -28,6 +29,16 @@ class CacheError(FactorLabError):
 
 class DataQualityError(FactorLabError):
     """Raised when incomplete data would make a result unreliable."""
+
+
+class SecurityStatusDataError(DataQualityError):
+    """Raised when date-effective ST/trading/listing evidence is incomplete."""
+
+    def __init__(self, detail: Optional[str] = None) -> None:
+        message = SECURITY_STATUS_DATA_REQUIRED
+        if detail:
+            message = "{0}: {1}".format(message, detail)
+        super().__init__(message)
 
 
 class PointInTimeUniverseError(DataQualityError):
@@ -61,6 +72,7 @@ ConfigError = ConfigurationError
 
 __all__ = [
     "POINT_IN_TIME_UNIVERSE_REQUIRED",
+    "SECURITY_STATUS_DATA_REQUIRED",
     "CacheError",
     "ConfigError",
     "ConfigurationError",
@@ -73,4 +85,5 @@ __all__ = [
     "PointInTimeUniverseRequiredError",
     "ProviderError",
     "SchemaError",
+    "SecurityStatusDataError",
 ]

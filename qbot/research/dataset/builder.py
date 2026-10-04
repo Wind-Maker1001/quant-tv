@@ -106,6 +106,11 @@ class DatasetBuilder:
         eligible = apply_universe_filters(
             members, flags, research_dates, self.options.expected_member_count
         )
+        if eligible.empty:
+            raise SchemaError(
+                "Universe filters produced no eligible stock-days; verify the "
+                "complete status/listing bundle and filter thresholds"
+            )
         factor_frame = compute_factors(full_bars, self.options.factor_names)
         selected = eligible[["date", "symbol"]].merge(
             factor_frame,
@@ -152,6 +157,8 @@ class DatasetBuilder:
         )
         if selected.duplicated(["date", "symbol"]).any():
             raise SchemaError("Built dataset contains duplicate primary keys")
+        if selected.empty:
+            raise SchemaError("Built dataset is empty")
         return selected.sort_values(["date", "symbol"], kind="mergesort").reset_index(drop=True)
 
     def write_artifacts(

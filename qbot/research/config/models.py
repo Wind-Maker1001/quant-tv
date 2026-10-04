@@ -88,6 +88,7 @@ class UniverseConfig:
     name: str = "CSI500"
     index_symbol: str = "000905.SH"
     provider: str = "baostock"
+    status_provider: str = "baostock"
     point_in_time: bool = True
     expected_member_count: int = 500
     min_listed_days: int = 120
@@ -439,6 +440,10 @@ class ResearchConfig:
         if self.universe.provider.lower() not in {"baostock", "local"}:
             raise ConfigurationError(
                 "universe.provider must be baostock or local in FactorLab Phase 1"
+            )
+        if self.universe.status_provider.lower() not in {"baostock", "local"}:
+            raise ConfigurationError(
+                "universe.status_provider must be baostock or local"
             )
         if self.universe.expected_member_count <= 0:
             raise ConfigurationError("universe.expected_member_count must be positive")

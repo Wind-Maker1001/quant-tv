@@ -223,12 +223,43 @@ def _write_verified_inputs(
             },
             config.paths.universe_dir / "manifest.json",
         )
+    symbols = membership["symbol"].drop_duplicates().sort_values().tolist()
+    calendar = pd.DatetimeIndex(dataset["date"].drop_duplicates().sort_values())
+    status = pd.MultiIndex.from_product(
+        [calendar, symbols], names=["date", "symbol"]
+    ).to_frame(index=False)
+    status["trade_status"] = 1
+    status["is_st"] = False
+    listings = pd.DataFrame(
+        {"symbol": symbols, "listing_date": calendar.min()}
+    )
+    security_manifest = cli.publish_security_data(
+        status,
+        listings,
+        output_dir=config.paths.universe_dir,
+        calendar=calendar,
+        membership=membership,
+        universe_sha256=universe_version,
+        source="BaoStockPointInTimeProvider",
+        source_version="baostock-security-history-v1",
+    )
+    security_manifest_sha256 = cli._security_manifest_sha256(security_manifest)
+    security_fields = {
+        "security_data_version": security_manifest["security_data_version"],
+        "security_data_source": security_manifest["source"],
+        "security_data_source_version": security_manifest["source_version"],
+        "security_data_manifest_sha256": security_manifest_sha256,
+        "security_status_sha256": security_manifest["status_sha256"],
+        "listing_dates_sha256": security_manifest["listings_sha256"],
+        "security_data_input_sha256": security_manifest["input_sha256"],
+    }
     if write_dataset_manifest:
         cli._atomic_json(
             {
-                "schema_version": 2,
+                "schema_version": 3,
                 "dataset_sha256": effective_dataset_sha256,
                 "universe_version": universe_version,
+                **security_fields,
                 "factor_list": list(config.factors),
                 "target": "EXCESS_RET5",
                 "rows": len(dataset),
@@ -249,6 +280,7 @@ def _write_verified_inputs(
                 "config": config.to_dict(),
                 "dataset_sha256": effective_dataset_sha256,
                 "universe_version": universe_version,
+                **security_fields,
                 **_provenance(),
             },
             config.paths.runs_dir
@@ -273,17 +305,80 @@ def test_evaluate_records_verified_dataset_provenance(tmp_path, monkeypatch):
     assert run.payload["valid_rank_ic_observations"] > 0
 
 
+def test_execution_status_join_allows_nonmember_price_rows_and_pins_generation(
+    tmp_path, monkeypatch
+):
+    config = _config(tmp_path)
+    calendar = pd.bdate_range("2024-01-02", periods=4)
+    membership = pd.DataFrame(
+        {
+            "date": calendar[2:],
+            "symbol": ["000001.SZ", "000001.SZ"],
+            "is_member": [True, True],
+        }
+    )
+    universe_version = cli.dataframe_sha256(
+        cli.validate_daily_membership(membership, expected_member_count=None)
+    )
+    status = membership[["date", "symbol"]].copy()
+    status["trade_status"] = 1
+    status["is_st"] = False
+    listings = pd.DataFrame(
+        {"symbol": ["000001.SZ"], "listing_date": [calendar[0]]}
+    )
+    manifest = cli.publish_security_data(
+        status,
+        listings,
+        output_dir=config.paths.universe_dir,
+        calendar=calendar,
+        membership=membership,
+        universe_sha256=universe_version,
+        source="BaoStockPointInTimeProvider",
+        source_version="baostock-security-history-v1",
+    )
+    bars = pd.DataFrame(
+        {
+            "date": calendar,
+            "symbol": "000001.SZ",
+            "raw_open": 10.0,
+            "raw_close": 10.0,
+            "volume": 100_000.0,
+        }
+    )
+    monkeypatch.setattr(
+        cli, "_load_verified_membership", lambda current, dates: membership
+    )
+
+    joined = cli._attach_execution_status(
+        config,
+        bars,
+        calendar,
+        calendar[2:],
+        expected_security_data_version=manifest["security_data_version"],
+        expected_security_manifest_sha256=cli._security_manifest_sha256(
+            manifest
+        ),
+    )
+
+    assert joined.loc[joined["date"].isin(calendar[:2]), "trade_status"].isna().all()
+    assert joined.loc[joined["date"].isin(calendar[2:]), "trade_status"].eq(1).all()
+    with pytest.raises(FactorLabError, match="changed after dataset verification"):
+        cli._attach_execution_status(
+            config,
+            bars,
+            calendar,
+            calendar[2:],
+            expected_security_data_version=manifest["security_data_version"],
+            expected_security_manifest_sha256="f" * 64,
+        )
 def test_build_dataset_binds_producer_code_provenance(tmp_path, monkeypatch):
     _, dataset, bars, benchmark = _inputs()
     config = _config(tmp_path)
     _, membership, universe_version = _write_verified_inputs(config, dataset)
-    status_path = config.paths.universe_dir / "security_status.parquet"
-    listing_path = config.paths.universe_dir / "listing_dates.parquet"
-    pd.DataFrame(
-        columns=["date", "symbol", "trade_status", "is_st"]
-    ).to_parquet(status_path, index=False)
-    pd.DataFrame(columns=["symbol", "listing_date"]).to_parquet(
-        listing_path, index=False
+    security_manifest = json.loads(
+        (config.paths.universe_dir / "security_data_manifest.json").read_text(
+            encoding="utf-8"
+        )
     )
 
     class FakeBuilder:
@@ -312,11 +407,42 @@ def test_build_dataset_binds_producer_code_provenance(tmp_path, monkeypatch):
             encoding="utf-8"
         )
     )
-    assert manifest["schema_version"] == 2
+    assert manifest["schema_version"] == 3
     assert manifest["producer_run_id"] == run.run_id
     assert manifest["producer_provenance"] == _provenance()
     assert manifest["universe_version"] == universe_version
+    assert manifest["security_data_version"] == security_manifest[
+        "security_data_version"
+    ]
+    assert manifest["security_status_sha256"] == security_manifest[
+        "status_sha256"
+    ]
+    assert manifest["listing_dates_sha256"] == security_manifest[
+        "listings_sha256"
+    ]
     assert manifest["dataset_sha256"] == run.payload["dataset_sha256"]
+
+
+def test_build_dataset_validates_security_bundle_before_loading_stock_bars(
+    tmp_path, monkeypatch
+):
+    _, dataset, _, benchmark = _inputs()
+    config = _config(tmp_path)
+    _write_verified_inputs(config, dataset)
+    (config.paths.universe_dir / "security_data_manifest.json").unlink()
+    monkeypatch.setattr(
+        cli, "_load_benchmark_with_warmup", lambda current: benchmark
+    )
+    monkeypatch.setattr(
+        cli,
+        "_load_stock_bars",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("stock bars must not load before security validation")
+        ),
+    )
+
+    with pytest.raises(FactorLabError, match="SECURITY STATUS DATA REQUIRED"):
+        cli.command_build_dataset(config, _Run("security-fail-fast"))
 
 
 def test_evaluate_rejects_a_tampered_content_hash(tmp_path, monkeypatch):
@@ -327,6 +453,32 @@ def test_evaluate_rejects_a_tampered_content_hash(tmp_path, monkeypatch):
 
     with pytest.raises(FactorLabError, match="Dataset manifest mismatch"):
         cli.command_evaluate(config, _Run("20200101T000000-evaluate"))
+
+
+def test_dataset_reuse_rejects_a_new_security_data_generation(tmp_path):
+    dates, dataset, _, _ = _inputs()
+    config = _config(tmp_path)
+    _, membership, universe_version = _write_verified_inputs(config, dataset)
+    status = pd.read_parquet(
+        config.paths.universe_dir / "security_status.parquet"
+    )
+    listings = pd.read_parquet(
+        config.paths.universe_dir / "listing_dates.parquet"
+    )
+    status.loc[0, "is_st"] = True
+    cli.publish_security_data(
+        status,
+        listings,
+        output_dir=config.paths.universe_dir,
+        calendar=dates,
+        membership=membership,
+        universe_sha256=universe_version,
+        source="BaoStockPointInTimeProvider",
+        source_version="baostock-security-history-v1",
+    )
+
+    with pytest.raises(FactorLabError, match="security_data_version"):
+        cli._load_verified_dataset(config, dates)
 
 
 def test_evaluate_rejects_a_missing_dataset_manifest(tmp_path, monkeypatch):
@@ -724,6 +876,26 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
                     "backtest_benchmark_sha256"
                 ],
                 "execution_bars_sha256": run.payload["execution_bars_sha256"],
+                "security_data_version": run.payload["security_data_version"],
+                "security_data_source": run.payload["security_data_source"],
+                "security_data_source_version": run.payload[
+                    "security_data_source_version"
+                ],
+                "security_data_manifest_sha256": run.payload[
+                    "security_data_manifest_sha256"
+                ],
+                "security_status_sha256": run.payload[
+                    "security_status_sha256"
+                ],
+                "listing_dates_sha256": run.payload[
+                    "listing_dates_sha256"
+                ],
+                "security_data_input_sha256": run.payload[
+                    "security_data_input_sha256"
+                ],
+                "security_data_input_files": run.payload[
+                    "security_data_input_files"
+                ],
                 "predictions_sha256": run.payload["predictions_sha256"],
                 "model_artifact_sha256": run.payload[
                     "model_artifact_sha256"
@@ -779,6 +951,9 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
     assert comparison_run.payload["source_model_artifact_sha256"]["ridge"] == (
         ridge_run.payload["model_artifact_sha256"]
     )
+    assert comparison_run.payload["security_data_manifest_sha256"] == (
+        ridge_run.payload["security_data_manifest_sha256"]
+    )
     assert comparison_run.payload["comparison_artifact_sha256"] == (
         cli._artifact_sha256(comparison_dir)
     )
@@ -792,6 +967,14 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
     cli._atomic_json(mismatched_prices, ridge_manifest_path)
     with pytest.raises(FactorLabError, match="backtest stock-bar inputs"):
         cli.command_compare_models(config, _Run("backtest-input-mismatch"))
+    cli._atomic_json(ridge_manifest, ridge_manifest_path)
+
+    mismatched_security = dict(
+        ridge_manifest, security_data_manifest_sha256="f" * 64
+    )
+    cli._atomic_json(mismatched_security, ridge_manifest_path)
+    with pytest.raises(FactorLabError, match="security-data identity"):
+        cli.command_compare_models(config, _Run("security-input-mismatch"))
     cli._atomic_json(ridge_manifest, ridge_manifest_path)
 
     factor_manifest_path = config.paths.runs_dir / factor_run.run_id / "manifest.json"

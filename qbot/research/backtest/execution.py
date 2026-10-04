@@ -186,6 +186,8 @@ def _prepare_bars(bars: pd.DataFrame, config: ExecutionBacktestConfig) -> pd.Dat
         "date",
         "symbol",
         "volume",
+        "trade_status",
+        "is_st",
         config.open_price_column,
         config.close_price_column,
     }
@@ -214,10 +216,6 @@ def _prepare_bars(bars: pd.DataFrame, config: ExecutionBacktestConfig) -> pd.Dat
             raise SchemaError("execution prices must be positive when present")
     if (frame["volume"].dropna() < 0.0).any():
         raise SchemaError("execution volume must be non-negative")
-    if "is_st" not in frame:
-        frame["is_st"] = False
-    if "trade_status" not in frame:
-        frame["trade_status"] = pd.NA
     frame.sort_values(["symbol", "date"], kind="mergesort", inplace=True)
     frame["_previous_close"] = frame.groupby("symbol", sort=False)[
         config.close_price_column
@@ -715,6 +713,11 @@ class AShareExecutionBacktester:
             reject(requested_shares, "missing_bar")
             return None
         row = day_bars.loc[symbol]
+        if pd.isna(row["trade_status"]) or pd.isna(row["is_st"]):
+            raise SchemaError(
+                "execution status is missing for %s/%s"
+                % (execution_date.date(), symbol)
+            )
         if _is_suspended(row, self.config.reject_suspended):
             reject(requested_shares, "suspended")
             return None

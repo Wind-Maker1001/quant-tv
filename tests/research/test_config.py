@@ -116,6 +116,7 @@ def test_formal_and_smoke_configs_load():
     assert formal.data.start.isoformat() == "2021-09-13"
     assert formal.data.end.isoformat() == "2026-09-11"
     assert formal.data.warmup_trading_days == 130
+    assert formal.universe.status_provider == "baostock"
     assert formal.live_trading is False
     assert formal.validation.initial_train_months == 24
     assert formal.validation.purge_days == 5
@@ -134,6 +135,15 @@ def test_formal_and_smoke_configs_load():
     assert smoke.data.end < formal.data.end
     assert smoke.data.end.isoformat() == "2024-05-17"
     assert smoke.validation.initial_train_months == 2
+
+
+def test_security_status_provider_must_be_explicitly_supported(tmp_path):
+    document = _valid_document()
+    document["universe"]["status_provider"] = "current-snapshot"
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="status_provider"):
+        load_config(path, repo_root=tmp_path)
 
 
 def test_warmup_must_cover_listing_and_quality_windows(tmp_path):

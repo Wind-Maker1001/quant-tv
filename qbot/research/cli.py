@@ -1,6 +1,7 @@
 """Command-line interface for the isolated FactorLab research pipeline."""
 
 import argparse
+from contextlib import ExitStack
 from dataclasses import asdict, replace
 from datetime import date, datetime, timezone
 import hashlib
@@ -27,7 +28,11 @@ from qbot.research.backtest import (
 from qbot.research.config import ResearchConfig, load_config
 from qbot.research.data import AKShareProvider, ParquetBarCache, TradingCalendar
 from qbot.research.dataset import DatasetBuildOptions, DatasetBuilder
-from qbot.research.errors import FactorLabError, PointInTimeUniverseRequiredError
+from qbot.research.errors import (
+    FactorLabError,
+    PointInTimeUniverseRequiredError,
+    SecurityStatusDataError,
+)
 from qbot.research.forward import (
     activation_id,
     classify_forward_timing,
@@ -71,6 +76,12 @@ from qbot.research.universe.csi500 import (
     validate_daily_membership,
 )
 from qbot.research.universe.filters import UniverseFilterConfig
+from qbot.research.universe.status import (
+    BAOSTOCK_SECURITY_SOURCE_VERSION,
+    import_security_data,
+    load_verified_security_data,
+    publish_security_data,
+)
 from qbot.research.validation import ExpandingWalkForwardSplitter, WalkForwardRunner
 
 
@@ -111,6 +122,20 @@ def _parser() -> argparse.ArgumentParser:
             "CSV/Parquet with exact date,symbol snapshots or explicit "
             "inclusive symbol,entry_date,exit_date intervals"
         ),
+    )
+    security_importer = subparsers.add_parser("import-security-data")
+    security_importer.add_argument("--config", required=True)
+    security_importer.add_argument(
+        "--status",
+        required=True,
+        dest="status_path",
+        help="CSV/Parquet with date,symbol,trade_status,is_st",
+    )
+    security_importer.add_argument(
+        "--listings",
+        required=True,
+        dest="listings_path",
+        help="CSV/Parquet with symbol,listing_date",
     )
     walk_forward = subparsers.add_parser("walk-forward")
     walk_forward.add_argument("--config", required=True)
@@ -164,6 +189,35 @@ def _file_sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _security_manifest_sha256(manifest: Dict[str, Any]) -> str:
+    content = json.dumps(
+        manifest,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(content).hexdigest()
+
+
+def _record_security_data_provenance(
+    run: RunManifest, manifest: Dict[str, Any]
+) -> None:
+    """Bind the verified status/listing generation to a CLI run manifest."""
+
+    run.payload.update(
+        {
+            "security_data_version": manifest["security_data_version"],
+            "security_data_source": manifest["source"],
+            "security_data_source_version": manifest["source_version"],
+            "security_data_manifest_sha256": _security_manifest_sha256(manifest),
+            "security_status_sha256": manifest["status_sha256"],
+            "listing_dates_sha256": manifest["listings_sha256"],
+            "security_data_input_sha256": manifest["input_sha256"],
+            "security_data_input_files": manifest["input_files"],
+        }
+    )
 
 
 def _is_sha256(value: Any) -> bool:
@@ -494,10 +548,7 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
     )
 
     universe_provider = config.universe.provider.lower()
-    if universe_provider not in {"baostock", "local"}:
-        raise PointInTimeUniverseRequiredError(
-            "Phase 1 requires universe.provider=baostock or local"
-        )
+    status_provider = config.universe.status_provider.lower()
     manifest_path = config.paths.universe_dir / "manifest.json"
     existing_manifest: Dict[str, Any] = {}
     if manifest_path.exists():
@@ -509,17 +560,30 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
         raise PointInTimeUniverseRequiredError(
             "universe.provider=local requires a validated import-universe artifact"
         )
-    with BaoStockPointInTimeProvider(
-        retry_count=config.network.max_retries,
-        backoff_seconds=config.network.backoff_seconds,
-        request_interval=config.network.request_interval_seconds,
-    ) as pit_provider:
+
+    def open_baostock(stack: ExitStack) -> BaoStockPointInTimeProvider:
+        return stack.enter_context(
+            BaoStockPointInTimeProvider(
+                retry_count=config.network.max_retries,
+                backoff_seconds=config.network.backoff_seconds,
+                request_interval=config.network.request_interval_seconds,
+            )
+        )
+
+    status_error: Optional[SecurityStatusDataError] = None
+    status_failures: List[str] = []
+    status_failure_payload: Dict[str, Any] = {"symbols": [], "error": None}
+    security_manifest: Optional[Dict[str, Any]] = None
+    partial_status_path: Optional[Path] = None
+    partial_listings_path: Optional[Path] = None
+    with ExitStack() as stack:
+        pit_provider: Optional[BaoStockPointInTimeProvider] = None
         if universe_provider == "local":
             membership = _load_verified_membership(config, calendar)
-            universe_manifest = existing_manifest
             LOGGER.info("Reusing validated local-import PIT universe")
         else:
-            universe_manifest = collect_point_in_time_universe(
+            pit_provider = open_baostock(stack)
+            collect_point_in_time_universe(
                 pit_provider,
                 config.universe.index_symbol,
                 calendar,
@@ -531,16 +595,105 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
             )
             membership = _load_verified_membership(config, calendar)
         symbols = membership["symbol"].drop_duplicates().sort_values().tolist()
-        status, listings, status_failures = pit_provider.get_security_history(
-            symbols, full_calendar.min(), full_calendar.max()
-        )
-    _atomic_parquet(status, config.paths.universe_dir / "security_status.parquet")
-    _atomic_parquet(listings, config.paths.universe_dir / "listing_dates.parquet")
-    _atomic_json(status_failures, config.paths.universe_dir / "status_failures.json")
-    run.payload["universe_version"] = universe_manifest["sha256"]
+        universe_version = dataframe_sha256(membership)
+        try:
+            _, _, security_manifest = load_verified_security_data(
+                config.paths.universe_dir,
+                calendar=full_calendar,
+                membership=membership,
+                universe_sha256=universe_version,
+                expected_provider=status_provider,
+            )
+            LOGGER.info(
+                "Reusing verified %s security-data bundle",
+                status_provider,
+            )
+        except SecurityStatusDataError as cache_error:
+            if status_provider == "local":
+                raise SecurityStatusDataError(
+                    "status_provider=local requires import-security-data first; %s"
+                    % cache_error
+                ) from cache_error
+            LOGGER.info("Refreshing BaoStock security data: %s", cache_error)
+            if pit_provider is None:
+                pit_provider = open_baostock(stack)
+            status, listings, status_failures = pit_provider.get_security_history(
+                symbols, full_calendar.min(), full_calendar.max()
+            )
+            if status_failures:
+                status_error = SecurityStatusDataError(
+                    "BaoStock status failed for %d/%d symbols; complete bundle not published"
+                    % (len(status_failures), len(symbols))
+                )
+            else:
+                try:
+                    security_manifest = publish_security_data(
+                        status,
+                        listings,
+                        output_dir=config.paths.universe_dir,
+                        calendar=full_calendar,
+                        membership=membership,
+                        universe_sha256=universe_version,
+                        source="BaoStockPointInTimeProvider",
+                        source_version=BAOSTOCK_SECURITY_SOURCE_VERSION,
+                    )
+                except SecurityStatusDataError as exc:
+                    status_error = exc
+            if status_error is not None:
+                partial_status_path = config.paths.universe_dir / (
+                    "security_status.partial.%s.parquet" % run.run_id
+                )
+                partial_listings_path = config.paths.universe_dir / (
+                    "listing_dates.partial.%s.parquet" % run.run_id
+                )
+                _atomic_parquet(
+                    status,
+                    partial_status_path,
+                )
+                _atomic_parquet(
+                    listings,
+                    partial_listings_path,
+                )
+                status_failure_payload = {
+                    "symbols": status_failures,
+                    "error": str(status_error),
+                    "partial_status": str(partial_status_path),
+                    "partial_listings": str(partial_listings_path),
+                }
+                run.add_failures(
+                    "security_status",
+                    status_failure_payload,
+                )
+
+    run.payload["universe_version"] = universe_version
     run.add_output("universe", config.paths.universe_dir / "csi500_daily.parquet")
-    if status_failures:
-        run.add_failures("security_status", status_failures)
+    status_failure_path = config.paths.universe_dir / "status_failures.json"
+    if security_manifest is not None and status_error is None:
+        status_failure_payload = {
+            "symbols": [],
+            "error": None,
+            "security_data_version": security_manifest["security_data_version"],
+        }
+    _atomic_json(status_failure_payload, status_failure_path)
+    run.add_output("status_failures", status_failure_path)
+    if status_error is not None:
+        if partial_status_path is not None:
+            run.add_output("partial_security_status", partial_status_path)
+        if partial_listings_path is not None:
+            run.add_output("partial_listing_dates", partial_listings_path)
+    if security_manifest is not None:
+        _record_security_data_provenance(run, security_manifest)
+        run.add_output(
+            "security_status",
+            config.paths.universe_dir / "security_status.parquet",
+        )
+        run.add_output(
+            "listing_dates", config.paths.universe_dir / "listing_dates.parquet"
+        )
+        run.add_output(
+            "security_data_manifest",
+            config.paths.universe_dir / "security_data_manifest.json",
+        )
 
     cache = _stock_cache(config)
     failures: Dict[str, str] = {}
@@ -563,6 +716,8 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
     run.add_failures("market_data", failures)
     run.add_output("failed_symbols", failure_path)
     LOGGER.info("Market data completed with %d failed symbols", len(failures))
+    if status_error is not None:
+        raise status_error
 
 
 def command_import_universe(
@@ -598,6 +753,64 @@ def command_import_universe(
     LOGGER.info("Imported and validated %d PIT sessions", manifest["trading_dates"])
 
 
+def command_import_security_data(
+    config: ResearchConfig,
+    run: RunManifest,
+    status_path: str,
+    listings_path: str,
+) -> None:
+    """Import one complete local status/listing bundle without BaoStock."""
+
+    if config.universe.status_provider.lower() != "local":
+        raise SecurityStatusDataError(
+            "import-security-data requires universe.status_provider=local"
+        )
+    try:
+        benchmark = _load_benchmark_with_warmup(config)
+    except FactorLabError:
+        provider = _provider(config)
+        benchmark = _download_benchmark_with_warmup(config, provider)
+    full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
+    research_calendar = _research_calendar(config, full_calendar)
+    membership = _load_verified_membership(config, research_calendar)
+    universe_version = dataframe_sha256(membership)
+    manifest = import_security_data(
+        Path(status_path),
+        Path(listings_path),
+        output_dir=config.paths.universe_dir,
+        calendar=full_calendar,
+        membership=membership,
+        universe_sha256=universe_version,
+    )
+    run.payload["universe_version"] = universe_version
+    _record_security_data_provenance(run, manifest)
+    status_failure_path = config.paths.universe_dir / "status_failures.json"
+    _atomic_json(
+        {
+            "symbols": [],
+            "error": None,
+            "security_data_version": manifest["security_data_version"],
+        },
+        status_failure_path,
+    )
+    run.add_output(
+        "security_status", config.paths.universe_dir / "security_status.parquet"
+    )
+    run.add_output(
+        "listing_dates", config.paths.universe_dir / "listing_dates.parquet"
+    )
+    run.add_output(
+        "security_data_manifest",
+        config.paths.universe_dir / "security_data_manifest.json",
+    )
+    run.add_output("status_failures", status_failure_path)
+    LOGGER.info(
+        "Imported verified security data: %d rows for %d symbols",
+        manifest["status_rows"],
+        manifest["symbols"],
+    )
+
+
 def _load_stock_bars(config: ResearchConfig, symbols: Iterable[str]) -> pd.DataFrame:
     cache = _stock_cache(config)
     parts: List[pd.DataFrame] = []
@@ -620,14 +833,16 @@ def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
     calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
     research_calendar = _research_calendar(config, calendar)
     membership = _load_verified_membership(config, research_calendar)
+    universe_version = dataframe_sha256(membership)
     symbols = membership["symbol"].drop_duplicates().sort_values().tolist()
+    status, listings, security_manifest = load_verified_security_data(
+        config.paths.universe_dir,
+        calendar=calendar,
+        membership=membership,
+        universe_sha256=universe_version,
+        expected_provider=config.universe.status_provider,
+    )
     bars = _load_stock_bars(config, symbols)
-    status_path = config.paths.universe_dir / "security_status.parquet"
-    listing_path = config.paths.universe_dir / "listing_dates.parquet"
-    if not status_path.exists() or not listing_path.exists():
-        raise FactorLabError("BaoStock status/listing cache is missing; run download-data")
-    status = pd.read_parquet(status_path)
-    listings = pd.read_parquet(listing_path)
     filter_config = UniverseFilterConfig(
         min_listed_days=config.universe.min_listed_days,
         exclude_st=config.universe.exclude_st,
@@ -653,14 +868,22 @@ def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
     builder.write_artifacts(dataset, destination, config.paths.features_dir)
     dataset_manifest_path = config.paths.processed_dir / "dataset_manifest.json"
     dataset_sha256 = _file_sha256(destination)
-    universe_version = dataframe_sha256(membership)
     _atomic_json(
         {
-            "schema_version": 2,
+            "schema_version": 3,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "dataset_path": str(destination),
             "dataset_sha256": dataset_sha256,
             "universe_version": universe_version,
+            "security_data_version": security_manifest["security_data_version"],
+            "security_data_source": security_manifest["source"],
+            "security_data_source_version": security_manifest["source_version"],
+            "security_data_manifest_sha256": _security_manifest_sha256(
+                security_manifest
+            ),
+            "security_status_sha256": security_manifest["status_sha256"],
+            "listing_dates_sha256": security_manifest["listings_sha256"],
+            "security_data_input_sha256": security_manifest["input_sha256"],
             "factor_list": list(config.factors),
             "target": _target_column(config),
             "rows": int(len(dataset)),
@@ -679,6 +902,7 @@ def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
     run.payload["dataset_dates"] = int(dataset["date"].nunique())
     run.payload["dataset_sha256"] = dataset_sha256
     run.payload["universe_version"] = universe_version
+    _record_security_data_provenance(run, security_manifest)
     LOGGER.info("Dataset written: %d rows across %d dates", len(dataset), dataset["date"].nunique())
 
 
@@ -687,7 +911,7 @@ def command_evaluate(config: ResearchConfig, run: RunManifest) -> None:
     full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
     research_calendar = _research_calendar(config, full_calendar)
     dataset, dataset_sha256, universe_version = _load_verified_dataset(
-        config, research_calendar, run
+        config, research_calendar, run, full_calendar=full_calendar
     )
     run.payload["dataset_sha256"] = dataset_sha256
     run.payload["universe_version"] = universe_version
@@ -717,9 +941,21 @@ def _load_verified_dataset(
     config: ResearchConfig,
     research_calendar: pd.DatetimeIndex,
     run: Optional[RunManifest] = None,
+    *,
+    full_calendar: Optional[pd.DatetimeIndex] = None,
 ) -> tuple:
     membership = _load_verified_membership(config, research_calendar)
     universe_version = dataframe_sha256(membership)
+    security_calendar = (
+        full_calendar if full_calendar is not None else research_calendar
+    )
+    _, _, security_manifest = load_verified_security_data(
+        config.paths.universe_dir,
+        calendar=security_calendar,
+        membership=membership,
+        universe_sha256=universe_version,
+        expected_provider=config.universe.status_provider,
+    )
     dataset_path = config.paths.processed_dir / "dataset.parquet"
     manifest_path = config.paths.processed_dir / "dataset_manifest.json"
     if not dataset_path.exists():
@@ -741,9 +977,18 @@ def _load_verified_dataset(
         raise FactorLabError("Dataset is unreadable") from exc
     dataset_sha256 = hashlib.sha256(dataset_content).hexdigest()
     expected = {
-        "schema_version": 2,
+        "schema_version": 3,
         "dataset_sha256": dataset_sha256,
         "universe_version": universe_version,
+        "security_data_version": security_manifest["security_data_version"],
+        "security_data_source": security_manifest["source"],
+        "security_data_source_version": security_manifest["source_version"],
+        "security_data_manifest_sha256": _security_manifest_sha256(
+            security_manifest
+        ),
+        "security_status_sha256": security_manifest["status_sha256"],
+        "listing_dates_sha256": security_manifest["listings_sha256"],
+        "security_data_input_sha256": security_manifest["input_sha256"],
         "factor_list": list(config.factors),
         "target": _target_column(config),
         "data_start": config.data.start.isoformat(),
@@ -789,6 +1034,15 @@ def _load_verified_dataset(
         "status": "success",
         "dataset_sha256": dataset_sha256,
         "universe_version": universe_version,
+        "security_data_version": security_manifest["security_data_version"],
+        "security_data_source": security_manifest["source"],
+        "security_data_source_version": security_manifest["source_version"],
+        "security_data_manifest_sha256": _security_manifest_sha256(
+            security_manifest
+        ),
+        "security_status_sha256": security_manifest["status_sha256"],
+        "listing_dates_sha256": security_manifest["listings_sha256"],
+        "security_data_input_sha256": security_manifest["input_sha256"],
     }
     producer_mismatches = [
         name
@@ -839,6 +1093,7 @@ def _load_verified_dataset(
             )
         run.payload["dataset_producer_run_id"] = producer_run_id
         run.payload["dataset_producer_provenance"] = producer_provenance
+        _record_security_data_provenance(run, security_manifest)
     try:
         dataset = pd.read_parquet(io.BytesIO(dataset_content))
     except (OSError, ValueError, TypeError) as exc:
@@ -959,31 +1214,42 @@ def _backtest_window(
 
 
 def _attach_execution_status(
-    config: ResearchConfig, bars: pd.DataFrame
+    config: ResearchConfig,
+    bars: pd.DataFrame,
+    full_calendar: pd.DatetimeIndex,
+    research_calendar: pd.DatetimeIndex,
+    *,
+    expected_security_data_version: str,
+    expected_security_manifest_sha256: str,
 ) -> pd.DataFrame:
-    """Join date-effective BaoStock ST/trading status to cached price rows."""
+    """Join one previously audited status generation to cached price rows.
+
+    Status is mandatory for point-in-time membership keys, not for every
+    historical price row.  Missing values can therefore remain on warm-up,
+    pre-entry, or post-exit bars.  The execution engine fails fast if an
+    actual order reaches one of those unaudited rows.
+    """
 
     required_status = {"date", "symbol", "trade_status", "is_st"}
-    if required_status.issubset(bars.columns):
-        return bars.copy()
-    status_path = config.paths.universe_dir / "security_status.parquet"
-    if not status_path.is_file():
+    membership = _load_verified_membership(config, research_calendar)
+    universe_version = dataframe_sha256(membership)
+    status, _, security_manifest = load_verified_security_data(
+        config.paths.universe_dir,
+        calendar=full_calendar,
+        membership=membership,
+        universe_sha256=universe_version,
+        expected_provider=config.universe.status_provider,
+    )
+    actual_manifest_sha256 = _security_manifest_sha256(security_manifest)
+    if (
+        security_manifest["security_data_version"]
+        != expected_security_data_version
+        or actual_manifest_sha256 != expected_security_manifest_sha256
+    ):
         raise FactorLabError(
-            "Execution backtest requires security_status.parquet; run download-data"
-        )
-    status = pd.read_parquet(status_path)
-    missing = sorted(required_status.difference(status.columns))
-    if missing:
-        raise FactorLabError(
-            "Execution status cache is missing columns: %s" % ", ".join(missing)
+            "Security data changed after dataset verification; restart the run"
         )
     status = status.loc[:, sorted(required_status)].copy()
-    status["date"] = pd.to_datetime(status["date"], errors="raise").dt.normalize()
-    status["symbol"] = status["symbol"].astype(str)
-    if status.duplicated(["date", "symbol"]).any():
-        raise FactorLabError(
-            "Execution status cache contains duplicate (date, symbol) rows"
-        )
     price_data = bars.drop(
         columns=[name for name in ("trade_status", "is_st") if name in bars],
         errors="ignore",
@@ -991,32 +1257,14 @@ def _attach_execution_status(
     price_data["date"] = pd.to_datetime(
         price_data["date"], errors="raise"
     ).dt.normalize()
-    symbols = set(price_data["symbol"].astype(str))
-    start = price_data["date"].min()
-    end = price_data["date"].max()
-    relevant_status = status.loc[
-        status["symbol"].isin(symbols) & status["date"].between(start, end)
-    ].copy()
-    joined = relevant_status.merge(
-        price_data,
+    joined = price_data.merge(
+        status,
         on=["date", "symbol"],
-        how="outer",
+        how="left",
         validate="one_to_one",
-        indicator=True,
     )
-    missing_rows = joined["_merge"].eq("right_only")
-    if missing_rows.any():
-        sample = joined.loc[missing_rows, ["date", "symbol"]].head(5)
-        raise FactorLabError(
-            "Execution status cache does not cover price rows: %s"
-            % ", ".join(
-                "%s/%s" % (row.date.date(), row.symbol)
-                for row in sample.itertuples(index=False)
-            )
-        )
     return (
-        joined.drop(columns="_merge")
-        .sort_values(["date", "symbol"], kind="mergesort")
+        joined.sort_values(["date", "symbol"], kind="mergesort")
         .reset_index(drop=True)
     )
 
@@ -1032,7 +1280,7 @@ def command_walk_forward(
     full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
     research_calendar = _research_calendar(config, full_calendar)
     dataset, dataset_sha256, universe_version = _load_verified_dataset(
-        config, research_calendar, run
+        config, research_calendar, run, full_calendar=full_calendar
     )
     output_dir = config.paths.model_results_dir / model_name / run.run_id
     model_dir = output_dir / "fold_models"
@@ -1130,7 +1378,16 @@ def command_walk_forward(
         periods_per_year=config.backtest.annualization_days,
         risk_free_rate=config.backtest.risk_free_rate,
     )
-    execution_bars = _attach_execution_status(config, bars)
+    execution_bars = _attach_execution_status(
+        config,
+        bars,
+        full_calendar,
+        research_calendar,
+        expected_security_data_version=run.payload["security_data_version"],
+        expected_security_manifest_sha256=run.payload[
+            "security_data_manifest_sha256"
+        ],
+    )
     execution_bars_sha256 = dataframe_sha256(execution_bars)
     execution = run_execution_backtest(
         walk_forward.predictions[["date", "symbol", "score"]],
@@ -1461,6 +1718,70 @@ def _combine_model_tables(
     return pd.concat(parts, ignore_index=True, sort=False)
 
 
+def _shared_model_security_provenance(
+    manifests: Dict[str, Dict[str, Any]]
+) -> Dict[str, Any]:
+    """Return one exact security-data identity shared by all model runs."""
+
+    sha_fields = (
+        "security_data_version",
+        "security_data_manifest_sha256",
+        "security_status_sha256",
+        "listing_dates_sha256",
+    )
+    text_fields = (
+        "security_data_source",
+        "security_data_source_version",
+    )
+    mapping_fields = (
+        "security_data_input_sha256",
+        "security_data_input_files",
+    )
+    result: Dict[str, Any] = {}
+    for field in sha_fields:
+        values = [payload.get(field) for payload in manifests.values()]
+        if not values or any(value != values[0] for value in values):
+            raise FactorLabError(
+                "Model reports use different security-data identity (%s)" % field
+            )
+        if not _is_sha256(values[0]):
+            raise FactorLabError(
+                "Model reports have unknown security-data identity (%s)" % field
+            )
+        result[field] = values[0]
+    for field in text_fields:
+        values = [payload.get(field) for payload in manifests.values()]
+        if (
+            not values
+            or any(value != values[0] for value in values)
+            or not isinstance(values[0], str)
+            or not values[0].strip()
+        ):
+            raise FactorLabError(
+                "Model reports use different or unknown security-data source (%s)"
+                % field
+            )
+        result[field] = values[0]
+    for field in mapping_fields:
+        values = [payload.get(field) for payload in manifests.values()]
+        if (
+            not values
+            or any(value != values[0] for value in values)
+            or not isinstance(values[0], dict)
+        ):
+            raise FactorLabError(
+                "Model reports use different or unknown security-data inputs (%s)"
+                % field
+            )
+        result[field] = dict(values[0])
+    if any(
+        not _is_sha256(value)
+        for value in result["security_data_input_sha256"].values()
+    ):
+        raise FactorLabError("Model reports have invalid security-data input hashes")
+    return result
+
+
 def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
     """Compare all four pre-registered models without selecting a winner."""
 
@@ -1513,6 +1834,7 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         or not _is_sha256(next(iter(universe_versions), None))
     ):
         raise FactorLabError("Model reports use different or unknown PIT universe versions")
+    security_provenance = _shared_model_security_provenance(manifests)
     backtest_stock_versions = {
         payload.get("backtest_stock_bars_sha256") for payload in manifests.values()
     }
@@ -1608,6 +1930,7 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
     }
     run.payload["dataset_sha256"] = next(iter(dataset_versions))
     run.payload["universe_version"] = next(iter(universe_versions))
+    run.payload.update(security_provenance)
     run.payload["backtest_stock_bars_sha256"] = next(
         iter(backtest_stock_versions)
     )
@@ -1778,7 +2101,7 @@ def command_freeze_forward_model(
     full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
     research_calendar = _research_calendar(config, full_calendar)
     dataset, dataset_sha256, universe_version = _load_verified_dataset(
-        config, research_calendar, run
+        config, research_calendar, run, full_calendar=full_calendar
     )
     parameters = selected_forward_model_parameters(config)
     fitted = fit_final_model(
@@ -1994,7 +2317,7 @@ def _command_forward_signal_locked(
             "Benchmark data_asof does not reach exactly the requested signal date"
         )
     dataset, dataset_sha256, universe_version = _load_verified_dataset(
-        config, research_calendar, run
+        config, research_calendar, run, full_calendar=full_calendar
     )
     cross_section = dataset.loc[dataset["date"].eq(normalized_day)].copy()
     if cross_section.empty:
@@ -2148,6 +2471,13 @@ def main(argv: Optional[List[str]] = None) -> int:
             command_download(config, run)
         elif arguments.command == "import-universe":
             command_import_universe(config, run, arguments.input_path)
+        elif arguments.command == "import-security-data":
+            command_import_security_data(
+                config,
+                run,
+                arguments.status_path,
+                arguments.listings_path,
+            )
         elif arguments.command == "build-dataset":
             command_build_dataset(config, run)
         elif arguments.command == "evaluate-factors":

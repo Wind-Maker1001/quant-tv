@@ -1,6 +1,7 @@
 """Deterministic BaoStock status/listing retry and pacing contracts."""
 
 import pandas as pd
+import pytest
 
 from qbot.research.universe.csi500 import BaoStockPointInTimeProvider
 
@@ -165,3 +166,53 @@ def test_exhausted_symbol_failure_does_not_abort_remaining_symbols():
     assert failures == ["000001.SZ"]
     assert status["symbol"].unique().tolist() == ["600000.SH"]
     assert listings["symbol"].tolist() == ["600000.SH"]
+
+
+@pytest.mark.parametrize(
+    "basic_query,history_query",
+    [
+        (
+            _basic_success("sz.000001"),
+            _history_success("sh.600000"),
+        ),
+        (
+            FakeQuery(
+                fields=("code", "ipoDate"),
+                rows=(
+                    ("sh.600000", "1999-11-10"),
+                    ("sh.600000", "1999-11-10"),
+                ),
+            ),
+            _history_success("sh.600000"),
+        ),
+        (
+            _basic_success("sh.600000"),
+            _history_success("sz.000001"),
+        ),
+    ],
+    ids=("basic-code-mismatch", "multiple-basic-rows", "history-code-mismatch"),
+)
+def test_status_history_rejects_mismatched_or_ambiguous_response_codes(
+    basic_query, history_query
+):
+    class InvalidResponseClient:
+        def query_stock_basic(self, code):
+            return basic_query
+
+        def query_history_k_data_plus(self, code, fields, **kwargs):
+            return history_query
+
+    provider = BaoStockPointInTimeProvider(
+        client=InvalidResponseClient(),
+        retry_count=0,
+        request_interval=0.0,
+        sleep_fn=lambda seconds: None,
+    )
+
+    status, listings, failures = provider.get_security_history(
+        ["600000.SH"], "2024-01-02", "2024-01-03"
+    )
+
+    assert status.empty
+    assert listings.empty
+    assert failures == ["600000.SH"]

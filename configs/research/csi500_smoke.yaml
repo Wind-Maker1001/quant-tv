@@ -24,6 +24,7 @@ universe:
   name: CSI500
   index_symbol: 000905.SH
   provider: baostock
+  status_provider: baostock
   point_in_time: true
   expected_member_count: 500
   min_listed_days: 120

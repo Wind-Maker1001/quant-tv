@@ -1,8 +1,10 @@
 """Integration-level offline tests for point-in-time dataset construction."""
 
 import pandas as pd
+import pytest
 
 from qbot.research.dataset.builder import DatasetBuildOptions, DatasetBuilder
+from qbot.research.errors import SchemaError
 from qbot.research.universe.filters import UniverseFilterConfig
 
 
@@ -113,6 +115,14 @@ def test_dataset_never_includes_an_ineligible_pit_member():
     )
     selected = result.loc[result["date"] == dates[4], "symbol"].tolist()
     assert selected == ["000001.SZ"]
+
+
+def test_dataset_fails_instead_of_publishing_zero_eligible_rows():
+    dates, bars, benchmark, membership, status, listings = _dataset_inputs()
+    status["is_st"] = True
+
+    with pytest.raises(SchemaError, match="no eligible stock-days"):
+        _builder().build(bars, benchmark, membership, status, listings, dates)
 
 
 def test_dataset_artifacts_round_trip_as_parquet(tmp_path):
