@@ -411,8 +411,11 @@ class ResearchConfig:
             raise ConfigurationError("seed must be non-negative")
         if self.data.start > self.data.end:
             raise ConfigurationError("data.start must be on or before data.end")
-        if self.data.adjustment not in {"hfq", "qfq"}:
-            raise ConfigurationError("data.adjustment must be hfq or qfq")
+        if self.data.adjustment != "hfq":
+            raise ConfigurationError(
+                "data.adjustment must be hfq: Phase 1 incremental caches rely on "
+                "historically stable adjusted prices"
+            )
         if self.data.calendar_source != "benchmark":
             raise ConfigurationError(
                 "data.calendar_source must be benchmark in FactorLab Phase 1"

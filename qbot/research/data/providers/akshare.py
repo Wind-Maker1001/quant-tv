@@ -128,6 +128,25 @@ class AKShareProvider(MarketDataProvider):
     def source_version(self) -> str:
         return str(getattr(self.akshare, "__version__", "unknown"))
 
+    def cache_source_version(self, symbol: str, is_index: bool) -> str:
+        """Return the exact vendor contract that produced a cache artifact."""
+
+        canonical_symbol = normalize_symbol(symbol)
+        if not is_index:
+            contract = "stock_zh_a_hist-raw+%s-v1" % self.adjustment
+        elif (
+            canonical_symbol == "000905.SH"
+            and hasattr(self.akshare, "stock_zh_index_hist_csindex")
+        ):
+            contract = "stock_zh_index_hist_csindex-v1"
+        elif hasattr(self.akshare, "index_zh_a_hist"):
+            contract = "index_zh_a_hist-v1"
+        elif hasattr(self.akshare, "stock_zh_index_daily"):
+            contract = "stock_zh_index_daily-v1"
+        else:
+            raise ProviderError("AKShare has no supported mainland index endpoint")
+        return "akshare=%s;contract=%s" % (self.source_version, contract)
+
     def _throttle(self) -> None:
         now = self._monotonic()
         if self._last_request_at is not None:

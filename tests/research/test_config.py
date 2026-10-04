@@ -146,6 +146,15 @@ def test_security_status_provider_must_be_explicitly_supported(tmp_path):
         load_config(path, repo_root=tmp_path)
 
 
+def test_phase1_rejects_qfq_because_incremental_history_can_be_rewritten(tmp_path):
+    document = _valid_document()
+    document["data"]["adjustment"] = "qfq"
+    path = _write_config(tmp_path, document)
+
+    with pytest.raises(ConfigurationError, match="must be hfq"):
+        load_config(path, repo_root=tmp_path)
+
+
 def test_warmup_must_cover_listing_and_quality_windows(tmp_path):
     document = _valid_document()
     document["data"]["warmup_trading_days"] = 10

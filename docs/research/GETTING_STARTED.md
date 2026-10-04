@@ -265,6 +265,8 @@ Schema 错误表示 symbol、日期、主键、OHLC 关系或数值单位不符�
 
 网络下载可以断点续跑：成功的单股和单日 PIT 快照会保留，再次执行仅补缺失区间。严重的 benchmark、Schema 或 PIT 问题仍会阻止数据集构建。
 
+若出现 `unsupported cache metadata version` 或 `cache source identity mismatch`，表示现有行情缓存来自旧 metadata、另一 AKShare 版本、另一端点或另一复权合同。不要手工修改 JSON 让它“通过”。先把对应的 `.parquet` 与 `.metadata.json` 成对归档到数据目录之外，再重新执行 `download-data`；也可以在配置中使用新的 `paths.data_root` 保留两代数据。系统不会自动删除或覆盖身份不一致的缓存。Phase 1 只接受 `data.adjustment: hfq`，因为 `qfq` 的旧历史会随新除权事件重写，不适合增量追加。
+
 ## 9. 形成研究结论前
 
 烟雾或 synthetic 命令成功只说明软件管线可执行。只有以下条件同时满足，结果才可进入课程论文：

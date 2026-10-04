@@ -55,6 +55,50 @@ def test_stock_bars_join_raw_and_hfq_and_convert_units():
     assert bars.loc[0, "adj_factor"] == pytest.approx(2.0)
 
 
+def test_stock_cache_identity_binds_adjustment_and_package_version():
+    hfq = AKShareProvider(
+        adjustment="hfq",
+        akshare_module=FakeAKShare(),
+        retry_count=0,
+        request_interval=0,
+    )
+    qfq = AKShareProvider(
+        adjustment="qfq",
+        akshare_module=FakeAKShare(),
+        retry_count=0,
+        request_interval=0,
+    )
+
+    assert hfq.cache_source_version("600000.SH", False) == (
+        "akshare=test;contract=stock_zh_a_hist-raw+hfq-v1"
+    )
+    assert qfq.cache_source_version("600000.SH", False) == (
+        "akshare=test;contract=stock_zh_a_hist-raw+qfq-v1"
+    )
+    assert hfq.cache_source_version("600000.SH", False) != (
+        qfq.cache_source_version("600000.SH", False)
+    )
+
+
+def test_index_cache_identity_binds_selected_endpoint_not_adjustment():
+    hfq = AKShareProvider(
+        adjustment="hfq",
+        akshare_module=FakeAKShare(),
+        retry_count=0,
+        request_interval=0,
+    )
+    qfq = AKShareProvider(
+        adjustment="qfq",
+        akshare_module=FakeAKShare(),
+        retry_count=0,
+        request_interval=0,
+    )
+
+    expected = "akshare=test;contract=index_zh_a_hist-v1"
+    assert hfq.cache_source_version("000905.SH", True) == expected
+    assert qfq.cache_source_version("000905.SH", True) == expected
+
+
 def test_index_bars_are_unadjusted_and_drive_calendar():
     provider = AKShareProvider(
         akshare_module=FakeAKShare(), retry_count=0, request_interval=0
@@ -195,3 +239,6 @@ def test_csi500_prefers_official_index_endpoint_and_normalises_units(
     ]
     assert bars["volume"].tolist() == expected_volume
     assert bars["amount"].tolist() == [12_600_000_000.0, 17_250_000_000.0]
+    assert provider.cache_source_version("000905.SH", True) == (
+        "akshare=test;contract=stock_zh_index_hist_csindex-v1"
+    )

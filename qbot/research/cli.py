@@ -346,7 +346,14 @@ def _download_benchmark_with_warmup(
 
 
 def _load_benchmark_with_warmup(config: ResearchConfig) -> pd.DataFrame:
-    bars = _benchmark_cache(config).load(config.data.benchmark)
+    provider = _provider(config)
+    bars = _benchmark_cache(config).load(
+        config.data.benchmark,
+        expected_source=provider.__class__.__name__,
+        expected_source_version=provider.cache_source_version(
+            config.data.benchmark, True
+        ),
+    )
     if bars.empty:
         raise FactorLabError(
             "Benchmark cache is empty; run download-data before this command"
@@ -813,10 +820,15 @@ def command_import_security_data(
 
 def _load_stock_bars(config: ResearchConfig, symbols: Iterable[str]) -> pd.DataFrame:
     cache = _stock_cache(config)
+    provider = _provider(config)
     parts: List[pd.DataFrame] = []
     missing: List[str] = []
     for symbol in symbols:
-        bars = cache.load(symbol)
+        bars = cache.load(
+            symbol,
+            expected_source=provider.__class__.__name__,
+            expected_source_version=provider.cache_source_version(symbol, False),
+        )
         if bars.empty:
             missing.append(symbol)
         else:
