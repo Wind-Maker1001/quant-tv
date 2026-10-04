@@ -8,9 +8,9 @@
 | --- | --- | --- |
 | A 股日线 | AKShare `stock_zh_a_hist` | 原始/后复权 OHLC、量、额、换手率 |
 | 中证500指数日线 | AKShare 指数端点 | benchmark、交易日历、超额收益标签、Phase 3 市场状态 |
-| 中证500历史成分 | BaoStock `query_zz500_stocks(date=...)` | 逐交易日 Point-in-Time 股票池 |
-| ST/交易状态、上市日期 | BaoStock | 当日可交易性过滤、Phase 3 停牌/涨跌停执行判断 |
-| 用户历史成分表 | 日级快照或显式闭区间 CSV/Parquet 导入 | BaoStock 的可验证替代路径 |
+| 中证500历史成分 | BaoStock `query_zz500_stocks(date=...)` 或严格本地导入 | 逐交易日 Point-in-Time 股票池 |
+| ST/交易状态、上市日期 | BaoStock 或严格本地导入 | 当日可交易性过滤、Phase 3 停牌/涨跌停执行判断 |
+| 用户历史成分表 | 日级快照或显式闭区间 CSV/Parquet 导入 | BaoStock PIT 成分接口的可验证替代路径 |
 
 因子、标签和数据集代码不直接调用任何数据供应商，只消费统一 Provider/Schema 输出。AKShare 当前成分快照不得用于历史日期。
 
@@ -104,21 +104,42 @@ Schema 验证包括：必需列、日期类型、symbol 格式、排序、主键
 
 区间只在当前 benchmark 交易日历上展开；研究区间内的首尾边界必须本身是 benchmark 交易日，不能把周末、节假日或公告日静默平移。日级和区间日期字符串都必须使用 `YYYY-MM-DD`，带时间、时区或数值时间戳会被拒绝。同一股票的闭区间不能重叠；展开后仍必须逐日恢复恰好 500 个唯一成员。输入同时含日级和区间列、包含未声明的附加列，或使用语义未定义的 `opt-in/opt-out` 列时会 fail fast，必须先依据可核验来源转换为真实生效日的闭区间。
 
-导入 manifest v2 记录输入布局、成员语义、原始文件绝对路径与 SHA-256，并分别绑定规范化逐日表和重新压缩区间表的内容哈希；消费端会同时校验两份产物及其相互一致性。因此等价的日级和区间输入得到相同股票池版本。写入使用独占 writer lock、唯一临时文件并以 manifest 最后发布；残留锁不会被自动删除，以免两个写者错误并发。消费端为已有产物保留对严格 `user-pit-daily-import-v1` 的只读兼容；即使旧 manifest 没有区间哈希，也会把其区间表与逐日表重新压缩结果对比。新导入统一写 v2。随后 `download-data` 会校验并复用该导入股票池，绝不以 BaoStock 快照覆盖。BaoStock 在 Phase 1 中仍用于 ST、停牌状态和上市日期。使用 `provider=baostock` 的配置不能消费本地导入 manifest，反之亦然。
+导入 manifest v2 记录输入布局、成员语义、原始文件绝对路径与 SHA-256，并分别绑定规范化逐日表和重新压缩区间表的内容哈希；消费端会同时校验两份产物及其相互一致性。因此等价的日级和区间输入得到相同股票池版本。写入使用独占 writer lock、唯一临时文件并以 manifest 最后发布；残留锁不会被自动删除，以免两个写者错误并发。消费端为已有产物保留对严格 `user-pit-daily-import-v1` 的只读兼容；即使旧 manifest 没有区间哈希，也会把其区间表与逐日表重新压缩结果对比。新导入统一写 v2。随后 `download-data` 会校验并复用该导入股票池，绝不以 BaoStock 快照覆盖。`universe.provider=baostock` 的配置不能消费本地导入 manifest，反之亦然。
 
 三个正式文件分别原子替换，manifest 最后发布，但普通文件系统无法把三个路径作为单一事务切换。进程若在中间被强制终止，消费端会因哈希不一致而 fail closed，旧版本也可能暂时不可用；应确认没有存活 writer、人工检查残留锁后重新运行导入。后续可用不可变 generation 目录加单一原子指针进一步提高故障后的可用性，这不改变当前“绝不消费混合代数据”的正确性边界。
+
+## 证券状态与上市日期
+
+证券状态来源由 `universe.status_provider` 独立选择：`baostock` 表示联网取得历史状态，`local` 表示只消费经过严格验证的本地导入。它与 `universe.provider` 彼此独立；两者都设为 `local` 时，PIT 成分、ST/停牌状态和上市日期链路完全绕过 BaoStock，不会为了状态数据隐式登录网络服务。
+
+本地导入命令为：
+
+    python -m qbot.research.cli import-security-data --config path/to/csi500_local.yaml --status path/to/security_status.csv --listings path/to/listing_dates.csv
+
+输入只接受下列精确列，不接受未声明的附加列：
+
+- 状态表：`date,symbol,trade_status,is_st`；主键 `(date,symbol)` 必须唯一，`trade_status` 必须是无缺失的整数 `0/1`，`is_st` 可使用无缺失的布尔值或 `0/1`。
+- 上市日期表：`symbol,listing_date`；每个 symbol 必须恰有一行。
+
+symbol 必须已经是 canonical 形式，日期必须是严格 `YYYY-MM-DD`，不能包含时分秒、时区、数值时间戳或模糊格式。上市日期不得晚于该股票首次 PIT 成员日期；落在本次 benchmark 覆盖区间内的上市日期必须本身是 benchmark 交易日。
+
+导入器以已验证的 PIT 股票池和 benchmark 日历为边界执行完整性检查：上市日期表的 symbol 集必须与 PIT 历史出现过的 symbol 集完全相等；PIT 中每个有效的 `(date,symbol)` 成员键都必须有一条明确状态。输入可以额外包含同一历史 symbol 集在有效 benchmark 交易日上的预热、入指前或退指后状态，但系统不要求为已经退市的证券伪造后续记录。系统不使用 `ffill`、`bfill`，也不从前后日期猜测 ST 或停牌状态。规则执行层另在实际订单触达的日期逐行检查状态，任何真实执行键缺少 `trade_status` 或 `is_st` 都会 fail fast。
+
+完整校验通过后才发布 `security_status.parquet`、`listing_dates.parquet` 和 `security_data_manifest.json`。manifest 记录原始输入与规范化输出的 SHA-256，并绑定 PIT universe 哈希、benchmark 日历哈希、symbol 集、日期范围、行数、来源和来源版本；读取端会重新核对这些身份。任一缺 PIT 成员键、缺 symbol、重复、非法枚举、越界日期、哈希或绑定不一致都会以 `SECURITY STATUS DATA REQUIRED` 终止。下载失败或部分结果只按 run_id 写为 `*.partial.<run_id>.parquet` 诊断材料，不得覆盖此前完整的正式产物，也不得发布一个看似成功的 manifest；下一次验证成功会把 `status_failures.json` 重置为绑定当前 `security_data_version` 的空失败记录，旧 partial 文件不会被消费。
+
+正式读取以 manifest 指向的不可变 `security_status.<generation>.parquet` 和 `listing_dates.<generation>.parquet` 为准；无 generation 后缀的两个文件只是便于人工查看的最新别名。发布时先完整写入新 generation，最后原子替换 manifest 指针。即使别名或新 manifest 写入中途失败，旧 manifest 仍指向上一组未变产物，消费端不会读到混合代数据。
 
 ## 当日过滤
 
 过滤仅在已验证 PIT 成员上执行，不会借此修复成分池。默认顺序/条件为：
 
 1. 上市至少 120 个基准交易日。
-2. 非 ST/*ST；状态缺失时保守视为 ST。
-3. 非停牌；交易状态缺失时保守视为停牌。
+2. 非 ST/*ST。
+3. 非停牌。
 4. 最近 20 个市场交易日至少一天成交量为正。
 5. 最近 60 个市场交易日的有效 OHLCV 覆盖率至少 80%。
 
-滚动状态只使用当日及之前数据。上述窗口和阈值由 YAML 配置，不散落在策略代码中。
+滚动状态只使用当日及之前数据。上述窗口和阈值由 YAML 配置，不散落在策略代码中。过滤器自身仍会把缺失状态保守排除，但正式流水线不会依赖这种退化行为：证券状态合同必须先完整通过，缺失数据会在过滤前 fail fast。
 
 ## 数据集输出
 
@@ -136,7 +157,7 @@ Builder 先验证完整 PIT，再重建股票-日历网格、过滤、计算因�
 规则执行回测不复用复权研究价伪造成交。每个实际 OOS 窗口需要：
 
 - 个股 `raw_open`、`raw_close` 和 `volume`，用次日开盘尝试成交、收盘估值并识别无成交量状态；
-- 与 `(date,symbol)` 一一对应的 `trade_status` 和 `is_st`，由 `security_status.parquet` 补齐；缺少对应价格行的状态覆盖会停止 CLI；
+- `security_status.parquet` 中可获得的 `trade_status` 和 `is_st`；预热、入指前或退指后但不发生订单的价格行可以没有状态，实际订单触达的执行键缺少任一状态字段时立即停止；
 - 中证500 `adj_open` 与 `adj_close`：benchmark 也从首个执行日开盘开始暴露，此后与策略一样按收盘估值；
 - YAML 中按主板/创业板/科创板及生效日期冻结的涨跌停比例，以及同一费用日程。
 

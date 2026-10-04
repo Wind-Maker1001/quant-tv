@@ -90,7 +90,23 @@ smoke 配置、mock fixture 和 synthetic demo 均不得用于论文收益、因
 
 导入文件可采用日级 `date,symbol[,is_member]`，也可采用显式闭区间 `symbol,entry_date,exit_date[,is_member,interval]`。闭区间首尾均包含且不得为空；仍有效的成员也必须显式提供研究期末或之后的退出边界。可选 `is_member` 必须逐行明确为真，`interval` 会在规范化输出时重新编号。研究区间内的边界必须是基准交易日。两种格式最终都必须覆盖配置区间的每个基准交易日，且每日恢复为 500 个唯一成员。系统拒绝未声明的附加列、混合布局、重叠区间、模糊日期以及未经转换的 `opt-in/opt-out` 语义。
 
-这不是导入“当前成分列表”的入口。导入前应保留并核对官方来源、调样生效日和历史证券代码；第三方档案若使用公告日、排他退出日或当前代码回填历史，必须先人工审计并转换。`import-universe` 只接受 `universe.provider=local` 的配置；成功导入后，`download-data` 会复用并校验该股票池，同时仍从 BaoStock 获取 ST、停牌与上市日期。不要使用未修改、仍声明 `provider=baostock` 的正式或 smoke 配置导入本地股票池。
+这不是导入“当前成分列表”的入口。导入前应保留并核对官方来源、调样生效日和历史证券代码；第三方档案若使用公告日、排他退出日或当前代码回填历史，必须先人工审计并转换。`import-universe` 只接受 `universe.provider=local` 的配置。不要使用未修改、仍声明 `provider=baostock` 的正式或 smoke 配置导入本地股票池。
+
+证券状态与上市日期可以独立选择 BaoStock 或本地来源。若要本地导入，在同一份配置中设置：
+
+    universe:
+      provider: local
+      status_provider: local
+
+然后先导入并验证 PIT 股票池，再导入与该股票池和 benchmark 日历绑定的证券状态：
+
+    python -m qbot.research.cli import-universe --config path/to/csi500_local.yaml --input path/to/csi500_daily_or_intervals.csv
+
+    python -m qbot.research.cli import-security-data --config path/to/csi500_local.yaml --status path/to/security_status.csv --listings path/to/listing_dates.csv
+
+状态文件必须精确包含 `date,symbol,trade_status,is_st`，上市日期文件必须精确包含 `symbol,listing_date`。日期使用严格 `YYYY-MM-DD`，symbol 使用 canonical 形式；`trade_status` 只能是无缺失的整数 `0/1`，`is_st` 可用无缺失的布尔值或 `0/1`。状态至少必须覆盖 PIT 股票池中的全部 `(date,symbol)` 成员键；可以额外提供相同历史 symbol 集在有效 benchmark 交易日上的预热、入指前或退指后记录，但不要求为退市证券伪造未来状态。上市日期表的 symbol 集必须与 PIT 历史 symbol 集完全一致。
+
+系统不对状态做 `ffill`/`bfill`，也不会从相邻交易日推断停牌或 ST。导入成功后生成的 manifest 会同时绑定原始输入哈希、规范化输出哈希、PIT universe 和 benchmark 日历。校验未完整通过时不会发布正式产物；后续 `download-data`、`build-dataset` 和回测也会拒绝缺失或被修改的状态数据，执行回测还会在实际订单日对状态再次 fail fast。`provider=local` 且 `status_provider=local` 时，成分与证券状态阶段完全绕过 BaoStock；若只把 `provider` 设为 `local` 而保留 `status_provider=baostock`，系统仍会联网取得状态数据。
 
 ## 5. 运行四模型与两级回测
 
