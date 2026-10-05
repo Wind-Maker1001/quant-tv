@@ -121,7 +121,7 @@ def _seed_cache(cache, provider, symbol, bars, *, is_index):
         source_version=source_version,
     )
     metadata = cache.read_metadata(symbol)
-    assert metadata["metadata_version"] == 2
+    assert metadata["metadata_version"] == 3
     assert metadata["source"] == "OfflineFileProvider"
     assert metadata["source_version"] == source_version
 

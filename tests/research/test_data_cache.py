@@ -188,6 +188,8 @@ def test_cache_rejects_incomplete_artifact_pair(tmp_path, missing):
             json.dumps(
                 {
                     "metadata_version": cache.metadata_version,
+                    "generation_id": "a" * 32,
+                    "data_file": symbol + "." + "a" * 32 + ".parquet",
                     "symbol": symbol,
                     "source": "fixture",
                     "source_version": "v1",

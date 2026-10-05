@@ -1,12 +1,17 @@
 """Atomic per-symbol Parquet cache with explicit request coverage."""
 
+from contextlib import contextmanager
+from dataclasses import dataclass
 import hashlib
+import io
 import json
+import math
 import os
+import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 import pandas as pd
 
@@ -21,6 +26,15 @@ from qbot.research.data.schema import canonicalize_bars, empty_bars, normalize_s
 
 
 Range = Tuple[pd.Timestamp, pd.Timestamp]
+
+
+@dataclass(frozen=True)
+class BarCacheSnapshot:
+    """Bars and source evidence read from one committed metadata generation."""
+
+    frame: pd.DataFrame
+    metadata: Dict[str, Any]
+    metadata_sha256: Optional[str]
 
 
 def _normalise_date(value: DateLike) -> pd.Timestamp:
@@ -85,31 +99,116 @@ class ParquetBarCache:
     stored for them.
     """
 
-    # Version 2 makes source-contract metadata mandatory.  Version 1 caches
-    # cannot prove the endpoint/adjustment that produced their bytes.
-    metadata_version = 2
+    # v3 publishes immutable data first and atomically switches a metadata
+    # pointer last. Strict v2 remains readable and migrates on the next update.
+    # v1 cannot prove the endpoint/adjustment that produced its bytes.
+    metadata_version = 3
 
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, lock_timeout_seconds: float = 10.0) -> None:
         self.root = Path(root).expanduser().resolve()
         self.root.mkdir(parents=True, exist_ok=True)
+        if (
+            isinstance(lock_timeout_seconds, bool)
+            or not isinstance(lock_timeout_seconds, (int, float))
+            or not math.isfinite(float(lock_timeout_seconds))
+            or float(lock_timeout_seconds) < 0.0
+        ):
+            raise CacheError("lock_timeout_seconds must be finite and non-negative")
+        self.lock_timeout_seconds = float(lock_timeout_seconds)
+
+    @contextmanager
+    def _writer_lock(self, symbol: str) -> Iterator[None]:
+        """Serialize read/merge/publish across processes; OS releases on exit.
+
+        The small lock file is permanent. Its existence does not indicate an
+        active writer and it must not be deleted to unlock another process.
+        """
+
+        lock_path = self.root / (".%s.write.lock" % normalize_symbol(symbol))
+        if lock_path.is_symlink() or lock_path.resolve().parent != self.root:
+            raise CacheError("cache writer lock path escapes its root")
+        with lock_path.open("a+b") as handle:
+            handle.seek(0, os.SEEK_END)
+            if handle.tell() == 0:
+                handle.write(b"\0")
+                handle.flush()
+            deadline = time.monotonic() + self.lock_timeout_seconds
+            while True:
+                try:
+                    handle.seek(0)
+                    if os.name == "nt":
+                        import msvcrt
+
+                        msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+                    else:  # pragma: no cover - exercised on POSIX CI
+                        import fcntl
+
+                        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as exc:
+                    if time.monotonic() >= deadline:
+                        raise CacheError(
+                            "cache writer lock timeout for %s" % symbol
+                        ) from exc
+                    time.sleep(min(0.02, max(0.0, deadline - time.monotonic())))
+            try:
+                yield
+            finally:
+                handle.seek(0)
+                if os.name == "nt":
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+                else:  # pragma: no cover - exercised on POSIX CI
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
     def data_path(self, symbol: str) -> Path:
-        return self.root / (normalize_symbol(symbol) + ".parquet")
+        """Return the active generation, or the legacy path for an absent cache."""
+
+        canonical_symbol = normalize_symbol(symbol)
+        metadata = self.read_metadata(canonical_symbol)
+        return self._data_path_from_metadata(canonical_symbol, metadata)
+
+    def _data_path_from_metadata(
+        self, symbol: str, metadata: Dict[str, Any]
+    ) -> Path:
+        if metadata.get("metadata_version") != 3:
+            path = self.root / (symbol + ".parquet")
+            if path.is_symlink() or path.resolve().parent != self.root:
+                raise CacheError("legacy cache path escapes its root: %s" % path)
+            return path
+        generation = metadata.get("generation_id")
+        filename = metadata.get("data_file")
+        if (
+            not isinstance(generation, str)
+            or len(generation) != 32
+            or any(character not in "0123456789abcdef" for character in generation)
+            or filename != "%s.%s.parquet" % (symbol, generation)
+        ):
+            raise CacheError("invalid cache generation pointer for %s" % symbol)
+        path = self.root / filename
+        if path.is_symlink() or path.resolve().parent != self.root:
+            raise CacheError("cache generation path escapes its root: %s" % path)
+        return path
 
     def metadata_path(self, symbol: str) -> Path:
         return self.root / (normalize_symbol(symbol) + ".metadata.json")
 
     def read_metadata(self, symbol: str) -> Dict[str, Any]:
+        return self._read_metadata_with_digest(symbol)[0]
+
+    def _read_metadata_with_digest(
+        self, symbol: str
+    ) -> Tuple[Dict[str, Any], Optional[str]]:
         path = self.metadata_path(symbol)
-        if not path.exists():
-            return {}
         try:
-            value = json.loads(path.read_text(encoding="utf-8"))
+            content = path.read_bytes()
+            value = json.loads(content.decode("utf-8"))
+        except FileNotFoundError:
+            return {}, None
         except (OSError, ValueError) as exc:
             raise CacheError("cannot read cache metadata: %s" % path) from exc
-        if not isinstance(value, dict):
-            raise CacheError("cache metadata must be a JSON object: %s" % path)
-        return value
+        if not isinstance(value, dict) or not value:
+            raise CacheError("cache metadata must be a non-empty JSON object: %s" % path)
+        return value, hashlib.sha256(content).hexdigest()
 
     @staticmethod
     def _normalise_identity(value: Optional[str], label: str) -> str:
@@ -121,25 +220,39 @@ class ParquetBarCache:
     def _validated_metadata(self, symbol: str) -> Dict[str, Any]:
         """Validate that data and metadata form one auditable cache artifact."""
 
-        canonical_symbol = normalize_symbol(symbol)
-        data_path = self.data_path(canonical_symbol)
-        metadata_path = self.metadata_path(canonical_symbol)
-        data_exists = data_path.exists()
-        metadata_exists = metadata_path.exists()
-        if data_exists != metadata_exists:
-            missing = data_path if not data_exists else metadata_path
-            raise CacheError(
-                "incomplete cache artifact for %s; missing %s"
-                % (canonical_symbol, missing)
-            )
-        if not data_exists:
-            return {}
+        return self._validated_metadata_snapshot(symbol)[0]
 
-        metadata = self.read_metadata(canonical_symbol)
-        if metadata.get("metadata_version") != self.metadata_version:
+    def _validated_metadata_snapshot(
+        self, symbol: str
+    ) -> Tuple[Dict[str, Any], Optional[str]]:
+
+        canonical_symbol = normalize_symbol(symbol)
+        # Read the pointer once. A concurrent publisher can switch the current
+        # pointer, but cannot change this snapshot's generation data file.
+        metadata, metadata_digest = self._read_metadata_with_digest(canonical_symbol)
+        if metadata and (
+            not isinstance(metadata.get("metadata_version"), int)
+            or isinstance(metadata.get("metadata_version"), bool)
+            or metadata.get("metadata_version") not in (2, self.metadata_version)
+        ):
             raise CacheError(
                 "unsupported cache metadata version for %s: %r"
                 % (canonical_symbol, metadata.get("metadata_version"))
+            )
+        data_path = self._data_path_from_metadata(canonical_symbol, metadata)
+        if not metadata:
+            if data_path.exists():
+                raise CacheError(
+                    "incomplete cache artifact for %s; missing %s"
+                    % (canonical_symbol, self.metadata_path(canonical_symbol))
+                )
+            # Unreferenced generations from interrupted first writes are not
+            # committed coverage, and must not prevent a resumable retry.
+            return {}, None
+        if not data_path.is_file():
+            raise CacheError(
+                "incomplete cache artifact for %s; missing %s"
+                % (canonical_symbol, data_path)
             )
         if metadata.get("symbol") != canonical_symbol:
             raise CacheError(
@@ -185,7 +298,7 @@ class ParquetBarCache:
                     % canonical_symbol
                 )
         self._coverage_from_metadata(metadata)
-        return metadata
+        return metadata, metadata_digest
 
     def assert_source_identity(
         self,
@@ -197,11 +310,20 @@ class ParquetBarCache:
         """Fail rather than silently reuse bars from another data contract."""
 
         canonical_symbol = normalize_symbol(symbol)
-        expected_source = self._normalise_identity(source, "source")
-        expected_version = self._normalise_identity(
-            source_version, "source_version"
-        )
         metadata = self._validated_metadata(canonical_symbol)
+        self._assert_source_matches(
+            canonical_symbol, metadata, source, source_version
+        )
+
+    def _assert_source_matches(
+        self,
+        symbol: str,
+        metadata: Dict[str, Any],
+        source: str,
+        source_version: Optional[str],
+    ) -> None:
+        expected_source = self._normalise_identity(source, "source")
+        expected_version = self._normalise_identity(source_version, "source_version")
         if not metadata:
             return
         actual = (metadata["source"], metadata["source_version"])
@@ -210,7 +332,7 @@ class ParquetBarCache:
             raise CacheError(
                 "cache source identity mismatch for %s: cached=%r, expected=%r; "
                 "archive and rebuild this symbol cache or use a separate data_root"
-                % (canonical_symbol, actual, expected)
+                % (symbol, actual, expected)
             )
 
     @staticmethod
@@ -247,26 +369,53 @@ class ParquetBarCache:
     ) -> pd.DataFrame:
         """Load and validate a symbol cache, returning an empty canonical frame."""
 
+        return self.load_snapshot(
+            symbol,
+            verify_hash=verify_hash,
+            expected_source=expected_source,
+            expected_source_version=expected_source_version,
+        ).frame
+
+    def load_snapshot(
+        self,
+        symbol: str,
+        verify_hash: bool = True,
+        expected_source: Optional[str] = None,
+        expected_source_version: Optional[str] = None,
+    ) -> BarCacheSnapshot:
+        """Read bars and provenance from the same committed generation.
+
+        The pointer and Parquet bytes are each read once, so hashes, source
+        evidence, and returned rows cannot describe different concurrent
+        updates. Strict legacy v2 caches use the same single-byte-snapshot
+        validation; their next successful update publishes a v3 generation.
+        """
+
         canonical_symbol = normalize_symbol(symbol)
-        path = self.data_path(canonical_symbol)
         if (expected_source is None) != (expected_source_version is None):
             raise CacheError(
                 "expected_source and expected_source_version must be provided together"
             )
+        metadata, metadata_digest = self._validated_metadata_snapshot(canonical_symbol)
         if expected_source is not None:
-            self.assert_source_identity(
+            self._assert_source_matches(
                 canonical_symbol,
-                source=expected_source,
-                source_version=expected_source_version,
+                metadata,
+                expected_source,
+                expected_source_version,
             )
-        metadata = self._validated_metadata(canonical_symbol)
         if not metadata:
-            return empty_bars()
+            return BarCacheSnapshot(empty_bars(), {}, None)
+        path = self._data_path_from_metadata(canonical_symbol, metadata)
+        try:
+            content = path.read_bytes()
+        except OSError as exc:
+            raise CacheError("cannot read cached Parquet: %s" % path) from exc
         expected_hash = metadata.get("content_sha256")
-        if verify_hash and _sha256(path) != expected_hash:
+        if verify_hash and hashlib.sha256(content).hexdigest() != expected_hash:
             raise CacheError("cache content hash mismatch: %s" % path)
         try:
-            frame = pd.read_parquet(path)
+            frame = pd.read_parquet(io.BytesIO(content))
         except Exception as exc:
             raise CacheError("cannot read cached Parquet: %s" % path) from exc
         try:
@@ -297,13 +446,15 @@ class ParquetBarCache:
                 covered |= frame["date"].between(start, end)
             if not covered.all():
                 raise CacheError("cached bars fall outside request coverage: %s" % path)
-        return frame
+        return BarCacheSnapshot(frame, metadata, metadata_digest)
 
     @staticmethod
     def _atomic_parquet(frame: pd.DataFrame, target: Path) -> None:
         temporary = target.with_name(".%s.tmp-%s" % (target.name, uuid.uuid4().hex))
         try:
             frame.to_parquet(temporary, index=False)
+            with temporary.open("r+b") as handle:
+                os.fsync(handle.fileno())
             os.replace(str(temporary), str(target))
         except Exception:
             try:
@@ -317,7 +468,10 @@ class ParquetBarCache:
         temporary = target.with_name(".%s.tmp-%s" % (target.name, uuid.uuid4().hex))
         payload = json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
         try:
-            temporary.write_text(payload, encoding="utf-8")
+            with temporary.open("w", encoding="utf-8") as handle:
+                handle.write(payload)
+                handle.flush()
+                os.fsync(handle.fileno())
             os.replace(str(temporary), str(target))
         except Exception:
             try:
@@ -335,7 +489,23 @@ class ParquetBarCache:
         source: str,
         source_version: Optional[str] = None,
     ) -> pd.DataFrame:
-        """Merge bars and atomically replace data and metadata files."""
+        """Merge under a process lock and atomically publish a new generation."""
+
+        canonical_symbol = normalize_symbol(symbol)
+        with self._writer_lock(canonical_symbol):
+            return self._update_locked(
+                canonical_symbol, bars, covered_start, covered_end, source, source_version
+            )
+
+    def _update_locked(
+        self,
+        symbol: str,
+        bars: pd.DataFrame,
+        covered_start: DateLike,
+        covered_end: DateLike,
+        source: str,
+        source_version: Optional[str],
+    ) -> pd.DataFrame:
 
         canonical_symbol = normalize_symbol(symbol)
         normalised_source = self._normalise_identity(source, "source")
@@ -380,12 +550,17 @@ class ParquetBarCache:
         old_metadata = self.read_metadata(canonical_symbol)
         covered_ranges = self._coverage_from_metadata(old_metadata)
         covered_ranges = _merge_ranges(covered_ranges + [coverage])
-        data_path = self.data_path(canonical_symbol)
+        generation = uuid.uuid4().hex
+        data_path = self.root / ("%s.%s.parquet" % (canonical_symbol, generation))
+        if data_path.exists():
+            raise CacheError("new cache generation already exists: %s" % data_path)
         metadata_path = self.metadata_path(canonical_symbol)
         try:
             self._atomic_parquet(merged, data_path)
             metadata: Dict[str, Any] = {
                 "metadata_version": self.metadata_version,
+                "generation_id": generation,
+                "data_file": data_path.name,
                 "symbol": canonical_symbol,
                 "source": normalised_source,
                 "source_version": normalised_source_version,
@@ -464,4 +639,4 @@ class ParquetBarCache:
         )
 
 
-__all__ = ["ParquetBarCache"]
+__all__ = ["BarCacheSnapshot", "ParquetBarCache"]

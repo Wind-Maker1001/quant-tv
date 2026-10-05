@@ -1,6 +1,6 @@
 """Vendor-neutral market-data layer for Qbot FactorLab."""
 
-from .cache import ParquetBarCache
+from .cache import BarCacheSnapshot, ParquetBarCache
 from .calendar import TradingCalendar, reindex_bars_to_calendar
 from .providers import AKShareProvider, MarketDataProvider
 from .schema import (
@@ -13,6 +13,7 @@ from .schema import (
 
 __all__ = [
     "AKShareProvider",
+    "BarCacheSnapshot",
     "CANONICAL_BAR_COLUMNS",
     "MarketDataProvider",
     "ParquetBarCache",

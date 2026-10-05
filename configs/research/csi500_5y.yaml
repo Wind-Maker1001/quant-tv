@@ -38,6 +38,7 @@ cache:
   per_symbol: true
   skip_existing: true
   atomic_writes: true
+  lock_timeout_seconds: 10
 
 network:
   max_retries: 3

@@ -379,3 +379,19 @@ def test_enabled_factor_score_forward_requires_pre_registered_weights(tmp_path):
 
     with pytest.raises(ConfigurationError, match="requires fixed configured weights"):
         load_config(path, repo_root=tmp_path)
+
+
+@pytest.mark.parametrize("value", [-1, float("nan"), float("inf"), True, "fast"])
+def test_cache_lock_timeout_rejects_unsafe_values(tmp_path, value):
+    document = _valid_document()
+    document["cache"] = {"lock_timeout_seconds": value}
+    path = _write_config(tmp_path, document)
+    with pytest.raises(ConfigurationError, match="lock_timeout_seconds"):
+        load_config(path, repo_root=tmp_path)
+
+
+def test_cache_lock_timeout_can_be_configured(tmp_path):
+    document = _valid_document()
+    document["cache"] = {"lock_timeout_seconds": 0.25}
+    config = load_config(_write_config(tmp_path, document), repo_root=tmp_path)
+    assert config.cache.lock_timeout_seconds == 0.25

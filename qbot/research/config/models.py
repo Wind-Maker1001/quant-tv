@@ -105,6 +105,7 @@ class CacheConfig:
     per_symbol: bool = True
     skip_existing: bool = True
     atomic_writes: bool = True
+    lock_timeout_seconds: float = 10.0
 
 
 @dataclass(frozen=True)
@@ -466,6 +467,13 @@ class ResearchConfig:
             )
         if self.cache.format != "parquet":
             raise ConfigurationError("cache.format must be parquet")
+        if (
+            isinstance(self.cache.lock_timeout_seconds, bool)
+            or not isinstance(self.cache.lock_timeout_seconds, (int, float))
+            or not math.isfinite(self.cache.lock_timeout_seconds)
+            or self.cache.lock_timeout_seconds < 0
+        ):
+            raise ConfigurationError("cache.lock_timeout_seconds must be finite and non-negative")
         if self.network.max_retries < 1:
             raise ConfigurationError("network.max_retries must be at least 1")
         if len(self.network.backoff_seconds) < self.network.max_retries:
