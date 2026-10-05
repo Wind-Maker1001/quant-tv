@@ -122,7 +122,7 @@ def test_collected_and_imported_manifests_record_source_provenance(tmp_path):
     )
     assert collected["schema_version"] == 1
     assert collected["source"] == "FixtureProvider"
-    assert collected["source_version"] == "baostock-query_zz500_stocks-daily-v1"
+    assert collected["source_version"] == "baostock-query_zz500_stocks-daily-v2"
     assert collected["index_symbol"] == "000905.SH"
     assert collected["expected_member_count"] == 2
     assert json.loads(
@@ -521,6 +521,41 @@ def test_collector_retry_count_means_retries_after_the_initial_attempt(tmp_path)
 
     assert provider.calls == 2
     assert manifest["trading_dates"] == 1
+
+
+def test_old_pit_contract_is_requeried_instead_of_relabelled(tmp_path):
+    dates = pd.bdate_range("2024-01-02", periods=1)
+    expected = _membership(dates, [["600000.SH", "000001.SZ"]])
+
+    class Provider:
+        def __init__(self):
+            self.calls = 0
+
+        def get_constituents(self, index_symbol, date):
+            self.calls += 1
+            return expected.copy()
+
+    provider = Provider()
+    output = tmp_path / "pit"
+    collect_point_in_time_universe(
+        provider, "000905.SH", dates, output,
+        expected_member_count=2, retries=0, request_interval_seconds=0.0,
+    )
+    metadata_path = output / "snapshots" / "2024-01-02.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata["source_version"] = "baostock-query_zz500_stocks-daily-v1"
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+
+    manifest = collect_point_in_time_universe(
+        provider, "000905.SH", dates, output,
+        expected_member_count=2, retries=0, request_interval_seconds=0.0,
+    )
+
+    assert provider.calls == 2
+    assert manifest["source_version"] == "baostock-query_zz500_stocks-daily-v2"
+    assert json.loads(metadata_path.read_text(encoding="utf-8"))[
+        "source_version"
+    ] == manifest["source_version"]
 
 
 def test_filter_flags_use_only_past_windows_and_current_status():

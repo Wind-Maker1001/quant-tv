@@ -212,7 +212,7 @@ def _write_verified_inputs(
             {
                 "schema_version": 1,
                 "source": "BaoStockPointInTimeProvider",
-                "source_version": "baostock-query_zz500_stocks-daily-v1",
+                "source_version": "baostock-query_zz500_stocks-daily-v2",
                 "index_symbol": config.universe.index_symbol,
                 "generated_at": "2024-01-01T00:00:00+00:00",
                 "start": config.data.start.isoformat(),
@@ -581,6 +581,7 @@ def test_evaluate_rejects_a_missing_pit_manifest(tmp_path, monkeypatch):
     "field,bad_value",
     [
         ("source", "local-import"),
+        ("source_version", "baostock-query_zz500_stocks-daily-v1"),
         ("index_symbol", "000300.SH"),
         ("start", "2019-12-31"),
         ("trading_dates", 1),

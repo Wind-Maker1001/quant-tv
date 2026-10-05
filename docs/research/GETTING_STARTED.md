@@ -48,7 +48,7 @@ Linux/macOS：
     python -m pip install --upgrade pip
     python -m pip install -r dev/requirements-research.txt
 
-AKShare 和 BaoStock 仅在网络命令执行时需要；LightGBM/XGBoost 只在对应模型拟合时加载。导入 qbot.research 不会启动 wxPython、Qlib、Backtrader 或实盘接口。
+行情 CLI（包括缓存读取）需要固定版本 AKShare，以核对缓存来源身份；BaoStock 仅在网络获取 PIT/证券状态时加载，LightGBM/XGBoost 只在对应模型拟合时加载。纯因子、标签、数据集与评价函数不依赖网络 Provider。导入 qbot.research 不会启动 wxPython、Qlib、Backtrader 或实盘接口。
 
 ## 2. 先运行离线测试
 
@@ -57,6 +57,12 @@ AKShare 和 BaoStock 仅在网络命令执行时需要；LightGBM/XGBoost 只在
     python -m pytest -q
 
 pytest.ini 默认只收集 tests/research，并排除 network marker。这个边界是安全要求：Legacy tests 中有联网、邮件、GUI、桌面通知和无限循环示例。
+
+单独复验第一阶段的文件级整链：
+
+    python -m pytest -q tests/research/test_phase1_file_pipeline.py
+
+它真实执行本地 PIT/证券状态导入、读取 Parquet Cache v2、构建全部 14 因子的 dataset，并生成 RankIC 和报告；还验证股票池变更后旧状态数据会被拒绝。输入为人工数据，只用于验证软件。
 
 显式执行网络测试：
 
@@ -70,6 +76,8 @@ pytest.ini 默认只收集 tests/research，并排除 network marker。这个边
 - configs/research/csi500_smoke.yaml：用于短区间端到端网络烟雾；当前环境的真实链路尚未跑通，只能在未来网络与 PIT 来源可用时继续验收。
 
 配置加载器递归拒绝未知字段，相对路径总是相对仓库根目录解析。live_trading 必须为 false，universe.point_in_time 必须为 true。默认 data.warmup_trading_days=130，用于从研究开始日前取得真实交易日预热数据；预热行情/状态只参与过滤和因子 rolling，正式 PIT 验证与输出仍限定在研究日期。
+
+`data.start` 与 `data.end` 必须是基准交易日，读取时会核对两日确实存在于行情中。自定义配置若使用周末或节假日边界，应明确改为所需区间的实际首末交易日。
 
 smoke 配置、mock fixture 和 synthetic demo 均不得用于论文收益、因子有效性或模型优劣结论。
 

@@ -102,7 +102,9 @@ def build_filter_flags(
     result["listed_days"] = listed_days
     result["has_listing_date"] = listing_known
     result["listed_long_enough"] = listing_known & (listed_days >= config.min_listed_days)
-    result["is_st"] = normal_status["is_st"].fillna(True).astype(bool).to_numpy()
+    # Only an explicitly false ST flag is eligible.  Missing status remains
+    # conservatively excluded, including on the factor warm-up grid.
+    result["is_st"] = ~normal_status["is_st"].eq(False).fillna(False).to_numpy(dtype=bool)
     result["is_suspended"] = normal_status["trade_status"].ne(1).fillna(True).to_numpy()
     result["has_recent_volume"] = positive_count.gt(0).fillna(False).to_numpy()
     result["quality_ratio"] = (quality_count / float(config.quality_window)).to_numpy()

@@ -3,20 +3,37 @@
 import pandas as pd
 import pytest
 
-from qbot.research.universe.csi500 import BaoStockPointInTimeProvider
+from qbot.research.errors import PointInTimeUniverseError, ProviderError
+from qbot.research.universe.csi500 import (
+    BaoStockPointInTimeProvider,
+    collect_point_in_time_universe,
+)
 
 
 class FakeQuery:
-    def __init__(self, fields=(), rows=(), error_code="0", error_msg=""):
+    def __init__(
+        self,
+        fields=(),
+        rows=(),
+        error_code="0",
+        error_msg="",
+        response_date="",
+        terminal_error=None,
+    ):
         self.fields = list(fields)
         self._rows = [list(row) for row in rows]
         self.error_code = error_code
         self.error_msg = error_msg
+        self.date = response_date
+        self._terminal_error = terminal_error
         self._position = -1
 
     def next(self):
         self._position += 1
-        return self._position < len(self._rows)
+        has_row = self._position < len(self._rows)
+        if not has_row and self._terminal_error is not None:
+            self.error_code, self.error_msg = self._terminal_error
+        return has_row
 
     def get_row_data(self):
         return self._rows[self._position]
@@ -50,6 +67,138 @@ def _history_success(code):
             ("2024-01-03", code, "0", "1"),
         ),
     )
+
+
+def _constituents_success(*codes, response_date="2024-01-02"):
+    return FakeQuery(
+        fields=("updateDate", "code", "code_name"),
+        rows=tuple((response_date, code, "fixture") for code in codes),
+        response_date=response_date,
+    )
+
+
+def test_constituent_query_uses_strict_fields_and_returns_canonical_snapshot():
+    class Client:
+        def query_zz500_stocks(self, date):
+            assert date == "2024-01-02"
+            return _constituents_success("sh.600000", "sz.000001")
+
+    provider = BaoStockPointInTimeProvider(
+        client=Client(), retry_count=0, request_interval=0.0
+    )
+
+    result = provider.get_constituents("000905.SH", pd.Timestamp("2024-01-02"))
+
+    assert result.to_dict("records") == [
+        {
+            "date": pd.Timestamp("2024-01-02"),
+            "symbol": "000001.SZ",
+            "is_member": True,
+        },
+        {
+            "date": pd.Timestamp("2024-01-02"),
+            "symbol": "600000.SH",
+            "is_member": True,
+        },
+    ]
+
+
+def test_constituent_query_rejects_error_reported_only_after_iteration():
+    class Client:
+        def query_zz500_stocks(self, date):
+            return FakeQuery(
+                fields=("date", "code"),
+                rows=((date, "sh.600000"),),
+                response_date=date,
+                terminal_error=("100", "next page failed"),
+            )
+
+    provider = BaoStockPointInTimeProvider(
+        client=Client(), retry_count=0, request_interval=0.0
+    )
+
+    with pytest.raises(ProviderError, match="iteration: next page failed"):
+        provider.get_constituents("000905.SH", "2024-01-02")
+
+
+def test_constituent_query_requires_named_code_field():
+    class Client:
+        def query_zz500_stocks(self, date):
+            return FakeQuery(
+                fields=("date", "security"),
+                rows=((date, "sh.600000"),),
+                response_date=date,
+            )
+
+    provider = BaoStockPointInTimeProvider(
+        client=Client(), retry_count=0, request_interval=0.0
+    )
+
+    with pytest.raises(ProviderError, match=r"missing fields \['code'\]"):
+        provider.get_constituents("000905.SH", "2024-01-02")
+
+
+@pytest.mark.parametrize(
+    "query,error_pattern",
+    [
+        (
+            _constituents_success("sh.600000", response_date="2024-01-03"),
+            "response date mismatch",
+        ),
+        (
+            _constituents_success("sh.600000", "600000.SH"),
+            "duplicate constituent codes",
+        ),
+        (
+            _constituents_success("not-a-security-code"),
+            "invalid constituent code",
+        ),
+    ],
+    ids=("response-date-mismatch", "duplicate-canonical-code", "invalid-code"),
+)
+def test_constituent_query_rejects_invalid_response_identity(query, error_pattern):
+    class Client:
+        def query_zz500_stocks(self, date):
+            return query
+
+    provider = BaoStockPointInTimeProvider(
+        client=Client(), retry_count=0, request_interval=0.0
+    )
+
+    with pytest.raises(ProviderError, match=error_pattern):
+        provider.get_constituents("000905.SH", "2024-01-02")
+
+
+def test_single_retry_layer_limits_three_retries_to_four_endpoint_calls(tmp_path):
+    class AlwaysFailingClient:
+        def __init__(self):
+            self.calls = 0
+
+        def query_zz500_stocks(self, date):
+            self.calls += 1
+            return FakeQuery(error_code="100", error_msg="temporary outage")
+
+    client = AlwaysFailingClient()
+    provider = BaoStockPointInTimeProvider(
+        client=client,
+        retry_count=3,
+        backoff_seconds=(0.0, 0.0, 0.0),
+        request_interval=0.0,
+        sleep_fn=lambda seconds: None,
+    )
+
+    with pytest.raises(PointInTimeUniverseError, match="daily snapshots unavailable"):
+        collect_point_in_time_universe(
+            provider,
+            "000905.SH",
+            [pd.Timestamp("2024-01-02")],
+            tmp_path / "pit",
+            expected_member_count=1,
+            retries=0,
+            request_interval_seconds=0.0,
+        )
+
+    assert client.calls == 4
 
 
 def test_login_uses_the_same_retry_contract_as_data_queries():

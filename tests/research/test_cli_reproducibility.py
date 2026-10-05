@@ -489,6 +489,30 @@ def test_benchmark_warmup_selects_exact_prior_sessions(tmp_path):
     ]
 
 
+def test_benchmark_warmup_rejects_missing_configured_start(tmp_path):
+    config = _config(tmp_path)
+    bars = _benchmark_bars_with_warmup()
+    bars = bars.loc[bars["date"] != pd.Timestamp(config.data.start)]
+
+    with pytest.raises(
+        cli.FactorLabError,
+        match=r"do not contain configured data\.start 2024-01-02",
+    ):
+        cli._select_benchmark_with_warmup(config, bars)
+
+
+def test_benchmark_warmup_rejects_truncated_configured_end(tmp_path):
+    config = _config(tmp_path)
+    bars = _benchmark_bars_with_warmup()
+    bars = bars.loc[bars["date"] < pd.Timestamp(config.data.end)]
+
+    with pytest.raises(
+        cli.FactorLabError,
+        match=r"do not contain configured data\.end 2024-01-03",
+    ):
+        cli._select_benchmark_with_warmup(config, bars)
+
+
 def test_download_reuses_valid_local_import_instead_of_recollecting_pit(
     tmp_path, monkeypatch
 ):
@@ -597,7 +621,7 @@ def test_download_baostock_does_not_reuse_existing_local_import(
             for symbol in ("000001.SZ", "600000.SH")
         ]
     )
-    calls = {"collect": 0}
+    calls = {"collect": 0, "collect_retries": []}
 
     class FakeCache:
         def data_path(self, symbol):
@@ -632,6 +656,7 @@ def test_download_baostock_does_not_reuse_existing_local_import(
 
     def fake_collect(*args, **kwargs):
         calls["collect"] += 1
+        calls["collect_retries"].append(kwargs["retries"])
         return {"source": "FakePit", "sha256": "baostock-sha"}
 
     monkeypatch.setattr(cli, "_provider", lambda current: object())
@@ -652,6 +677,7 @@ def test_download_baostock_does_not_reuse_existing_local_import(
     cli.command_download(config, run)
 
     assert calls["collect"] == 1
+    assert calls["collect_retries"] == [0]
     assert run.payload["universe_version"] == cli.dataframe_sha256(membership)
     assert len(run.payload["security_data_version"]) == 64
 

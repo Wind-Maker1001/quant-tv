@@ -28,7 +28,9 @@ from .base import PointInTimeUniverse, PointInTimeUniverseProvider
 LOGGER = logging.getLogger(__name__)
 CANONICAL_SYMBOL = re.compile(r"^(?:60|68|00|30|83|87|43)\d{4}\.(?:SH|SZ|BJ)$")
 PIT_REQUIRED = "POINT-IN-TIME UNIVERSE REQUIRED"
-_BAOSTOCK_PIT_SOURCE_VERSION = "baostock-query_zz500_stocks-daily-v1"
+# v2 requires server query-date evidence, named code fields and successful
+# completion of pagination; v1 snapshots cannot prove those invariants.
+BAOSTOCK_PIT_SOURCE_VERSION = "baostock-query_zz500_stocks-daily-v2"
 
 
 def canonical_symbol(value: Any) -> str:
@@ -476,6 +478,7 @@ class BaoStockPointInTimeProvider(PointInTimeUniverseProvider):
         *args: Any,
         required_fields: Sequence[str] = (),
         require_rows: bool = True,
+        expected_response_date: Optional[str] = None,
         **kwargs: Any
     ) -> Tuple[List[str], List[List[str]]]:
         """Run and fully consume one BaoStock result inside the retry boundary."""
@@ -489,6 +492,17 @@ class BaoStockPointInTimeProvider(PointInTimeUniverseProvider):
                     "%s: %s"
                     % (description, getattr(query, "error_msg", "unknown error"))
                 )
+            if expected_response_date is not None:
+                response_date = str(getattr(query, "date", "")).strip()
+                if response_date != expected_response_date:
+                    raise ProviderError(
+                        "%s response date mismatch: expected %s, got %s"
+                        % (
+                            description,
+                            expected_response_date,
+                            response_date or "<missing>",
+                        )
+                    )
             fields = list(getattr(query, "fields", []))
             missing = sorted(set(required_fields).difference(fields))
             if missing:
@@ -514,26 +528,33 @@ class BaoStockPointInTimeProvider(PointInTimeUniverseProvider):
     ) -> pd.DataFrame:
         if str(index_symbol).upper() not in self.SUPPORTED_INDEXES:
             raise ProviderError("BaoStock provider only supports CSI500/000905.SH")
-        client = self._get_client()
         as_of = pd.Timestamp(date).strftime("%Y-%m-%d")
-        query = client.query_zz500_stocks(date=as_of)
-        if getattr(query, "error_code", "0") != "0":
+        description = "BaoStock CSI500 query for %s" % as_of
+        fields, rows = self._query_rows(
+            "query_zz500_stocks",
+            description,
+            required_fields=("code",),
+            expected_response_date=as_of,
+            date=as_of,
+        )
+        data = pd.DataFrame(rows, columns=fields)
+        try:
+            symbols = data["code"].map(canonical_symbol)
+        except PointInTimeUniverseError as exc:
             raise ProviderError(
-                "BaoStock CSI500 query failed for %s: %s"
-                % (as_of, getattr(query, "error_msg", "unknown"))
+                "%s returned an invalid constituent code: %s"
+                % (description, exc)
+            ) from exc
+        duplicated = symbols.duplicated(keep=False)
+        if duplicated.any():
+            raise ProviderError(
+                "%s returned duplicate constituent codes %s"
+                % (description, sorted(symbols.loc[duplicated].unique().tolist()))
             )
-        rows: List[List[str]] = []
-        while query.next():
-            rows.append(query.get_row_data())
-        fields = list(getattr(query, "fields", []))
-        data = pd.DataFrame(rows, columns=fields or None)
-        if data.empty:
-            raise ProviderError("BaoStock returned no CSI500 members for %s" % as_of)
-        code_column = "code" if "code" in data.columns else data.columns[1]
         result = pd.DataFrame(
             {
                 "date": pd.Timestamp(as_of),
-                "symbol": data[code_column].map(canonical_symbol),
+                "symbol": symbols,
                 "is_member": True,
             }
         )
@@ -738,7 +759,7 @@ def _snapshot_metadata(
     return {
         "schema_version": 1,
         "source": provider.__class__.__name__,
-        "source_version": _BAOSTOCK_PIT_SOURCE_VERSION,
+        "source_version": BAOSTOCK_PIT_SOURCE_VERSION,
         "index_symbol": index_symbol,
         "date": pd.Timestamp(date).strftime("%Y-%m-%d"),
         "expected_member_count": int(expected_member_count),
@@ -765,7 +786,7 @@ def _load_cached_snapshot(
     expected = {
         "schema_version": 1,
         "source": provider.__class__.__name__,
-        "source_version": _BAOSTOCK_PIT_SOURCE_VERSION,
+        "source_version": BAOSTOCK_PIT_SOURCE_VERSION,
         "index_symbol": index_symbol,
         "date": pd.Timestamp(date).strftime("%Y-%m-%d"),
         "expected_member_count": int(expected_member_count),
@@ -886,7 +907,7 @@ def collect_point_in_time_universe(
         "schema_version": 1,
         "source": provider.__class__.__name__,
         "index_symbol": index_symbol,
-        "source_version": _BAOSTOCK_PIT_SOURCE_VERSION,
+        "source_version": BAOSTOCK_PIT_SOURCE_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "start": dates.min().strftime("%Y-%m-%d"),
         "end": dates.max().strftime("%Y-%m-%d"),

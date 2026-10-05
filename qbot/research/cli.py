@@ -68,6 +68,7 @@ from qbot.research.reproducibility import (
     validate_provenance,
 )
 from qbot.research.universe.csi500 import (
+    BAOSTOCK_PIT_SOURCE_VERSION,
     BaoStockPointInTimeProvider,
     collect_point_in_time_universe,
     compress_membership_intervals,
@@ -308,16 +309,31 @@ def _benchmark_request_start(config: ResearchConfig) -> pd.Timestamp:
 def _select_benchmark_with_warmup(
     config: ResearchConfig, bars: pd.DataFrame
 ) -> pd.DataFrame:
-    """Select exactly N pre-start sessions plus the configured research range."""
+    """Select exactly N pre-start sessions plus the configured research range.
+
+    Research boundaries are a strict data contract: both configured dates must
+    be benchmark trading sessions present in the bars.  This deliberately
+    rejects weekend/holiday boundaries instead of silently shortening the
+    requested experiment, and also detects a truncated cache at either edge.
+    """
 
     start = pd.Timestamp(config.data.start)
     end = pd.Timestamp(config.data.end)
     available = bars.loc[bars["date"] <= end].sort_values("date", kind="mergesort")
-    research = available.loc[available["date"].between(start, end)]
-    if research.empty:
+    available_dates = pd.DatetimeIndex(available["date"])
+    if start not in available_dates:
         raise FactorLabError(
-            "Benchmark cache has no bars in the configured research interval"
+            "Benchmark bars do not contain configured data.start %s; "
+            "research boundaries must be benchmark trading sessions and the "
+            "cache must cover them" % start.date().isoformat()
         )
+    if end not in available_dates:
+        raise FactorLabError(
+            "Benchmark bars do not contain configured data.end %s; "
+            "research boundaries must be benchmark trading sessions and the "
+            "cache must cover them" % end.date().isoformat()
+        )
+    research = available.loc[available["date"].between(start, end)]
     prior = available.loc[available["date"] < start]
     warmup = int(config.data.warmup_trading_days)
     if len(prior) < warmup:
@@ -396,7 +412,7 @@ def _load_verified_membership(
         expected_identity = {
             "schema_version": 1,
             "source": "BaoStockPointInTimeProvider",
-            "source_version": "baostock-query_zz500_stocks-daily-v1",
+            "source_version": BAOSTOCK_PIT_SOURCE_VERSION,
         }
     elif source == "local":
         identity = (
@@ -596,7 +612,10 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
                 calendar,
                 config.paths.universe_dir,
                 expected_member_count=config.universe.expected_member_count,
-                retries=config.network.max_retries,
+                # BaoStockPointInTimeProvider already owns the configured
+                # network retry policy. Retrying the whole snapshot here
+                # would multiply attempts (for example 4 x 4 calls).
+                retries=0,
                 backoff_seconds=config.network.backoff_seconds,
                 request_interval_seconds=config.network.request_interval_seconds,
             )
@@ -935,6 +954,7 @@ def command_evaluate(config: ResearchConfig, run: RunManifest) -> None:
         quantiles=config.evaluation.quantiles,
         minimum_cross_section=config.evaluation.min_cross_section,
         group_column=("MARKET_REGIME" if config.market_regime.enabled else None),
+        calendar=research_calendar,
     )
     summary = write_factor_report(evaluation, config.paths.factor_results_dir)
     run.add_output("factor_report", summary)

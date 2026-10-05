@@ -7,6 +7,7 @@ from typing import Iterable, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+from qbot.research.data.calendar import TradingCalendar
 from qbot.research.errors import ConfigurationError, SchemaError
 
 
@@ -168,14 +169,19 @@ def _quantile_returns(
 
 
 def _autocorrelation(
-    frame: pd.DataFrame, factors: List[str], minimum_cross_section: int, scope: str
+    frame: pd.DataFrame,
+    factors: List[str],
+    minimum_cross_section: int,
+    scope: str,
+    dates: pd.DatetimeIndex,
 ) -> pd.DataFrame:
     rows = []
-    dates = pd.DatetimeIndex(frame["date"].drop_duplicates().sort_values())
+    cross_sections = dict(tuple(frame.groupby("date", sort=True)))
+    empty = frame.iloc[:0]
     for factor in factors:
         previous: Optional[pd.DataFrame] = None
         for date in dates:
-            current = frame.loc[frame["date"] == date, ["symbol", factor]].rename(
+            current = cross_sections.get(date, empty)[["symbol", factor]].rename(
                 columns={factor: "current"}
             )
             if previous is not None:
@@ -204,13 +210,20 @@ def _top_quantile_turnover(
     quantiles: int,
     minimum_cross_section: int,
     scope: str,
+    dates: pd.DatetimeIndex,
 ) -> pd.DataFrame:
     rows = []
+    cross_sections = dict(tuple(frame.groupby("date", sort=True)))
+    empty = frame.iloc[:0]
     for factor in factors:
         previous_weights = {}
-        for date, cross_section in frame.groupby("date", sort=True):
+        for date in dates:
+            cross_section = cross_sections.get(date, empty)
             available = cross_section[["symbol", factor]].replace([np.inf, -np.inf], np.nan).dropna()
             if len(available) < minimum_cross_section:
+                # A missing/invalid session is not a zero-weight portfolio and
+                # must not be skipped to compare two non-adjacent sessions.
+                previous_weights = {}
                 continue
             count = max(1, int(math.ceil(len(available) / float(quantiles))))
             top = available.nlargest(count, factor, keep="first")["symbol"].tolist()
@@ -254,6 +267,7 @@ def evaluate_factors(
     quantiles: int = 5,
     minimum_cross_section: int = 20,
     group_column: Optional[str] = None,
+    calendar: Optional[Iterable[object]] = None,
 ) -> FactorEvaluation:
     """Evaluate factors overall and optionally within named market regimes."""
 
@@ -267,10 +281,26 @@ def evaluate_factors(
         raise ConfigurationError("minimum_cross_section must be >= quantiles")
     data = frame.copy()
     data["date"] = pd.to_datetime(data["date"], errors="raise").dt.normalize()
+    if data["date"].isna().any() or data.duplicated(["date", "symbol"]).any():
+        raise SchemaError("Factor evaluation requires valid unique (date, symbol) keys")
+    observed_dates = pd.DatetimeIndex(data["date"].drop_duplicates().sort_values())
+    dates = TradingCalendar(
+        observed_dates if calendar is None else pd.DatetimeIndex(list(calendar))
+    ).dates
+    if len(observed_dates.difference(dates)):
+        raise SchemaError("Factor evaluation dates must belong to the supplied calendar")
     scopes: List[Tuple[str, pd.DataFrame]] = [("ALL", data)]
     if group_column is not None:
         if group_column not in data:
             raise SchemaError("Group column %s is missing" % group_column)
+        per_date_groups = data.dropna(subset=[group_column]).groupby("date")[
+            group_column
+        ].nunique()
+        if per_date_groups.gt(1).any():
+            raise SchemaError(
+                "Group column %s must have at most one value per date"
+                % group_column
+            )
         scopes.extend(
             (str(value), group.copy())
             for value, group in data.dropna(subset=[group_column]).groupby(group_column, sort=True)
@@ -284,12 +314,37 @@ def evaluate_factors(
         quantile_parts.append(
             _quantile_returns(subset, factors, target, quantiles, minimum_cross_section, scope)
         )
-        autocorrelation_parts.append(
-            _autocorrelation(subset, factors, minimum_cross_section, scope)
+    # Temporal metrics must always compare adjacent dates on the complete
+    # market calendar.  Filtering to one regime first would incorrectly treat
+    # BULL -> BEAR -> BULL as two adjacent BULL observations.
+    all_autocorrelation = _autocorrelation(
+        data, factors, minimum_cross_section, "ALL", dates
+    )
+    all_turnover = _top_quantile_turnover(
+        data, factors, quantiles, minimum_cross_section, "ALL", dates
+    )
+    autocorrelation_parts.append(all_autocorrelation)
+    turnover_parts.append(all_turnover)
+    if group_column is not None:
+        date_groups = (
+            data.dropna(subset=[group_column])[["date", group_column]]
+            .drop_duplicates("date")
+            .set_index("date")[group_column]
         )
-        turnover_parts.append(
-            _top_quantile_turnover(subset, factors, quantiles, minimum_cross_section, scope)
-        )
+        for value in sorted(date_groups.astype(str).unique()):
+            selected_dates = date_groups.index[date_groups.astype(str) == value]
+            if not all_autocorrelation.empty:
+                scoped_autocorrelation = all_autocorrelation.loc[
+                    all_autocorrelation["date"].isin(selected_dates)
+                ].copy()
+                scoped_autocorrelation["scope"] = value
+                autocorrelation_parts.append(scoped_autocorrelation)
+            if not all_turnover.empty:
+                scoped_turnover = all_turnover.loc[
+                    all_turnover["date"].isin(selected_dates)
+                ].copy()
+                scoped_turnover["scope"] = value
+                turnover_parts.append(scoped_turnover)
     daily = pd.concat(daily_parts, ignore_index=True) if daily_parts else pd.DataFrame()
     quantile_frame = (
         pd.concat(quantile_parts, ignore_index=True)

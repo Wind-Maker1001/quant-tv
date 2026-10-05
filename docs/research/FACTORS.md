@@ -71,8 +71,12 @@ rolling 窗口使用 `min_periods=window`。历史不足或窗口内缺失时保
 
 额外输出：
 
-- 相邻可观测日的同股票因子 Spearman 自相关。
-- 因子最高分位等权组合的 `0.5 * sum(abs(w_t-w_{t-1}))` 换手率。
+- 全部 benchmark 交易日中相邻两日的同股票因子 Spearman 自相关。
+- 全部 benchmark 交易日中相邻两日，因子最高分位等权组合的 `0.5 * sum(abs(w_t-w_{t-1}))` 换手率。
+
+按市场状态分解时，先在完整交易日序列上计算上述相邻日指标，再按当前交易日的 BULL/BEAR/SIDEWAYS 归组；不会把 `BULL → BEAR → BULL` 的首尾两个 BULL 日误当成相邻日。
+
+CLI 向评价器传入完整研究交易日历。某日没有样本或有效横截面不足时，自相关为缺失，换手率不跨过该日配对。单独调用 `evaluate_factors` 时可通过 `calendar` 参数提供相同日历；省略时只使用输入表中可观测的日期。
 - 每日横截面 Pearson 因子相关矩阵的跨日平均。
 
 评价器接收 `MARKET_REGIME` 分组列，同时输出 `ALL` 与 BULL/BEAR/SIDEWAYS。状态只由当日及此前 CSI500 `adj_close` 生成；缺少完整 MA60 的早期日期归为 SIDEWAYS，不使用未来补齐。
