@@ -66,3 +66,12 @@ git diff --check
 优先取得可验证的真实历史行情、逐日 PIT 成分及证券状态（恢复公开端点，或使用严格本地导入路径），再执行真实小样本四步 CLI 验收。完整数据到位后才进入正式五年 Baseline/四模型实验；绝不以当前成分股或人工数据替代真实历史研究。
 
 本次只创建本地逻辑提交，不 push、不改历史。缓存发布提交为 `2b41a0a`；其后的输入证据提交与最终工作区状态可通过 `git log` 和最新 `audit` run manifest 检查。
+
+## 提交后 CLI 审计记录
+
+输入证据提交为 `d605671`。实际执行 `.venv-py39\python.exe -m qbot.research.cli audit --config configs/research/csi500_smoke.yaml`：
+
+- 首次 run `20261005T074740.289708Z-audit-ef1749fa` 因 Windows `WinError 5`（替换 run manifest 临时文件时访问被拒绝）返回 1，failed manifest 和残留临时文件保留；未删除或覆盖这次失败记录。
+- 同命令重试 run `20261005T074820.258563Z-audit-00f9c95c` 返回 0；manifest 为 `status=success`、`git_dirty=false`，绑定 `d605671ed145bc80afa710e7dab72b3a0fff56bf` 与 Python 3.9.25。
+
+该访问拒绝尚未确定原因；单次重试恢复不等于根因已修复。运行清单写入仍应关注 Windows 短暂访问拒绝，后续可在不掩盖持久权限错误的前提下补专门的有界重试与临时文件恢复测试。本项不会把首次失败伪装为成功。
