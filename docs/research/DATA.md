@@ -49,6 +49,8 @@ Schema 验证包括：必需列、日期类型、symbol 格式、排序、主键
 
 FactorLab 的增量行情缓存固定使用后复权 `hfq`。后复权历史尺度在新增交易日时保持稳定，适合按区间追加；前复权 `qfq` 会在新的除权事件后重写既有历史，不能安全地由当前缓存算法增量拼接。因此 Phase 1 配置加载器会拒绝 `qfq`，而不是生成可能存在尺度断层的数据。
 
+行情缓存 metadata v3 通过不可变 `symbol.<generation>.parquet` 与单一 `symbol.metadata.json` 指针发布。先写完并校验新数据，再原子切换清单；发布失败不会破坏上一代，未被清单引用的文件不代表已下载覆盖。读取只固定一次清单及其数据字节，哈希和 Parquet 解析使用同一份内存内容。每股更新使用 OS 文件锁保护读取、合并、发布；`cache.lock_timeout_seconds` 默认 10 秒。锁文件长期存在，进程退出自动释放 OS 锁，不能通过删除文件来解锁。严格有效的 metadata v2 可只读，下次成功更新迁移到 v3；v1 或来源身份冲突仍须归档并重建。当前不会自动清理旧 generation，以免移除运行或清单引用的数据。
+
 `000905.SH` 基准优先调用 AKShare 的 `stock_zh_index_hist_csindex`（中证指数官方历史行情入口），不依赖当前已不稳定的东方财富指数代码映射接口。官方接口的成交金额按文档所示从亿元转换为人民币元；成交量在不同端点修订中曾分别表现为“万手”或已经换算后的“股”，Provider 以成交金额/成交量的可解释比例识别这两种已知形式，统一为股，无法验证单位时直接失败。该选择由固定 AKShare 版本和代码共同决定，不会在一次请求中静默混用多家指数价格。
 
 ## 交易日历与停牌
@@ -114,9 +116,9 @@ FactorLab 的增量行情缓存固定使用后复权 `hfq`。后复权历史尺�
 
 区间只在当前 benchmark 交易日历上展开；研究区间内的首尾边界必须本身是 benchmark 交易日，不能把周末、节假日或公告日静默平移。日级和区间日期字符串都必须使用 `YYYY-MM-DD`，带时间、时区或数值时间戳会被拒绝。同一股票的闭区间不能重叠；展开后仍必须逐日恢复恰好 500 个唯一成员。输入同时含日级和区间列、包含未声明的附加列，或使用语义未定义的 `opt-in/opt-out` 列时会 fail fast，必须先依据可核验来源转换为真实生效日的闭区间。
 
-导入 manifest v2 记录输入布局、成员语义、原始文件绝对路径与 SHA-256，并分别绑定规范化逐日表和重新压缩区间表的内容哈希；消费端会同时校验两份产物及其相互一致性。因此等价的日级和区间输入得到相同股票池版本。写入使用独占 writer lock、唯一临时文件并以 manifest 最后发布；残留锁不会被自动删除，以免两个写者错误并发。消费端为已有产物保留对严格 `user-pit-daily-import-v1` 的只读兼容；即使旧 manifest 没有区间哈希，也会把其区间表与逐日表重新压缩结果对比。新导入统一写 v2。随后 `download-data` 会校验并复用该导入股票池，绝不以 BaoStock 快照覆盖。`universe.provider=baostock` 的配置不能消费本地导入 manifest，反之亦然。
+导入 manifest v3 记录输入布局、成员语义、原始文件绝对路径与 SHA-256，并分别绑定规范化逐日表和重新压缩区间表的内容哈希，以及两份不可变 generation 文件的字节哈希。等价的日级和区间输入得到相同语义股票池版本。消费端保留对严格 local v1/v2 和 BaoStock schema 1 的只读兼容；即使旧 manifest 没有区间哈希，也会把区间表与逐日表重新压缩结果对比。新导入和 BaoStock 最终发布统一写 schema 3。随后 `download-data` 会校验并复用该导入股票池，绝不以 BaoStock 快照覆盖。`universe.provider=baostock` 的配置不能消费本地导入 manifest，反之亦然。
 
-三个正式文件分别原子替换，manifest 最后发布，但普通文件系统无法把三个路径作为单一事务切换。进程若在中间被强制终止，消费端会因哈希不一致而 fail closed，旧版本也可能暂时不可用；应确认没有存活 writer、人工检查残留锁后重新运行导入。后续可用不可变 generation 目录加单一原子指针进一步提高故障后的可用性，这不改变当前“绝不消费混合代数据”的正确性边界。
+先完整写 `csi500_daily.<generation>.parquet` 与 `csi500_intervals.<generation>.parquet`，最后原子替换 `manifest.json`。读取端固定一次 manifest，只读取它指向的两份文件，并验证路径、字节哈希和语义一致性。无后缀的 canonical 文件仅是 commit 后 best-effort 更新的便利别名；别名失败仅记 WARNING，不影响已发布数据。新代写入或清单切换失败时，上一代仍可读取；旧 schema 升级失败也不会提前改动其别名。PIT 发布仍采用独占 writer lock；进程强制终止可能留下 `.universe-write.lock`，它不影响读取旧代，但再次发布前必须确认无存活 writer，再人工恢复。不要自动猜测或删除锁。
 
 ## 证券状态与上市日期
 
@@ -158,7 +160,11 @@ Builder 先验证完整 PIT，再重建股票-日历网格、过滤、计算因�
 - `features/raw_factors.parquet`：`date,symbol,raw_<factor>`。
 - `features/processed_factors.parquet`：`date,symbol,<factor>`。
 - `processed/dataset.parquet`：过滤后长表，同时含原始/预处理因子、标签、`entry_date`、`exit_date`；Phase 3 默认还含 `MARKET_REGIME`、`INDEX_RET5/20/60` 和 `INDEX_VOL20`。
-- `processed/dataset_manifest.json`：绑定数据集文件 SHA-256、PIT 股票池哈希、因子/标签及会影响数据集内容的配置合同，并保存生成该数据集的 run_id、Git commit、工作区 diff、Python 和包版本；模型阶段不允许在代码、环境、数据文件或该数据集合同改变后静默复用旧数据集。模型、验证、组合与费用等不改变数据集内容的配置由各模型 run 的完整配置另行审计。
+- `processed/dataset_manifest.json`：schema 4 绑定数据集文件 SHA-256、PIT 股票池、证券状态、因子/标签配置合同及 `bar_data_provenance` / `bar_data_version`，并保存 producer run_id、Git commit、工作区 diff、Python 和包版本。行情证据来自实际输入快照，覆盖 benchmark 和 PIT 全历史 symbol 并集；尚无缓存的成员也以 missing 记录，因此补齐缺失成员会使旧数据集失效。正式消费者校验清单、成功 producer run 与当前行情语义版本；旧 schema 3 必须重新 `build-dataset`，不能手工补字段。模型、验证、组合与费用等不改变数据集内容的配置由各模型 run 的完整配置另行审计。
+
+行情语义版本包含完整缓存字节哈希、来源合同、行数、日期范围和请求覆盖，不包含绝对路径、随机 generation 或抓取时间。同内容重发布可复用，但任一行情修订、新增成员缓存或研究窗口以外的追加也保守地要求重建数据集。完整清单仍保留 generation、文件名和 metadata 字节哈希用于审计。Walk-Forward 在训练前固定全部行情快照，Fast/Execution 回测使用同一批已验证股票和 benchmark，不在训练后重读活动缓存；四模型比较同时要求一致且可验证的原始行情语义版本。哈希不能证明供应商没有事后修订，只能证明本次实验使用的具体输入。
+
+这些原子发布保证进程中断时不消费混合代数据；不宣称抵御所有断电、磁盘故障或目录元数据损坏。所有旧 generation 均暂时保留。
 
 区间尾部无法观测完整持有期的标签保留为缺失，不在 Builder 中删除。评价和后续训练按用途过滤标签缺失样本。
 

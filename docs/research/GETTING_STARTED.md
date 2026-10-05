@@ -275,6 +275,10 @@ Schema 错误表示 symbol、日期、主键、OHLC 关系或数值单位不符�
 
 若出现 `unsupported cache metadata version` 或 `cache source identity mismatch`，表示现有行情缓存来自旧 metadata、另一 AKShare 版本、另一端点或另一复权合同。不要手工修改 JSON 让它“通过”。先把对应的 `.parquet` 与 `.metadata.json` 成对归档到数据目录之外，再重新执行 `download-data`；也可以在配置中使用新的 `paths.data_root` 保留两代数据。系统不会自动删除或覆盖身份不一致的缓存。Phase 1 只接受 `data.adjustment: hfq`，因为 `qfq` 的旧历史会随新除权事件重写，不适合增量追加。
 
+当前缓存写 metadata v3；来源、哈希和覆盖均严格有效的 v2 无需手工迁移，下次更新自动发布新 generation。归档 v3 缓存时须保留 metadata 指向的所有 generation，不要只移动无后缀文件。行情锁文件长期保留、由 OS 释放锁，不应删除；PIT 发布锁为另一机制，异常中断后的恢复见 [DATA.md](DATA.md)。
+
+数据集清单已升级 schema 4，旧数据集必须重新运行 `build-dataset`，以实际读取快照建立完整行情证据。行情被修订、补齐或追加后，评价可能报 `bar_data_version` mismatch；应审阅来源后重建，而不是修改 manifest 的哈希。数据集和其成功 producer run 清单必须共同保留。
+
 ## 9. 形成研究结论前
 
 烟雾或 synthetic 命令成功只说明软件管线可执行。只有以下条件同时满足，结果才可进入课程论文：

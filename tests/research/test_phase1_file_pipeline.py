@@ -268,7 +268,8 @@ def test_phase1_cli_file_pipeline_is_fully_offline(tmp_path, monkeypatch):
             encoding="utf-8"
         )
     )
-    assert dataset_manifest["schema_version"] == 3
+    assert dataset_manifest["schema_version"] == 4
+    assert len(dataset_manifest["bar_data_version"]) == 64
     assert dataset_manifest["universe_version"] == universe_manifest["sha256"]
     assert dataset_manifest["dataset_sha256"] == hashlib.sha256(
         dataset_path.read_bytes()
@@ -307,6 +308,8 @@ def test_phase1_cli_file_pipeline_is_fully_offline(tmp_path, monkeypatch):
     assert evaluate_run["valid_rank_ic_observations"] > 0
     assert evaluate_run["dataset_producer_run_id"] == build_run["run_id"]
     for payload in (build_run, evaluate_run):
+        assert payload["bar_data_version"] == dataset_manifest["bar_data_version"]
+        assert payload["bar_data_provenance"] == dataset_manifest["bar_data_provenance"]
         assert payload["dataset_sha256"] == dataset_manifest["dataset_sha256"]
         assert payload["universe_version"] == universe_manifest["sha256"]
         assert payload["security_data_version"] == security_manifest[

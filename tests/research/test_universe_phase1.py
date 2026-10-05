@@ -120,7 +120,7 @@ def test_collected_and_imported_manifests_record_source_provenance(tmp_path):
         retries=1,
         request_interval_seconds=0.0,
     )
-    assert collected["schema_version"] == 1
+    assert collected["schema_version"] == 3
     assert collected["source"] == "FixtureProvider"
     assert collected["source_version"] == "baostock-query_zz500_stocks-daily-v2"
     assert collected["index_symbol"] == "000905.SH"
@@ -139,7 +139,7 @@ def test_collected_and_imported_manifests_record_source_provenance(tmp_path):
         expected_member_count=2,
         index_symbol="000905.SH",
     )
-    assert imported["schema_version"] == 2
+    assert imported["schema_version"] == 3
     assert imported["source"] == "local-import"
     assert imported["source_version"] == "user-pit-import-v2"
     assert imported["input_layout"] == "daily"
@@ -194,7 +194,7 @@ def test_interval_import_expands_inclusive_boundaries_and_reentry(tmp_path):
     manifest = import_point_in_time_universe(
         source, output, dates, expected_member_count=2
     )
-    assert manifest["schema_version"] == 2
+    assert manifest["schema_version"] == 3
     assert manifest["source_version"] == "user-pit-import-v2"
     assert manifest["input_layout"] == "inclusive-intervals"
     assert (

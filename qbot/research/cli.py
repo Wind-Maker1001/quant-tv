@@ -11,6 +11,7 @@ import logging
 import math
 import os
 from pathlib import Path
+import re
 import sys
 from typing import Any, Dict, Iterable, List, Optional
 from zoneinfo import ZoneInfo
@@ -27,6 +28,11 @@ from qbot.research.backtest import (
 )
 from qbot.research.config import ResearchConfig, load_config
 from qbot.research.data import AKShareProvider, ParquetBarCache, TradingCalendar
+from qbot.research.data.provenance import (
+    bar_data_version,
+    build_bar_data_provenance,
+    validate_bar_data_provenance,
+)
 from qbot.research.dataset import DatasetBuildOptions, DatasetBuilder
 from qbot.research.errors import (
     FactorLabError,
@@ -69,6 +75,9 @@ from qbot.research.reproducibility import (
 )
 from qbot.research.universe.csi500 import (
     BAOSTOCK_PIT_SOURCE_VERSION,
+    PIT_DAILY_ALIAS,
+    PIT_GENERATION_SCHEMA_VERSION,
+    PIT_INTERVALS_ALIAS,
     BaoStockPointInTimeProvider,
     collect_point_in_time_universe,
     compress_membership_intervals,
@@ -286,11 +295,17 @@ def _provider(config: ResearchConfig) -> AKShareProvider:
 
 
 def _benchmark_cache(config: ResearchConfig) -> ParquetBarCache:
-    return ParquetBarCache(config.paths.benchmark_dir)
+    return ParquetBarCache(
+        config.paths.benchmark_dir,
+        lock_timeout_seconds=config.cache.lock_timeout_seconds,
+    )
 
 
 def _stock_cache(config: ResearchConfig) -> ParquetBarCache:
-    return ParquetBarCache(config.paths.raw_dir / "akshare" / "daily")
+    return ParquetBarCache(
+        config.paths.raw_dir / "akshare" / "daily",
+        lock_timeout_seconds=config.cache.lock_timeout_seconds,
+    )
 
 
 def _benchmark_request_start(config: ResearchConfig) -> pd.Timestamp:
@@ -362,19 +377,25 @@ def _download_benchmark_with_warmup(
 
 
 def _load_benchmark_with_warmup(config: ResearchConfig) -> pd.DataFrame:
+    return _select_benchmark_with_warmup(config, _load_benchmark_snapshot(config).frame)
+
+
+def _load_benchmark_snapshot(config: ResearchConfig):
+    """Pin benchmark bars and their evidence to a single cache generation."""
+
     provider = _provider(config)
-    bars = _benchmark_cache(config).load(
+    snapshot = _benchmark_cache(config).load_snapshot(
         config.data.benchmark,
         expected_source=provider.__class__.__name__,
         expected_source_version=provider.cache_source_version(
             config.data.benchmark, True
         ),
     )
-    if bars.empty:
+    if snapshot.frame.empty:
         raise FactorLabError(
             "Benchmark cache is empty; run download-data before this command"
         )
-    return _select_benchmark_with_warmup(config, bars)
+    return snapshot
 
 
 def _research_calendar(
@@ -391,26 +412,30 @@ def _research_calendar(
 def _load_verified_membership(
     config: ResearchConfig, calendar: pd.DatetimeIndex
 ) -> pd.DataFrame:
-    path = config.paths.universe_dir / "csi500_daily.parquet"
+    """Read one manifest snapshot and only its immutable PIT artifacts.
+
+    Older schemas remain strictly verified, read-only inputs.  All current
+    publishers create generation bundles; canonical aliases do not determine
+    the active generation.
+    """
+
     manifest_path = config.paths.universe_dir / "manifest.json"
-    if not path.exists() or not manifest_path.exists():
-        raise PointInTimeUniverseRequiredError(
-            "validated daily files are missing; run download-data or import-universe"
-        )
-    membership = validate_daily_membership(
-        pd.read_parquet(path), calendar, config.universe.expected_member_count
-    )
     try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, ValueError, AttributeError) as exc:
+        manifest = json.loads(manifest_path.read_bytes().decode("utf-8"))
+    except (OSError, UnicodeError, ValueError, AttributeError) as exc:
         raise PointInTimeUniverseRequiredError("universe manifest is unreadable") from exc
     if not isinstance(manifest, dict):
         raise PointInTimeUniverseRequiredError("universe manifest must be a mapping")
     dates = pd.DatetimeIndex(pd.to_datetime(calendar, errors="raise")).normalize()
     source = config.universe.provider.lower()
     if source == "baostock":
+        schema_version = manifest.get("schema_version")
+        if schema_version not in {1, PIT_GENERATION_SCHEMA_VERSION}:
+            raise PointInTimeUniverseRequiredError(
+                "unsupported BaoStock universe manifest version"
+            )
         expected_identity = {
-            "schema_version": 1,
+            "schema_version": schema_version,
             "source": "BaoStockPointInTimeProvider",
             "source_version": BAOSTOCK_PIT_SOURCE_VERSION,
         }
@@ -423,6 +448,7 @@ def _load_verified_membership(
         supported_identities = {
             (1, "local-import", "user-pit-daily-import-v1"),
             (2, "local-import", "user-pit-import-v2"),
+            (PIT_GENERATION_SCHEMA_VERSION, "local-import", "user-pit-import-v2"),
         }
         if identity not in supported_identities:
             raise PointInTimeUniverseRequiredError(
@@ -433,7 +459,7 @@ def _load_verified_membership(
             "source": identity[1],
             "source_version": identity[2],
         }
-        if identity[0] == 2:
+        if identity[0] in {2, PIT_GENERATION_SCHEMA_VERSION}:
             layout = manifest.get("input_layout")
             expected_semantics = {
                 "daily": "exact-trading-date-snapshot",
@@ -497,10 +523,77 @@ def _load_verified_membership(
         raise PointInTimeUniverseRequiredError(
             "universe manifest generated_at is invalid"
         )
+    generation_fields = {
+        "generation_id", "daily_file", "intervals_file", "daily_alias",
+        "intervals_alias", "daily_file_sha256", "intervals_file_sha256",
+    }
+    is_generation = manifest.get("schema_version") == PIT_GENERATION_SCHEMA_VERSION
+    if is_generation:
+        generation_id = manifest.get("generation_id")
+        if (
+            not isinstance(generation_id, str)
+            or re.fullmatch(r"[0-9a-f]{32}", generation_id) is None
+            or manifest.get("daily_file") != "csi500_daily.%s.parquet" % generation_id
+            or manifest.get("intervals_file") != "csi500_intervals.%s.parquet" % generation_id
+            or manifest.get("daily_alias") != PIT_DAILY_ALIAS
+            or manifest.get("intervals_alias") != PIT_INTERVALS_ALIAS
+        ):
+            raise PointInTimeUniverseRequiredError(
+                "universe manifest contains unexpected generation artifact names"
+            )
+        if not all(
+            _is_sha256(manifest.get(name))
+            for name in ("daily_file_sha256", "intervals_file_sha256")
+        ):
+            raise PointInTimeUniverseRequiredError(
+                "universe generation file SHA-256 is invalid"
+            )
+        daily_path = config.paths.universe_dir / manifest["daily_file"]
+        intervals_path = config.paths.universe_dir / manifest["intervals_file"]
+    else:
+        if generation_fields.intersection(manifest):
+            raise PointInTimeUniverseRequiredError(
+                "legacy universe manifest contains unexpected generation fields"
+            )
+        daily_path = config.paths.universe_dir / PIT_DAILY_ALIAS
+        intervals_path = config.paths.universe_dir / PIT_INTERVALS_ALIAS
+    universe_root = config.paths.universe_dir.resolve()
+    if any(path.is_symlink() or path.resolve().parent != universe_root for path in (daily_path, intervals_path)):
+        raise PointInTimeUniverseRequiredError("universe artifact path escapes its root")
+    try:
+        daily_content = daily_path.read_bytes()
+        intervals_content = intervals_path.read_bytes()
+    except OSError as exc:
+        raise PointInTimeUniverseRequiredError(
+            "universe daily or intervals artifact is missing or unreadable"
+        ) from exc
+    if is_generation:
+        for name, content in (
+            ("daily_file_sha256", daily_content),
+            ("intervals_file_sha256", intervals_content),
+        ):
+            if manifest[name].lower() != hashlib.sha256(content).hexdigest():
+                raise PointInTimeUniverseRequiredError(
+                    "universe %s mismatch" % name
+                )
+    try:
+        raw_membership = pd.read_parquet(io.BytesIO(daily_content))
+        intervals = pd.read_parquet(io.BytesIO(intervals_content))
+    except Exception as exc:
+        raise PointInTimeUniverseRequiredError(
+            "universe daily or intervals artifact is unreadable"
+        ) from exc
+    membership = validate_daily_membership(
+        raw_membership, calendar, config.universe.expected_member_count
+    )
     digest = manifest.get("sha256")
     if not _is_sha256(digest) or digest.lower() != dataframe_sha256(membership):
         raise PointInTimeUniverseRequiredError("universe content hash mismatch")
     daily_digest = manifest.get("daily_sha256")
+    if is_generation and not _is_sha256(daily_digest):
+        raise PointInTimeUniverseRequiredError(
+            "universe generation daily_sha256 is invalid"
+        )
     if daily_digest is not None and (
         not _is_sha256(daily_digest) or daily_digest.lower() != digest.lower()
     ):
@@ -508,39 +601,31 @@ def _load_verified_membership(
             "universe daily_sha256 does not match the canonical content hash"
         )
     intervals_digest = manifest.get("intervals_sha256")
-    verify_intervals = intervals_digest is not None or source == "local"
-    if verify_intervals:
-        if intervals_digest is not None and not _is_sha256(intervals_digest):
-            raise PointInTimeUniverseRequiredError(
-                "universe intervals_sha256 is invalid"
-            )
-        intervals_path = config.paths.universe_dir / "csi500_intervals.parquet"
-        if not intervals_path.is_file():
-            raise PointInTimeUniverseRequiredError(
-                "universe intervals artifact is missing"
-            )
-        try:
-            intervals = pd.read_parquet(intervals_path)
-        except Exception as exc:
-            raise PointInTimeUniverseRequiredError(
-                "universe intervals artifact is unreadable"
-            ) from exc
-        expected_intervals = compress_membership_intervals(membership)
-        actual_intervals_digest = dataframe_sha256(intervals)
-        expected_intervals_digest = dataframe_sha256(expected_intervals)
-        if intervals_digest is None:
-            intervals_mismatch = (
-                actual_intervals_digest != expected_intervals_digest
-            )
-        else:
-            intervals_mismatch = (
-                actual_intervals_digest != intervals_digest.lower()
-                or expected_intervals_digest != intervals_digest.lower()
-            )
-        if intervals_mismatch:
-            raise PointInTimeUniverseRequiredError(
-                "universe intervals content hash mismatch"
-            )
+    if intervals_digest is not None and not _is_sha256(intervals_digest):
+        raise PointInTimeUniverseRequiredError(
+            "universe intervals_sha256 is invalid"
+        )
+    if is_generation and not _is_sha256(intervals_digest):
+        raise PointInTimeUniverseRequiredError(
+            "universe generation intervals_sha256 is invalid"
+        )
+    expected_intervals = compress_membership_intervals(membership)
+    actual_intervals_digest = dataframe_sha256(intervals)
+    expected_intervals_digest = dataframe_sha256(expected_intervals)
+    if intervals_digest is None:
+        intervals_mismatch = (
+            actual_intervals_digest != expected_intervals_digest
+        )
+    else:
+        intervals_mismatch = (
+            actual_intervals_digest != intervals_digest.lower()
+            or expected_intervals_digest != intervals_digest.lower()
+        )
+    if intervals_mismatch:
+        raise PointInTimeUniverseRequiredError(
+            "universe intervals content hash mismatch"
+        )
+    membership.attrs["pit_manifest"] = manifest
     return membership
 
 
@@ -579,6 +664,7 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
             existing_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             existing_manifest = {}
+    published_pit_manifest = existing_manifest
     if universe_provider == "local" and existing_manifest.get("source") != "local-import":
         raise PointInTimeUniverseRequiredError(
             "universe.provider=local requires a validated import-universe artifact"
@@ -606,7 +692,7 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
             LOGGER.info("Reusing validated local-import PIT universe")
         else:
             pit_provider = open_baostock(stack)
-            collect_point_in_time_universe(
+            published_pit_manifest = collect_point_in_time_universe(
                 pit_provider,
                 config.universe.index_symbol,
                 calendar,
@@ -621,6 +707,7 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
             )
             membership = _load_verified_membership(config, calendar)
         symbols = membership["symbol"].drop_duplicates().sort_values().tolist()
+        published_pit_manifest = membership.attrs.get("pit_manifest", published_pit_manifest)
         universe_version = dataframe_sha256(membership)
         try:
             _, _, security_manifest = load_verified_security_data(
@@ -692,7 +779,8 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
                 )
 
     run.payload["universe_version"] = universe_version
-    run.add_output("universe", config.paths.universe_dir / "csi500_daily.parquet")
+    run.add_output("universe", config.paths.universe_dir / published_pit_manifest.get("daily_file", PIT_DAILY_ALIAS))
+    run.add_output("universe_intervals", config.paths.universe_dir / published_pit_manifest.get("intervals_file", PIT_INTERVALS_ALIAS))
     status_failure_path = config.paths.universe_dir / "status_failures.json"
     if security_manifest is not None and status_error is None:
         status_failure_payload = {
@@ -770,10 +858,10 @@ def command_import_universe(
     run.payload["universe_version"] = manifest["sha256"]
     run.payload["universe_input_layout"] = manifest["input_layout"]
     run.payload["universe_source_file_sha256"] = manifest["source_file_sha256"]
-    run.add_output("universe", config.paths.universe_dir / "csi500_daily.parquet")
+    run.add_output("universe", config.paths.universe_dir / manifest.get("daily_file", PIT_DAILY_ALIAS))
     run.add_output(
         "universe_intervals",
-        config.paths.universe_dir / "csi500_intervals.parquet",
+        config.paths.universe_dir / manifest.get("intervals_file", PIT_INTERVALS_ALIAS),
     )
     run.add_output("universe_manifest", config.paths.universe_dir / "manifest.json")
     LOGGER.info("Imported and validated %d PIT sessions", manifest["trading_dates"])
@@ -859,8 +947,47 @@ def _load_stock_bars(config: ResearchConfig, symbols: Iterable[str]) -> pd.DataF
     return pd.concat(parts, ignore_index=True)
 
 
+def _load_bar_inputs(config: ResearchConfig, membership: pd.DataFrame, benchmark_snapshot=None) -> tuple:
+    """Pin complete bar inputs, including absent PIT members, before research.
+
+    Full-cache hashes are deliberately conservative: even an append outside
+    the research window invalidates prior datasets until they are rebuilt.
+    """
+
+    provider = _provider(config)
+    source = provider.__class__.__name__
+    if benchmark_snapshot is None:
+        benchmark_snapshot = _load_benchmark_snapshot(config)
+    benchmark = _select_benchmark_with_warmup(config, benchmark_snapshot.frame)
+    symbols = membership["symbol"].drop_duplicates().sort_values().tolist()
+    cache = _stock_cache(config)
+    identities = {
+        symbol: (source, provider.cache_source_version(symbol, False))
+        for symbol in symbols
+    }
+    snapshots = {
+        symbol: cache.load_snapshot(
+            symbol, expected_source=identities[symbol][0],
+            expected_source_version=identities[symbol][1],
+        )
+        for symbol in symbols
+    }
+    parts = [snapshot.frame for snapshot in snapshots.values() if not snapshot.frame.empty]
+    if not parts:
+        raise FactorLabError("No stock bars are available; run download-data first")
+    missing = [symbol for symbol, snapshot in snapshots.items() if snapshot.frame.empty]
+    if missing:
+        LOGGER.warning("No cached bars for %d member securities", len(missing))
+    provenance = build_bar_data_provenance(
+        config.data.benchmark, benchmark_snapshot, snapshots, identities,
+        (source, provider.cache_source_version(config.data.benchmark, True)),
+    )
+    return benchmark, pd.concat(parts, ignore_index=True), provenance, bar_data_version(provenance)
+
+
 def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
-    benchmark = _load_benchmark_with_warmup(config)
+    benchmark_snapshot = _load_benchmark_snapshot(config)
+    benchmark = _select_benchmark_with_warmup(config, benchmark_snapshot.frame)
     calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
     research_calendar = _research_calendar(config, calendar)
     membership = _load_verified_membership(config, research_calendar)
@@ -873,7 +1000,9 @@ def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
         universe_sha256=universe_version,
         expected_provider=config.universe.status_provider,
     )
-    bars = _load_stock_bars(config, symbols)
+    benchmark, bars, bar_provenance, bar_version = _load_bar_inputs(
+        config, membership, benchmark_snapshot
+    )
     filter_config = UniverseFilterConfig(
         min_listed_days=config.universe.min_listed_days,
         exclude_st=config.universe.exclude_st,
@@ -901,11 +1030,13 @@ def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
     dataset_sha256 = _file_sha256(destination)
     _atomic_json(
         {
-            "schema_version": 3,
+            "schema_version": 4,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "dataset_path": str(destination),
             "dataset_sha256": dataset_sha256,
             "universe_version": universe_version,
+            "bar_data_provenance": bar_provenance,
+            "bar_data_version": bar_version,
             "security_data_version": security_manifest["security_data_version"],
             "security_data_source": security_manifest["source"],
             "security_data_source_version": security_manifest["source_version"],
@@ -933,6 +1064,8 @@ def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
     run.payload["dataset_dates"] = int(dataset["date"].nunique())
     run.payload["dataset_sha256"] = dataset_sha256
     run.payload["universe_version"] = universe_version
+    run.payload["bar_data_provenance"] = bar_provenance
+    run.payload["bar_data_version"] = bar_version
     _record_security_data_provenance(run, security_manifest)
     LOGGER.info("Dataset written: %d rows across %d dates", len(dataset), dataset["date"].nunique())
 
@@ -975,12 +1108,24 @@ def _load_verified_dataset(
     run: Optional[RunManifest] = None,
     *,
     full_calendar: Optional[pd.DatetimeIndex] = None,
+    bar_inputs: Optional[tuple] = None,
 ) -> tuple:
     membership = _load_verified_membership(config, research_calendar)
     universe_version = dataframe_sha256(membership)
-    security_calendar = (
-        full_calendar if full_calendar is not None else research_calendar
+    if bar_inputs is None:
+        bar_inputs = _load_bar_inputs(config, membership)
+    benchmark, _, current_bar_provenance, current_bar_version = bar_inputs
+    validate_bar_data_provenance(
+        current_bar_provenance, benchmark_symbol=config.data.benchmark,
+        stock_symbols=membership["symbol"].drop_duplicates().tolist(),
     )
+    if current_bar_version != bar_data_version(current_bar_provenance):
+        raise FactorLabError("Pinned bar-data version is inconsistent")
+    security_calendar = (
+        full_calendar if full_calendar is not None else TradingCalendar.from_benchmark_bars(benchmark).dates
+    )
+    if not TradingCalendar.from_benchmark_bars(benchmark).dates.equals(security_calendar):
+        raise FactorLabError("Pinned benchmark calendar differs from the dataset consumer calendar")
     _, _, security_manifest = load_verified_security_data(
         config.paths.universe_dir,
         calendar=security_calendar,
@@ -1009,9 +1154,10 @@ def _load_verified_dataset(
         raise FactorLabError("Dataset is unreadable") from exc
     dataset_sha256 = hashlib.sha256(dataset_content).hexdigest()
     expected = {
-        "schema_version": 3,
+        "schema_version": 4,
         "dataset_sha256": dataset_sha256,
         "universe_version": universe_version,
+        "bar_data_version": current_bar_version,
         "security_data_version": security_manifest["security_data_version"],
         "security_data_source": security_manifest["source"],
         "security_data_source_version": security_manifest["source_version"],
@@ -1033,6 +1179,13 @@ def _load_verified_dataset(
             "Dataset manifest mismatch (%s); rebuild before evaluation"
             % ", ".join(mismatches)
         )
+    recorded_bar_provenance = validate_bar_data_provenance(
+        manifest.get("bar_data_provenance"),
+        benchmark_symbol=config.data.benchmark,
+        stock_symbols=membership["symbol"].drop_duplicates().tolist(),
+    )
+    if bar_data_version(recorded_bar_provenance) != current_bar_version:
+        raise FactorLabError("Dataset bar-data evidence mismatch; rebuild before evaluation")
     try:
         producer_provenance = validate_provenance(
             manifest.get("producer_provenance", {})
@@ -1066,6 +1219,8 @@ def _load_verified_dataset(
         "status": "success",
         "dataset_sha256": dataset_sha256,
         "universe_version": universe_version,
+        "bar_data_version": current_bar_version,
+        "bar_data_provenance": manifest["bar_data_provenance"],
         "security_data_version": security_manifest["security_data_version"],
         "security_data_source": security_manifest["source"],
         "security_data_source_version": security_manifest["source_version"],
@@ -1125,6 +1280,8 @@ def _load_verified_dataset(
             )
         run.payload["dataset_producer_run_id"] = producer_run_id
         run.payload["dataset_producer_provenance"] = producer_provenance
+        run.payload["bar_data_provenance"] = current_bar_provenance
+        run.payload["bar_data_version"] = current_bar_version
         _record_security_data_provenance(run, security_manifest)
     try:
         dataset = pd.read_parquet(io.BytesIO(dataset_content))
@@ -1311,8 +1468,12 @@ def command_walk_forward(
     benchmark = _load_benchmark_with_warmup(config)
     full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
     research_calendar = _research_calendar(config, full_calendar)
+    membership = _load_verified_membership(config, research_calendar)
+    bar_inputs = _load_bar_inputs(config, membership)
+    benchmark, pinned_stock_bars, _, _ = bar_inputs
     dataset, dataset_sha256, universe_version = _load_verified_dataset(
-        config, research_calendar, run, full_calendar=full_calendar
+        config, research_calendar, run, full_calendar=full_calendar,
+        bar_inputs=bar_inputs,
     )
     output_dir = config.paths.model_results_dir / model_name / run.run_id
     model_dir = output_dir / "fold_models"
@@ -1383,7 +1544,7 @@ def command_walk_forward(
         raise FactorLabError("Walk-forward produced no valid out-of-sample RankIC")
 
     symbols = walk_forward.predictions["symbol"].drop_duplicates().sort_values()
-    bars = _load_stock_bars(config, symbols)
+    bars = pinned_stock_bars.loc[pinned_stock_bars["symbol"].isin(symbols)].copy()
     bars, backtest_benchmark = _backtest_window(
         walk_forward.predictions, bars, benchmark
     )
@@ -1561,6 +1722,8 @@ def _prediction_oos_keys(
     output_dir: Path,
     manifest: Dict[str, Any],
     target_col: str,
+    *,
+    content: Optional[bytes] = None,
 ) -> pd.DataFrame:
     prediction_path = output_dir / "predictions.parquet"
     expected_sha256 = manifest.get("predictions_sha256")
@@ -1573,13 +1736,18 @@ def _prediction_oos_keys(
             "%s run has missing or unknown predictions_sha256 provenance"
             % model_name
         )
-    actual_sha256 = _file_sha256(prediction_path)
+    if content is None:
+        try:
+            content = prediction_path.read_bytes()
+        except OSError as exc:
+            raise FactorLabError("%s predictions.parquet is unreadable" % model_name) from exc
+    actual_sha256 = hashlib.sha256(content).hexdigest()
     if expected_sha256.lower() != actual_sha256:
         raise FactorLabError(
             "%s predictions.parquet SHA-256 mismatch" % model_name
         )
     try:
-        predictions = pd.read_parquet(prediction_path)
+        predictions = pd.read_parquet(io.BytesIO(content))
     except Exception as exc:
         raise FactorLabError(
             "%s predictions.parquet is unreadable" % model_name
@@ -1635,8 +1803,12 @@ def _verify_model_artifacts(
     model_name: str,
     output_dir: Path,
     manifest: Dict[str, Any],
-) -> None:
-    """Reject incomplete, missing, extra, or modified model report files."""
+) -> Dict[str, bytes]:
+    """Validate artifacts and pin report bytes for the comparison consumers.
+
+    Large model binaries are hashed as streams, not retained in memory.
+    CSV/Parquet reports are parsed from the exact verified byte snapshots.
+    """
 
     expected = manifest.get("model_artifact_sha256")
     if not isinstance(expected, dict) or not expected:
@@ -1659,7 +1831,20 @@ def _verify_model_artifacts(
             "%s artifact hash inventory is missing: %s"
             % (model_name, ", ".join(missing))
         )
-    actual = _artifact_sha256(output_dir)
+    actual = {}
+    snapshots = {}
+    for path in sorted(output_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        if path.is_symlink() or output_dir.resolve() not in path.resolve().parents:
+            raise FactorLabError("%s model artifact path escapes its root" % model_name)
+        name = path.relative_to(output_dir).as_posix()
+        if path.suffix in {".csv", ".parquet"}:
+            content = path.read_bytes()
+            snapshots[name] = content
+            actual[name] = hashlib.sha256(content).hexdigest()
+        else:
+            actual[name] = _file_sha256(path)
     if set(actual) != set(expected):
         raise FactorLabError(
             "%s model artifact inventory differs from its manifest" % model_name
@@ -1675,16 +1860,20 @@ def _verify_model_artifacts(
             "%s model artifact SHA-256 mismatch (%s)"
             % (model_name, ", ".join(modified))
         )
+    return snapshots
 
 
-def _comparison_record(model_name: str, output_dir: Path) -> Dict[str, Any]:
-    prediction = pd.read_csv(output_dir / "prediction_summary.csv")
+def _comparison_record(model_name: str, output_dir: Path, *, artifacts: Optional[Dict[str, bytes]] = None) -> Dict[str, Any]:
+    def read_csv(filename):
+        return pd.read_csv(output_dir / filename if artifacts is None else io.BytesIO(artifacts[filename]))
+
+    prediction = read_csv("prediction_summary.csv")
     overall = prediction.loc[
         prediction["scope"].astype(str).str.upper() == "OVERALL"
     ]
     if len(overall) != 1:
         raise FactorLabError("%s report has no unique OVERALL row" % model_name)
-    metrics = pd.read_csv(output_dir / "portfolio_metrics.csv")
+    metrics = read_csv("portfolio_metrics.csv")
     if not {"metric", "value"}.issubset(metrics.columns):
         raise FactorLabError("%s portfolio metrics are malformed" % model_name)
     record: Dict[str, Any] = {
@@ -1700,11 +1889,11 @@ def _comparison_record(model_name: str, output_dir: Path) -> Dict[str, Any]:
     )
     record.update(dict(zip(metrics["metric"], metrics["value"])))
     execution_metrics_path = output_dir / "execution_portfolio_metrics.csv"
-    if not execution_metrics_path.is_file():
+    if (artifacts is None and not execution_metrics_path.is_file()) or (artifacts is not None and "execution_portfolio_metrics.csv" not in artifacts):
         raise FactorLabError(
             "%s execution portfolio metrics are missing" % model_name
         )
-    execution_metrics = pd.read_csv(execution_metrics_path)
+    execution_metrics = read_csv("execution_portfolio_metrics.csv")
     if not {"metric", "value"}.issubset(execution_metrics.columns):
         raise FactorLabError(
             "%s execution portfolio metrics are malformed" % model_name
@@ -1725,18 +1914,20 @@ def _combine_model_tables(
     filename: str,
     *,
     required: bool,
+    artifact_snapshots: Optional[Dict[str, Dict[str, bytes]]] = None,
 ) -> pd.DataFrame:
     parts: List[pd.DataFrame] = []
     for model_name, output_dir in outputs.items():
         path = output_dir / filename
-        if not path.is_file():
+        snapshot = None if artifact_snapshots is None else artifact_snapshots[model_name]
+        if (snapshot is None and not path.is_file()) or (snapshot is not None and filename not in snapshot):
             if required:
                 raise FactorLabError(
                     "%s report is missing %s" % (model_name, filename)
                 )
             continue
         try:
-            table = pd.read_csv(path)
+            table = pd.read_csv(path if snapshot is None else io.BytesIO(snapshot[filename]))
         except Exception as exc:
             raise FactorLabError(
                 "%s report has unreadable %s" % (model_name, filename)
@@ -1830,6 +2021,7 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
     current_provenance = _comparison_provenance(
         run.payload, "Current compare-models run"
     )
+    artifact_snapshots = {}
     for name, payload in manifests.items():
         source_provenance = _comparison_provenance(
             payload, "%s source run" % name
@@ -1844,7 +2036,7 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
                 "%s source run provenance differs from the current environment (%s)"
                 % (name, ", ".join(provenance_mismatches))
             )
-        _verify_model_artifacts(name, outputs[name], payload)
+        artifact_snapshots[name] = _verify_model_artifacts(name, outputs[name], payload)
     current_config = config.to_dict()
     if any(payload.get("config") != current_config for payload in manifests.values()):
         raise FactorLabError(
@@ -1866,6 +2058,12 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         or not _is_sha256(next(iter(universe_versions), None))
     ):
         raise FactorLabError("Model reports use different or unknown PIT universe versions")
+    bar_versions = {payload.get("bar_data_version") for payload in manifests.values()}
+    if len(bar_versions) != 1 or not _is_sha256(next(iter(bar_versions), None)):
+        raise FactorLabError("Model reports use different or unknown raw bar-data versions")
+    for name, payload in manifests.items():
+        if bar_data_version(payload.get("bar_data_provenance")) != payload["bar_data_version"]:
+            raise FactorLabError("%s model report has inconsistent bar-data evidence" % name)
     security_provenance = _shared_model_security_provenance(manifests)
     backtest_stock_versions = {
         payload.get("backtest_stock_bars_sha256") for payload in manifests.values()
@@ -1903,6 +2101,7 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
             outputs[name],
             manifests[name],
             _target_column(config),
+            content=artifact_snapshots[name]["predictions.parquet"],
         )
         for name in model_names
     }
@@ -1915,11 +2114,12 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
             "windows, and realised targets"
         )
     comparison = pd.DataFrame(
-        [_comparison_record(name, outputs[name]) for name in model_names]
+        [_comparison_record(name, outputs[name], artifacts=artifact_snapshots[name]) for name in model_names]
     )
     comparison_dir = config.paths.report_dir / run.run_id
     combined_folds = _combine_model_tables(
-        outputs, "walk_forward_results.csv", required=True
+        outputs, "walk_forward_results.csv", required=True,
+        artifact_snapshots=artifact_snapshots,
     )
     detail_files = {
         "prediction_summary": ("prediction_summary.csv", True),
@@ -1939,7 +2139,8 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         "walk_forward_results": combined_folds,
         **{
             output_name: _combine_model_tables(
-                outputs, filename, required=required
+                outputs, filename, required=required,
+                artifact_snapshots=artifact_snapshots,
             )
             for output_name, (filename, required) in detail_files.items()
         },
@@ -1962,6 +2163,11 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
     }
     run.payload["dataset_sha256"] = next(iter(dataset_versions))
     run.payload["universe_version"] = next(iter(universe_versions))
+    run.payload["bar_data_version"] = next(iter(bar_versions))
+    run.payload["bar_data_provenance"] = manifests[model_names[0]]["bar_data_provenance"]
+    run.payload["source_bar_data_provenance"] = {
+        name: payload["bar_data_provenance"] for name, payload in manifests.items()
+    }
     run.payload.update(security_provenance)
     run.payload["backtest_stock_bars_sha256"] = next(
         iter(backtest_stock_versions)

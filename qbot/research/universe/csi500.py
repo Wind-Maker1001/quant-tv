@@ -31,6 +31,9 @@ PIT_REQUIRED = "POINT-IN-TIME UNIVERSE REQUIRED"
 # v2 requires server query-date evidence, named code fields and successful
 # completion of pagination; v1 snapshots cannot prove those invariants.
 BAOSTOCK_PIT_SOURCE_VERSION = "baostock-query_zz500_stocks-daily-v2"
+PIT_GENERATION_SCHEMA_VERSION = 3
+PIT_DAILY_ALIAS = "csi500_daily.parquet"
+PIT_INTERVALS_ALIAS = "csi500_intervals.parquet"
 
 
 def canonical_symbol(value: Any) -> str:
@@ -685,6 +688,69 @@ def _atomic_json(payload: Dict[str, Any], destination: Path) -> None:
             pass
 
 
+def _publish_pit_generation(
+    daily: pd.DataFrame,
+    intervals: pd.DataFrame,
+    manifest: Dict[str, Any],
+    output_dir: Path,
+) -> Dict[str, Any]:
+    """Publish immutable artifacts and atomically switch the manifest pointer.
+
+    Canonical names are convenience aliases.  An interrupted replacement of a
+    generation bundle cannot modify either artifact referenced by its previous
+    manifest.  Alias refreshes happen only after the manifest is committed, so
+    failed legacy upgrades also leave the old alias-bound bundle readable.
+    """
+
+    output = Path(output_dir)
+    generation_id = uuid.uuid4().hex
+    daily_filename = "csi500_daily.%s.parquet" % generation_id
+    intervals_filename = "csi500_intervals.%s.parquet" % generation_id
+    published = {
+        **manifest,
+        "schema_version": PIT_GENERATION_SCHEMA_VERSION,
+        "generation_id": generation_id,
+        "daily_file": daily_filename,
+        "intervals_file": intervals_filename,
+        "daily_alias": PIT_DAILY_ALIAS,
+        "intervals_alias": PIT_INTERVALS_ALIAS,
+    }
+    manifest_path = output / "manifest.json"
+    try:
+        with _universe_write_lock(output):
+            daily_path = output / daily_filename
+            intervals_path = output / intervals_filename
+            if daily_path.exists() or intervals_path.exists() or daily_path.is_symlink() or intervals_path.is_symlink():
+                raise PointInTimeUniverseError("%s: new PIT generation already exists" % PIT_REQUIRED)
+            _atomic_parquet(daily, daily_path)
+            _atomic_parquet(intervals, intervals_path)
+            published["daily_file_sha256"] = hashlib.sha256(
+                daily_path.read_bytes()
+            ).hexdigest()
+            published["intervals_file_sha256"] = hashlib.sha256(
+                intervals_path.read_bytes()
+            ).hexdigest()
+            _atomic_json(published, manifest_path)
+            # The verified generation is already committed.  Failure to
+            # refresh a convenience alias must not turn that commit into
+            # an apparent failure or make a caller retry the publication.
+            for frame, alias in (
+                (daily, PIT_DAILY_ALIAS), (intervals, PIT_INTERVALS_ALIAS)
+            ):
+                try:
+                    _atomic_parquet(frame, output / alias)
+                except Exception as exc:
+                    LOGGER.warning("PIT generation committed; alias %s not refreshed: %s", alias, exc)
+    except PointInTimeUniverseError:
+        raise
+    except Exception as exc:
+        raise PointInTimeUniverseError(
+            "%s: cannot publish PIT generation: %s: %s"
+            % (PIT_REQUIRED, type(exc).__name__, exc)
+        ) from exc
+    return published
+
+
 @contextmanager
 def _universe_write_lock(output_dir: Path) -> Iterator[Path]:
     """Serialize publication of the three PIT universe artifacts.
@@ -861,20 +927,21 @@ def collect_point_in_time_universe(
             for attempt in range(retries + 1):
                 try:
                     candidate = provider.get_constituents(index_symbol, date)
-                    snapshot = validate_daily_membership(
+                    validated_candidate = validate_daily_membership(
                         candidate, [date], expected_member_count
                     )
-                    _atomic_parquet(snapshot, snapshot_path)
+                    _atomic_parquet(validated_candidate, snapshot_path)
                     _atomic_json(
                         _snapshot_metadata(
                             provider,
                             index_symbol,
                             date,
                             expected_member_count,
-                            snapshot,
+                            validated_candidate,
                         ),
                         metadata_path,
                     )
+                    snapshot = validated_candidate
                     break
                 except Exception as exc:
                     last_error = exc
@@ -899,8 +966,6 @@ def collect_point_in_time_universe(
         pd.concat(parts, ignore_index=True), dates, expected_member_count
     )
     intervals = compress_membership_intervals(daily)
-    daily_path = output / "csi500_daily.parquet"
-    interval_path = output / "csi500_intervals.parquet"
     content_hash = dataframe_sha256(daily)
     intervals_hash = dataframe_sha256(intervals)
     manifest = {
@@ -917,11 +982,7 @@ def collect_point_in_time_universe(
         "daily_sha256": content_hash,
         "intervals_sha256": intervals_hash,
     }
-    with _universe_write_lock(output):
-        _atomic_parquet(intervals, interval_path)
-        _atomic_parquet(daily, daily_path)
-        _atomic_json(manifest, output / "manifest.json")
-    return manifest
+    return _publish_pit_generation(daily, intervals, manifest, output)
 
 
 def import_point_in_time_universe(
@@ -1039,9 +1100,4 @@ def import_point_in_time_universe(
         "daily_sha256": digest,
         "intervals_sha256": intervals_digest,
     }
-    output = Path(output_dir)
-    with _universe_write_lock(output):
-        _atomic_parquet(intervals, output / "csi500_intervals.parquet")
-        _atomic_parquet(daily, output / "csi500_daily.parquet")
-        _atomic_json(manifest, output / "manifest.json")
-    return manifest
+    return _publish_pit_generation(daily, intervals, manifest, Path(output_dir))

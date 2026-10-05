@@ -52,6 +52,7 @@ class _Run:
 
 def _inputs():
     dates = pd.bdate_range("2020-01-02", "2021-06-30")
+    warmup_dates = pd.bdate_range(end=dates[0] - pd.offsets.BDay(), periods=120)
     symbols = ["%06d.SZ" % number for number in range(1, 11)]
     rows = []
     bar_rows = []
@@ -86,17 +87,27 @@ def _inputs():
                     "symbol": symbol,
                     "adj_open": price,
                     "raw_open": price,
+                    "raw_high": price + 0.02,
+                    "raw_low": price - 0.02,
                     "raw_close": price,
                     "volume": 100_000.0,
+                    "amount": price * 100_000.0,
+                    "turnover": 0.02,
                     "trade_status": 1,
                     "is_st": False,
                 }
             )
-    benchmark_price = 5000.0 + np.arange(len(dates), dtype=float) * 0.8
+    # Price caches include the actual warm-up sessions required by the config.
+    # Research observations and their original trading prices stay unchanged.
+    first_day_rows = bar_rows[:len(symbols)]
+    for trading_date in warmup_dates:
+        bar_rows.extend(dict(row, date=trading_date) for row in first_day_rows)
+    benchmark_dates = warmup_dates.append(dates)
+    benchmark_price = 5000.0 + np.arange(-len(warmup_dates), len(dates), dtype=float) * 0.8
     benchmark = canonicalize_bars(
         pd.DataFrame(
             {
-                "date": dates,
+                "date": benchmark_dates,
                 "symbol": "000905.SH",
                 "open": benchmark_price,
                 "high": benchmark_price + 2.0,
@@ -108,7 +119,7 @@ def _inputs():
             }
         )
     )
-    return dates, pd.DataFrame(rows), pd.DataFrame(bar_rows), benchmark
+    return dates, pd.DataFrame(rows), canonicalize_bars(pd.DataFrame(bar_rows)), benchmark
 
 
 def _config(tmp_path):
@@ -182,6 +193,9 @@ def _write_verified_inputs(
     dataset_sha256=None,
     write_dataset_manifest=True,
     write_universe_manifest=True,
+    bars=None,
+    benchmark=None,
+    missing_stock_symbols=(),
 ):
     config.paths.processed_dir.mkdir(parents=True)
     dataset_path = config.paths.processed_dir / "dataset.parquet"
@@ -224,7 +238,13 @@ def _write_verified_inputs(
             config.paths.universe_dir / "manifest.json",
         )
     symbols = membership["symbol"].drop_duplicates().sort_values().tolist()
-    calendar = pd.DatetimeIndex(dataset["date"].drop_duplicates().sort_values())
+    if bars is None or benchmark is None:
+        _, _, fixture_bars, fixture_benchmark = _inputs()
+        if bars is None:
+            bars = fixture_bars
+        if benchmark is None:
+            benchmark = fixture_benchmark
+    calendar = pd.DatetimeIndex(benchmark["date"].drop_duplicates().sort_values())
     status = pd.MultiIndex.from_product(
         [calendar, symbols], names=["date", "symbol"]
     ).to_frame(index=False)
@@ -253,13 +273,43 @@ def _write_verified_inputs(
         "listing_dates_sha256": security_manifest["listings_sha256"],
         "security_data_input_sha256": security_manifest["input_sha256"],
     }
+    provider = cli._provider(config)
+    benchmark_cache = cli._benchmark_cache(config)
+    benchmark_cache.update(
+        config.data.benchmark,
+        benchmark,
+        benchmark["date"].min(),
+        benchmark["date"].max(),
+        source=provider.__class__.__name__,
+        source_version=provider.cache_source_version(config.data.benchmark, True),
+    )
+    stock_cache = cli._stock_cache(config)
+    for symbol in symbols:
+        if symbol in missing_stock_symbols:
+            continue
+        stock_cache.update(
+            symbol,
+            bars.loc[bars["symbol"].eq(symbol)],
+            bars["date"].min(),
+            bars["date"].max(),
+            source=provider.__class__.__name__,
+            source_version=provider.cache_source_version(symbol, False),
+        )
+    _, _, bar_data_provenance, bar_data_version = cli._load_bar_inputs(
+        config, membership
+    )
+    bar_fields = {
+        "bar_data_provenance": bar_data_provenance,
+        "bar_data_version": bar_data_version,
+    }
     if write_dataset_manifest:
         cli._atomic_json(
             {
-                "schema_version": 3,
+                "schema_version": 4,
                 "dataset_sha256": effective_dataset_sha256,
                 "universe_version": universe_version,
                 **security_fields,
+                **bar_fields,
                 "factor_list": list(config.factors),
                 "target": "EXCESS_RET5",
                 "rows": len(dataset),
@@ -281,6 +331,7 @@ def _write_verified_inputs(
                 "dataset_sha256": effective_dataset_sha256,
                 "universe_version": universe_version,
                 **security_fields,
+                **bar_fields,
                 **_provenance(),
             },
             config.paths.runs_dir
@@ -303,6 +354,11 @@ def test_evaluate_records_verified_dataset_provenance(tmp_path, monkeypatch):
     assert run.payload["dataset_sha256"] == cli._file_sha256(dataset_path)
     assert run.payload["universe_version"] == universe_version
     assert run.payload["valid_rank_ic_observations"] > 0
+    dataset_manifest = json.loads(
+        (config.paths.processed_dir / "dataset_manifest.json").read_text(encoding="utf-8")
+    )
+    assert run.payload["bar_data_version"] == dataset_manifest["bar_data_version"]
+    assert run.payload["bar_data_provenance"] == dataset_manifest["bar_data_provenance"]
 
 
 def test_execution_status_join_allows_nonmember_price_rows_and_pins_generation(
@@ -407,7 +463,7 @@ def test_build_dataset_binds_producer_code_provenance(tmp_path, monkeypatch):
             encoding="utf-8"
         )
     )
-    assert manifest["schema_version"] == 3
+    assert manifest["schema_version"] == 4
     assert manifest["producer_run_id"] == run.run_id
     assert manifest["producer_provenance"] == _provenance()
     assert manifest["universe_version"] == universe_version
@@ -421,6 +477,8 @@ def test_build_dataset_binds_producer_code_provenance(tmp_path, monkeypatch):
         "listings_sha256"
     ]
     assert manifest["dataset_sha256"] == run.payload["dataset_sha256"]
+    assert manifest["bar_data_version"] == run.payload["bar_data_version"]
+    assert manifest["bar_data_provenance"] == run.payload["bar_data_provenance"]
 
 
 def test_build_dataset_validates_security_bundle_before_loading_stock_bars(
@@ -435,9 +493,9 @@ def test_build_dataset_validates_security_bundle_before_loading_stock_bars(
     )
     monkeypatch.setattr(
         cli,
-        "_load_stock_bars",
+        "_load_bar_inputs",
         lambda *args, **kwargs: (_ for _ in ()).throw(
-            AssertionError("stock bars must not load before security validation")
+            AssertionError("bar inputs must not load before security validation")
         ),
     )
 
@@ -470,7 +528,7 @@ def test_dataset_reuse_rejects_a_new_security_data_generation(tmp_path):
         status,
         listings,
         output_dir=config.paths.universe_dir,
-        calendar=dates,
+        calendar=pd.DatetimeIndex(cli._load_benchmark_with_warmup(config)["date"]),
         membership=membership,
         universe_sha256=universe_version,
         source="BaoStockPointInTimeProvider",
@@ -479,6 +537,148 @@ def test_dataset_reuse_rejects_a_new_security_data_generation(tmp_path):
 
     with pytest.raises(FactorLabError, match="security_data_version"):
         cli._load_verified_dataset(config, dates)
+
+
+@pytest.mark.parametrize("asset", ["stock", "benchmark"])
+def test_dataset_reuse_rejects_corrected_raw_bar_content(tmp_path, asset):
+    dates, dataset, bars, benchmark = _inputs()
+    config = _config(tmp_path)
+    _write_verified_inputs(config, dataset, bars=bars, benchmark=benchmark)
+    provider = cli._provider(config)
+    symbol = config.data.benchmark if asset == "benchmark" else bars["symbol"].iloc[0]
+    cache = cli._benchmark_cache(config) if asset == "benchmark" else cli._stock_cache(config)
+    changed = cache.load(symbol).iloc[[10]].copy()
+    for column in (
+        "open", "high", "low", "close", "raw_open", "raw_high", "raw_low",
+        "raw_close", "adj_open", "adj_high", "adj_low", "adj_close",
+    ):
+        changed[column] *= 1.01
+    cache.update(
+        symbol, changed, changed["date"].iloc[0], changed["date"].iloc[0],
+        source=provider.__class__.__name__,
+        source_version=provider.cache_source_version(symbol, asset == "benchmark"),
+    )
+
+    with pytest.raises(FactorLabError, match="bar_data_version"):
+        cli._load_verified_dataset(config, dates)
+
+
+def test_dataset_reuse_rejects_a_previously_missing_stock_bar_being_filled(tmp_path):
+    dates, dataset, bars, benchmark = _inputs()
+    config = _config(tmp_path)
+    missing_row = bars.iloc[[10]].copy()
+    _write_verified_inputs(
+        config, dataset, bars=bars.drop(index=missing_row.index), benchmark=benchmark
+    )
+    # The prior snapshot can contain missing observations without filling them.
+    loaded, _, _ = cli._load_verified_dataset(config, dates)
+    assert len(loaded) == len(dataset)
+    provider = cli._provider(config)
+    symbol = missing_row["symbol"].iloc[0]
+    cli._stock_cache(config).update(
+        symbol, missing_row, missing_row["date"].iloc[0], missing_row["date"].iloc[0],
+        source=provider.__class__.__name__,
+        source_version=provider.cache_source_version(symbol, False),
+    )
+
+    with pytest.raises(FactorLabError, match="bar_data_version"):
+        cli._load_verified_dataset(config, dates)
+
+
+def test_dataset_reuse_rejects_a_previously_missing_stock_cache_being_created(tmp_path):
+    dates, dataset, bars, benchmark = _inputs()
+    config = _config(tmp_path)
+    symbol = bars["symbol"].iloc[0]
+    _write_verified_inputs(
+        config, dataset, bars=bars, benchmark=benchmark, missing_stock_symbols=(symbol,)
+    )
+    manifest_path = config.paths.processed_dir / "dataset_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["bar_data_provenance"]["stocks"][symbol]["state"] == "missing"
+    loaded, _, _ = cli._load_verified_dataset(config, dates)
+    assert len(loaded) == len(dataset)
+    provider = cli._provider(config)
+    newly_available = bars.loc[bars["symbol"].eq(symbol)]
+    cli._stock_cache(config).update(
+        symbol, newly_available, newly_available["date"].min(), newly_available["date"].max(),
+        source=provider.__class__.__name__,
+        source_version=provider.cache_source_version(symbol, False),
+    )
+
+    with pytest.raises(FactorLabError, match="bar_data_version"):
+        cli._load_verified_dataset(config, dates)
+
+
+def test_dataset_reuse_rejects_current_cache_source_contract_mismatch(tmp_path):
+    dates, dataset, bars, _ = _inputs()
+    config = _config(tmp_path)
+    _write_verified_inputs(config, dataset)
+    cache = cli._stock_cache(config)
+    metadata_path = cache.metadata_path(bars["symbol"].iloc[0])
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata["source_version"] = "different-provider-contract"
+    cli._atomic_json(metadata, metadata_path)
+
+    with pytest.raises(FactorLabError, match="cache source identity mismatch"):
+        cli._load_verified_dataset(config, dates)
+
+
+@pytest.mark.parametrize("field", ["bar_data_version", "bar_data_provenance"])
+def test_dataset_reuse_requires_matching_build_run_bar_receipt(tmp_path, field):
+    dates, dataset, _, _ = _inputs()
+    config = _config(tmp_path)
+    _write_verified_inputs(config, dataset)
+    producer_path = config.paths.runs_dir / "20200101T000000-build-dataset" / "manifest.json"
+    producer = json.loads(producer_path.read_text(encoding="utf-8"))
+    producer[field] = "f" * 64 if field == "bar_data_version" else {}
+    cli._atomic_json(producer, producer_path)
+
+    with pytest.raises(FactorLabError, match="producer run manifest mismatch.*" + field):
+        cli._load_verified_dataset(config, dates)
+
+
+def test_dataset_reuse_conservatively_rejects_cache_extension_outside_research_span(tmp_path):
+    dates, dataset, bars, _ = _inputs()
+    config = _config(tmp_path)
+    _write_verified_inputs(config, dataset)
+    symbol = bars["symbol"].iloc[0]
+    cache = cli._stock_cache(config)
+    before_selected = cache.load(symbol).copy()
+    appended = before_selected.iloc[[-1]].copy()
+    appended["date"] += pd.offsets.BDay()
+    provider = cli._provider(config)
+    cache.update(
+        symbol, appended, appended["date"].iloc[0], appended["date"].iloc[0],
+        source=provider.__class__.__name__,
+        source_version=provider.cache_source_version(symbol, False),
+    )
+    after_selected = cache.load(symbol)
+    after_selected = after_selected.loc[after_selected["date"] <= pd.Timestamp(config.data.end)]
+    pd.testing.assert_frame_equal(before_selected, after_selected)
+
+    with pytest.raises(FactorLabError, match="bar_data_version"):
+        cli._load_verified_dataset(config, dates)
+
+
+def test_dataset_reuse_allows_identical_bars_republished_in_a_new_generation(tmp_path):
+    dates, dataset, bars, _ = _inputs()
+    config = _config(tmp_path)
+    _write_verified_inputs(config, dataset)
+    symbol = bars["symbol"].iloc[0]
+    cache = cli._stock_cache(config)
+    previous = cache.read_metadata(symbol)
+    provider = cli._provider(config)
+    cache.update(
+        symbol, cache.load(symbol), cache.load(symbol)["date"].min(), config.data.end,
+        source=provider.__class__.__name__,
+        source_version=provider.cache_source_version(symbol, False),
+    )
+    current = cache.read_metadata(symbol)
+    assert current["generation_id"] != previous["generation_id"]
+    assert current["content_sha256"] == previous["content_sha256"]
+
+    loaded, _, _ = cli._load_verified_dataset(config, dates)
+    assert len(loaded) == len(dataset)
 
 
 def test_evaluate_rejects_a_missing_dataset_manifest(tmp_path, monkeypatch):
@@ -686,7 +886,7 @@ def test_verified_local_membership_accepts_allowlisted_manifest_versions(
 @pytest.mark.parametrize(
     "updates,match",
     [
-        ({"schema_version": 3}, "unsupported local universe manifest version"),
+        ({"schema_version": 4}, "unsupported local universe manifest version"),
         ({"input_layout": "opt-out-intervals"}, "input_layout is invalid"),
         ({"membership_semantics": "exclusive"}, "membership_semantics is invalid"),
         ({"daily_sha256": "d" * 64}, "daily_sha256 is invalid"),
@@ -788,6 +988,56 @@ def test_verified_legacy_local_membership_also_checks_intervals(tmp_path):
         cli._load_verified_membership(config, dates)
 
 
+def test_walk_forward_pins_bar_generation_before_model_run(tmp_path, monkeypatch):
+    _, dataset, bars, benchmark = _inputs()
+    config = _config(tmp_path)
+    _, membership, _ = _write_verified_inputs(
+        config, dataset, bars=bars, benchmark=benchmark
+    )
+    pinned_benchmark, pinned_bars, _, pinned_version = cli._load_bar_inputs(
+        config, membership
+    )
+    real_run = cli.WalkForwardRunner.run
+    observed = {}
+
+    def update_prices_after_model_run(runner, *args, **kwargs):
+        result = real_run(runner, *args, **kwargs)
+        observed["predictions"] = result.predictions
+        symbol = pinned_bars["symbol"].iloc[0]
+        cache = cli._stock_cache(config)
+        corrected = cache.load(symbol).copy()
+        for column in (
+            "open", "high", "low", "close", "raw_open", "raw_high", "raw_low",
+            "raw_close", "adj_open", "adj_high", "adj_low", "adj_close",
+        ):
+            corrected[column] *= 1.5
+        provider = cli._provider(config)
+        cache.update(
+            symbol, corrected, corrected["date"].min(), corrected["date"].max(),
+            source=provider.__class__.__name__,
+            source_version=provider.cache_source_version(symbol, False),
+        )
+        return result
+
+    monkeypatch.setattr(cli.WalkForwardRunner, "run", update_prices_after_model_run)
+    run = _Run("20200101T000000-pinned-factor-score")
+    cli.command_walk_forward(config, run, "factor_score")
+
+    original_prices, _ = cli._backtest_window(
+        observed["predictions"], pinned_bars, pinned_benchmark
+    )
+    current_benchmark, current_bars, _, current_version = cli._load_bar_inputs(
+        config, membership
+    )
+    corrected_prices, _ = cli._backtest_window(
+        observed["predictions"], current_bars, current_benchmark
+    )
+    assert current_version != pinned_version
+    assert cli.dataframe_sha256(corrected_prices) != cli.dataframe_sha256(original_prices)
+    assert run.payload["bar_data_version"] == pinned_version
+    assert run.payload["backtest_stock_bars_sha256"] == cli.dataframe_sha256(original_prices)
+
+
 def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, monkeypatch):
     dates, dataset, bars, benchmark = _inputs()
     config = _config(tmp_path)
@@ -870,6 +1120,8 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
                 "config": config.to_dict(),
                 "dataset_sha256": run.payload["dataset_sha256"],
                 "universe_version": run.payload["universe_version"],
+                "bar_data_provenance": run.payload["bar_data_provenance"],
+                "bar_data_version": run.payload["bar_data_version"],
                 "backtest_stock_bars_sha256": run.payload[
                     "backtest_stock_bars_sha256"
                 ],
@@ -955,6 +1207,10 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
     assert comparison_run.payload["security_data_manifest_sha256"] == (
         ridge_run.payload["security_data_manifest_sha256"]
     )
+    assert comparison_run.payload["bar_data_version"] == ridge_run.payload["bar_data_version"]
+    assert comparison_run.payload["source_bar_data_provenance"]["ridge"] == (
+        ridge_run.payload["bar_data_provenance"]
+    )
     assert comparison_run.payload["comparison_artifact_sha256"] == (
         cli._artifact_sha256(comparison_dir)
     )
@@ -962,6 +1218,17 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
 
     ridge_manifest_path = config.paths.runs_dir / ridge_run.run_id / "manifest.json"
     ridge_manifest = json.loads(ridge_manifest_path.read_text(encoding="utf-8"))
+    mismatched_raw_bars = json.loads(json.dumps(ridge_manifest))
+    symbol = sorted(mismatched_raw_bars["bar_data_provenance"]["stocks"])[0]
+    mismatched_raw_bars["bar_data_provenance"]["stocks"][symbol]["content_sha256"] = "f" * 64
+    mismatched_raw_bars["bar_data_version"] = cli.bar_data_version(
+        mismatched_raw_bars["bar_data_provenance"]
+    )
+    cli._atomic_json(mismatched_raw_bars, ridge_manifest_path)
+    with pytest.raises(FactorLabError, match="different or unknown raw bar-data versions"):
+        cli.command_compare_models(config, _Run("raw-bar-input-mismatch"))
+    cli._atomic_json(ridge_manifest, ridge_manifest_path)
+
     mismatched_prices = dict(
         ridge_manifest, backtest_stock_bars_sha256="f" * 64
     )
