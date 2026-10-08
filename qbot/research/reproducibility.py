@@ -3,12 +3,14 @@
 import importlib.metadata
 import hashlib
 import json
+import logging
 import os
 from pathlib import Path
 import platform
 import random
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, Mapping, Optional
 import uuid
@@ -43,6 +45,8 @@ PROVENANCE_FIELDS = (
 )
 
 _UNKNOWN_TEXT = frozenset(("unknown", "unavailable", "n/a", "none", "null"))
+_MANIFEST_REPLACE_RETRY_DELAYS = (0.025, 0.05, 0.1)
+LOGGER = logging.getLogger(__name__)
 
 
 def _known_text(value: Any) -> bool:
@@ -187,11 +191,48 @@ def package_versions(names: Iterable[str] = TRACKED_PACKAGES) -> Dict[str, Optio
 def _atomic_json(payload: Dict[str, Any], destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_name(".%s.tmp-%s" % (destination.name, uuid.uuid4().hex))
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    os.replace(str(temporary), str(destination))
+    owns_temporary = False
+    try:
+        # Serialize and flush exactly once. Windows readers and virus scanners
+        # can briefly hold the destination open; retry only this same atomic
+        # replace, never a rewrite or a delete of the previous valid manifest.
+        content = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        with temporary.open("x", encoding="utf-8") as stream:
+            owns_temporary = True
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        for attempt in range(len(_MANIFEST_REPLACE_RETRY_DELAYS) + 1):
+            try:
+                os.replace(str(temporary), str(destination))
+                break
+            except OSError as exc:
+                if (
+                    getattr(exc, "winerror", None) not in (5, 32, 33)
+                    or attempt >= len(_MANIFEST_REPLACE_RETRY_DELAYS)
+                ):
+                    raise
+                delay = _MANIFEST_REPLACE_RETRY_DELAYS[attempt]
+                LOGGER.warning(
+                    "Transient Windows manifest replace failure (winerror=%s); "
+                    "retry %d/%d in %.3fs: %s",
+                    exc.winerror,
+                    attempt + 1,
+                    len(_MANIFEST_REPLACE_RETRY_DELAYS),
+                    delay,
+                    destination,
+                )
+                time.sleep(delay)
+    finally:
+        # Only this call owns this UUID temporary. In particular, do not
+        # remove old failed-call temporaries or mutate existing run history.
+        if owns_temporary:
+            try:
+                temporary.unlink()
+            except FileNotFoundError:
+                pass
+            except OSError:
+                LOGGER.warning("Cannot remove current manifest temporary: %s", temporary, exc_info=True)
 
 
 class RunManifest:
