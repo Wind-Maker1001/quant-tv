@@ -6,7 +6,7 @@ Qbot FactorLab 是 Qbot 内部隔离的 A 股横截面研究模块。它仅用�
 
 | 能力 | 状态 |
 | --- | --- |
-| 严格 YAML 配置、Schema、AKShare Provider、Parquet 缓存 | Phase 1 已实现 |
+| 严格 YAML 配置、Schema、AKShare/LocalParquet Provider、Parquet 缓存 | Phase 1 已实现 |
 | CSI500 交易日历、BaoStock/本地导入 PIT 股票池、日级过滤 | Phase 1 已实现 |
 | 14 个因子、日横截面预处理、next-open 标签、数据集 | Phase 1 已实现 |
 | IC/RankIC、分位收益、自相关、换手和相关矩阵报告 | Phase 1 已实现 |
@@ -48,7 +48,7 @@ Linux/macOS：
     python -m pip install --upgrade pip
     python -m pip install -r dev/requirements-research.txt
 
-行情 CLI（包括缓存读取）需要固定版本 AKShare，以核对缓存来源身份；BaoStock 仅在网络获取 PIT/证券状态时加载，LightGBM/XGBoost 只在对应模型拟合时加载。纯因子、标签、数据集与评价函数不依赖网络 Provider。导入 qbot.research 不会启动 wxPython、Qlib、Backtrader 或实盘接口。
+选择 AKShare 时，行情 CLI（包括缓存读取）需要固定版本 AKShare，以核对缓存来源身份；选择 `local_parquet` 时只核对本地快照合同，不加载 AKShare。BaoStock 仅在网络获取 PIT/证券状态时加载，LightGBM/XGBoost 只在对应模型拟合时加载。纯因子、标签、数据集与评价函数不依赖网络 Provider。导入 qbot.research 不会启动 wxPython、Qlib、Backtrader 或实盘接口。
 
 ## 2. 先运行离线测试
 
@@ -62,11 +62,17 @@ pytest.ini 默认只收集 tests/research，并排除 network marker。这个边
 
     python -m pytest -q tests/research/test_phase1_file_pipeline.py
 
-它真实执行本地 PIT/证券状态导入、读取 Parquet Cache v2、构建全部 14 因子的 dataset，并生成 RankIC 和报告；还验证股票池变更后旧状态数据会被拒绝。输入为人工数据，只用于验证软件。
+它实际执行本地 PIT/证券状态导入、读取 Parquet Cache、构建全部 14 因子的 dataset，并生成 RankIC 和报告；还验证股票池变更后旧状态数据会被拒绝。输入为人工数据，只用于验证软件。
+
+无需预置研究缓存的六命令整链另见 [LOCAL_MARKET_DATA.md](LOCAL_MARKET_DATA.md)。其测试从 CSV 文件开始，使用本地行情 Provider，禁止网络访问：
+
+    python -m pytest -q tests/research/test_local_cli_pipeline.py
 
 显式执行网络测试：
 
     python -m pytest -q -m network
+
+2026-10-08 更新：个股9交易日的诊断成功，但更长区间仍断连、PIT 短时连接仍超时；最新工程与真实数据覆盖证据见 [LOCAL_DATA_VERIFICATION.md](LOCAL_DATA_VERIFICATION.md)。下面保留2026-10-04的历史复核背景，不能据此推断所有端点的当前状态。
 
 网络测试可因数据源限频、端点改动、代理或本地网络而失败，不取代离线正确性测试。2026-10-04 的最新复核中，AKShare 中证官方接口已真实返回正式五年区间的 1211 行 `000905.SH` 基准行情；东方财富个股后复权端点仍发生 `RemoteDisconnected`，BaoStock 登录连续 4 次后仍为 socket 错误，因此 PIT 股票池和真实股票数据链路尚未完成。测试时 Windows 系统代理还指向未响应的 `127.0.0.1:10808`；若错误栈显示该地址，应先确认本机代理程序和 Windows 代理设置一致，不要通过关闭数据校验来“修复”网络。不能把 benchmark 子步骤成功或 369 项离线测试通过描述成真实端到端或五年数据已经验证。
 
@@ -74,6 +80,7 @@ pytest.ini 默认只收集 tests/research，并排除 network marker。这个边
 
 - configs/research/csi500_5y.yaml：正式区间 2021-09-13 至 2026-09-11；
 - configs/research/csi500_smoke.yaml：用于短区间端到端网络烟雾；当前环境的真实链路尚未跑通，只能在未来网络与 PIT 来源可用时继续验收。
+- configs/research/csi500_local_smoke.yaml：严格静态本地导入示例，需要另行取得可核验的真实行情、PIT 与状态文件；不是内置真实数据或研究结论。
 
 配置加载器递归拒绝未知字段，相对路径总是相对仓库根目录解析。live_trading 必须为 false，universe.point_in_time 必须为 true。默认 data.warmup_trading_days=130，用于从研究开始日前取得真实交易日预热数据；预热行情/状态只参与过滤和因子 rolling，正式 PIT 验证与输出仍限定在研究日期。
 
