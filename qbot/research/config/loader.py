@@ -86,6 +86,10 @@ def load_config(
         resolved_paths = PathsConfig(
             data_root=_resolve_path(config.paths.data_root, root),
             results_root=_resolve_path(config.paths.results_root, root),
+            market_input_root=(
+                None if config.paths.market_input_root is None
+                else _resolve_path(config.paths.market_input_root, root)
+            ),
         )
         object.__setattr__(config, "paths", resolved_paths)
         object.__setattr__(config, "config_path", config_path)

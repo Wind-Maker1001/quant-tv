@@ -28,6 +28,11 @@ from qbot.research.backtest import (
 )
 from qbot.research.config import ResearchConfig, load_config
 from qbot.research.data import AKShareProvider, ParquetBarCache, TradingCalendar
+from qbot.research.data.providers.base import MarketDataProvider
+from qbot.research.data.providers.local import (
+    LocalParquetProvider,
+    publish_local_market_data,
+)
 from qbot.research.data.provenance import (
     bar_data_version,
     build_bar_data_provenance,
@@ -147,6 +152,15 @@ def _parser() -> argparse.ArgumentParser:
         dest="listings_path",
         help="CSV/Parquet with symbol,listing_date",
     )
+    market_importer = subparsers.add_parser("import-market-data")
+    market_importer.add_argument("--config", required=True)
+    market_importer.add_argument("--stocks", required=True, dest="stock_path")
+    market_importer.add_argument("--benchmark", required=True, dest="benchmark_path")
+    market_importer.add_argument(
+        "--source", required=True,
+        help="Verifiable original data source; not a claim of authority",
+    )
+    market_importer.add_argument("--source-version", required=True)
     walk_forward = subparsers.add_parser("walk-forward")
     walk_forward.add_argument("--config", required=True)
     walk_forward.add_argument(
@@ -282,15 +296,21 @@ def _dataset_contract_from_snapshot(snapshot: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _provider(config: ResearchConfig) -> AKShareProvider:
-    if config.data.provider.lower() != "akshare":
-        raise FactorLabError("Phase 1 only implements data.provider=akshare")
+def _provider(config: ResearchConfig) -> MarketDataProvider:
+    if config.data.provider == "local_parquet":
+        return LocalParquetProvider(
+            config.paths.market_input_root,
+            benchmark_symbol=config.data.benchmark,
+        )
+    if config.data.provider != "akshare":
+        raise FactorLabError("Unsupported market-data provider")
     return AKShareProvider(
         benchmark_symbol=config.data.benchmark,
         adjustment=config.data.adjustment,
         retry_count=config.network.max_retries,
         backoff_seconds=config.network.backoff_seconds,
         request_interval=config.network.request_interval_seconds,
+        timeout_seconds=config.network.timeout_seconds,
     )
 
 
@@ -303,9 +323,20 @@ def _benchmark_cache(config: ResearchConfig) -> ParquetBarCache:
 
 def _stock_cache(config: ResearchConfig) -> ParquetBarCache:
     return ParquetBarCache(
-        config.paths.raw_dir / "akshare" / "daily",
+        config.paths.raw_dir / config.data.provider / "daily",
         lock_timeout_seconds=config.cache.lock_timeout_seconds,
     )
+
+
+def _resolve_input_path(config: ResearchConfig, value: str) -> Path:
+    """Resolve every imported file from the repository, not the process cwd."""
+
+    try:
+        path = Path(value).expanduser()
+        root = config.repo_root or Path.cwd()
+        return (path if path.is_absolute() else root / path).resolve()
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise FactorLabError("Cannot resolve imported input path %r" % value) from exc
 
 
 def _benchmark_request_start(config: ResearchConfig) -> pd.Timestamp:
@@ -363,7 +394,7 @@ def _select_benchmark_with_warmup(
 
 
 def _download_benchmark_with_warmup(
-    config: ResearchConfig, provider: AKShareProvider
+    config: ResearchConfig, provider: MarketDataProvider
 ) -> pd.DataFrame:
     cache = _benchmark_cache(config)
     bars = cache.update_from_provider(
@@ -825,7 +856,7 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
             LOGGER.warning("Market data failed for %s: %s", symbol, exc)
         if number % 25 == 0 or number == len(symbols):
             LOGGER.info("Downloaded/checked %d/%d securities", number, len(symbols))
-    failure_path = config.paths.raw_dir / "akshare" / "failed_symbols.json"
+    failure_path = config.paths.raw_dir / config.data.provider / "failed_symbols.json"
     _atomic_json(failures, failure_path)
     run.add_failures("market_data", failures)
     run.add_output("failed_symbols", failure_path)
@@ -849,7 +880,7 @@ def command_import_universe(
     full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
     calendar = _research_calendar(config, full_calendar)
     manifest = import_point_in_time_universe(
-        Path(input_path),
+        _resolve_input_path(config, input_path),
         config.paths.universe_dir,
         calendar,
         expected_member_count=config.universe.expected_member_count,
@@ -865,6 +896,39 @@ def command_import_universe(
     )
     run.add_output("universe_manifest", config.paths.universe_dir / "manifest.json")
     LOGGER.info("Imported and validated %d PIT sessions", manifest["trading_dates"])
+
+
+def command_import_market_data(
+    config: ResearchConfig,
+    run: RunManifest,
+    stock_path: str,
+    benchmark_path: str,
+    source: str,
+    source_version: str,
+) -> None:
+    """Publish a verified static local snapshot without contacting any vendor."""
+
+    if config.data.provider != "local_parquet" or config.paths.market_input_root is None:
+        raise FactorLabError(
+            "import-market-data requires local_parquet and paths.market_input_root"
+        )
+    manifest = publish_local_market_data(
+        _resolve_input_path(config, stock_path),
+        _resolve_input_path(config, benchmark_path),
+        config.paths.market_input_root, source, source_version,
+        benchmark_symbol=config.data.benchmark,
+    )
+    run.payload["market_data_bundle_version"] = manifest["bundle_version"]
+    run.payload["market_data_bundle_manifest"] = manifest
+    run.add_output(
+        "market_data_manifest", config.paths.market_input_root / "manifest.json"
+    )
+    for role in ("stocks", "benchmark"):
+        run.add_output(
+            "market_data_" + role,
+            config.paths.market_input_root / manifest[role + "_file"],
+        )
+    LOGGER.info("Local market-data snapshot published: %s", manifest["bundle_version"])
 
 
 def command_import_security_data(
@@ -889,8 +953,8 @@ def command_import_security_data(
     membership = _load_verified_membership(config, research_calendar)
     universe_version = dataframe_sha256(membership)
     manifest = import_security_data(
-        Path(status_path),
-        Path(listings_path),
+        _resolve_input_path(config, status_path),
+        _resolve_input_path(config, listings_path),
         output_dir=config.paths.universe_dir,
         calendar=full_calendar,
         membership=membership,
@@ -2715,6 +2779,11 @@ def main(argv: Optional[List[str]] = None) -> int:
                 run,
                 arguments.status_path,
                 arguments.listings_path,
+            )
+        elif arguments.command == "import-market-data":
+            command_import_market_data(
+                config, run, arguments.stock_path, arguments.benchmark_path,
+                arguments.source, arguments.source_version,
             )
         elif arguments.command == "build-dataset":
             command_build_dataset(config, run)

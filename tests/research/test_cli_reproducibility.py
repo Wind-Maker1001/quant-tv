@@ -331,7 +331,7 @@ def test_import_universe_cli_orchestrates_without_network(tmp_path, monkeypatch)
         == 0
     )
 
-    assert seen["input_path"] == Path("membership.csv")
+    assert seen["input_path"] == (config.repo_root / "membership.csv").resolve()
     assert seen["output_dir"] == config.paths.universe_dir
     assert seen["expected_member_count"] == 2
     assert seen["index_symbol"] == config.universe.index_symbol
@@ -408,8 +408,8 @@ def test_import_security_data_cli_orchestrates_without_baostock(
             "listings_sha256": "e" * 64,
             "input_sha256": {"status": "f" * 64, "listings": "0" * 64},
             "input_files": {
-                "status": str(Path("status.csv").resolve()),
-                "listings": str(Path("listings.csv").resolve()),
+                "status": str(status_path.resolve()),
+                "listings": str(listings_path.resolve()),
             },
             "status_rows": 264,
             "symbols": 2,
@@ -437,8 +437,8 @@ def test_import_security_data_cli_orchestrates_without_baostock(
         == 0
     )
 
-    assert seen["status_path"] == Path("status.csv")
-    assert seen["listings_path"] == Path("listings.csv")
+    assert seen["status_path"] == (config.repo_root / "status.csv").resolve()
+    assert seen["listings_path"] == (config.repo_root / "listings.csv").resolve()
     assert seen["output_dir"] == config.paths.universe_dir
     assert seen["calendar"].equals(pd.DatetimeIndex(full_benchmark["date"]))
     assert seen["universe_sha256"] == cli.dataframe_sha256(membership)

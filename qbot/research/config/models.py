@@ -22,6 +22,7 @@ class PathsConfig:
 
     data_root: Path = Path("data/research")
     results_root: Path = Path("results")
+    market_input_root: Optional[Path] = None
 
     @property
     def raw_dir(self) -> Path:
@@ -412,6 +413,10 @@ class ResearchConfig:
             raise ConfigurationError("seed must be non-negative")
         if self.data.start > self.data.end:
             raise ConfigurationError("data.start must be on or before data.end")
+        if self.data.provider not in {"akshare", "local_parquet"}:
+            raise ConfigurationError("data.provider must be akshare or local_parquet")
+        if self.data.provider == "local_parquet" and self.paths.market_input_root is None:
+            raise ConfigurationError("local_parquet requires paths.market_input_root")
         if self.data.adjustment != "hfq":
             raise ConfigurationError(
                 "data.adjustment must be hfq: Phase 1 incremental caches rely on "
@@ -486,8 +491,8 @@ class ResearchConfig:
             raise ConfigurationError(
                 "network.request_interval_seconds cannot be negative"
             )
-        if self.network.timeout_seconds <= 0:
-            raise ConfigurationError("network.timeout_seconds must be positive")
+        if not math.isfinite(self.network.timeout_seconds) or self.network.timeout_seconds <= 0:
+            raise ConfigurationError("network.timeout_seconds must be finite and positive")
         if self.label.holding_days <= 0:
             raise ConfigurationError("label.holding_days must be positive")
         if self.label.entry_price != "next_open":

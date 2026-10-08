@@ -2,5 +2,9 @@
 
 from .base import MarketDataProvider
 from .akshare import AKShareProvider
+from .local import LocalParquetProvider, publish_local_market_data
 
-__all__ = ["AKShareProvider", "MarketDataProvider"]
+__all__ = [
+    "AKShareProvider", "LocalParquetProvider", "MarketDataProvider",
+    "publish_local_market_data",
+]
