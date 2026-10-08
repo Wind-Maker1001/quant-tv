@@ -418,3 +418,300 @@ def test_abrupt_child_exit_releases_os_lock_without_removing_lock_file(tmp_path)
         _update(cache)
         assert len(_snapshot(cache).frame) == 1
         assert lock_file.is_file()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows EOF byte-range lock contract")
+def test_windows_native_lock_covers_empty_file_before_initialization(tmp_path):
+    import msvcrt
+
+    path = tmp_path / ".empty.native.lock"
+    with path.open("a+b", buffering=0) as first, path.open("a+b", buffering=0) as second:
+        assert path.stat().st_size == 0
+        first.seek(0)
+        msvcrt.locking(first.fileno(), msvcrt.LK_NBLCK, 1)
+        try:
+            # Acquiring the lock does not itself extend the empty file.
+            assert path.stat().st_size == 0
+            second.seek(0)
+            with pytest.raises(OSError):
+                msvcrt.locking(second.fileno(), msvcrt.LK_NBLCK, 1)
+            first.write(b"\0")
+            first.flush()
+            assert path.stat().st_size == 1
+        finally:
+            first.seek(0)
+            msvcrt.locking(first.fileno(), msvcrt.LK_UNLCK, 1)
+        second.seek(0)
+        msvcrt.locking(second.fileno(), msvcrt.LK_NBLCK, 1)
+        msvcrt.locking(second.fileno(), msvcrt.LK_UNLCK, 1)
+
+
+def _track_native_locks(monkeypatch):
+    """Track actual successful OS acquisitions; never replace the OS lock."""
+    owned = set()
+    events = []
+    if os.name == "nt":
+        import msvcrt
+
+        original = msvcrt.locking
+        def tracked(descriptor, operation, length):
+            result = original(descriptor, operation, length)
+            if operation == msvcrt.LK_NBLCK:
+                owned.add(descriptor)
+                events.append(("acquire", descriptor))
+            elif operation == msvcrt.LK_UNLCK:
+                owned.remove(descriptor)
+                events.append(("release", descriptor))
+            return result
+        monkeypatch.setattr(msvcrt, "locking", tracked)
+    else:  # pragma: no cover - portable regression on POSIX CI
+        import fcntl
+
+        original = fcntl.flock
+        def tracked(descriptor, operation):
+            result = original(descriptor, operation)
+            if operation == (fcntl.LOCK_EX | fcntl.LOCK_NB):
+                owned.add(descriptor)
+                events.append(("acquire", descriptor))
+            elif operation == fcntl.LOCK_UN:
+                owned.remove(descriptor)
+                events.append(("release", descriptor))
+            return result
+        monkeypatch.setattr(fcntl, "flock", tracked)
+    return owned, events
+
+
+def test_empty_lock_two_open_handles_initialize_only_after_native_acquisition(tmp_path, monkeypatch):
+    """Both old handles see an empty file; pre-lock write fails deterministically."""
+    first, second = ParquetBarCache(tmp_path), ParquetBarCache(tmp_path)
+    lock_path = tmp_path / ("." + SYMBOL + ".write.lock")
+    barrier = threading.Barrier(2)
+    owned, events = _track_native_locks(monkeypatch)
+    original_open = Path.open
+    opened_empty = []
+    class CheckedHandle:
+        def __init__(self, handle):
+            self.handle = handle
+        def __getattr__(self, name):
+            return getattr(self.handle, name)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            return self.handle.__exit__(*args)
+        def write(self, content):
+            assert self.fileno() in owned, "initialization write preceded native acquisition"
+            events.append(("write", self.fileno()))
+            return self.handle.write(content)
+        def flush(self):
+            assert self.fileno() in owned, "initialization flush preceded native acquisition"
+            events.append(("flush", self.fileno()))
+            return self.handle.flush()
+    def synchronized_open(path, *args, **kwargs):
+        handle = original_open(path, *args, **kwargs)
+        if path == lock_path and args and args[0] == "a+b":
+            opened_empty.append(path.stat().st_size == 0)
+            try:
+                barrier.wait(timeout=5)
+            except BaseException:
+                handle.close()
+                raise
+            return CheckedHandle(handle)
+        return handle
+    monkeypatch.setattr(Path, "open", synchronized_open)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(_update, first, "2024-01-02", 10.0),
+                   executor.submit(_update, second, "2024-01-03", 11.0)]
+        for future in futures:
+            future.result(timeout=15)
+    assert opened_empty == [True, True]
+    assert sum(event[0] == "acquire" for event in events) == 2
+    assert sum(event[0] == "release" for event in events) == 2
+    assert sum(event[0] == "write" for event in events) == 1
+    assert sum(event[0] == "flush" for event in events) == 1
+    # The losing thread can acquire immediately after native unlock, before
+    # the spy appends the first release event. Assert per-handle ordering rather
+    # than imposing an additional Python scheduling order on native success.
+    for descriptor in {event[1] for event in events}:
+        operations = [name for name, current in events if current == descriptor]
+        assert operations in (["acquire", "write", "flush", "release"],
+                              ["acquire", "release"])
+    assert not owned
+    assert lock_path.read_bytes() == b"\0"
+    assert len(_snapshot(first).frame) == 2
+
+
+@pytest.mark.parametrize("failure_point", ["seek", "tell", "write", "flush"])
+def test_lock_initialization_failure_releases_native_lock_and_wraps_error(tmp_path, monkeypatch, failure_point):
+    holder = ParquetBarCache(tmp_path)
+    lock_path = tmp_path / ("." + SYMBOL + ".write.lock")
+    original_open = Path.open
+    owned, events = _track_native_locks(monkeypatch)
+    class FailedInitialization:
+        def __init__(self, handle):
+            self.handle = handle
+            self.failed = False
+        def __getattr__(self, name):
+            method = getattr(self.handle, name)
+            if name == failure_point:
+                def fail_once(*args, **kwargs):
+                    # The first seek(0) belongs to acquisition, not initialization.
+                    initializing = (name != "seek" or kwargs.get("whence", args[1] if len(args) > 1 else None) == os.SEEK_END)
+                    if initializing and not self.failed:
+                        self.failed = True
+                        assert self.fileno() in owned
+                        raise PermissionError("injected initialization " + failure_point)
+                    return method(*args, **kwargs)
+                return fail_once
+            return method
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            return self.handle.__exit__(*args)
+    def failing_open(path, *args, **kwargs):
+        handle = original_open(path, *args, **kwargs)
+        return FailedInitialization(handle) if path == lock_path else handle
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "open", failing_open)
+        with pytest.raises(CacheError, match="cannot initialize cache writer lock") as captured:
+            with holder._writer_lock(SYMBOL):
+                pytest.fail("protected body ran after failed initialization")
+    assert isinstance(captured.value.__cause__, PermissionError)
+    assert [event[0] for event in events] == ["acquire", "release"]
+    assert not owned
+    assert lock_path.exists()
+    _update(ParquetBarCache(tmp_path, lock_timeout_seconds=0.0))
+    assert len(_snapshot(holder).frame) == 1
+
+
+def test_open_lock_failure_is_a_cache_error(tmp_path, monkeypatch):
+    cache = ParquetBarCache(tmp_path)
+    lock_path = tmp_path / ("." + SYMBOL + ".write.lock")
+    original = Path.open
+    def denied(path, *args, **kwargs):
+        if path == lock_path:
+            raise PermissionError("injected open failure")
+        return original(path, *args, **kwargs)
+    monkeypatch.setattr(Path, "open", denied)
+    with pytest.raises(CacheError, match="cannot open cache writer lock") as captured:
+        with cache._writer_lock(SYMBOL):
+            pytest.fail("protected body ran after open failure")
+    assert isinstance(captured.value.__cause__, PermissionError)
+
+
+@pytest.mark.parametrize("body_fails", [False, True])
+def test_unlock_failure_closes_handle_and_preserves_primary_failure(tmp_path, monkeypatch, caplog, body_fails):
+    cache = ParquetBarCache(tmp_path)
+    error = RuntimeError("primary protected-body failure")
+    if os.name == "nt":
+        import msvcrt
+
+        native = msvcrt.locking
+        def denied_release(descriptor, operation, length):
+            if operation == msvcrt.LK_UNLCK:
+                raise PermissionError("injected native unlock failure")
+            return native(descriptor, operation, length)
+        native_module, operation_name = msvcrt, "locking"
+    else:  # pragma: no cover - portable regression on POSIX CI
+        import fcntl
+
+        native = fcntl.flock
+        def denied_release(descriptor, operation):
+            if operation == fcntl.LOCK_UN:
+                raise PermissionError("injected native unlock failure")
+            return native(descriptor, operation)
+        native_module, operation_name = fcntl, "flock"
+    with monkeypatch.context() as patch:
+        patch.setattr(native_module, operation_name, denied_release)
+        if body_fails:
+            with pytest.raises(RuntimeError) as captured:
+                with cache._writer_lock(SYMBOL):
+                    raise error
+            assert captured.value is error
+            assert "while handling RuntimeError" in caplog.text
+        else:
+            with pytest.raises(CacheError, match="cannot release cache writer lock") as captured:
+                with cache._writer_lock(SYMBOL):
+                    pass
+            assert isinstance(captured.value.__cause__, PermissionError)
+    # Explicit unlock failed before releasing the lock; handle close must have
+    # released it nonetheless. A separate cache immediately acquires it.
+    with ParquetBarCache(tmp_path, lock_timeout_seconds=0.0)._writer_lock(SYMBOL):
+        assert (tmp_path / ("." + SYMBOL + ".write.lock")).exists()
+
+
+@pytest.mark.parametrize("round_number", range(5))
+def test_empty_lock_thread_stress_preserves_all_concurrent_merges(tmp_path, round_number):
+    barrier = threading.Barrier(4)
+    dates = pd.date_range("2024-01-02", periods=4)
+    def write(position):
+        cache = ParquetBarCache(tmp_path)
+        barrier.wait(timeout=5)
+        _update(cache, dates[position].strftime("%Y-%m-%d"), 10.0 + position)
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        list(executor.map(write, range(4)))
+    cache = ParquetBarCache(tmp_path)
+    assert _snapshot(cache).frame["date"].tolist() == dates.tolist()
+    assert _snapshot(cache).frame["close"].tolist() == [10.0, 11.0, 12.0, 13.0]
+    assert cache.missing_ranges(SYMBOL, dates[0], dates[-1]) == []
+    assert len(list(tmp_path.glob(SYMBOL + ".*.parquet"))) == 4
+    assert (tmp_path / ("." + SYMBOL + ".write.lock")).read_bytes() == b"\0"
+
+
+@pytest.mark.parametrize("round_number", range(2))
+def test_empty_lock_process_stress_preserves_all_concurrent_merges(tmp_path, round_number):
+    """Independent interpreters cannot rely on an in-memory global mutex."""
+    script = (
+        "import sys\n"
+        "from pathlib import Path\n"
+        "import pandas as pd\n"
+        "from qbot.research.data.cache import ParquetBarCache\n"
+        "from qbot.research.data.schema import canonicalize_bars\n"
+        "root, ready = Path(sys.argv[1]), Path(sys.argv[2])\n"
+        "date, close = sys.argv[3], float(sys.argv[4])\n"
+        "cache = ParquetBarCache(root)\n"
+        "ready.write_text('ready', encoding='utf-8')\n"
+        "assert sys.stdin.readline().strip() == 'go'\n"
+        "bars = canonicalize_bars(pd.DataFrame({'date':[date], 'symbol':['600000.SH'], 'open':[close], 'high':[close+1], 'low':[close-1], 'close':[close], 'volume':[1000.0], 'amount':[10000.0], 'turnover':[0.01]}))\n"
+        "cache.update('600000.SH', bars, date, date, source='fixture', source_version='raw-hfq-v1')\n"
+    )
+    children = []
+    ready_paths = []
+    kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
+    dates = pd.date_range("2024-01-02", periods=4)
+    try:
+        for position, date in enumerate(dates):
+            ready = tmp_path / ("ready-%s.txt" % position)
+            ready_paths.append(ready)
+            children.append(subprocess.Popen(
+                [sys.executable, "-c", script, str(tmp_path), str(ready), date.strftime("%Y-%m-%d"), str(10.0 + position)],
+                cwd=str(Path(__file__).resolve().parents[2]), stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
+            ))
+        deadline = time.monotonic() + 15.0
+        while not all(path.exists() for path in ready_paths):
+            if any(child.poll() is not None for child in children):
+                pytest.fail("child exited before concurrent start")
+            if time.monotonic() >= deadline:
+                pytest.fail("children did not become ready before deadline")
+            time.sleep(0.01)
+        for child in children:
+            child.stdin.write(b"go\n")
+            child.stdin.flush()
+        for child in children:
+            stdout, stderr = child.communicate(timeout=20)
+            assert child.returncode == 0, (stdout, stderr)
+    finally:
+        for child in children:
+            if child.poll() is None:
+                child.kill()
+            child.wait(timeout=5)
+            for stream in (child.stdin, child.stdout, child.stderr):
+                if stream is not None and not stream.closed:
+                    stream.close()
+    cache = ParquetBarCache(tmp_path)
+    result = _snapshot(cache)
+    assert result.frame["date"].tolist() == dates.tolist()
+    assert result.frame["close"].tolist() == [10.0, 11.0, 12.0, 13.0]
+    assert cache.missing_ranges(SYMBOL, dates[0], dates[-1]) == []
+    assert len(list(tmp_path.glob(SYMBOL + ".*.parquet"))) == 4
+    assert (tmp_path / ("." + SYMBOL + ".write.lock")).read_bytes() == b"\0"

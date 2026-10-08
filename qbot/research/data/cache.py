@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import hashlib
 import io
 import json
+import logging
 import math
 import os
 import time
@@ -26,6 +27,7 @@ from qbot.research.data.schema import canonicalize_bars, empty_bars, normalize_s
 
 
 Range = Tuple[pd.Timestamp, pd.Timestamp]
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -127,11 +129,16 @@ class ParquetBarCache:
         lock_path = self.root / (".%s.write.lock" % normalize_symbol(symbol))
         if lock_path.is_symlink() or lock_path.resolve().parent != self.root:
             raise CacheError("cache writer lock path escapes its root")
-        with lock_path.open("a+b") as handle:
-            handle.seek(0, os.SEEK_END)
-            if handle.tell() == 0:
-                handle.write(b"\0")
-                handle.flush()
+        # Windows byte-range locks can cover a byte beyond EOF. Acquire that
+        # native lock before initializing a newly created file: otherwise two
+        # buffered handles can both observe length zero, and one may flush its
+        # pending byte after the other has already locked that byte. FileIO
+        # avoids carrying a deferred write into the unlock/close sequence.
+        try:
+            handle = lock_path.open("a+b", buffering=0)
+        except OSError as exc:
+            raise CacheError("cannot open cache writer lock for %s" % symbol) from exc
+        with handle:
             deadline = time.monotonic() + self.lock_timeout_seconds
             while True:
                 try:
@@ -151,14 +158,40 @@ class ParquetBarCache:
                             "cache writer lock timeout for %s" % symbol
                         ) from exc
                     time.sleep(min(0.02, max(0.0, deadline - time.monotonic())))
+            protected_error = None
             try:
+                try:
+                    handle.seek(0, os.SEEK_END)
+                    if handle.tell() == 0:
+                        handle.write(b"\0")
+                        handle.flush()
+                except OSError as exc:
+                    raise CacheError(
+                        "cannot initialize cache writer lock for %s" % symbol
+                    ) from exc
                 yield
+            except BaseException as exc:
+                protected_error = exc
+                raise
             finally:
-                handle.seek(0)
-                if os.name == "nt":
-                    msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
-                else:  # pragma: no cover - exercised on POSIX CI
-                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+                try:
+                    handle.seek(0)
+                    if os.name == "nt":
+                        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+                    else:  # pragma: no cover - exercised on POSIX CI
+                        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+                except OSError as exc:
+                    # Closing the unbuffered handle is the final OS-lock
+                    # release. Preserve a primary body/initialization failure,
+                    # but never report success if explicit unlocking failed.
+                    if protected_error is None:
+                        raise CacheError(
+                            "cannot release cache writer lock for %s" % symbol
+                        ) from exc
+                    LOGGER.warning(
+                        "cannot release cache writer lock for %s while handling %s: %s",
+                        symbol, type(protected_error).__name__, exc,
+                    )
 
     def data_path(self, symbol: str) -> Path:
         """Return the active generation, or the legacy path for an absent cache."""
