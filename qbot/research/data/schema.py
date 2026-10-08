@@ -56,6 +56,12 @@ NUMERIC_BAR_COLUMNS = PRICE_COLUMNS + (
     "adj_factor",
 )
 
+# Compare the close-based adjustment factor, allowing only floating-point
+# roundoff. HFQ may involve affine/rounded OHLC transformations, so this does
+# not assert a shared multiplier for adjusted open/high/low.
+ADJ_FACTOR_RTOL = 1e-8
+ADJ_FACTOR_ATOL = 1e-10
+
 _SYMBOL_RE = re.compile(r"^(?P<code>\d{6})\.(?P<exchange>SH|SZ)$")
 
 
@@ -254,6 +260,19 @@ def validate_bars(
     if invalid_symbols:
         raise SchemaError("non-canonical symbols detected: %s" % invalid_symbols[:3])
 
+    for column in NUMERIC_BAR_COLUMNS:
+        if (
+            not pd.api.types.is_numeric_dtype(bars[column])
+            or pd.api.types.is_complex_dtype(bars[column])
+        ):
+            raise SchemaError("%s must contain real numeric values" % column)
+        # Nullable pandas numeric columns preserve their missing observations.
+        # Infinity is never a valid market field, including a vendor string
+        # such as "inf" that numeric coercion converted to a float.
+        values = bars[column].to_numpy(dtype=np.float64, na_value=np.nan)
+        if np.isinf(values).any():
+            raise SchemaError("%s must be finite when present" % column)
+
     _validate_ohlc_block(
         bars, ("open", "high", "low", "close"), allow_missing_ohlc
     )
@@ -275,10 +294,31 @@ def validate_bars(
     invalid_factor = bars["adj_factor"].notna() & (bars["adj_factor"] <= 0)
     if invalid_factor.any():
         raise SchemaError("adj_factor must be positive when present")
+    comparable_factor = bars[
+        ["adj_factor", "adj_close", "raw_close"]
+    ].notna().all(axis=1)
+    if comparable_factor.any():
+        declared_factor = bars.loc[comparable_factor, "adj_factor"].to_numpy(
+            dtype=np.float64
+        )
+        with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
+            observed_factor = (
+                bars.loc[comparable_factor, "adj_close"].to_numpy(dtype=np.float64)
+                / bars.loc[comparable_factor, "raw_close"].to_numpy(dtype=np.float64)
+            )
+        if not np.isclose(
+            declared_factor, observed_factor,
+            rtol=ADJ_FACTOR_RTOL, atol=ADJ_FACTOR_ATOL,
+        ).all():
+            raise SchemaError("adj_factor must match adj_close / raw_close")
 
     for field in ("open", "high", "low", "close"):
         canonical = bars[field]
         raw = bars["raw_%s" % field]
+        if not canonical.isna().eq(raw.isna()).all():
+            raise SchemaError(
+                "canonical and raw OHLC must have identical missing observations"
+            )
         comparable = canonical.notna() & raw.notna()
         if comparable.any() and not np.allclose(
             canonical.loc[comparable], raw.loc[comparable], rtol=1e-12, atol=1e-12
@@ -287,6 +327,8 @@ def validate_bars(
 
 
 __all__ = [
+    "ADJ_FACTOR_RTOL",
+    "ADJ_FACTOR_ATOL",
     "CANONICAL_BAR_COLUMNS",
     "NUMERIC_BAR_COLUMNS",
     "PRICE_COLUMNS",

@@ -46,6 +46,7 @@ def test_stock_bars_join_raw_and_hfq_and_convert_units():
 
     assert [call["adjust"] for call in fake.stock_calls] == ["", "hfq"]
     assert all(call["symbol"] == "600000" for call in fake.stock_calls)
+    assert all(call["timeout"] == 30.0 for call in fake.stock_calls)
     assert bars["symbol"].unique().tolist() == ["600000.SH"]
     assert bars.loc[0, "open"] == bars.loc[0, "raw_open"] == 10.0
     assert bars.loc[0, "adj_open"] == 20.0
@@ -242,3 +243,126 @@ def test_csi500_prefers_official_index_endpoint_and_normalises_units(
     assert provider.cache_source_version("000905.SH", True) == (
         "akshare=test;contract=stock_zh_index_hist_csindex-v1"
     )
+
+
+@pytest.mark.parametrize("timeout", [5.0, 7])
+def test_configured_timeout_is_passed_to_both_native_stock_requests(timeout):
+    class NativeSignatureAK(FakeAKShare):
+        def stock_zh_a_hist(self, symbol, period, start_date, end_date, adjust, timeout):
+            return super().stock_zh_a_hist(
+                symbol=symbol, period=period, start_date=start_date,
+                end_date=end_date, adjust=adjust, timeout=timeout,
+            )
+
+    fake = NativeSignatureAK()
+    provider = AKShareProvider(
+        akshare_module=fake, retry_count=0, request_interval=0,
+        timeout_seconds=timeout,
+    )
+    bars = provider.get_daily_bars("600000.SH", "2024-01-01", "2024-01-04")
+    assert not bars.empty
+    assert provider.timeout_seconds == float(timeout)
+    assert [call["timeout"] for call in fake.stock_calls] == [float(timeout)] * 2
+    assert [call["adjust"] for call in fake.stock_calls] == ["", "hfq"]
+
+
+@pytest.mark.parametrize(
+    "timeout",
+    [float("nan"), float("inf"), -float("inf"), 0, -1, "30", None, True, False, 10 ** 1000],
+    ids=["nan", "inf", "negative-inf", "zero", "negative", "string", "none", "true", "false", "overflow"],
+)
+def test_invalid_timeout_is_rejected_as_provider_error_without_sdk_access(timeout):
+    class UntouchableSDK:
+        def __getattribute__(self, name):
+            raise AssertionError("invalid configuration must not access the SDK")
+
+    with pytest.raises(ProviderError, match="timeout_seconds must be a finite positive number"):
+        AKShareProvider(akshare_module=UntouchableSDK(), timeout_seconds=timeout)
+
+
+@pytest.mark.parametrize("failing_adjustment", ["", "hfq"], ids=["raw", "adjusted"])
+def test_stock_timeouts_exhaust_exact_endpoint_retry_budget_without_partial_success(
+    failing_adjustment,
+):
+    pauses = []
+    error = TimeoutError("native stock request timed out")
+
+    class TimeoutAK(FakeAKShare):
+        def stock_zh_a_hist(self, **kwargs):
+            if kwargs["adjust"] == failing_adjustment:
+                self.stock_calls.append(kwargs)
+                raise error
+            return super().stock_zh_a_hist(**kwargs)
+
+    fake = TimeoutAK()
+    provider = AKShareProvider(
+        akshare_module=fake, retry_count=2, backoff_seconds=(0.1, 0.2),
+        request_interval=0, sleep_fn=pauses.append, timeout_seconds=5.0,
+    )
+    with pytest.raises(ProviderError, match="AKShare request failed after retries") as failure:
+        provider.get_daily_bars("600000.SH", "2024-01-01", "2024-01-04")
+    assert failure.value.__cause__ is error
+    expected_adjustments = ([""] if failing_adjustment == "hfq" else []) + [failing_adjustment] * 3
+    assert [call["adjust"] for call in fake.stock_calls] == expected_adjustments
+    assert all(call["timeout"] == 5.0 for call in fake.stock_calls)
+    assert pauses == [0.1, 0.2]
+
+
+def test_stock_timeout_retries_keep_timeout_on_every_raw_and_hfq_attempt():
+    pauses = []
+
+    class OnceTimeoutAK(FakeAKShare):
+        def __init__(self):
+            super().__init__()
+            self.seen = set()
+
+        def stock_zh_a_hist(self, **kwargs):
+            if kwargs["adjust"] not in self.seen:
+                self.seen.add(kwargs["adjust"])
+                self.stock_calls.append(kwargs)
+                raise TimeoutError("transient native timeout")
+            return super().stock_zh_a_hist(**kwargs)
+
+    fake = OnceTimeoutAK()
+    provider = AKShareProvider(
+        akshare_module=fake, retry_count=1, backoff_seconds=(0.25,),
+        request_interval=0, sleep_fn=pauses.append, timeout_seconds=2.5,
+    )
+    assert not provider.get_daily_bars("600000.SH", "2024-01-01", "2024-01-04").empty
+    assert [call["adjust"] for call in fake.stock_calls] == ["", "", "hfq", "hfq"]
+    assert [call["timeout"] for call in fake.stock_calls] == [2.5] * 4
+    assert pauses == [0.25, 0.25]
+
+
+def test_new_timeout_keyword_preserves_old_positional_constructor_api():
+    fake = FakeAKShare()
+    pauses = []
+    provider = AKShareProvider("000905.SH", "hfq", 0, (1.0,), 0.0, fake, pauses.append, lambda: 0.0)
+    assert not provider.get_daily_bars("600000.SH", "2024-01-01", "2024-01-04").empty
+    assert [call["timeout"] for call in fake.stock_calls] == [30.0, 30.0]
+    assert not pauses
+
+
+def test_timeout_does_not_change_stock_or_index_cache_source_contract():
+    first = AKShareProvider(akshare_module=FakeAKShare(), timeout_seconds=5.0)
+    second = AKShareProvider(akshare_module=FakeAKShare(), timeout_seconds=30.0)
+    assert first.cache_source_version("600000.SH", False) == second.cache_source_version("600000.SH", False)
+    assert first.cache_source_version("000905.SH", True) == second.cache_source_version("000905.SH", True)
+
+
+def test_benchmark_endpoint_without_native_timeout_is_called_without_fake_bound():
+    class NativeIndexAK(FakeAKShare):
+        def __init__(self):
+            super().__init__()
+            self.index_calls = []
+
+        def index_zh_a_hist(self, symbol, period, start_date, end_date):
+            self.index_calls.append((symbol, period, start_date, end_date))
+            return _vendor_frame(include_turnover=False)
+
+    fake = NativeIndexAK()
+    provider = AKShareProvider(
+        akshare_module=fake, retry_count=0, request_interval=0, timeout_seconds=5.0,
+    )
+    assert not provider.get_index_bars("000905.SH", "2024-01-01", "2024-01-04").empty
+    assert fake.index_calls == [("000905", "daily", "20240101", "20240104")]

@@ -2,6 +2,8 @@
 
 import importlib
 import logging
+import math
+from numbers import Real
 import time
 from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Tuple
 
@@ -79,6 +81,12 @@ class AKShareProvider(MarketDataProvider):
     Imports AKShare lazily so importing ``qbot.research`` never requires the
     optional network dependency.  Tests and offline callers may inject a small
     AKShare-compatible object through ``akshare_module``.
+
+    ``timeout_seconds`` sets native ``stock_zh_a_hist`` connection/read timeouts,
+    not a wall-clock deadline for the whole download. The
+    current benchmark and constituent SDK endpoints do not expose a native
+    timeout; this provider does not change global requests/socket settings or
+    claim those endpoints have the same timeout bound.
     """
 
     def __init__(
@@ -91,7 +99,17 @@ class AKShareProvider(MarketDataProvider):
         akshare_module: Optional[Any] = None,
         sleep_fn: Callable[[float], None] = time.sleep,
         monotonic_fn: Callable[[], float] = time.monotonic,
+        *,
+        timeout_seconds: float = 30.0,
     ) -> None:
+        if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, Real):
+            raise ProviderError("timeout_seconds must be a finite positive number")
+        try:
+            timeout = float(timeout_seconds)
+        except (OverflowError, TypeError, ValueError) as exc:
+            raise ProviderError("timeout_seconds must be a finite positive number") from exc
+        if not math.isfinite(timeout) or timeout <= 0:
+            raise ProviderError("timeout_seconds must be a finite positive number")
         if adjustment not in {"hfq", "qfq"}:
             raise ProviderError("adjustment must be 'hfq' or 'qfq'")
         if retry_count < 0:
@@ -108,6 +126,7 @@ class AKShareProvider(MarketDataProvider):
         self.retry_count = int(retry_count)
         self.backoff_seconds = tuple(float(item) for item in backoff_seconds)
         self.request_interval = float(request_interval)
+        self.timeout_seconds = timeout
         self._akshare = akshare_module
         self._sleep = sleep_fn
         self._monotonic = monotonic_fn
@@ -233,6 +252,7 @@ class AKShareProvider(MarketDataProvider):
             "period": "daily",
             "start_date": _format_api_date(start_ts),
             "end_date": _format_api_date(end_ts),
+            "timeout": self.timeout_seconds,
         }
         raw_vendor = self._call(
             self.akshare.stock_zh_a_hist, adjust="", **kwargs
