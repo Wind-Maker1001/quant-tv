@@ -112,9 +112,10 @@ python -m qbot.research.cli forward-signal `
   -> 当日合格横截面必须达到 expected_member_count × min_valid_ohlcv_ratio
   -> 只用当日横截面计算模型 score
   -> 任一入选横截面特征非有限即停止，不允许模型侧插补掩盖缺数
+  -> 任一模型 score 非有限即停止，不得丢弃异常股票后称为完整横截面
   -> 按 score 降序、symbol 升序打破并列
   -> 生成 Top-K 等权 Paper Portfolio
-  -> 原子追加一个新版本
+  -> 完整横截面预测与 Top-K 在同一新版本内原子追加
 ```
 
 正式配置把收盘安全边界固定为 `15:30 Asia/Shanghai`，不能改成盘前时刻。当日信号
@@ -153,6 +154,7 @@ results/forward/signals/YYYY-MM-DD/vNNNNNN/
 │   ├── receipt.sha256
 │   └── run_manifest.json
 ├── signals.csv
+├── predictions.csv            # schema 3：当日全部合格股票，非仅 Top-K
 ├── manifest.json
 └── manifest.sha256
 ```
@@ -174,6 +176,27 @@ results/forward/signals/YYYY-MM-DD/vNNNNNN/
 | `timeliness` / `reissue_reason` | `ON_TIME` 或有原因的迟到重发 |
 | `symbol` / `score` / `rank` | canonical 股票代码、分数与名次 |
 | `target_weight` | Paper Portfolio 目标权重 |
+
+`signals.csv` 保存 Top-K 与目标权重；schema 3 的 `predictions.csv` 保存当日所有
+合格股票的相同元数据、`symbol`、`score` 和连续 `rank`，不含 `target_weight`。
+Top-K 的 symbol/score/rank 必须精确等于完整排名的前 K 行。完整表要求预先检查的
+横截面行数，manifest 绑定 `cross_section_size`、`prediction_row_count`、独立 SHA-256、
+列集合及文件字节数；完成收据同时绑定 producer 的预测行数、摘要和产物路径。
+`FULL_ELIGIBLE_CROSS_SECTION` 只描述保存范围，不代表由该标记证明股票池真实性。
+
+写入和读取共用日期/时效语义校验。即使 manifest 与 CSV 的字节哈希相互一致，读取器
+仍拒绝晚于信号日的 `data_asof`、早于信号日的生成时间、未知时效状态、异日
+`ON_TIME` 和无原因的 `LATE_REISSUE`。读取已保存的历史记录不与当前时钟比较，
+也没有把存储层的原有 offset 语义升级为新的交易时区政策；收盘政策仍由 CLI 负责。
+
+`load_prediction_record(directory)` 默认要求成功完成收据，并从同一次哈希校验的
+CSV 字节返回完整表的副本，避免哈希验证与解析读到不同内容。旧 schema 2 保持
+`TOP_K_ONLY`：可以读取原来的组合信号，但读取完整预测会明确失败；不得往旧目录
+添加预测文件，也不得重新评分旧日期后伪装成当时完整预测。新版本不会改变旧目录。
+
+保存完整预测是未来 Forward IC、Bottom-K 与 Q4 对比的必要前置，不等于已经完成
+标签成熟后的关联评价。当前尚无 `evaluate-forward` 命令或真实 Forward IC；未来实现
+必须只追加关联产物，按事前版本选择规则使用原始预测，不修改或重评分原始文件。
 
 Manifest 记录行数、列顺序、CSV 字节数和 SHA-256，自身摘要由 sidecar 保存。信号
 数据先原子发布，只有 producer run 成功落盘后才原子追加 `completion/`；该目录保存
@@ -204,8 +227,9 @@ Manifest 记录行数、列顺序、CSV 字节数和 SHA-256，自身摘要由 s
 
 - `2026-09-14` 至今没有可被追认为当时生成的正式信号；
 - 正式 YAML 仍保持 `forward.enabled: false`，没有擅自替用户选择新起点；
-- 当前公开数据下载仍受 BaoStock 网络连接失败阻塞，因此没有生成真实五年数据集或
-  正式冻结模型；
+- BaoStock 新公共节点的匿名诊断已成功，但周更新快照的实际生效日期语义仍未核验；
+  研究起点还返回499成员。正式 PIT 门禁没有解除，因此没有真实五年数据集或正式模型；
+- 详见 [BAOSTOCK_SOURCE_AUDIT.md](BAOSTOCK_SOURCE_AUDIT.md)，连接成功不能替代 PIT 证明；
 - 测试产生的临时目录和 synthetic 数据只验证工程链路，不构成实证或 Forward Test
   结果。
 

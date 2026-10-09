@@ -270,6 +270,8 @@ Phase 4 的激活收据、冻结模型和每日信号位于：
     ├── activations/<activation_id>/
     ├── models/<model_name>/<model_version>/
     └── signals/YYYY-MM-DD/vNNNNNN/
+        ├── signals.csv                 # Top-K 等权组合
+        ├── predictions.csv             # schema 3 完整合格横截面，不得回填旧版本
         └── completion/                 # 成功 producer run 的不可变快照与摘要
 
 配置成功加载后的每次 CLI 命令另写 results/runs/<run_id>/manifest.json，记录命令状态、Git SHA、未提交工作区内容指纹、完整配置、随机种子、Python/包版本、数据区间、PIT/数据集/模型产物哈希、模型参数、关键指标和产物路径。若配置本身无法解析，命令在建立 run 之前以状态码 2 失败，因此不会产生误导性的实验 manifest。

@@ -2,6 +2,12 @@
 
 验收日期：2026-09-24（Asia/Shanghai）
 
+2026-10-09 补充：CLI 已扩展完整横截面预测存档与 schema 3 成功收据，旧 schema 2
+仍为 Top-K-only，禁止补评分。后续回归及实际 synthetic 示例见
+[FORWARD_PREDICTION_AUDIT.md](FORWARD_PREDICTION_AUDIT.md)。这不补造任何真实信号；
+成熟 Forward 关联评价仍未实现。下面2026-09-24的测试与网络记录为原阶段证据，不能
+当成当前数据源状态，当前 PIT 限制见 [BAOSTOCK_SOURCE_AUDIT.md](BAOSTOCK_SOURCE_AUDIT.md)。
+
 ## 结论
 
 Phase 4 的核心软件链路已经实现并通过离线回归：
