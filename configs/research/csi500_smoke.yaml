@@ -1,4 +1,5 @@
 # SMOKE TEST ONLY. This short window must not be used for research conclusions.
+# BaoStock PIT is currently fail-closed; see docs/research/BAOSTOCK_SOURCE_AUDIT.md.
 project:
   name: qbot-factorlab-smoke-test-only
 

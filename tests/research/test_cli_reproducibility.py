@@ -603,7 +603,7 @@ def test_download_reuses_valid_local_import_instead_of_recollecting_pit(
     assert all(call[1:] == (full_start, full_end) for call in calls["stock"])
 
 
-def test_download_baostock_does_not_reuse_existing_local_import(
+def test_download_baostock_does_not_reuse_or_publish_unverified_membership(
     tmp_path, monkeypatch
 ):
     config = _config(tmp_path)
@@ -674,12 +674,19 @@ def test_download_baostock_does_not_reuse_existing_local_import(
     monkeypatch.setattr(cli, "_atomic_json", lambda *args: None)
 
     run = FakeRun()
-    cli.command_download(config, run)
+    with pytest.raises(
+        PointInTimeUniverseRequiredError,
+        match="EFFECTIVE MEMBERSHIP SEMANTICS UNVERIFIED",
+    ):
+        cli.command_download(config, run)
 
-    assert calls["collect"] == 1
-    assert calls["collect_retries"] == [0]
-    assert run.payload["universe_version"] == cli.dataframe_sha256(membership)
-    assert len(run.payload["security_data_version"]) == 64
+    assert calls["collect"] == 0
+    assert calls["collect_retries"] == []
+    assert "universe_version" not in run.payload
+    manifest = json.loads(
+        (config.paths.universe_dir / "manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest == {"source": "local-import", "sha256": "stale-local-sha"}
 
 
 def test_download_local_membership_and_status_never_constructs_baostock(
@@ -775,6 +782,7 @@ def test_partial_baostock_status_refresh_does_not_replace_complete_bundle(
     tmp_path, monkeypatch
 ):
     config = _config(tmp_path)
+    object.__setattr__(config.universe, "provider", "local")
     full_benchmark = _benchmark_bars_with_warmup()
     old_membership = _membership()
     old_status, old_listings = _complete_security_data(full_benchmark["date"])
@@ -798,6 +806,13 @@ def test_partial_baostock_status_refresh_does_not_replace_complete_bundle(
     current_membership.loc[
         current_membership["symbol"].eq("000001.SZ"), "symbol"
     ] = "000002.SZ"
+    pit_source = tmp_path / "synthetic-pit.csv"
+    current_membership.to_csv(pit_source, index=False, date_format="%Y-%m-%d")
+    cli.import_point_in_time_universe(
+        pit_source, config.paths.universe_dir,
+        pd.DatetimeIndex(current_membership["date"].drop_duplicates()),
+        config.universe.expected_member_count, config.universe.index_symbol,
+    )
 
     class FakeCache:
         def data_path(self, symbol):

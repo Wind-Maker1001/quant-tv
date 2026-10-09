@@ -1,5 +1,7 @@
 # Qbot FactorLab formal five-year research protocol/configuration only.
 # No completed real five-year run or research conclusion exists yet.
+# BaoStock membership is diagnostic-only: effective dates are unverified.
+# Formal research requires an independently audited local PIT import.
 project:
   name: qbot-factorlab
 

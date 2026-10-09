@@ -187,16 +187,10 @@ def test_single_retry_layer_limits_three_retries_to_four_endpoint_calls(tmp_path
         sleep_fn=lambda seconds: None,
     )
 
-    with pytest.raises(PointInTimeUniverseError, match="daily snapshots unavailable"):
-        collect_point_in_time_universe(
-            provider,
-            "000905.SH",
-            [pd.Timestamp("2024-01-02")],
-            tmp_path / "pit",
-            expected_member_count=1,
-            retries=0,
-            request_interval_seconds=0.0,
-        )
+    # The diagnostic endpoint still owns one retry layer; formal publication
+    # rejects BaoStock before any request while effective semantics are unknown.
+    with pytest.raises(ProviderError, match="failed after 4 attempt"):
+        provider.get_constituents("000905.SH", pd.Timestamp("2024-01-02"))
 
     assert client.calls == 4
 

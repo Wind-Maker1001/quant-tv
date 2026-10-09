@@ -231,7 +231,7 @@ def test_failed_first_upgrade_preserves_legacy_alias_bundle(bundle, monkeypatch,
 def test_collector_publishes_same_generation_contract_and_reuses_snapshots(tmp_path):
     dates = pd.bdate_range("2024-01-02", periods=2)
 
-    class BaoStockPointInTimeProvider:
+    class SyntheticSnapshotProvider:
         def __init__(self):
             self.calls = 0
 
@@ -239,7 +239,7 @@ def test_collector_publishes_same_generation_contract_and_reuses_snapshots(tmp_p
             self.calls += 1
             return pd.DataFrame({"date": [date], "symbol": ["600000.SH"], "is_member": [True]})
 
-    provider = BaoStockPointInTimeProvider()
+    provider = SyntheticSnapshotProvider()
     output = tmp_path / "collected"
     first = pit.collect_point_in_time_universe(
         provider, "000905.SH", dates, output,
@@ -249,7 +249,20 @@ def test_collector_publishes_same_generation_contract_and_reuses_snapshots(tmp_p
         paths=SimpleNamespace(universe_dir=output),
         universe=SimpleNamespace(provider="baostock", expected_member_count=1, index_symbol="000905.SH"),
     )
-    assert len(_load_verified_membership(config, dates)) == 2
+    # Generic snapshot persistence is software evidence, not approval of an
+    # unverified BaoStock source for research through the CLI.
+    with pytest.raises(PointInTimeUniverseError, match="EFFECTIVE MEMBERSHIP SEMANTICS UNVERIFIED"):
+        _load_verified_membership(config, dates)
+    daily = pd.read_parquet(output / first["daily_file"])
+    intervals = pd.read_parquet(output / first["intervals_file"])
+    assert len(daily) == 2
+    assert set(daily["date"]) == set(dates)
+    assert daily["symbol"].eq("600000.SH").all()
+    pd.testing.assert_frame_equal(intervals, pit.compress_membership_intervals(daily))
+    for key in ("daily", "intervals"):
+        assert first[key + "_file_sha256"] == hashlib.sha256(
+            (output / first[key + "_file"]).read_bytes()
+        ).hexdigest()
     second = pit.collect_point_in_time_universe(
         provider, "000905.SH", dates, output,
         expected_member_count=1, request_interval_seconds=0,

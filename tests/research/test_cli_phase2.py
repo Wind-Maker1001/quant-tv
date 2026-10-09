@@ -40,6 +40,17 @@ def _provenance():
     }
 
 
+def _legacy_universe_manifest(manifest):
+    """Build an actual pre-generation fixture, not a hybrid schema."""
+    result = dict(manifest)
+    for field in (
+        "generation_id", "daily_file", "intervals_file", "daily_alias",
+        "intervals_alias", "daily_file_sha256", "intervals_file_sha256",
+    ):
+        result.pop(field, None)
+    return result
+
+
 class _Run:
     def __init__(self, run_id):
         self.run_id = run_id
@@ -131,6 +142,7 @@ def _config(tmp_path):
             warmup_trading_days=120,
         ),
         universe=UniverseConfig(
+            provider="local",
             expected_member_count=10,
             min_listed_days=120,
             data_quality_window_days=60,
@@ -222,20 +234,14 @@ def _write_verified_inputs(
         config.paths.universe_dir / "csi500_intervals.parquet", index=False
     )
     if write_universe_manifest:
-        cli._atomic_json(
-            {
-                "schema_version": 1,
-                "source": "BaoStockPointInTimeProvider",
-                "source_version": "baostock-query_zz500_stocks-daily-v2",
-                "index_symbol": config.universe.index_symbol,
-                "generated_at": "2024-01-01T00:00:00+00:00",
-                "start": config.data.start.isoformat(),
-                "end": config.data.end.isoformat(),
-                "trading_dates": int(dataset["date"].nunique()),
-                "expected_member_count": config.universe.expected_member_count,
-                "sha256": universe_version,
-            },
-            config.paths.universe_dir / "manifest.json",
+        # Synthetic membership exercises the real local importer. Do not
+        # manufacture a BaoStock identity whose effective dates are unverified.
+        source_path = config.repo_root / "synthetic-pit.csv"
+        membership.to_csv(source_path, index=False, date_format="%Y-%m-%d")
+        cli.import_point_in_time_universe(
+            source_path, config.paths.universe_dir,
+            pd.DatetimeIndex(dataset["date"].drop_duplicates()),
+            config.universe.expected_member_count, config.universe.index_symbol,
         )
     symbols = membership["symbol"].drop_duplicates().sort_values().tolist()
     if bars is None or benchmark is None:
@@ -777,10 +783,38 @@ def test_evaluate_rejects_a_missing_pit_manifest(tmp_path, monkeypatch):
         cli.command_evaluate(config, _Run("20200101T000000-evaluate"))
 
 
+@pytest.mark.parametrize("schema_version", [1, 3])
+@pytest.mark.parametrize("claimed_verified", [False, True])
+def test_baostock_membership_cannot_be_approved_by_old_manifest_or_boolean(
+    tmp_path, schema_version, claimed_verified
+):
+    dates, dataset, _, _ = _inputs()
+    config = _config(tmp_path)
+    _write_verified_inputs(config, dataset)
+    manifest_path = config.paths.universe_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest.update(
+        schema_version=schema_version,
+        source="BaoStockPointInTimeProvider",
+        source_version="baostock-query_zz500_stocks-daily-v2",
+        effective_membership_verified=claimed_verified,
+        point_in_time_universe_verified=claimed_verified,
+    )
+    cli._atomic_json(manifest, manifest_path)
+    object.__setattr__(config.universe, "provider", "baostock")
+    with pytest.raises(FactorLabError, match="EFFECTIVE MEMBERSHIP SEMANTICS UNVERIFIED"):
+        cli._load_verified_membership(config, dates)
+
+    # Relabelling the config cannot turn vendor snapshots into a local import.
+    object.__setattr__(config.universe, "provider", "local")
+    with pytest.raises(FactorLabError, match="unsupported local universe manifest"):
+        cli._load_verified_membership(config, dates)
+
+
 @pytest.mark.parametrize(
     "field,bad_value",
     [
-        ("source", "local-import"),
+        ("source", "BaoStockPointInTimeProvider"),
         ("source_version", "baostock-query_zz500_stocks-daily-v1"),
         ("index_symbol", "000300.SH"),
         ("start", "2019-12-31"),
@@ -815,9 +849,12 @@ def test_verified_local_membership_requires_import_source_provenance(
     object.__setattr__(config.universe, "provider", "local")
     _write_verified_inputs(config, dataset)
     manifest_path = config.paths.universe_dir / "manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = _legacy_universe_manifest(
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+    )
     manifest.update(
         {
+            "schema_version": 1,
             "source": "local-import",
             "source_version": "user-pit-daily-import-v1",
             "source_file": str(tmp_path / "pit.csv"),
@@ -861,7 +898,9 @@ def test_verified_local_membership_accepts_allowlisted_manifest_versions(
     object.__setattr__(config.universe, "provider", "local")
     _, expected, _ = _write_verified_inputs(config, dataset)
     manifest_path = config.paths.universe_dir / "manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = _legacy_universe_manifest(
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+    )
     manifest.update(
         {
             "schema_version": schema_version,
@@ -901,7 +940,9 @@ def test_verified_local_membership_rejects_unknown_v2_contract(
     object.__setattr__(config.universe, "provider", "local")
     _write_verified_inputs(config, dataset)
     manifest_path = config.paths.universe_dir / "manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = _legacy_universe_manifest(
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+    )
     manifest.update(
         {
             "schema_version": 2,
@@ -939,7 +980,9 @@ def test_verified_local_membership_rejects_tampered_intervals(tmp_path):
     _, membership, _ = _write_verified_inputs(config, dataset)
     intervals = cli.compress_membership_intervals(membership)
     manifest_path = config.paths.universe_dir / "manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = _legacy_universe_manifest(
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+    )
     manifest.update(
         {
             "schema_version": 2,
@@ -969,9 +1012,12 @@ def test_verified_legacy_local_membership_also_checks_intervals(tmp_path):
     object.__setattr__(config.universe, "provider", "local")
     _write_verified_inputs(config, dataset)
     manifest_path = config.paths.universe_dir / "manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = _legacy_universe_manifest(
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+    )
     manifest.update(
         {
+            "schema_version": 1,
             "source": "local-import",
             "source_version": "user-pit-daily-import-v1",
             "source_file": str(tmp_path / "pit.csv"),

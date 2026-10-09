@@ -87,7 +87,7 @@ from qbot.research.reproducibility import (
     validate_provenance,
 )
 from qbot.research.universe.csi500 import (
-    BAOSTOCK_PIT_SOURCE_VERSION,
+    BAOSTOCK_PIT_UNVERIFIED_REASON,
     PIT_DAILY_ALIAS,
     PIT_GENERATION_SCHEMA_VERSION,
     PIT_INTERVALS_ALIAS,
@@ -543,6 +543,14 @@ def _load_verified_membership(
     the active generation.
     """
 
+    # A successful date echo, member count and content hash do not establish
+    # the effective date of a vendor's weekly index snapshot. Reject even
+    # previously published BaoStock generations until independently audited
+    # effective-membership evidence has a new, explicit source contract.
+    if config.universe.provider.lower() == "baostock":
+        raise PointInTimeUniverseRequiredError(
+            BAOSTOCK_PIT_UNVERIFIED_REASON.split(": ", 1)[1]
+        )
     manifest_path = config.paths.universe_dir / "manifest.json"
     try:
         manifest = json.loads(manifest_path.read_bytes().decode("utf-8"))
@@ -552,18 +560,7 @@ def _load_verified_membership(
         raise PointInTimeUniverseRequiredError("universe manifest must be a mapping")
     dates = pd.DatetimeIndex(pd.to_datetime(calendar, errors="raise")).normalize()
     source = config.universe.provider.lower()
-    if source == "baostock":
-        schema_version = manifest.get("schema_version")
-        if schema_version not in {1, PIT_GENERATION_SCHEMA_VERSION}:
-            raise PointInTimeUniverseRequiredError(
-                "unsupported BaoStock universe manifest version"
-            )
-        expected_identity = {
-            "schema_version": schema_version,
-            "source": "BaoStockPointInTimeProvider",
-            "source_version": BAOSTOCK_PIT_SOURCE_VERSION,
-        }
-    elif source == "local":
+    if source == "local":
         identity = (
             manifest.get("schema_version"),
             manifest.get("source"),
@@ -798,6 +795,10 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
 
     universe_provider = config.universe.provider.lower()
     status_provider = config.universe.status_provider.lower()
+    if universe_provider == "baostock":
+        raise PointInTimeUniverseRequiredError(
+            BAOSTOCK_PIT_UNVERIFIED_REASON.split(": ", 1)[1]
+        )
     manifest_path = config.paths.universe_dir / "manifest.json"
     existing_manifest: Dict[str, Any] = {}
     if manifest_path.exists():

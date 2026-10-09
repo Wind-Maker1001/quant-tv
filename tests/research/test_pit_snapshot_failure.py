@@ -1,5 +1,6 @@
 """Daily PIT persistence failures must never become successful coverage."""
 
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -12,7 +13,7 @@ from qbot.research.errors import PointInTimeUniverseError
 import qbot.research.universe.csi500 as pit
 
 
-class BaoStockPointInTimeProvider:
+class SyntheticSnapshotProvider:
     def __init__(self):
         self.calls = []
 
@@ -45,6 +46,19 @@ def _config(output):
     )
 
 
+def _read_published_diagnostic(output, manifest):
+    """Verify generic artifacts without promoting their source to formal PIT."""
+
+    for key in ("daily", "intervals"):
+        assert hashlib.sha256((output / manifest[key + "_file"]).read_bytes()).hexdigest() == manifest[key + "_file_sha256"]
+    daily = pd.read_parquet(output / manifest["daily_file"])
+    intervals = pd.read_parquet(output / manifest["intervals_file"])
+    assert pit.dataframe_sha256(daily) == manifest["sha256"]
+    assert pit.dataframe_sha256(intervals) == manifest["intervals_sha256"]
+    pd.testing.assert_frame_equal(intervals, pit.compress_membership_intervals(daily))
+    return daily
+
+
 def _inject_daily_write_failure(monkeypatch, kind, failures_before_success=None):
     attribute = "_atomic_parquet" if kind == "parquet" else "_atomic_json"
     original = getattr(pit, attribute)
@@ -68,7 +82,7 @@ def test_persistent_daily_write_failure_is_reported_without_a_final_publication(
 ):
     dates = pd.DatetimeIndex(["2024-01-02", "2024-01-03"])
     output = tmp_path / "universe"
-    provider = BaoStockPointInTimeProvider()
+    provider = SyntheticSnapshotProvider()
     attempts = _inject_daily_write_failure(monkeypatch, kind)
 
     with pytest.raises(PointInTimeUniverseError, match="2/2 daily snapshots unavailable"):
@@ -90,7 +104,7 @@ def test_intermittent_daily_write_failure_retries_until_both_cache_files_exist(
 ):
     dates = pd.DatetimeIndex(["2024-01-02"])
     output = tmp_path / "universe"
-    provider = BaoStockPointInTimeProvider()
+    provider = SyntheticSnapshotProvider()
     attempts = _inject_daily_write_failure(monkeypatch, kind, failures_before_success=2)
 
     first = _collect(provider, dates, output)
@@ -103,7 +117,11 @@ def test_intermittent_daily_write_failure_retries_until_both_cache_files_exist(
     stored = pd.read_parquet(parquet)
     receipt = json.loads(metadata.read_text(encoding="utf-8"))
     assert receipt["sha256"] == pit.dataframe_sha256(stored)
-    assert len(_load_verified_membership(_config(output), dates)) == 1
+    with pytest.raises(PointInTimeUniverseError, match="EFFECTIVE MEMBERSHIP SEMANTICS UNVERIFIED"):
+        _load_verified_membership(_config(output), dates)
+    daily = _read_published_diagnostic(output, first)
+    assert len(daily) == 1
+    pd.testing.assert_frame_equal(daily, stored)
     second = _collect(provider, dates, output)
     assert len(provider.calls) == 3, "completed snapshot must be reused without another query"
     assert len(attempts) == 3, "completed snapshot must not be rewritten"
@@ -118,7 +136,7 @@ def test_failed_new_date_snapshot_keeps_previously_published_generation_usable(
     previous_dates = pd.DatetimeIndex(["2024-01-02"])
     extended_dates = pd.DatetimeIndex(["2024-01-02", "2024-01-03"])
     output = tmp_path / "universe"
-    provider = BaoStockPointInTimeProvider()
+    provider = SyntheticSnapshotProvider()
     published = _collect(provider, previous_dates, output)
     pointer = (output / "manifest.json").read_bytes()
     original_data = (output / published["daily_file"]).read_bytes()
@@ -132,8 +150,14 @@ def test_failed_new_date_snapshot_keeps_previously_published_generation_usable(
     assert provider.calls[1:] == [("000905.SH", pd.Timestamp("2024-01-03"))] * 3
     assert (output / "manifest.json").read_bytes() == pointer
     assert (output / published["daily_file"]).read_bytes() == original_data
-    assert len(_load_verified_membership(_config(output), previous_dates)) == 1
+    with pytest.raises(PointInTimeUniverseError, match="EFFECTIVE MEMBERSHIP SEMANTICS UNVERIFIED"):
+        _load_verified_membership(_config(output), previous_dates)
+    daily = _read_published_diagnostic(output, published)
+    assert len(daily) == 1
+    assert set(daily["date"]) == set(previous_dates)
+    assert set(daily["date"]) != set(extended_dates), "failed new date must not become successful coverage"
+    assert daily["symbol"].eq("600000.SH").all()
     failed = json.loads((output / "failures.json").read_text(encoding="utf-8"))
     assert set(failed["failed_dates"]) == {"2024-01-03"}
-    with pytest.raises(PointInTimeUniverseError, match="universe manifest mismatch"):
+    with pytest.raises(PointInTimeUniverseError, match="EFFECTIVE MEMBERSHIP SEMANTICS UNVERIFIED"):
         _load_verified_membership(_config(output), extended_dates)

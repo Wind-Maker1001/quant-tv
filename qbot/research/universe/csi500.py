@@ -1,6 +1,8 @@
-"""CSI500 point-in-time membership backed by BaoStock or local files.
+"""CSI500 membership diagnostics and strictly imported point-in-time files.
 
 Current constituents are deliberately never used as a historical fallback.
+BaoStock query-date snapshots are diagnostic only until effective membership
+semantics can be independently established.
 """
 
 from __future__ import annotations
@@ -28,9 +30,13 @@ from .base import PointInTimeUniverse, PointInTimeUniverseProvider
 LOGGER = logging.getLogger(__name__)
 CANONICAL_SYMBOL = re.compile(r"^(?:60|68|00|30|83|87|43)\d{4}\.(?:SH|SZ|BJ)$")
 PIT_REQUIRED = "POINT-IN-TIME UNIVERSE REQUIRED"
-# v2 requires server query-date evidence, named code fields and successful
-# completion of pagination; v1 snapshots cannot prove those invariants.
+# v2 checks server query-date evidence, named code fields and terminal SDK
+# error codes. It proves neither effective membership dates nor successful
+# pagination completion when the SDK silently stops after an empty response.
 BAOSTOCK_PIT_SOURCE_VERSION = "baostock-query_zz500_stocks-daily-v2"
+BAOSTOCK_PIT_UNVERIFIED_REASON = (
+    PIT_REQUIRED + ": EFFECTIVE MEMBERSHIP SEMANTICS UNVERIFIED"
+)
 PIT_GENERATION_SCHEMA_VERSION = 3
 PIT_DAILY_ALIAS = "csi500_daily.parquet"
 PIT_INTERVALS_ALIAS = "csi500_intervals.parquet"
@@ -375,7 +381,12 @@ class DataFramePointInTimeUniverse(PointInTimeUniverse):
 
 
 class BaoStockPointInTimeProvider(PointInTimeUniverseProvider):
-    """Historical CSI500 snapshots using BaoStock's date-aware endpoint."""
+    """Date-aware BaoStock diagnostics, not independently verified PIT data.
+
+    The endpoint's response query date and periodically updated constituent
+    records do not establish actual index-adjustment effective dates. Keep the
+    diagnostic interface, but never publish its snapshots as a formal universe.
+    """
 
     SUPPORTED_INDEXES = {"000905.SH", "CSI500", "ZZ500"}
 
@@ -561,7 +572,16 @@ class BaoStockPointInTimeProvider(PointInTimeUniverseProvider):
                 "is_member": True,
             }
         )
-        return result.sort_values("symbol").reset_index(drop=True)
+        result = result.sort_values("symbol").reset_index(drop=True)
+        result.attrs["baostock_evidence"] = {
+            "response_query_date": as_of,
+            "reported_update_dates": (
+                tuple(sorted(set(data["updateDate"].astype(str))))
+                if "updateDate" in data.columns else None
+            ),
+            "membership_semantics": "unverified-query-date-snapshot",
+        }
+        return result
 
     def get_security_history(
         self, symbols: Sequence[str], start: Any, end: Any
@@ -892,8 +912,14 @@ def collect_point_in_time_universe(
 
     Individual failures are recorded and collection continues. Materialisation
     fails after the loop unless every requested market date is valid.
+
+    BaoStock's periodic source updates have not been proved to reconstruct
+    exact effective membership. Its instances and subclasses are rejected
+    before queries, filesystem access or publication, even with old caches.
     """
 
+    if isinstance(provider, BaoStockPointInTimeProvider):
+        raise PointInTimeUniverseError(BAOSTOCK_PIT_UNVERIFIED_REASON)
     output = Path(output_dir)
     if isinstance(retries, bool) or not isinstance(retries, int) or retries < 0:
         raise PointInTimeUniverseError("retries must be a non-negative integer")
