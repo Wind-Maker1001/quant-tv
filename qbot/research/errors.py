@@ -23,6 +23,15 @@ class ProviderError(FactorLabError):
     """Raised when an upstream data provider cannot satisfy a request."""
 
 
+class ProviderNetworkError(ProviderError):
+    """An explicitly identified recoverable provider transport/HTTP failure.
+
+    Structural data failures and generic SDK/local errors must not use this
+    class. Download orchestration can skip a failed security only when this
+    classification is supported by the underlying exception.
+    """
+
+
 class CacheError(FactorLabError):
     """Raised when a cache artifact cannot be read or written safely."""
 
@@ -84,6 +93,7 @@ __all__ = [
     "PointInTimeUniverseError",
     "PointInTimeUniverseRequiredError",
     "ProviderError",
+    "ProviderNetworkError",
     "SchemaError",
     "SecurityStatusDataError",
 ]

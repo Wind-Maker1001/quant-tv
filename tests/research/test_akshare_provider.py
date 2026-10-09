@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from qbot.research.data.providers.akshare import AKShareProvider, ProviderError
+from qbot.research.errors import ProviderNetworkError
 
 
 def _vendor_frame(multiplier=1.0, include_turnover=True):
@@ -299,7 +300,7 @@ def test_stock_timeouts_exhaust_exact_endpoint_retry_budget_without_partial_succ
         akshare_module=fake, retry_count=2, backoff_seconds=(0.1, 0.2),
         request_interval=0, sleep_fn=pauses.append, timeout_seconds=5.0,
     )
-    with pytest.raises(ProviderError, match="AKShare request failed after retries") as failure:
+    with pytest.raises(ProviderNetworkError, match="AKShare request failed after retries") as failure:
         provider.get_daily_bars("600000.SH", "2024-01-01", "2024-01-04")
     assert failure.value.__cause__ is error
     expected_adjustments = ([""] if failing_adjustment == "hfq" else []) + [failing_adjustment] * 3

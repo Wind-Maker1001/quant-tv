@@ -1,20 +1,25 @@
 """AKShare-backed implementation of the FactorLab market-data interface."""
 
 import importlib
+import http.client
 import logging
 import math
 from numbers import Real
+import socket
 import time
 from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Tuple
+import urllib.error
 
 import numpy as np
 import pandas as pd
 
-try:
-    from qbot.research.errors import ProviderError
-except ImportError:  # pragma: no cover - isolated bootstrapping only
-    class ProviderError(RuntimeError):
-        """Fallback used only when the package foundation is unavailable."""
+from qbot.research.errors import (
+    DataQualityError,
+    FactorLabError,
+    ProviderError,
+    ProviderNetworkError,
+    SchemaError,
+)
 
 from qbot.research.data.providers.base import DateLike, MarketDataProvider
 from qbot.research.data.schema import (
@@ -67,12 +72,96 @@ def _extract_series(
     column = _find_column(frame, logical_name)
     if column is None:
         if required:
-            raise ProviderError(
+            raise SchemaError(
                 "AKShare response is missing %s (columns=%s)"
                 % (logical_name, list(frame.columns))
             )
         return pd.Series(np.nan, index=frame.index, dtype="float64")
     return frame[column]
+
+
+def _retryable_http_status(status: Any) -> bool:
+    """Retry only transient HTTP responses, not invalid/authenticated requests."""
+
+    return (
+        isinstance(status, int)
+        and not isinstance(status, bool)
+        and (status in {408, 425, 429} or 500 <= status <= 599)
+    )
+
+
+def _is_network_failure(error: Exception) -> bool:
+    """Recognize transport failures without treating every SDK/OSError as one.
+
+    The optional HTTP packages are resolved only on an SDK failure so merely
+    importing the research namespace does not require AKShare or requests.
+    Do not follow arbitrary ``__cause__`` chains: a programming error that
+    happens to wrap a connection failure is still a fatal programming error.
+    """
+
+    if isinstance(error, urllib.error.HTTPError):
+        return _retryable_http_status(error.code)
+    if isinstance(error, urllib.error.URLError):
+        return isinstance(error.reason, Exception) and _is_network_failure(error.reason)
+    if isinstance(error, (
+        ConnectionError,
+        TimeoutError,
+        socket.gaierror,
+        socket.herror,
+        http.client.IncompleteRead,
+        http.client.BadStatusLine,
+    )):
+        return True
+    try:
+        requests_errors = importlib.import_module("requests.exceptions")
+    except ImportError:
+        requests_errors = None
+    if requests_errors is not None:
+        if isinstance(error, requests_errors.HTTPError):
+            response = getattr(error, "response", None)
+            return response is not None and _retryable_http_status(
+                getattr(response, "status_code", None)
+            )
+        if isinstance(error, (
+            requests_errors.ConnectionError,
+            requests_errors.Timeout,
+            requests_errors.ChunkedEncodingError,
+        )):
+            return True
+    try:
+        urllib3_errors = importlib.import_module("urllib3.exceptions")
+    except ImportError:
+        return False
+    # requests usually translates these; recognize direct SDK usage as well.
+    if isinstance(error, urllib3_errors.MaxRetryError):
+        reason = getattr(error, "reason", None)
+        return isinstance(reason, Exception) and _is_network_failure(reason)
+    return isinstance(error, (
+        urllib3_errors.TimeoutError,
+        urllib3_errors.NewConnectionError,
+        urllib3_errors.ProtocolError,
+        urllib3_errors.SSLError,
+        urllib3_errors.ProxyError,
+    ))
+
+
+def _extract_numeric_series(
+    frame: pd.DataFrame, logical_name: str, required: bool = True,
+) -> pd.Series:
+    values = _extract_series(frame, logical_name, required=required)
+    if (
+        pd.api.types.is_bool_dtype(values.dtype)
+        or pd.api.types.is_datetime64_any_dtype(values.dtype)
+        or pd.api.types.is_timedelta64_dtype(values.dtype)
+    ):
+        raise SchemaError("AKShare %s must contain real numeric values" % logical_name)
+    try:
+        parsed = pd.to_numeric(values, errors="coerce")
+    except (TypeError, ValueError) as exc:
+        raise SchemaError("AKShare %s contains an invalid numeric value" % logical_name) from exc
+    if (values.notna() & parsed.isna()).any():
+        raise SchemaError("AKShare %s contains an invalid numeric value" % logical_name)
+    return parsed
 
 
 class AKShareProvider(MarketDataProvider):
@@ -176,15 +265,19 @@ class AKShareProvider(MarketDataProvider):
         self._last_request_at = now
 
     def _call(self, function: Callable[..., Any], **kwargs: Any) -> pd.DataFrame:
-        last_error: Optional[BaseException] = None
+        last_error: Optional[Exception] = None
         for attempt in range(self.retry_count + 1):
             self._throttle()
             try:
                 result = function(**kwargs)
-                if not isinstance(result, pd.DataFrame):
-                    raise TypeError("provider returned %s" % type(result).__name__)
-                return result
-            except Exception as exc:  # vendor errors do not share one base class
+            except FactorLabError:
+                raise
+            except Exception as exc:
+                if not _is_network_failure(exc):
+                    raise ProviderError(
+                        "AKShare SDK failed without a recoverable network error (%s): %s"
+                        % (type(exc).__name__, exc)
+                    ) from exc
                 last_error = exc
                 if attempt >= self.retry_count:
                     break
@@ -200,7 +293,14 @@ class AKShareProvider(MarketDataProvider):
                 )
                 if delay:
                     self._sleep(delay)
-        raise ProviderError("AKShare request failed after retries") from last_error
+            else:
+                if not isinstance(result, pd.DataFrame):
+                    raise SchemaError(
+                        "AKShare provider returned %s, expected pandas DataFrame"
+                        % type(result).__name__
+                    )
+                return result
+        raise ProviderNetworkError("AKShare request failed after retries") from last_error
 
     @staticmethod
     def _date_range(start: DateLike, end: DateLike) -> Tuple[pd.Timestamp, pd.Timestamp]:
@@ -216,30 +316,43 @@ class AKShareProvider(MarketDataProvider):
         start: pd.Timestamp,
         end: pd.Timestamp,
         require_turnover: bool,
+        symbol: str,
+        require_amount: bool = True,
     ) -> pd.DataFrame:
-        if frame.empty:
+        if frame.columns.duplicated().any():
+            raise SchemaError("AKShare response contains duplicate columns")
+        if len(frame) == 0:
             return pd.DataFrame(
                 columns=["date", "open", "high", "low", "close", "volume", "amount", "turnover"]
             )
         result = pd.DataFrame(index=frame.index)
-        result["date"] = pd.to_datetime(_extract_series(frame, "date"), errors="coerce")
+        date_values = _extract_series(frame, "date")
+        if pd.api.types.infer_dtype(date_values, skipna=True) in {
+            "integer", "floating", "mixed-integer", "mixed-integer-float", "boolean",
+        }:
+            raise SchemaError("AKShare response contains a numeric/invalid date")
+        try:
+            dates = pd.to_datetime(date_values, errors="raise", format="mixed")
+            result["date"] = dates.dt.tz_localize(None).dt.normalize()
+        except (TypeError, ValueError, AttributeError) as exc:
+            raise SchemaError("AKShare response contains an invalid date") from exc
         for field in ("open", "high", "low", "close", "volume"):
-            result[field] = pd.to_numeric(
-                _extract_series(frame, field), errors="coerce"
-            )
-        result["amount"] = pd.to_numeric(
-            _extract_series(frame, "amount", required=False), errors="coerce"
+            result[field] = _extract_numeric_series(frame, field)
+        result["amount"] = _extract_numeric_series(
+            frame, "amount", required=require_amount,
         )
-        result["turnover"] = pd.to_numeric(
-            _extract_series(frame, "turnover", required=require_turnover),
-            errors="coerce",
+        result["turnover"] = _extract_numeric_series(
+            frame, "turnover", required=require_turnover,
         )
         if result["date"].isna().any():
-            raise ProviderError("AKShare response contains an invalid date")
-        result["date"] = result["date"].dt.tz_localize(None).dt.normalize()
-        result = result.loc[result["date"].between(start, end)].copy()
+            raise SchemaError("AKShare response contains an invalid date")
         if result["date"].duplicated().any():
-            raise ProviderError("AKShare response contains duplicate dates")
+            raise SchemaError("AKShare response contains duplicate dates")
+        # Validate before requesting the adjusted endpoint or discarding rows.
+        # Missing optional amount/turnover remains NaN; malformed supplied
+        # values and invalid OHLC are never silently turned into missing data.
+        canonicalize_bars(result, symbol=symbol)
+        result = result.loc[result["date"].between(start, end)].copy()
         return result.sort_values("date", kind="mergesort").reset_index(drop=True)
 
     def get_daily_bars(
@@ -257,14 +370,16 @@ class AKShareProvider(MarketDataProvider):
         raw_vendor = self._call(
             self.akshare.stock_zh_a_hist, adjust="", **kwargs
         )
+        raw = self._normalise_vendor_frame(
+            raw_vendor, start_ts, end_ts, require_turnover=True,
+            require_amount=True, symbol=canonical_symbol,
+        )
         adjusted_vendor = self._call(
             self.akshare.stock_zh_a_hist, adjust=self.adjustment, **kwargs
         )
-        raw = self._normalise_vendor_frame(
-            raw_vendor, start_ts, end_ts, require_turnover=True
-        )
         adjusted = self._normalise_vendor_frame(
-            adjusted_vendor, start_ts, end_ts, require_turnover=False
+            adjusted_vendor, start_ts, end_ts, require_turnover=False,
+            require_amount=False, symbol=canonical_symbol,
         )
         if raw.empty and adjusted.empty:
             from qbot.research.data.schema import empty_bars
@@ -273,7 +388,7 @@ class AKShareProvider(MarketDataProvider):
         raw_dates = pd.Index(raw["date"])
         adjusted_dates = pd.Index(adjusted["date"])
         if not raw_dates.equals(adjusted_dates):
-            raise ProviderError(
+            raise DataQualityError(
                 "raw and %s AKShare bars have different trading dates"
                 % self.adjustment
             )
@@ -315,6 +430,7 @@ class AKShareProvider(MarketDataProvider):
 
         volume_multiplier = 100.0
         amount_multiplier = 1.0
+        require_amount = True
         csindex_official = (
             canonical_symbol == "000905.SH"
             and hasattr(self.akshare, "stock_zh_index_hist_csindex")
@@ -349,11 +465,13 @@ class AKShareProvider(MarketDataProvider):
             # The Sina fallback reports index volume in shares, whereas the
             # Eastmoney primary reports hands.
             volume_multiplier = 1.0
+            require_amount = False
         else:
             raise ProviderError("AKShare has no supported mainland index endpoint")
 
         normalised = self._normalise_vendor_frame(
-            vendor_frame, start_ts, end_ts, require_turnover=False
+            vendor_frame, start_ts, end_ts, require_turnover=False,
+            symbol=canonical_symbol, require_amount=require_amount,
         )
         if normalised.empty:
             from qbot.research.data.schema import empty_bars
@@ -374,7 +492,7 @@ class AKShareProvider(MarketDataProvider):
                     volume = volume * 1_000_000.0
                     raw_implied_price /= 1_000_000.0
                 if not 0.01 <= raw_implied_price <= 100_000.0:
-                    raise ProviderError(
+                    raise DataQualityError(
                         "CSI index volume/amount units cannot be validated"
                     )
         result = pd.DataFrame(
@@ -403,7 +521,7 @@ class AKShareProvider(MarketDataProvider):
     ) -> pd.DatetimeIndex:
         bars = self.get_index_bars(self.benchmark_symbol, start, end)
         if bars.empty:
-            raise ProviderError(
+            raise DataQualityError(
                 "benchmark returned no dates; a trading calendar cannot be built"
             )
         return pd.DatetimeIndex(bars["date"].drop_duplicates().sort_values(), name="date")
@@ -422,6 +540,8 @@ class AKShareProvider(MarketDataProvider):
         vendor_frame = self._call(
             self.akshare.index_stock_cons, symbol=vendor_code(canonical_index)
         )
+        if vendor_frame.columns.duplicated().any():
+            raise SchemaError("AKShare constituent response contains duplicate columns")
         symbol_column = next(
             (
                 candidate
@@ -431,7 +551,7 @@ class AKShareProvider(MarketDataProvider):
             None,
         )
         if symbol_column is None:
-            raise ProviderError("AKShare constituent response has no symbol column")
+            raise SchemaError("AKShare constituent response has no symbol column")
         output = pd.DataFrame(
             {
                 "index_symbol": canonical_index,
