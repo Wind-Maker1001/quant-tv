@@ -60,7 +60,7 @@ FactorLab 使用 qbot/research 独立命名空间，核心模块不得导入 wxP
 
 - config：严格 dataclass/YAML 配置和仓库根目录路径解析。
 - data：统一 Provider、Schema、指数行情交易日历和原子 Parquet 缓存。
-- universe：BaoStock 历史 CSI500 快照、区间表、本地导入与日级过滤。
+- universe：严格历史成员本地导入、区间表与日级过滤；BaoStock 查询快照仅诊断。2026-10-09 官方周更新语义审计后，正式发布/消费同时阻断未核验的成员生效日期，旧 manifest 或 verified 布尔值不能绕过，见 [BAOSTOCK_SOURCE_AUDIT.md](BAOSTOCK_SOURCE_AUDIT.md)。
 - universe/status：证券交易状态与上市日期采用独立、哈希绑定的 generation manifest；支持 BaoStock 完整采集或严格本地导入，PIT 成员键缺失时 fail closed，绝不以相邻日期填充。
 - factors：14 个可解释价量因子、注册表和逐日横截面预处理。
 - labels：与 t 日收盘后信号一致的 t+1 open 到 t+6 open 超额收益。

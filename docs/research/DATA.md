@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | A 股日线 | AKShare `stock_zh_a_hist` | 原始/后复权 OHLC、量、额、换手率 |
 | 中证500指数日线 | AKShare 的中证指数官方端点 | benchmark、交易日历、超额收益标签、Phase 3 市场状态 |
-| 中证500历史成分 | BaoStock `query_zz500_stocks(date=...)` 或严格本地导入 | 逐交易日 Point-in-Time 股票池 |
+| 中证500历史成分 | 严格本地导入的已核验生效成员；BaoStock 接口目前仅诊断 | 逐交易日 Point-in-Time 股票池 |
 | ST/交易状态、上市日期 | BaoStock 或严格本地导入 | 当日可交易性过滤、Phase 3 停牌/涨跌停执行判断 |
 | 用户历史成分表 | 日级快照或显式闭区间 CSV/Parquet 导入 | BaoStock PIT 成分接口的可验证替代路径 |
 | 本地历史行情文件 | `local_parquet`，显式 raw/hfq CSV/Parquet | 静态来源快照，严格单位、复权、哈希与版本合同 |
@@ -110,13 +110,15 @@ Windows 对空文件也先取得原生字节锁，再初始化锁文件；打开
 
 ## Point-in-Time CSI500 股票池
 
-正式流程对交易日历的每一日请求 BaoStock 历史快照。单日快照以 Parquet 加配套 JSON 独立缓存；JSON 绑定 provider 类、来源版本、指数、日期、预期成员数和内容 SHA-256。缺少或不匹配来源元数据的旧快照不会被信任，而会重新请求，避免把预置的“当前成分股”文件洗成历史 BaoStock 证据。下载失败可以续跑；但物化正式股票池前必须同时满足：
+2026-10-09 官方来源复核发现：BaoStock 明确说明中证500成分信息每周一更新，`date` 是查询日期，`updateDate` 是更新日期，没有在该接口文档中承诺逐日实际调样生效语义。[官方接口说明](https://www.baostock.com/mainContent?file=pythonAPI.md#query_zz500_stocks)、[官方更新时间说明](https://www.baostock.com/mainContent?file=home.md)。因此当前实现不再将逐日调用自动视为正式 PIT：BaoStock 收集器在查询、缓存读取与发布前拒绝；CLI 同时拒绝旧 BaoStock 最终 manifest，即使成员数、日期、哈希都合法。错误为 `POINT-IN-TIME UNIVERSE REQUIRED: EFFECTIVE MEMBERSHIP SEMANTICS UNVERIFIED`。没有 `verified=true` 绕过开关。研究配置不能只切换成 `local` 就信任旧 BaoStock 文件，必须通过已审计来源的真实生效日导入。来源调查、隔离新版公共节点诊断与限制见 [BAOSTOCK_SOURCE_AUDIT.md](BAOSTOCK_SOURCE_AUDIT.md)。
+
+通用快照收集/缓存组件仍有离线测试，但不是未核验 BaoStock 的正式发布入口。正式股票池必须同时满足：
 
 1. 覆盖全部请求交易日，无缺日、无额外日。
 2. 每日恢复的 `is_member=true` 成员恰有 500 个唯一 symbol。
 3. 没有重复 `(date, symbol)`，symbol 均为 canonical 形式。
 
-网络响应还必须包含命名 `code` 字段，服务端的 `ResultData.date` 必须与请求日期一致，且完成全部分页后 `error_code` 仍为成功。非法代码及归一后重复代码都会失败。来源合同为 `baostock-query_zz500_stocks-daily-v2`；旧 v1 快照必须重新查询，旧最终股票池 manifest 不能被新版本消费。CLI 只在 Provider 层执行网络重试，默认三次重试共四次请求，避免收集器与 Provider 两层相乘。
+BaoStock 诊断响应仍检查命名 `code` 字段、服务端查询日期、非法及重复代码、迭代后的错误码，并保留原始 `updateDate` 集合。这些检查不证明实际成员生效日，也不保证 SDK 对空分页响应一定报告错误。`baostock-query_zz500_stocks-daily-v2` 是旧查询合同，不是生效日期核验；v1/v2 最终股票池都不能进入正式研究。Provider 单层默认三次重试共四次请求，诊断可以显式零重试。
 
 通过后产生：
 
@@ -133,7 +135,7 @@ Windows 对空文件也先取得原生字节锁，再初始化锁文件；打开
 
 区间只在当前 benchmark 交易日历上展开；研究区间内的首尾边界必须本身是 benchmark 交易日，不能把周末、节假日或公告日静默平移。日级和区间日期字符串都必须使用 `YYYY-MM-DD`，带时间、时区或数值时间戳会被拒绝。同一股票的闭区间不能重叠；展开后仍必须逐日恢复恰好 500 个唯一成员。输入同时含日级和区间列、包含未声明的附加列，或使用语义未定义的 `opt-in/opt-out` 列时会 fail fast，必须先依据可核验来源转换为真实生效日的闭区间。
 
-导入 manifest v3 记录输入布局、成员语义、原始文件绝对路径与 SHA-256，并分别绑定规范化逐日表和重新压缩区间表的内容哈希，以及两份不可变 generation 文件的字节哈希。等价的日级和区间输入得到相同语义股票池版本。消费端保留对严格 local v1/v2 和 BaoStock schema 1 的只读兼容；即使旧 manifest 没有区间哈希，也会把区间表与逐日表重新压缩结果对比。新导入和 BaoStock 最终发布统一写 schema 3。随后 `download-data` 会校验并复用该导入股票池，绝不以 BaoStock 快照覆盖。`universe.provider=baostock` 的配置不能消费本地导入 manifest，反之亦然。
+导入 manifest v3 记录输入布局、成员语义、原始文件绝对路径与 SHA-256，并分别绑定规范化逐日表和重新压缩区间表的内容哈希，以及两份不可变 generation 文件的字节哈希。等价的日级和区间输入得到相同语义股票池版本。消费端只保留严格 local v1/v2 的只读兼容；即使旧 manifest 没有区间哈希，也会把区间表与逐日表重新压缩结果对比。新导入写 schema 3。随后 `download-data` 会校验并复用该导入股票池，绝不以 BaoStock 快照覆盖。`universe.provider=baostock` 目前被语义门禁阻断；本地配置也不能消费 BaoStock 身份的 manifest。导入器能验证结构、范围和哈希，不能替用户证明文件来自真实官方历史成员；切勿把每周快照改列名后导入冒充真实生效数据。
 
 先完整写 `csi500_daily.<generation>.parquet` 与 `csi500_intervals.<generation>.parquet`，最后原子替换 `manifest.json`。读取端固定一次 manifest，只读取它指向的两份文件，并验证路径、字节哈希和语义一致性。无后缀的 canonical 文件仅是 commit 后 best-effort 更新的便利别名；别名失败仅记 WARNING，不影响已发布数据。新代写入或清单切换失败时，上一代仍可读取；旧 schema 升级失败也不会提前改动其别名。PIT 发布仍采用独占 writer lock；进程强制终止可能留下 `.universe-write.lock`，它不影响读取旧代，但再次发布前必须确认无存活 writer，再人工恢复。不要自动猜测或删除锁。
 
