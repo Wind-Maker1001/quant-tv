@@ -9,6 +9,7 @@ exactly once.  In particular, no train-plus-validation refit is performed.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import hashlib
 import json
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
@@ -26,6 +27,7 @@ from qbot.research.models.factor_score import FactorScoreModel
 from qbot.research.models.lightgbm import LightGBMResearchModel
 from qbot.research.models.ridge import RidgeResearchModel
 from qbot.research.models.xgboost import XGBoostResearchModel
+from qbot.research.universe.csi500 import dataframe_sha256
 from qbot.research.validation.splitter import (
     ExpandingWalkForwardSplitter,
     WalkForwardError,
@@ -58,6 +60,12 @@ class WalkForwardResult:
             ]
         )
     )
+    # These diagnostics never change the Test-only public prediction table.
+    # Empty defaults preserve older programmatically constructed results.
+    diagnostic_predictions: pd.DataFrame = field(default_factory=pd.DataFrame)
+    diagnostic_daily: pd.DataFrame = field(default_factory=pd.DataFrame)
+    diagnostic_summary: pd.DataFrame = field(default_factory=pd.DataFrame)
+    diagnostic_audit: pd.DataFrame = field(default_factory=pd.DataFrame)
 
     @property
     def validation_candidate_metrics(self) -> pd.DataFrame:
@@ -77,6 +85,31 @@ _SELECTION_METRICS = {
     "prediction_rank_ic_mean",
     "top_bottom_spread",
 }
+
+DIAGNOSTIC_STAGES = (
+    "TRAIN_IN_SAMPLE", "VALIDATION_SELECTION", "HISTORICAL_TEST",
+)
+DIAGNOSTIC_SELECTION_USAGE = {
+    "TRAIN_IN_SAMPLE": "diagnostic_only",
+    "VALIDATION_SELECTION": "selection_and_diagnostic",
+    "HISTORICAL_TEST": "evaluation_only",
+}
+DIAGNOSTIC_AUDIT_COLUMNS = (
+    "schema_version", "fold", "stage", "model_name", "fit_scope", "selection_usage",
+    "selected_alpha", "selected_parameters", "model_parameters", "feature_names",
+    "target_column", "selection_metric", "top_k", "minimum_cross_section", "random_seed",
+    "model_path", "saved_model_sha256", "signal_start", "signal_end", "label_min_entry",
+    "label_max_entry", "label_min_exit", "label_max_exit", "labeled_max_exit",
+    "maturity_boundary", "rows", "labeled_rows", "scored_rows", "source_keys_sha256",
+    "source_sha256", "fit_source_keys_sha256", "fit_source_sha256", "prediction_sha256",
+    "daily_sha256", "summary_sha256",
+)
+
+
+def diagnostic_frame_sha256(frame: pd.DataFrame) -> str:
+    """Use FactorLab's stable, row-order-neutral content digest for stage tables."""
+
+    return dataframe_sha256(frame)
 
 _LIGHTGBM_PARAMETER_NAMES = frozenset(
     {
@@ -295,6 +328,10 @@ class WalkForwardRunner:
         self.regime_col = (
             None if regime_col is None else self._column_name("regime_col", regime_col)
         )
+        if {self.target_col, self.regime_col}.intersection({"stage", "fit_scope", "selection_usage"}):
+            raise WalkForwardRunError(
+                "target and regime columns must not use reserved stage diagnostic metadata names"
+            )
         semantic_columns = [self.date_col, self.symbol_col, self.target_col]
         if self.regime_col is not None:
             semantic_columns.append(self.regime_col)
@@ -478,6 +515,10 @@ class WalkForwardRunner:
         coefficient_rows: List[dict] = []
         importance_rows: List[dict] = []
         saved_paths: List[Path] = []
+        diagnostic_prediction_parts: List[pd.DataFrame] = []
+        diagnostic_daily_parts: List[pd.DataFrame] = []
+        diagnostic_summary_parts: List[pd.DataFrame] = []
+        diagnostic_audit_rows: List[dict] = []
 
         for fold in folds:
             train = prepared.iloc[fold.train_indices]
@@ -498,6 +539,8 @@ class WalkForwardRunner:
                 selected_alpha,
                 selected_parameters,
                 selected_validation,
+                selected_validation_frame,
+                selected_validation_evaluation,
                 rows,
             ) = (
                 self._fit_and_select(
@@ -525,13 +568,27 @@ class WalkForwardRunner:
             test_overall = _overall_row(test_evaluation)
             prediction_parts.append(prediction_frame)
 
+            # Only the already-selected model receives this extra diagnostic
+            # call. Test has already been predicted exactly once; Validation
+            # reuses the candidate-selection snapshot, never a second predict.
+            train_scores = selected_model.predict(train.loc[:, self.feature_names])
+            train_prediction_frame = self._prediction_frame(
+                train, train_scores, fold.fold, selected_alpha, selected_parameters,
+                entry_date_col=entry_date_col, exit_date_col=exit_date_col,
+            )
+            train_evaluation = self._evaluate_prediction_frame(train_prediction_frame)
+
             model_path: Optional[Path] = None
+            saved_model_sha256: Optional[str] = None
             if self.model_directory is not None:
                 self.model_directory.mkdir(parents=True, exist_ok=True)
                 model_path = self.model_directory / (
                     "fold_%03d_%s.pkl" % (fold.fold, self.model_name)
                 )
                 selected_model.save(model_path)
+                # Bind the actual saved artifact, not a parameters-derived
+                # surrogate. A failed/missing artifact prevents diagnostics.
+                saved_model_sha256 = hashlib.sha256(model_path.read_bytes()).hexdigest()
                 saved_paths.append(model_path)
 
             if isinstance(selected_model, RidgeResearchModel):
@@ -574,6 +631,61 @@ class WalkForwardRunner:
                     "fold %d is missing mandatory label-window audit evidence"
                     % fold.fold
                 )
+            fit_source = self._diagnostic_source_frame(
+                train_labeled, entry_date_col=entry_date_col, exit_date_col=exit_date_col,
+            )
+            fit_source_keys_sha256 = diagnostic_frame_sha256(fit_source[["date", "symbol"]])
+            fit_source_sha256 = diagnostic_frame_sha256(fit_source)
+            model_parameters = self._model_parameters(selected_model)
+            stages = (
+                ("TRAIN_IN_SAMPLE", train, train_prediction_frame, train_evaluation, audit.validation_first_date),
+                ("VALIDATION_SELECTION", validation, selected_validation_frame, selected_validation_evaluation, audit.test_first_date),
+                ("HISTORICAL_TEST", test, prediction_frame, test_evaluation, None),
+            )
+            for stage, stage_source, stage_predictions, stage_evaluation, maturity_boundary in stages:
+                stage_frame = self._stage_metadata(stage_predictions, fold.fold, stage)
+                daily = self._stage_metadata(stage_evaluation.daily, fold.fold, stage)
+                summary = self._stage_metadata(stage_evaluation.summary, fold.fold, stage)
+                # Evaluate one fold and one stage at a time. Expanding Train
+                # observations may repeat across folds but are never pooled.
+                diagnostic_daily_parts.append(daily)
+                diagnostic_summary_parts.append(summary)
+                if stage != "HISTORICAL_TEST":
+                    diagnostic_prediction_parts.append(stage_frame)
+                source_frame = self._diagnostic_source_frame(
+                    stage_source, entry_date_col=entry_date_col, exit_date_col=exit_date_col,
+                )
+                entry = pd.to_datetime(stage_frame["entry_date"], errors="raise")
+                exit_ = pd.to_datetime(stage_frame["exit_date"], errors="raise")
+                labeled = stage_frame[self.target_col].notna()
+                diagnostic_audit_rows.append({
+                    "schema_version": 1, "fold": int(fold.fold), "stage": stage,
+                    "model_name": self.model_name, "fit_scope": "train_only",
+                    "selection_usage": DIAGNOSTIC_SELECTION_USAGE[stage],
+                    "selected_alpha": selected_alpha, "selected_parameters": selected_parameters,
+                    "model_parameters": model_parameters,
+                    "feature_names": json.dumps(list(self.feature_names), separators=(",", ":")),
+                    "target_column": self.target_col, "selection_metric": self.selection_metric,
+                    "top_k": self.top_k, "minimum_cross_section": self.minimum_cross_section,
+                    "random_seed": self.random_seed,
+                    "model_path": str(model_path) if model_path is not None else None,
+                    "saved_model_sha256": saved_model_sha256,
+                    "signal_start": pd.Timestamp(stage_frame["date"].min()),
+                    "signal_end": pd.Timestamp(stage_frame["date"].max()),
+                    "label_min_entry": entry.min(), "label_max_entry": entry.max(),
+                    "label_min_exit": exit_.min(), "label_max_exit": exit_.max(),
+                    "labeled_max_exit": exit_.loc[labeled].max(),
+                    "maturity_boundary": maturity_boundary,
+                    "rows": int(len(stage_frame)), "labeled_rows": int(labeled.sum()),
+                    "scored_rows": int(stage_frame["score"].notna().sum()),
+                    "source_keys_sha256": diagnostic_frame_sha256(source_frame[["date", "symbol"]]),
+                    "source_sha256": diagnostic_frame_sha256(source_frame),
+                    "fit_source_keys_sha256": fit_source_keys_sha256,
+                    "fit_source_sha256": fit_source_sha256,
+                    "prediction_sha256": diagnostic_frame_sha256(stage_frame),
+                    "daily_sha256": diagnostic_frame_sha256(daily),
+                    "summary_sha256": diagnostic_frame_sha256(summary),
+                })
             fold_rows.append(
                 {
                     "fold": fold.fold,
@@ -673,6 +785,10 @@ class WalkForwardRunner:
                     "selected_parameters",
                 ],
             ),
+            diagnostic_predictions=pd.concat(diagnostic_prediction_parts, ignore_index=True),
+            diagnostic_daily=pd.concat(diagnostic_daily_parts, ignore_index=True),
+            diagnostic_summary=pd.concat(diagnostic_summary_parts, ignore_index=True),
+            diagnostic_audit=pd.DataFrame(diagnostic_audit_rows, columns=DIAGNOSTIC_AUDIT_COLUMNS),
         )
 
     def _validate_data(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -740,9 +856,9 @@ class WalkForwardRunner:
         *,
         entry_date_col: str,
         exit_date_col: str,
-    ) -> Tuple[object, Optional[float], str, pd.Series, List[dict]]:
+    ) -> Tuple[object, Optional[float], str, pd.Series, pd.DataFrame, PredictionEvaluation, List[dict]]:
         candidates: List[
-            Tuple[int, Optional[float], str, object, pd.Series]
+            Tuple[int, Optional[float], str, object, pd.Series, pd.DataFrame, PredictionEvaluation]
         ] = []
         rows: List[dict] = []
         specifications: List[Tuple[str, Optional[float], Dict[str, object]]] = []
@@ -816,7 +932,8 @@ class WalkForwardRunner:
                 entry_date_col=entry_date_col,
                 exit_date_col=exit_date_col,
             )
-            overall = _overall_row(self._evaluate_prediction_frame(validation_frame))
+            validation_evaluation = self._evaluate_prediction_frame(validation_frame)
+            overall = _overall_row(validation_evaluation)
             row = {
                 "fold": fold_number,
                 "model_name": self.model_name,
@@ -848,7 +965,7 @@ class WalkForwardRunner:
             }
             rows.append(row)
             candidates.append(
-                (order, alpha, row["parameters"], model, pd.Series(row))
+                (order, alpha, row["parameters"], model, pd.Series(row), validation_frame, validation_evaluation)
             )
 
         finite = [
@@ -869,8 +986,53 @@ class WalkForwardRunner:
                 -candidate[0],
             ),
         )
-        _, alpha, parameters, model, validation_metrics = selected
-        return model, alpha, parameters, validation_metrics, rows
+        _, alpha, parameters, model, validation_metrics, validation_frame, validation_evaluation = selected
+        return model, alpha, parameters, validation_metrics, validation_frame, validation_evaluation, rows
+
+    def _stage_metadata(self, frame: pd.DataFrame, fold_number: int, stage: str) -> pd.DataFrame:
+        """Add role declarations without mutating cached predictions/metrics."""
+
+        result = frame.copy(deep=True)
+        result["fold"] = int(fold_number)
+        result["model_name"] = self.model_name
+        result["stage"] = stage
+        result["fit_scope"] = "train_only"
+        result["selection_usage"] = DIAGNOSTIC_SELECTION_USAGE[stage]
+        return result
+
+    def _diagnostic_source_frame(
+        self, source: pd.DataFrame, *, entry_date_col: str, exit_date_col: str,
+    ) -> pd.DataFrame:
+        """Bind canonical keys and precisely the audited model/label inputs."""
+
+        columns = [self.date_col, self.symbol_col, *self.feature_names,
+                   self.target_col, entry_date_col, exit_date_col]
+        if self.regime_col is not None:
+            columns.append(self.regime_col)
+        result = source.loc[:, columns].copy(deep=True)
+        result.rename(columns={self.date_col: "date", self.symbol_col: "symbol",
+                               entry_date_col: "entry_date", exit_date_col: "exit_date"}, inplace=True)
+        for name in ("entry_date", "exit_date"):
+            result[name] = pd.to_datetime(result[name], errors="raise")
+        return result
+
+    def _model_parameters(self, model: object) -> str:
+        """Describe effective configuration, including untuned fixed defaults."""
+
+        if self.model_name == "factor_score":
+            parameters = {
+                "weights": dict(model.weights),
+                "normalize_by_absolute_weight": model.normalize_by_absolute_weight,
+            }
+        elif self.model_name == "ridge":
+            parameters = {name: getattr(model, name) for name in (
+                "alpha", "fit_intercept", "random_seed", "max_iter", "tolerance",
+            )}
+        else:
+            names = _LIGHTGBM_PARAMETER_NAMES if self.model_name == "lightgbm" else _XGBOOST_PARAMETER_NAMES
+            parameters = {name: getattr(model, name) for name in sorted(names)}
+            parameters.update({"random_seed": model.random_seed, "n_jobs": model.n_jobs})
+        return json.dumps(parameters, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
     def _prediction_frame(
         self,
@@ -951,6 +1113,10 @@ def run_walk_forward(
 
 
 __all__ = [
+    "DIAGNOSTIC_STAGES",
+    "DIAGNOSTIC_SELECTION_USAGE",
+    "DIAGNOSTIC_AUDIT_COLUMNS",
+    "diagnostic_frame_sha256",
     "WalkForwardResult",
     "WalkForwardRunError",
     "WalkForwardRunner",

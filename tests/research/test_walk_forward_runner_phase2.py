@@ -87,7 +87,7 @@ def test_ridge_candidates_fit_train_only_and_selected_model_is_not_refit(monkeyp
     folds = len(result.fold_summary)
 
     assert SpyRidge.fit_calls == folds * 3
-    assert SpyRidge.predict_calls == folds * 4  # 3 validation + 1 test per fold
+    assert SpyRidge.predict_calls == folds * 5  # 3 validation + 1 test + 1 Train diagnostic
     assert (result.fold_summary["fit_scope"] == "train_only").all()
     assert (result.fold_summary["purged_date_count"] == 5).all()
     assert (result.fold_summary["embargoed_date_count"] == 5).all()

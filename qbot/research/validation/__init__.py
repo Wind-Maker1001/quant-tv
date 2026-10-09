@@ -7,6 +7,8 @@ from qbot.research.validation.splitter import (
     WalkForwardFold,
 )
 from qbot.research.validation.walk_forward import (
+    DIAGNOSTIC_STAGES,
+    diagnostic_frame_sha256,
     WalkForwardResult,
     WalkForwardRunError,
     WalkForwardRunner,
@@ -15,6 +17,8 @@ from qbot.research.validation.walk_forward import (
 
 __all__ = [
     "BoundaryAudit",
+    "DIAGNOSTIC_STAGES",
+    "diagnostic_frame_sha256",
     "ExpandingWalkForwardSplitter",
     "WalkForwardError",
     "WalkForwardFold",
