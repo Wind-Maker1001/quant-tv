@@ -74,6 +74,8 @@ pytest.ini 默认只收集 tests/research，并排除 network marker。这个边
 
 2026-10-08 更新：个股9交易日的诊断成功，但更长区间仍断连、PIT 短时连接仍超时；最新工程与真实数据覆盖证据见 [LOCAL_DATA_VERIFICATION.md](LOCAL_DATA_VERIFICATION.md)。下面保留2026-10-04的历史复核背景，不能据此推断所有端点的当前状态。
 
+2026-10-09 下载合同补强：只有明确的网络失败可以跳过个股。严重数据/缓存错误会留下不可变 fatal 收据并阻止后续研究，即使旧缓存覆盖全部日期。再次执行 `download-data` 会强制重新取数；非空实际响应通过校验、且没有新增同股票 fatal 后才追加解除证据。不要删除 `data/research/raw/download_status` 或永久锁来绕过错误。当日下午单股与基准153交易日的真实诊断成功，生成14因子和147标签，但 BaoStock 端口仍超时，尚无正式 PIT/状态或真实 RankIC。验收、恢复边界和真实数据限制见 [DOWNLOAD_CONTRACT_VERIFICATION.md](DOWNLOAD_CONTRACT_VERIFICATION.md)。
+
 网络测试可因数据源限频、端点改动、代理或本地网络而失败，不取代离线正确性测试。2026-10-04 的最新复核中，AKShare 中证官方接口已真实返回正式五年区间的 1211 行 `000905.SH` 基准行情；东方财富个股后复权端点仍发生 `RemoteDisconnected`，BaoStock 登录连续 4 次后仍为 socket 错误，因此 PIT 股票池和真实股票数据链路尚未完成。测试时 Windows 系统代理还指向未响应的 `127.0.0.1:10808`；若错误栈显示该地址，应先确认本机代理程序和 Windows 代理设置一致，不要通过关闭数据校验来“修复”网络。不能把 benchmark 子步骤成功或 369 项离线测试通过描述成真实端到端或五年数据已经验证。
 
 ## 3. 选择配置

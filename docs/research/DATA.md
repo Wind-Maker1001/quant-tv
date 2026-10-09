@@ -94,6 +94,20 @@ Windows 对空文件也先取得原生字节锁，再初始化锁文件；打开
 
 缓存可断点续跑，旧 generation 保持不可变但尚无自动归档/清理策略。每次实验仍必须用 run manifest 记录数据区间、股票池哈希、原始行情版本和依赖版本。本地静态行情的导入、版本变更和无网络流水线见 [LOCAL_MARKET_DATA.md](LOCAL_MARKET_DATA.md)。
 
+### 下载异常与正式研究阻断
+
+股票循环只有明确的 `ProviderNetworkError` 可以记录失败列表后继续；Schema、来源合同、缓存完整性、文件权限和未知编程错误必须立即停止。AKShare 只对明确的 transport 错误及可辨识的 HTTP 408/425/429/5xx 执行配置的重试；不按错误消息猜测网络故障，不重试结构错误。Benchmark 是强制输入，即使网络故障也不能跳过。
+
+致命行情错误在 `raw/download_status/` 留下跨 Provider 的不可变收据及 SHA-256 历史链，记录 symbol、请求范围、来源版本、run_id、Git SHA 和错误。未解决收据会以 `UNRESOLVED DOWNLOAD CONTRACT` 阻止数据集、因子评价、Walk-Forward、模型比较及 Forward 入口。旧完整缓存、换 Provider 或重新运行日期都不能自动解除它。重跑 `download-data` 必须实际请求包含所有旧失败窗口的区间，取得非空响应，通过 Schema 和缓存快照校验后追加 resolution；Benchmark 修复还必须由实际新响应满足研究边界和预热要求，不能靠合并的旧缓存补证据。
+
+解除仅允许针对请求开始前已观察的同 symbol fatal 集合；若并发任务随后新增同 symbol fatal，本次取数不能把新错误一起清除。必须重新抓取并验证，不能只检查失败日期范围相同。
+
+首次或后续收据发布中断、缺历史、孤立文件、空初始化目录和指针不一致均严格失败，不自动删除历史。永久父目录 OS 锁保护初始化和发布。完全没有创建过守卫的旧缓存仍可通过此检查，但这不是对旧下载行为的追溯认证。收据是本地误损检测，不是外部防篡改公证；完全不可写的存储无法保证留证，手动删除全部收据与引用也无法仅靠本机日志自证。备份、人工恢复和验证范围见 [DOWNLOAD_CONTRACT_VERIFICATION.md](DOWNLOAD_CONTRACT_VERIFICATION.md)。
+
+检查在命令入口和固定输入快照时进行，不是运行期间持续监控其他进程。网络失败允许下载扫描结束为 success，但若此前仍有 fatal，清单的 `unresolved_download_receipts` 和 WARNING 明确表明正式研究仍被阻止；success 不代表所有股票已下载或正式研究就绪。
+
+上述 Schema 验证针对 SDK 暴露的输出。本地固定 AKShare SDK 某些端点先做数值 coercion、直接解析 JSON 而没有 `raise_for_status`，Provider 不能恢复已丢失的原始异常数值或 HTTP 状态。此时无法证实为网络错误的失败按致命合同错误处理，不冒充完整的原始 payload 校验。
+
 ## Point-in-Time CSI500 股票池
 
 正式流程对交易日历的每一日请求 BaoStock 历史快照。单日快照以 Parquet 加配套 JSON 独立缓存；JSON 绑定 provider 类、来源版本、指数、日期、预期成员数和内容 SHA-256。缺少或不匹配来源元数据的旧快照不会被信任，而会重新请求，避免把预置的“当前成分股”文件洗成历史 BaoStock 证据。下载失败可以续跑；但物化正式股票池前必须同时满足：
