@@ -37,6 +37,7 @@ from qbot.research.forward import (
     fit_final_model,
     load_forward_activation,
     load_model_bundle,
+    load_prediction_record,
     load_signal_record,
     register_forward_activation,
     save_model_bundle,
@@ -202,18 +203,17 @@ def _write_warning_files(destination: Path) -> None:
     )
 
 
-def _top_k_signals(bundle, scoring: pd.DataFrame) -> pd.DataFrame:
-    scored = scoring[["symbol", *FEATURE_NAMES]].copy()
+def _full_predictions(bundle, scoring: pd.DataFrame) -> pd.DataFrame:
+    scored = scoring[["symbol"]].copy()
     scored["score"] = bundle.predict(scoring)
     selected = scored.sort_values(
         ["score", "symbol"],
         ascending=[False, True],
         kind="mergesort",
-    ).head(TOP_K)
+    )
     selected = selected.reset_index(drop=True)
     result = selected[["symbol", "score"]].copy()
-    result["rank"] = np.arange(1, len(result) + 1, dtype=int)
-    result["target_weight"] = 1.0 / len(result)
+    result["rank"] = np.arange(1, len(result) + 1, dtype=np.int64)
     return result
 
 
@@ -257,9 +257,12 @@ def _finalize_synthetic_signal(
         "signal_sha256": record.sha256,
         "signal_manifest_sha256": record.manifest_sha256,
         "signal_rows": record.row_count,
+        "prediction_sha256": record.predictions_sha256,
+        "prediction_rows": record.prediction_row_count,
         "outputs": {
             "forward_signals": str(record.signals_path),
             "forward_signal_manifest": str(record.manifest_path),
+            "forward_predictions": str(record.predictions_path),
         },
     }
     _write_new_bytes(run_path, _canonical_json_bytes(payload))
@@ -366,7 +369,9 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
     ):
         raise RuntimeError("loaded Ridge bundle does not match the frozen contract")
 
-    signals = _top_k_signals(bundle, scoring)
+    predictions = _full_predictions(bundle, scoring)
+    signals = predictions.head(TOP_K).copy()
+    signals["target_weight"] = 1.0 / len(signals)
     on_time = classify_forward_timing(
         ACTIVATION_DATE,
         activation_date=verified_activation.activation_date,
@@ -386,6 +391,8 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
         activation_date=verified_activation.activation_date,
     )
     common_record_options = {
+        "predictions": predictions,
+        "cross_section_size": len(scoring),
         "signal_date": ACTIVATION_DATE,
         "data_asof": ACTIVATION_DATE,
         "model_name": MODEL_NAME,
@@ -423,6 +430,13 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
     )
     verified_on_time = _verify_signal_record(on_time_record)
     verified_late = _verify_signal_record(late_record)
+    for verified in (verified_on_time, verified_late):
+        stored_predictions = load_prediction_record(verified.directory)
+        pd.testing.assert_frame_equal(
+            stored_predictions[["symbol", "score", "rank"]],
+            predictions,
+            check_exact=True,
+        )
 
     mature_rows = int(
         (
@@ -491,6 +505,9 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
                 "manifest_sha256": verified_on_time.manifest_sha256,
                 "directory": _relative(verified_on_time.directory, destination),
                 "load_signal_record_verified": True,
+                "prediction_rows": verified_on_time.prediction_row_count,
+                "prediction_sha256": verified_on_time.predictions_sha256,
+                "load_prediction_record_verified": True,
             },
             "late_reissue": {
                 "signal_date": late.signal_date.isoformat(),
@@ -502,6 +519,9 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
                 "manifest_sha256": verified_late.manifest_sha256,
                 "directory": _relative(verified_late.directory, destination),
                 "load_signal_record_verified": True,
+                "prediction_rows": verified_late.prediction_row_count,
+                "prediction_sha256": verified_late.predictions_sha256,
+                "load_prediction_record_verified": True,
             },
         },
     }

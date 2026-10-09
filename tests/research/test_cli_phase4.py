@@ -25,7 +25,7 @@ from qbot.research.config import (
 )
 from qbot.research.data.schema import canonicalize_bars
 from qbot.research.errors import FactorLabError
-from qbot.research.forward import load_model_bundle
+from qbot.research.forward import load_model_bundle, load_prediction_record
 import qbot.research.forward.activation as activation_module
 import qbot.research.forward.model_bundle as model_bundle_module
 
@@ -289,6 +289,18 @@ def test_freeze_and_signal_lifecycle_is_explicit_and_append_only(tmp_path, monke
     assert signal_run.payload["model_bundle_sha256"] == bundle.metadata[
         "content_sha256"
     ]
+    predictions_path = Path(signal_run.outputs["forward_predictions"])
+    assert predictions_path.parent == first_path.parent
+    assert signal_run.payload["prediction_rows"] == 3
+    assert len(signal_run.payload["prediction_sha256"]) == 64
+    predictions = load_prediction_record(first_path.parent, require_completion=False)
+    assert len(predictions) == 3
+    assert predictions["rank"].tolist() == [1, 2, 3]
+    pd.testing.assert_frame_equal(
+        predictions[["symbol", "score", "rank"]].head(2).reset_index(drop=True),
+        first[["symbol", "score", "rank"]],
+    )
+    prediction_bytes = predictions_path.read_bytes()
 
     late_run = _Run("signal-late")
     cli.command_forward_signal(
@@ -302,6 +314,7 @@ def test_freeze_and_signal_lifecycle_is_explicit_and_append_only(tmp_path, monke
     late_path = Path(late_run.outputs["forward_signals"])
     assert late_path.parent.name == "v000002"
     assert first_path.read_bytes() == first_bytes
+    assert predictions_path.read_bytes() == prediction_bytes
     late = pd.read_csv(late_path, dtype={"symbol": str})
     assert late["timeliness"].unique().tolist() == ["LATE_REISSUE"]
     assert late["reissue_reason"].unique().tolist() == [
@@ -323,6 +336,22 @@ def test_freeze_and_signal_lifecycle_is_explicit_and_append_only(tmp_path, monke
             refresh_data=False,
         )
     dataset = complete_dataset
+
+    def invalid_prediction(self, features):
+        # The non-finite stock would otherwise be silently removed by Top-K,
+        # leaving two finite stocks and falsely claiming full coverage.
+        return pd.Series([2.0, 1.0, invalid_score], index=features.index)
+
+    monkeypatch.setattr(type(bundle), "predict", invalid_prediction)
+    for invalid_score in (np.inf, -np.inf, np.nan):
+        with pytest.raises(FactorLabError, match="model predictions are non-finite"):
+            cli.command_forward_signal(
+                signal_config,
+                _Run("signal-nonfinite-score"),
+                date(2026, 9, 24),
+                generated_at=datetime(2026, 9, 24, 16, 0, tzinfo=SHANGHAI),
+                refresh_data=False,
+            )
     dataset.loc[
         dataset["date"].eq(pd.Timestamp("2026-09-24")), "REV1"
     ] = np.nan

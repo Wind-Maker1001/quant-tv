@@ -18,6 +18,7 @@ from examples.research.phase4_synthetic_demo import (
 from qbot.research.forward import (
     load_forward_activation,
     load_model_bundle,
+    load_prediction_record,
     load_signal_record,
 )
 
@@ -77,6 +78,7 @@ def test_phase4_synthetic_demo_runs_the_low_level_forward_lifecycle(tmp_path):
         details = stored["signals"][name]
         loaded = load_signal_record(destination / details["directory"])
         frame = pd.read_csv(loaded.signals_path, keep_default_na=False)
+        predictions = load_prediction_record(loaded.directory)
         frames[name] = frame
 
         assert loaded.version == details["version"] == version
@@ -84,6 +86,15 @@ def test_phase4_synthetic_demo_runs_the_low_level_forward_lifecycle(tmp_path):
         assert loaded.sha256 == details["sha256"]
         assert loaded.manifest_sha256 == details["manifest_sha256"]
         assert details["load_signal_record_verified"] is True
+        assert details["load_prediction_record_verified"] is True
+        assert len(predictions) == loaded.prediction_row_count == details["prediction_rows"]
+        assert len(predictions) > TOP_K
+        assert loaded.predictions_sha256 == details["prediction_sha256"]
+        assert predictions["rank"].tolist() == list(range(1, len(predictions) + 1))
+        pd.testing.assert_frame_equal(
+            predictions[["symbol", "score", "rank"]].head(TOP_K).reset_index(drop=True),
+            frame[["symbol", "score", "rank"]],
+        )
         assert frame["timeliness"].unique().tolist() == [timeliness]
         assert frame["reissue_reason"].unique().tolist() == [reason]
         assert frame["rank"].tolist() == list(range(1, TOP_K + 1))

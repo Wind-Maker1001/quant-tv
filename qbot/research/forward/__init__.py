@@ -37,6 +37,7 @@ from .integrity import (
 )
 
 from .signal_recorder import (
+    FORWARD_PREDICTION_COLUMNS,
     FORWARD_SIGNAL_COLUMNS,
     SignalLockError,
     SignalLockTimeoutError,
@@ -46,6 +47,7 @@ from .signal_recorder import (
     SignalValidationError,
     SignalVersionConflictError,
     finalize_signal_record,
+    load_prediction_record,
     load_signal_record,
     record_signals,
 )
@@ -54,6 +56,7 @@ __all__ = [
     "BundleExistsError",
     "BundleIntegrityError",
     "FinalModelFit",
+    "FORWARD_PREDICTION_COLUMNS",
     "FORWARD_SIGNAL_COLUMNS",
     "ForwardActivation",
     "ForwardActivationError",
@@ -81,6 +84,7 @@ __all__ = [
     "forward_contract_sha256",
     "load_forward_activation",
     "load_model_bundle",
+    "load_prediction_record",
     "load_signal_record",
     "record_signals",
     "register_forward_activation",

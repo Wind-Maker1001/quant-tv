@@ -2781,14 +2781,24 @@ def _command_forward_signal_locked(
             % (len(invalid_symbols), ", ".join(invalid_symbols[:10]))
         )
     scores = bundle.predict(finite_features)
+    predictions = pd.DataFrame(
+        {
+            "date": normalized_day,
+            "symbol": cross_section["symbol"].to_numpy(),
+            "score": scores.to_numpy(dtype=float),
+        }
+    )
+    if not predictions["score"].map(math.isfinite).all():
+        raise FactorLabError(
+            "Signal-day model predictions are non-finite; the complete eligible "
+            "cross-section must be recorded without silently dropping securities"
+        )
+    predictions = predictions.sort_values(
+        ["score", "symbol"], ascending=[False, True], kind="mergesort"
+    ).reset_index(drop=True)
+    predictions["rank"] = range(1, len(predictions) + 1)
     ranked = select_top_k(
-        pd.DataFrame(
-            {
-                "date": normalized_day,
-                "symbol": cross_section["symbol"].to_numpy(),
-                "score": scores.to_numpy(dtype=float),
-            }
-        ),
+        predictions,
         top_k=config.portfolio.top_k,
         rebalance_every=1,
         trading_dates=[normalized_day],
@@ -2818,6 +2828,8 @@ def _command_forward_signal_locked(
     record = record_signals(
         signal_values,
         config.paths.forward_dir / "signals",
+        predictions=predictions[["symbol", "score", "rank"]],
+        cross_section_size=len(cross_section),
         activation_date=activation.activation_date,
         signal_date=signal_date,
         data_asof=signal_date,
@@ -2858,16 +2870,20 @@ def _command_forward_signal_locked(
             "signal_sha256": record.sha256,
             "signal_manifest_sha256": record.manifest_sha256,
             "signal_rows": record.row_count,
+            "prediction_sha256": record.predictions_sha256,
+            "prediction_rows": record.prediction_row_count,
         }
     )
     run.add_output("forward_signals", record.signals_path)
     run.add_output("forward_signal_manifest", record.manifest_path)
+    run.add_output("forward_predictions", record.predictions_path)
     LOGGER.info(
-        "Published paper-only %s signal %s/%s with %d holdings",
+        "Published paper-only %s signal %s/%s with %d holdings and %d predictions",
         timing.timeliness,
         signal_date,
         record.version,
         record.row_count,
+        record.prediction_row_count,
     )
 
 

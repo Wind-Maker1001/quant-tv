@@ -32,7 +32,7 @@ so lock contention ends in a clear timeout and requires operator inspection.
 from __future__ import annotations
 
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, time, timezone
 import hashlib
 import io
@@ -43,7 +43,7 @@ import os
 from pathlib import Path
 import re
 import time as time_module
-from typing import Any, Dict, Iterable, Iterator, Mapping, Optional, Union
+from typing import Any, Dict, Iterable, Iterator, Mapping, Optional, Tuple, Union
 import uuid
 
 import pandas as pd
@@ -80,6 +80,12 @@ FORWARD_SIGNAL_COLUMNS = (
 )
 
 _SIGNAL_VALUE_COLUMNS = ("symbol", "score", "rank", "target_weight")
+FORWARD_PREDICTION_COLUMNS = tuple(
+    name for name in FORWARD_SIGNAL_COLUMNS if name != "target_weight"
+)
+_PREDICTION_VALUE_COLUMNS = ("symbol", "score", "rank")
+TOP_K_ONLY = "TOP_K_ONLY"
+FULL_ELIGIBLE_CROSS_SECTION = "FULL_ELIGIBLE_CROSS_SECTION"
 _DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _VERSION_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _SEQUENTIAL_VERSION_PATTERN = re.compile(r"^v(\d{6,})$")
@@ -125,12 +131,33 @@ class SignalRecord:
     sha256: str
     manifest_sha256: str
     row_count: int
+    predictions_path: Optional[Path] = None
+    predictions_sha256: Optional[str] = None
+    prediction_row_count: int = 0
+    prediction_scope: str = TOP_K_ONLY
+    _prediction_frame: Optional[pd.DataFrame] = field(default=None, repr=False, compare=False)
 
     @property
     def completion_path(self) -> Path:
         """Append-only success receipt; absent until the producer run succeeds."""
 
         return self.directory / "completion"
+
+    @property
+    def predictions(self) -> pd.DataFrame:
+        """Return a defensive copy of the verified full prediction snapshot.
+
+        Legacy Top-K signals never constitute full-cross-sectional evidence.
+        Consumers must obtain this record through ``load_signal_record`` with
+        its default completion requirement, not regenerate scores after the
+        event or treat the writer's unfinalized return as a successful run.
+        """
+
+        if self.prediction_scope != FULL_ELIGIBLE_CROSS_SECTION or self._prediction_frame is None:
+            raise SignalValidationError(
+                "TOP_K_ONLY record has no full-cross-sectional prediction evidence; retrospective rescoring is forbidden"
+            )
+        return self._prediction_frame.copy(deep=True)
 
 
 def _canonical_date(value: object, name: str) -> date:
@@ -211,6 +238,46 @@ def _version_name(value: object) -> str:
             "version may contain only letters, digits, dot, underscore, and hyphen"
         )
     return text
+
+
+def _validated_temporal_metadata(
+    *, signal_date: object, data_asof: object, generated_at: object,
+    activation_date: object, timeliness: object, reissue_reason: object,
+) -> Tuple[date, date, datetime, str, str]:
+    """Use identical close-known/date semantics at publication and reading.
+
+    This deliberately has no current-clock check or new timezone policy.
+    Historical saved evidence remains readable, and calendar/market-close
+    classification stays in the existing scheduling layer. Local self-hashes
+    do not supply an external timestamp or prevent rewriting an entire bundle.
+    """
+    day = _canonical_date(signal_date, "signal_date")
+    asof = _canonical_date(data_asof, "data_asof")
+    activation = _canonical_date(activation_date, "activation_date")
+    generated = _aware_datetime(generated_at, "generated_at")
+    if day < activation:
+        raise SignalValidationError(
+            "signal_date %s predates activation_date %s; historical backfill is forbidden"
+            % (day.isoformat(), activation.isoformat())
+        )
+    if asof > day:
+        raise SignalValidationError("data_asof must not be later than signal_date")
+    if generated.date() < day:
+        raise SignalValidationError("generated_at local date must not be earlier than signal_date")
+    if generated.astimezone(timezone.utc).date() < day:
+        raise SignalValidationError("generated_at UTC date must not be earlier than signal_date")
+    timing = _clean_text("timeliness", timeliness, maximum=32)
+    if timing not in ("ON_TIME", "LATE_REISSUE"):
+        raise SignalValidationError("timeliness must be ON_TIME or LATE_REISSUE")
+    if timing == "ON_TIME":
+        if generated.date() != day:
+            raise SignalValidationError("ON_TIME requires generated_at local date to equal signal_date")
+        if reissue_reason not in (None, ""):
+            raise SignalValidationError("ON_TIME must not include a reissue_reason")
+        reason = ""
+    else:
+        reason = _clean_text("reissue_reason", reissue_reason)
+    return day, asof, generated, timing, reason
 
 
 def _finite_real(name: str, value: object) -> float:
@@ -394,6 +461,67 @@ def _canonical_signals(
     return by_rank[list(FORWARD_SIGNAL_COLUMNS)]
 
 
+def _cross_section_size(value: object) -> int:
+    if isinstance(value, bool) or not isinstance(value, numbers.Integral) or int(value) <= 0:
+        raise SignalValidationError("cross_section_size must be a positive integer, not a verified flag")
+    return int(value)
+
+
+def _canonical_predictions(
+    predictions: pd.DataFrame,
+    metadata: Mapping[str, str],
+    generated_at: datetime,
+    cross_section_size: object,
+) -> pd.DataFrame:
+    if not isinstance(predictions, pd.DataFrame):
+        raise SignalValidationError("predictions must be a DataFrame of the complete eligible cross-section")
+    size = _cross_section_size(cross_section_size)
+    frame = predictions.copy()
+    if frame.columns.has_duplicates:
+        raise SignalValidationError("predictions must not contain duplicate column names")
+    missing = sorted(set(_PREDICTION_VALUE_COLUMNS).difference(frame.columns))
+    if missing:
+        raise SignalValidationError("predictions missing required columns: %s" % missing)
+    if len(frame) != size:
+        raise SignalValidationError("prediction row count must equal cross_section_size")
+    _validate_existing_metadata(frame, metadata, generated_at)
+    rows = []
+    for raw_symbol, raw_score, raw_rank in frame[list(_PREDICTION_VALUE_COLUMNS)].itertuples(index=False, name=None):
+        if not isinstance(raw_symbol, str) or raw_symbol != raw_symbol.strip():
+            raise SignalValidationError("prediction symbols must already be canonical")
+        try:
+            canonical_symbol = normalize_symbol(raw_symbol)
+        except SchemaError as exc:
+            raise SignalValidationError("prediction symbol is invalid: %r" % raw_symbol) from exc
+        if canonical_symbol != raw_symbol:
+            raise SignalValidationError("prediction symbols must already be canonical")
+        rows.append({"symbol": canonical_symbol, "score": _finite_real("prediction score", raw_score),
+                     "rank": _positive_rank(raw_rank)})
+    canonical = pd.DataFrame(rows)
+    if canonical["symbol"].duplicated().any():
+        raise SignalValidationError("prediction symbols must be unique")
+    if canonical["rank"].duplicated().any():
+        raise SignalValidationError("prediction ranks must be unique")
+    if sorted(canonical["rank"].tolist()) != list(range(1, size + 1)):
+        raise SignalValidationError("prediction ranks must be contiguous from 1 through cross_section_size")
+    by_rank = canonical.sort_values("rank", kind="mergesort").reset_index(drop=True)
+    by_score = canonical.sort_values(["score", "symbol"], ascending=[False, True], kind="mergesort").reset_index(drop=True)
+    if by_rank["symbol"].tolist() != by_score["symbol"].tolist():
+        raise SignalValidationError("prediction ranks must follow descending score with canonical-symbol tie breaking")
+    metadata_columns = FORWARD_SIGNAL_COLUMNS[: FORWARD_SIGNAL_COLUMNS.index("symbol")]
+    for column in reversed(metadata_columns):
+        by_rank.insert(0, column, metadata[column])
+    return by_rank[list(FORWARD_PREDICTION_COLUMNS)]
+
+
+def _validate_prediction_prefix(signals: pd.DataFrame, predictions: pd.DataFrame) -> None:
+    columns = list(_PREDICTION_VALUE_COLUMNS)
+    if len(signals) > len(predictions) or not signals[columns].reset_index(drop=True).equals(
+        predictions[columns].head(len(signals)).reset_index(drop=True)
+    ):
+        raise SignalValidationError("Top-K signals must exactly match the full prediction prefix (symbols, scores and ranks)")
+
+
 def _write_exclusive(path: Path, content: bytes) -> None:
     """Create and durably write one staging file without overwrite semantics."""
 
@@ -429,7 +557,7 @@ def _fsync_directory(path: Path) -> None:
 def _cleanup_staging(path: Path) -> None:
     """Remove only files created by this recorder from its UUID staging path."""
 
-    for name in ("manifest.sha256", "manifest.json", "signals.csv"):
+    for name in ("manifest.sha256", "manifest.json", "predictions.csv", "signals.csv"):
         candidate = path / name
         try:
             candidate.unlink()
@@ -614,6 +742,8 @@ class SignalRecorder:
         timeliness: str,
         reissue_reason: Optional[str] = None,
         version: Optional[str] = None,
+        predictions: Optional[pd.DataFrame] = None,
+        cross_section_size: Optional[int] = None,
     ) -> SignalRecord:
         """Validate and atomically publish one new immutable signal version.
 
@@ -626,43 +756,19 @@ class SignalRecorder:
         the explicit arguments exactly.  ``timeliness`` is caller-supplied
         because this storage layer intentionally has no exchange calendar or
         market-close policy.
+
+        Supplying ``predictions`` requires the exact positive integer
+        ``cross_section_size`` of the eligible scoring population. The full
+        canonical score/rank table and its Top-K prefix are published in one
+        schema-3 directory. Omitting predictions writes a schema-2
+        ``TOP_K_ONLY`` record, never full-cross-sectional evidence.
         """
 
-        day = _canonical_date(signal_date, "signal_date")
-        asof = _canonical_date(data_asof, "data_asof")
-        generated = _aware_datetime(generated_at, "generated_at")
-        if day < self.activation_date:
-            raise SignalValidationError(
-                "signal_date %s predates activation_date %s; "
-                "historical backfill is forbidden"
-                % (day.isoformat(), self.activation_date.isoformat())
-            )
-        if asof > day:
-            raise SignalValidationError("data_asof must not be later than signal_date")
-        if generated.date() < day:
-            raise SignalValidationError(
-                "generated_at local date must not be earlier than signal_date"
-            )
-        if generated.astimezone(timezone.utc).date() < day:
-            raise SignalValidationError(
-                "generated_at UTC date must not be earlier than signal_date"
-            )
-
-        timing = _clean_text("timeliness", timeliness, maximum=32)
-        if timing not in ("ON_TIME", "LATE_REISSUE"):
-            raise SignalValidationError(
-                "timeliness must be ON_TIME or LATE_REISSUE"
-            )
-        if timing == "ON_TIME":
-            if generated.date() != day:
-                raise SignalValidationError(
-                    "ON_TIME requires generated_at local date to equal signal_date"
-                )
-            if reissue_reason not in (None, ""):
-                raise SignalValidationError("ON_TIME must not include a reissue_reason")
-            reason = ""
-        else:
-            reason = _clean_text("reissue_reason", reissue_reason)
+        day, asof, generated, timing, reason = _validated_temporal_metadata(
+            signal_date=signal_date, data_asof=data_asof, generated_at=generated_at,
+            activation_date=self.activation_date, timeliness=timeliness,
+            reissue_reason=reissue_reason,
+        )
 
         metadata = {
             "signal_date": day.isoformat(),
@@ -697,6 +803,19 @@ class SignalRecorder:
                 "activation_id does not match activation date and research contract"
             )
         canonical = _canonical_signals(signals, metadata, generated)
+        full_predictions = None
+        prediction_content = None
+        prediction_digest = None
+        if predictions is None:
+            if cross_section_size is not None:
+                raise SignalValidationError("cross_section_size requires full predictions")
+        else:
+            full_predictions = _canonical_predictions(predictions, metadata, generated, cross_section_size)
+            _validate_prediction_prefix(canonical, full_predictions)
+            prediction_content = full_predictions.to_csv(
+                index=False, lineterminator="\n", float_format="%.17g"
+            ).encode("utf-8")
+            prediction_digest = hashlib.sha256(prediction_content).hexdigest()
         requested_version = _version_name(version) if version is not None else None
         csv_content = canonical.to_csv(
             index=False,
@@ -743,7 +862,7 @@ class SignalRecorder:
 
             manifest: Dict[str, Any] = {
                 "artifact_type": "qbot-forward-signals",
-                "manifest_version": 2,
+                "manifest_version": 3 if full_predictions is not None else 2,
                 "live_trading": False,
                 "version": selected_version,
                 "activation_date": self.activation_date.isoformat(),
@@ -769,6 +888,7 @@ class SignalRecorder:
                 "columns": list(FORWARD_SIGNAL_COLUMNS),
                 "signals_file": "signals.csv",
                 "sha256": digest,
+                "prediction_scope": FULL_ELIGIBLE_CROSS_SECTION if full_predictions is not None else TOP_K_ONLY,
                 "files": {
                     "signals.csv": {
                         "bytes": len(csv_content),
@@ -776,6 +896,17 @@ class SignalRecorder:
                     }
                 },
             }
+            if full_predictions is not None:
+                manifest.update({
+                    "predictions_file": "predictions.csv",
+                    "prediction_columns": list(FORWARD_PREDICTION_COLUMNS),
+                    "prediction_row_count": len(full_predictions),
+                    "cross_section_size": _cross_section_size(cross_section_size),
+                    "prediction_sha256": prediction_digest,
+                })
+                manifest["files"]["predictions.csv"] = {
+                    "bytes": len(prediction_content), "sha256": prediction_digest,
+                }
             manifest_content = (
                 json.dumps(
                     manifest, ensure_ascii=False, indent=2, sort_keys=True
@@ -786,6 +917,8 @@ class SignalRecorder:
             published = False
             try:
                 _write_exclusive(staging / "signals.csv", csv_content)
+                if prediction_content is not None:
+                    _write_exclusive(staging / "predictions.csv", prediction_content)
                 _write_exclusive(staging / "manifest.json", manifest_content)
                 _write_exclusive(
                     staging / "manifest.sha256",
@@ -826,6 +959,11 @@ class SignalRecorder:
             sha256=digest,
             manifest_sha256=manifest_digest,
             row_count=len(canonical),
+            predictions_path=target / "predictions.csv" if full_predictions is not None else None,
+            predictions_sha256=prediction_digest,
+            prediction_row_count=len(full_predictions) if full_predictions is not None else 0,
+            prediction_scope=FULL_ELIGIBLE_CROSS_SECTION if full_predictions is not None else TOP_K_ONLY,
+            _prediction_frame=full_predictions,
         )
 
     # Names used by scheduler-style callers; all routes retain identical rules.
@@ -857,6 +995,8 @@ def record_signals(
     version: Optional[str] = None,
     lock_timeout: float = 10.0,
     lock_poll_interval: float = 0.05,
+    predictions: Optional[pd.DataFrame] = None,
+    cross_section_size: Optional[int] = None,
 ) -> SignalRecord:
     """One-call wrapper around :class:`SignalRecorder`.
 
@@ -889,10 +1029,12 @@ def record_signals(
         timeliness=timeliness,
         reissue_reason=reissue_reason,
         version=version,
+        predictions=predictions,
+        cross_section_size=cross_section_size,
     )
 
 
-def _validate_completion_receipt(path: Path) -> Dict[str, Any]:
+def _validate_completion_receipt(path: Path) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Validate the append-only proof that the producer run finished cleanly."""
 
     if path.is_symlink() or not path.is_dir():
@@ -969,7 +1111,24 @@ def _validate_completion_receipt(path: Path) -> Dict[str, Any]:
         raise SignalValidationError(
             "completion run manifest does not prove a successful signal run"
         )
-    return receipt
+    # Both objects describe the same verified run-manifest bytes. The loader
+    # must not re-open the mutable path later to verify full-prediction fields.
+    return receipt, producer
+
+
+def _validate_prediction_producer(producer: Mapping[str, Any], record: SignalRecord) -> None:
+    if record.predictions_path is None:
+        return
+    rows = producer.get("prediction_rows")
+    outputs = producer.get("outputs")
+    if (
+        isinstance(rows, bool) or not isinstance(rows, int)
+        or rows != record.prediction_row_count
+        or producer.get("prediction_sha256") != record.predictions_sha256
+        or not isinstance(outputs, dict)
+        or outputs.get("forward_predictions") != str(record.predictions_path)
+    ):
+        raise SignalValidationError("producer run does not authorize full prediction evidence")
 
 
 def finalize_signal_record(
@@ -1031,6 +1190,7 @@ def finalize_signal_record(
             "producer run does not authorize signal completion (%s)"
             % ", ".join(sorted(set(mismatches)))
         )
+    _validate_prediction_producer(producer, record)
 
     receipt = {
         "artifact_type": "qbot-forward-signal-completion",
@@ -1095,24 +1255,26 @@ def load_signal_record(
         raise SignalValidationError("signal record must be a local directory")
     entries = list(path.iterdir())
     base_files = {"signals.csv", "manifest.json", "manifest.sha256"}
-    expected_files = base_files.union({"completion"}) if require_completion else base_files
     names = {entry.name for entry in entries}
-    if require_completion and names != expected_files:
+    allowed_base_files = (base_files, base_files.union({"predictions.csv"}))
+    if require_completion and (
+        "completion" not in names or names.difference({"completion"}) not in allowed_base_files
+    ):
         raise SignalValidationError(
             "signal record must contain exactly signals.csv, manifest.json, "
             "manifest.sha256, and a completion receipt"
         )
-    if not require_completion and names not in (base_files, base_files.union({"completion"})):
+    if not require_completion and names.difference({"completion"}) not in allowed_base_files:
         raise SignalValidationError(
             "unfinalized signal record must contain exactly its three base files"
         )
     base_entries = [entry for entry in entries if entry.name != "completion"]
     if any(entry.is_symlink() or not entry.is_file() for entry in base_entries):
         raise SignalValidationError("signal record entries must be regular files")
-    completion = (
+    completion, completion_producer = (
         _validate_completion_receipt(path / "completion")
         if "completion" in names
-        else None
+        else (None, None)
     )
     manifest_content = (path / "manifest.json").read_bytes()
     try:
@@ -1156,14 +1318,31 @@ def load_signal_record(
         "sha256",
         "files",
     }
+    schema_version = manifest.get("manifest_version") if isinstance(manifest, dict) else None
+    if type(schema_version) is not int or schema_version not in (2, 3):
+        raise SignalValidationError("signal manifest schema is invalid")
+    prediction_fields = {
+        "prediction_scope", "predictions_file", "prediction_columns",
+        "prediction_row_count", "cross_section_size", "prediction_sha256",
+    }
+    valid_fields = (
+        (required, required.union({"prediction_scope"})) if schema_version == 2
+        else (required.union(prediction_fields),)
+    )
     if (
-        not isinstance(manifest, dict)
-        or set(manifest) != required
+        set(manifest) not in valid_fields
         or manifest.get("artifact_type") != "qbot-forward-signals"
-        or manifest.get("manifest_version") != 2
         or manifest.get("live_trading") is not False
     ):
         raise SignalValidationError("signal manifest schema is invalid")
+    full_scope = schema_version == 3
+    scope = manifest.get("prediction_scope", TOP_K_ONLY)
+    expected_scope = FULL_ELIGIBLE_CROSS_SECTION if full_scope else TOP_K_ONLY
+    if scope != expected_scope:
+        raise SignalValidationError("signal prediction_scope is invalid")
+    declared_base_files = base_files.union({"predictions.csv"}) if full_scope else base_files
+    if names.difference({"completion"}) != declared_base_files:
+        raise SignalValidationError("signal record must contain exactly its schema-declared files")
     if completion is not None:
         completion_expected = {
             "run_id": manifest.get("run_id"),
@@ -1184,12 +1363,12 @@ def load_signal_record(
     version = _version_name(manifest["version"])
     if path.name != version:
         raise SignalValidationError("signal version directory does not match manifest")
-    signal_day = _canonical_date(manifest["signal_date"], "signal_date")
-    activation_day = _canonical_date(
-        manifest["activation_date"], "activation_date"
+    signal_day, _, generated, _, _ = _validated_temporal_metadata(
+        signal_date=manifest["signal_date"], data_asof=manifest["data_asof"],
+        generated_at=manifest["generated_at"], activation_date=manifest["activation_date"],
+        timeliness=manifest["timeliness"], reissue_reason=manifest["reissue_reason"],
     )
-    if signal_day < activation_day:
-        raise SignalValidationError("signal_date predates activation_date")
+    activation_day = _canonical_date(manifest["activation_date"], "activation_date")
     if path.parent.name != signal_day.isoformat():
         raise SignalValidationError("signal date directory does not match manifest")
     if manifest.get("signals_file") != "signals.csv":
@@ -1198,7 +1377,8 @@ def load_signal_record(
         raise SignalValidationError("signal manifest columns are invalid")
     recorded_csv_digest = _sha256(manifest.get("sha256"), "sha256")
     file_entry = manifest.get("files")
-    if not isinstance(file_entry, dict) or set(file_entry) != {"signals.csv"}:
+    expected_csv_files = {"signals.csv", "predictions.csv"} if full_scope else {"signals.csv"}
+    if not isinstance(file_entry, dict) or set(file_entry) != expected_csv_files:
         raise SignalValidationError("signal manifest files inventory is invalid")
     signal_entry = file_entry["signals.csv"]
     if not isinstance(signal_entry, dict) or set(signal_entry) != {"bytes", "sha256"}:
@@ -1227,7 +1407,6 @@ def load_signal_record(
         raise SignalValidationError("signal row_count must be an integer")
     if manifest["row_count"] != len(frame) or len(frame) <= 0:
         raise SignalValidationError("signal row_count does not match signals.csv")
-    generated = _aware_datetime(manifest["generated_at"], "generated_at")
     metadata_columns = FORWARD_SIGNAL_COLUMNS[: FORWARD_SIGNAL_COLUMNS.index("symbol")]
     metadata = {name: manifest[name] for name in metadata_columns}
     expected_activation_id = "%s-%s" % (
@@ -1249,7 +1428,42 @@ def load_signal_record(
     ).encode("utf-8")
     if canonical_csv != csv_content:
         raise SignalValidationError("signals.csv is not in canonical serialized form")
-    return SignalRecord(
+    full_predictions = None
+    prediction_digest = None
+    if full_scope:
+        size = _cross_section_size(manifest.get("cross_section_size"))
+        prediction_count = _cross_section_size(manifest.get("prediction_row_count"))
+        if prediction_count != size:
+            raise SignalValidationError("prediction row count must equal cross_section_size")
+        if manifest.get("predictions_file") != "predictions.csv":
+            raise SignalValidationError("signal manifest has an invalid predictions_file")
+        if manifest.get("prediction_columns") != list(FORWARD_PREDICTION_COLUMNS):
+            raise SignalValidationError("signal manifest prediction columns are invalid")
+        prediction_digest = _sha256(manifest.get("prediction_sha256"), "prediction_sha256")
+        prediction_entry = file_entry["predictions.csv"]
+        if not isinstance(prediction_entry, dict) or set(prediction_entry) != {"bytes", "sha256"}:
+            raise SignalValidationError("predictions.csv manifest entry is invalid")
+        if _sha256(prediction_entry.get("sha256"), "predictions.csv sha256") != prediction_digest:
+            raise SignalValidationError("predictions.csv digests disagree in manifest")
+        prediction_content = (path / "predictions.csv").read_bytes()
+        if type(prediction_entry.get("bytes")) is not int or prediction_entry["bytes"] != len(prediction_content):
+            raise SignalValidationError("predictions.csv byte count mismatch")
+        if hashlib.sha256(prediction_content).hexdigest() != prediction_digest:
+            raise SignalValidationError("predictions.csv SHA-256 mismatch")
+        try:
+            prediction_frame = pd.read_csv(
+                io.BytesIO(prediction_content), dtype={"symbol": str},
+                keep_default_na=False, float_precision="round_trip",
+            )
+        except (UnicodeError, ValueError, TypeError) as exc:
+            raise SignalValidationError("predictions.csv is unreadable") from exc
+        if list(prediction_frame.columns) != list(FORWARD_PREDICTION_COLUMNS):
+            raise SignalValidationError("predictions.csv columns are invalid")
+        full_predictions = _canonical_predictions(prediction_frame, metadata, generated, size)
+        _validate_prediction_prefix(canonical, full_predictions)
+        if full_predictions.to_csv(index=False, lineterminator="\n", float_format="%.17g").encode("utf-8") != prediction_content:
+            raise SignalValidationError("predictions.csv is not in canonical serialized form")
+    record = SignalRecord(
         signal_date=signal_day,
         version=version,
         directory=path,
@@ -1258,11 +1472,30 @@ def load_signal_record(
         sha256=recorded_csv_digest,
         manifest_sha256=manifest_digest,
         row_count=len(frame),
+        predictions_path=path / "predictions.csv" if full_scope else None,
+        predictions_sha256=prediction_digest,
+        prediction_row_count=len(full_predictions) if full_scope else 0,
+        prediction_scope=scope,
+        _prediction_frame=full_predictions,
     )
+    if completion_producer is not None:
+        _validate_prediction_producer(completion_producer, record)
+    return record
+
+
+def load_prediction_record(
+    directory: Union[str, os.PathLike], *, require_completion: bool = True
+) -> pd.DataFrame:
+    """Return verified full predictions; legacy Top-K cannot be rescored later."""
+
+    return load_signal_record(directory, require_completion=require_completion).predictions
 
 
 __all__ = [
     "FORWARD_SIGNAL_COLUMNS",
+    "FORWARD_PREDICTION_COLUMNS",
+    "TOP_K_ONLY",
+    "FULL_ELIGIBLE_CROSS_SECTION",
     "SignalLockError",
     "SignalLockTimeoutError",
     "SignalRecord",
@@ -1272,5 +1505,6 @@ __all__ = [
     "SignalVersionConflictError",
     "finalize_signal_record",
     "load_signal_record",
+    "load_prediction_record",
     "record_signals",
 ]
