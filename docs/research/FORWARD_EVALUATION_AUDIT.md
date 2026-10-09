@@ -138,3 +138,8 @@ Q4 的完整 Train/Validation/Historical Test/Real Forward 实证差距仍不能
 新模块补齐成熟评价软件，但未补齐完整 Train IC 报告，也没有真实输入和事前批准的
 新激活日。原2026-09-14永久不得补写 ON_TIME。后续继续核验正式 PIT/行情来源，
 补充训练期与验证期预测诊断，并在真实数据具备后按冻结协议运行；负结果原样报告。
+
+后续软件进展：历史 Train/Validation/Test 逐 fold 诊断与来源绑定已加入，补齐了
+当时记录的训练报告软件缺口；真实数据和真实 Forward 结果仍未补齐。原验收数字
+和限制是该提交的历史证据，不倒写为当前全部验收，后续见
+[STAGE_DIAGNOSTICS_AUDIT.md](STAGE_DIAGNOSTICS_AUDIT.md)。

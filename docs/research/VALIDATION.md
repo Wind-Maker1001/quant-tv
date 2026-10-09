@@ -96,6 +96,23 @@ Ridge 会保存标准化特征空间中的逐 fold 系数；模型持久化文�
 
 ## 样本外预测评价
 
+### Train / Validation / Historical Test 分阶段诊断
+
+每个 fold 在选中模型对 Test 预测一次之后生成 TRAIN_IN_SAMPLE 诊断；
+VALIDATION_SELECTION 直接复用该候选已用于选参的分数，不重复 predict。
+三阶段仍为同一个 Train-only 模型，不重拟合 Train+Validation。
+Train 诊断覆盖完整审计窗口，有缺标签的行不参与 fit 但保留评价覆盖分母。
+各阶段分别按日期计算 IC/RankIC 和固定 Top/Bottom 标签收益，再逐 fold 汇总。
+Train folds 重复包含旧日期，不合并为独立总体；Validation 存在选参乐观偏差，
+不能冒充独立最终留出。主 predictions、绩效和两级回测仍只使用 Test。
+
+stage audit 绑定窗口/成熟边界、输入/fit 子集、已选模型文件与实际参数/协议。
+CLI 从同一可信 dataset 复核源摘要，比较强制四模型同 cohort，并只解析已核验的
+字节快照，不重新拟合、选参或加载模型。详见
+[STAGE_DIAGNOSTICS_AUDIT.md](STAGE_DIAGNOSTICS_AUDIT.md)。
+
+### Test-only 主评价
+
 Prediction IC 和 Spearman RankIC 均先按 Test 交易日做横截面 complete-case 相关，再在时间维度汇总。Top-K 与 Bottom-K 的成员先仅由当日有限 score 固定，再观察其未来标签；未来标签缺失不能把下一名事后补进组合。评价表同时报告 score coverage、Top/Bottom 标签覆盖率和实际已成熟标签数，避免把尚未实现的尾部误当成完整组合。结果支持：
 
 - Overall；

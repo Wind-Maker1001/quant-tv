@@ -133,6 +133,13 @@ EXCESS_RET5        = STOCK_FWD_RET5 - BENCHMARK_FWD_RET5
 
 当前实现有意不做 Train+Validation 重拟合，使每个模型的拟合范围直接可审计。Scaler、缺失处理、未来的特征选择/中性化/PCA 和模型参数只能在 Train 上拟合。禁止根据最终 Test 选择因子、模型、Top-K、费用或状态定义。
 
+另外保存同一已选模型逐 fold 的 TRAIN_IN_SAMPLE、VALIDATION_SELECTION 和
+HISTORICAL_TEST 预测诊断。训练期诊断在 Test 预测之后追加，不影响选择；Validation
+复用原候选分数，不重新预测。训练内表现不是样本外能力，验证表现受选择偏差影响，
+三个不同时期差距不能单独证明过拟合。扩大训练集重复包含旧日期，因此 Train 指标
+不跨 fold 池化。分阶段输入/标签/fit 子集、参数、覆盖、指标与模型文件摘要进入审计；
+主 Test 指标和交易回测保持独立。见 [STAGE_DIAGNOSTICS_AUDIT.md](STAGE_DIAGNOSTICS_AUDIT.md)。
+
 Phase 2 交付并冻结了两个基线模型：
 
 - FactorScore：使用 YAML 预先冻结的 14 因子权重求加权和，默认除以绝对权重和；缺失因子贡献为中性值 0，权重不学习。
@@ -175,7 +182,11 @@ Schema 3 在同一次原子发布内分别保存 Top-K 组合与全部合格股�
 
 成熟关联入口 `evaluate-forward` 已实现：研究契约事前固定 FIRST_ON_TIME，每日选择最早完整且已成功完成的当日收盘后版本。后续版本与迟到重发明确排除，异常证据失败；不根据未来收益选版本。只读可信本地行情，通过实际基准交易日历关联 t+1 → t+6 的原始开盘超额标签，并追加新 run_id 报告及成功收据，原始预测、排名和信号不变。区分未成熟与已成熟但缺价，保留全体预测作覆盖率分母；Top-K 缺价不晋升候选。按年、季度、市场状态给出预测指标；若补算评价市场状态则只使用 t 及此前的基准数据，明确不是当时保存字段。该标签是成本前的预测评价，不等于执行后组合收益。
 
-新增组件仅完成软件与合成数据验证，未生成真实 Forward IC，也未补齐完整 Train IC 报告。真实五年数据/PIT、正式冻结模型与事前批准的新激活日仍缺，Train、Validation、Historical Test 与 Real Forward 的完整实证差距不能据现有产物回答。见 [FORWARD_EVALUATION_AUDIT.md](FORWARD_EVALUATION_AUDIT.md)。
+新增组件仅完成软件与合成数据验证，未生成真实 Forward IC。随后已经补齐历史
+Train/Validation/Test 的逐 fold 诊断软件，但没有补齐真实研究输入。真实五年数据/PIT、
+正式冻结模型与事前批准的新激活日仍缺，四阶段的完整实证差距不能据现有合成产物
+回答。见 [FORWARD_EVALUATION_AUDIT.md](FORWARD_EVALUATION_AUDIT.md) 和
+[STAGE_DIAGNOSTICS_AUDIT.md](STAGE_DIAGNOSTICS_AUDIT.md)。
 
 本地文件摘要和系统时间不等于第三方可信时间戳。课程证据应把配置、激活收据、冻结模型和每日信号按顺序提交到不可改写的 Git 历史；若需更强证明，应使用受保护远端或外部时间戳/WORM 存储。详细操作见 `FORWARD_TEST.md`。
 

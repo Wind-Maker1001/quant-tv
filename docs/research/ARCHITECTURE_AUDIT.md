@@ -127,4 +127,9 @@ Phase 1–4 不修改 main.py、qbot_main.py、qbot/gui、qbot/engine、qbot/dat
 
 ## 分阶段复用决策
 
+历史预测报告现补齐已选 Train-only 模型的逐 fold Train/Validation/Test 诊断，
+Validation 分数复用、Test 单次预测与回测原边界不变。CLI 绑定同一可信输入与保存
+模型，比较不重复累计扩大训练行，不重评分或由 Test 选优。增量软件与真实数据限制
+见 [STAGE_DIAGNOSTICS_AUDIT.md](STAGE_DIAGNOSTICS_AUDIT.md)。
+
 第一阶段完成隔离的数据与因子核心；第二阶段以 Pandas/NumPy 实现与 Legacy 无关的基线模型验证和快速回测；第三阶段以延迟导入的 LightGBM/XGBoost 扩展同一模型接口，并直接实现不依赖 Backtrader 的规则执行回测和四模型统一比较；第四阶段在独立 `forward/` 中实现预注册、冻结和 append-only Forward Signal。即使 Legacy 提供实盘能力，FactorLab 也永久默认 `live_trading=false`，不发送真实订单。

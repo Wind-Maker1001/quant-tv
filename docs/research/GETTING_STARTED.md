@@ -12,6 +12,7 @@ Qbot FactorLab 是 Qbot 内部隔离的 A 股横截面研究模块。它仅用�
 | IC/RankIC、分位收益、自相关、换手和相关矩阵报告 | Phase 1 已实现 |
 | FactorScore、Ridge、Expanding Walk-Forward、Purge/Embargo | Phase 2 已实现 |
 | Test 预测指标、Top-K、Fast Backtest、费用与模型报告 | Phase 2 已实现 |
+| Train/Validation/Historical Test 逐 fold 诊断与来源绑定 | 已实现；训练内/选参期不冒充独立样本外 |
 | LightGBM、XGBoost、Market Regime、规则执行回测 | Phase 3 已实现 |
 | 未来激活、冻结模型、append-only Paper Signal | Phase 4 核心已实现，尚未正式激活 |
 | 完整 Forward 预测的成熟标签关联及追加报告 | 已实现；只有软件/合成验收，没有真实 Forward IC |
@@ -145,7 +146,7 @@ smoke 配置、mock fixture 和 synthetic demo 均不得用于论文收益、因
 1. 按配置构造 expanding Train/Validation/Test folds；
 2. 执行 Purge、Embargo 和标签窗口审计；
 3. FactorScore 使用冻结权重；Ridge、LightGBM、XGBoost 只由 Validation 在预注册小候选集中选参；
-4. 仅对 Test 产生样本外 score/rank 和预测指标；
+4. 仅对 Test 产生样本外 score/rank 和主预测指标，另保存已选模型的训练内诊断与已缓存的 Validation 分数；
 5. 用 t 日信号在 t+1 adj_open 运行 Top-K 等权 Fast Backtest；
 6. 再用 raw open/close 运行含 T+1、整手、现金、停牌与涨跌停近似的 Execution Backtest；
 7. 写模型、特征重要性/系数、状态分解、两级回测表、图片和运行 manifest。
@@ -155,6 +156,13 @@ smoke 配置、mock fixture 和 synthetic demo 均不得用于论文收益、因
     python -m qbot.research.cli compare-models --config configs/research/csi500_smoke.yaml
 
 compare-models 不自动挑选“赢家”，也不据 Test 调参。它读取 FactorScore、Ridge、LightGBM、XGBoost 各自最新的完整输出，并强制核对完整配置、数据/PIT 哈希、Fast/Execution 行情哈希、Git commit、工作区 diff 指纹、Python 与包版本、模型目录全部产物 SHA-256，以及 OOS 键、标签窗口和已实现目标一致；源 run_id 会写进比较结果。任一来源未知、被修改或不一致都会停止。
+
+新模型报告的 `stage_prediction_daily/summary/audit.csv/parquet` 与
+`stage_ic_comparison.png` 分别展示 TRAIN_IN_SAMPLE、VALIDATION_SELECTION、
+HISTORICAL_TEST。主 predictions 与回测仍只有 Test；训练诊断不选参，Validation
+已用于选参不是独立留出，扩大 Train folds 不能混合累计。比较只合并小型指标与审计，
+原始 Train/Validation 分数保留在逐模型 `stage_predictions.csv/parquet`。
+完整合同、真实数据限制和合成示例见 [STAGE_DIAGNOSTICS_AUDIT.md](STAGE_DIAGNOSTICS_AUDIT.md)。
 
 ### 5.1 Phase 4 Paper Forward Test
 
