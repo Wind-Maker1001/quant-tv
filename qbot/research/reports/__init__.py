@@ -10,6 +10,7 @@ from .forward import (
 )
 from .model import (
     ModelReportError,
+    validate_stage_diagnostics,
     write_model_comparison_report,
     write_model_report,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "ForwardEvaluationReport",
     "ForwardEvaluationReportError",
     "ModelReportError",
+    "validate_stage_diagnostics",
     "write_factor_report",
     "finalize_forward_evaluation_report",
     "load_forward_evaluation_report",

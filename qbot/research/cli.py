@@ -106,9 +106,37 @@ from qbot.research.universe.status import (
     publish_security_data,
 )
 from qbot.research.validation import ExpandingWalkForwardSplitter, WalkForwardRunner
+from qbot.research.validation.walk_forward import (
+    WalkForwardResult,
+    diagnostic_frame_sha256,
+)
 
 
 LOGGER = logging.getLogger("qbot.research")
+
+_STAGE_TABLE_ATTRIBUTES = {
+    "stage_predictions": "diagnostic_predictions",
+    "stage_prediction_daily": "diagnostic_daily",
+    "stage_prediction_summary": "diagnostic_summary",
+    "stage_prediction_audit": "diagnostic_audit",
+}
+_STAGE_ARTIFACTS = {
+    name + suffix for name in _STAGE_TABLE_ATTRIBUTES for suffix in (".csv", ".parquet")
+} | {"stage_ic_comparison.png"}
+
+
+def _stage_diagnostic_policy() -> Dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "fit_scope": "train_only",
+        "train": "TRAIN_IN_SAMPLE:diagnostic_only",
+        "validation": "VALIDATION_SELECTION:selection_and_diagnostic",
+        "test": "HISTORICAL_TEST:evaluation_only",
+        "validation_prediction": "reuse_selected_candidate",
+        "test_predictions_per_fold": 1,
+        "pooling": "evaluate_each_fold_and_stage_separately",
+        "refit_train_plus_validation": False,
+    }
 
 
 def _manifest_arguments(arguments: argparse.Namespace) -> Dict[str, Any]:
@@ -1656,6 +1684,109 @@ def _attach_execution_status(
     )
 
 
+def _bind_diagnostic_sources(
+    config: ResearchConfig,
+    runner: WalkForwardRunner,
+    result: WalkForwardResult,
+    dataset: pd.DataFrame,
+    calendar: pd.DatetimeIndex,
+) -> None:
+    """Rebuild audited stage cohorts from the same verified in-memory input.
+
+    This only repeats deterministic validation/splitting and hashes features,
+    labels and keys. No model is fitted, selected or predicted here.
+    """
+    from qbot.research.reports.model import ModelReportError, validate_stage_diagnostics
+
+    try:
+        tables = validate_stage_diagnostics(result)
+    except ModelReportError as exc:
+        raise FactorLabError("Invalid stage diagnostics: %s" % exc) from exc
+    if not tables:
+        raise FactorLabError("Formal walk-forward requires complete stage diagnostics")
+    prepared = runner._validate_data(dataset)
+    folds = list(runner.splitter.split(prepared, calendar=calendar))
+    audit = tables["stage_prediction_audit"]
+    if set(audit["fold"]) != {fold.fold for fold in folds}:
+        raise FactorLabError("Stage diagnostic folds differ from verified dataset splitting")
+    for fold in folds:
+        train = prepared.iloc[fold.train_indices]
+        fitted = runner._diagnostic_source_frame(
+            train.loc[train[_target_column(config)].notna()],
+            entry_date_col="entry_date", exit_date_col="exit_date",
+        )
+        fitted_keys = diagnostic_frame_sha256(fitted[["date", "symbol"]])
+        fitted_sha = diagnostic_frame_sha256(fitted)
+        for stage, indices in (
+            ("TRAIN_IN_SAMPLE", fold.train_indices),
+            ("VALIDATION_SELECTION", fold.validation_indices),
+            ("HISTORICAL_TEST", fold.test_indices),
+        ):
+            row = audit.loc[audit["fold"].eq(fold.fold) & audit["stage"].eq(stage)].iloc[0]
+            source = runner._diagnostic_source_frame(
+                prepared.iloc[indices], entry_date_col="entry_date", exit_date_col="exit_date",
+            )
+            expected = {
+                "source_keys_sha256": diagnostic_frame_sha256(source[["date", "symbol"]]),
+                "source_sha256": diagnostic_frame_sha256(source),
+                "fit_source_keys_sha256": fitted_keys,
+                "fit_source_sha256": fitted_sha,
+                "rows": len(source), "model_name": runner.model_name,
+                "target_column": _target_column(config),
+                "top_k": config.portfolio.top_k,
+                "minimum_cross_section": config.evaluation.min_cross_section,
+                "random_seed": config.seed,
+                "selection_metric": runner.selection_metric,
+            }
+            if any(row[name] != value for name, value in expected.items()):
+                raise FactorLabError("Stage diagnostic source/config differs from verified dataset: fold %s/%s" % (fold.fold, stage))
+            if json.loads(row["feature_names"]) != list(config.factors):
+                raise FactorLabError("Stage diagnostic features differ from config")
+
+
+def _stage_manifest_binding(
+    result: WalkForwardResult,
+    output_dir: Path,
+    inventory: Dict[str, str],
+    dataset_sha256: str,
+    universe_version: str,
+) -> Dict[str, Any]:
+    """Bind complete stage artifacts and actual saved fold models to input IDs."""
+    from qbot.research.reports.model import ModelReportError, validate_stage_diagnostics
+    from qbot.research.forward.integrity import assert_no_link_components
+
+    try:
+        tables = validate_stage_diagnostics(result)
+    except ModelReportError as exc:
+        raise FactorLabError("Invalid stage diagnostics: %s" % exc) from exc
+    if not tables or not _STAGE_ARTIFACTS.issubset(inventory):
+        raise FactorLabError("Stage diagnostic report artifacts are incomplete")
+    if not _is_sha256(dataset_sha256) or not _is_sha256(universe_version):
+        raise FactorLabError("Stage diagnostics require verified dataset/universe identities")
+    root = assert_no_link_components(Path(output_dir))
+    models = {}
+    for row in tables["stage_prediction_audit"].itertuples(index=False):
+        if not isinstance(row.model_path, str) or not _is_sha256(row.saved_model_sha256):
+            raise FactorLabError("Formal stage diagnostics require saved model evidence")
+        model = assert_no_link_components(Path(row.model_path))
+        try:
+            relative = model.relative_to(root).as_posix()
+        except ValueError as exc:
+            raise FactorLabError("Stage diagnostic model path escapes its artifact root") from exc
+        if not relative.startswith("fold_models/") or inventory.get(relative) != row.saved_model_sha256:
+            raise FactorLabError("Stage diagnostic saved model SHA-256 differs from inventory")
+        models[relative] = row.saved_model_sha256
+    if len(models) != len(result.fold_summary):
+        raise FactorLabError("Stage diagnostics must identify one saved model per fold")
+    return {
+        "schema_version": 1, "policy": _stage_diagnostic_policy(),
+        "dataset_sha256": dataset_sha256, "universe_version": universe_version,
+        "table_sha256": {name: diagnostic_frame_sha256(table) for name, table in tables.items()},
+        "table_rows": {name: len(table) for name, table in tables.items()},
+        "saved_model_sha256": models,
+    }
+
+
 def command_walk_forward(
     config: ResearchConfig,
     run: RunManifest,
@@ -1726,9 +1857,11 @@ def command_walk_forward(
     else:
         raise FactorLabError("Unsupported model: %s" % model_name)
 
-    walk_forward = WalkForwardRunner(
+    runner = WalkForwardRunner(
         _walk_forward_splitter(config), **runner_options
-    ).run(dataset, calendar=research_calendar)
+    )
+    walk_forward = runner.run(dataset, calendar=research_calendar)
+    _bind_diagnostic_sources(config, runner, walk_forward, dataset, research_calendar)
     prediction = evaluate_predictions(
         walk_forward.predictions,
         target_col=_target_column(config),
@@ -1846,10 +1979,17 @@ def command_walk_forward(
     run.payload["execution_rejections"] = int(len(execution.rejections))
     prediction_path = output_dir / "predictions.parquet"
     run.payload["predictions_sha256"] = _file_sha256(prediction_path)
-    run.payload["model_artifact_sha256"] = _artifact_sha256(output_dir)
+    inventory = _artifact_sha256(output_dir)
+    run.payload["model_artifact_sha256"] = inventory
+    run.payload["stage_diagnostics_version"] = 1
+    run.payload["stage_diagnostic_provenance"] = _stage_manifest_binding(
+        walk_forward, output_dir, inventory, dataset_sha256, universe_version,
+    )
     run.add_output("model_report", summary_path)
     run.add_output("predictions", prediction_path)
     run.add_output("walk_forward_results", output_dir / "walk_forward_results.csv")
+    for name in _STAGE_TABLE_ATTRIBUTES:
+        run.add_output(name, output_dir / (name + ".parquet"))
     run.add_output("nav", output_dir / "nav.csv")
     run.add_output("execution_nav", output_dir / "execution_nav.csv")
     run.add_output(
@@ -2023,6 +2163,15 @@ def _verify_model_artifacts(
         "walk_forward_results.csv",
         "summary.md",
     }
+    if "stage_diagnostics_version" in manifest:
+        version = manifest["stage_diagnostics_version"]
+        evidence = manifest.get("stage_diagnostic_provenance")
+        if (type(version) is not int or version != 1 or not isinstance(evidence, dict)
+                or evidence.get("policy") != _stage_diagnostic_policy()):
+            raise FactorLabError("%s has unknown stage diagnostic policy/version" % model_name)
+        required |= _STAGE_ARTIFACTS | {"walk_forward_results.parquet"}
+    elif _STAGE_ARTIFACTS.intersection(expected):
+        raise FactorLabError("%s stage diagnostic artifacts lack producer provenance" % model_name)
     if not required.issubset(expected):
         missing = sorted(required.difference(expected))
         raise FactorLabError(
@@ -2037,7 +2186,10 @@ def _verify_model_artifacts(
         if path.is_symlink() or output_dir.resolve() not in path.resolve().parents:
             raise FactorLabError("%s model artifact path escapes its root" % model_name)
         name = path.relative_to(output_dir).as_posix()
-        if path.suffix in {".csv", ".parquet"}:
+        # Train cohorts expand and overlap. The human-readable raw CSV can
+        # be very large and is never parsed by comparison; hash it as a
+        # stream. Its lossless Parquet is pinned only until stage validation.
+        if path.suffix in {".csv", ".parquet"} and name != "stage_predictions.csv":
             content = path.read_bytes()
             snapshots[name] = content
             actual[name] = hashlib.sha256(content).hexdigest()
@@ -2061,6 +2213,87 @@ def _verify_model_artifacts(
     return snapshots
 
 
+def _verified_stage_cohort(
+    model_name: str,
+    output_dir: Path,
+    manifest: Dict[str, Any],
+    artifacts: Dict[str, bytes],
+) -> Optional[pd.DataFrame]:
+    """Validate stage diagnostics from already-verified bytes, not paths."""
+    if "stage_diagnostics_version" not in manifest:
+        return None
+    try:
+        tables = {
+            name: pd.read_parquet(io.BytesIO(artifacts[name + ".parquet"]))
+            for name in _STAGE_TABLE_ATTRIBUTES
+        }
+        result = WalkForwardResult(
+            predictions=pd.read_parquet(io.BytesIO(artifacts["predictions.parquet"])),
+            fold_summary=pd.read_parquet(io.BytesIO(artifacts["walk_forward_results.parquet"])),
+            validation_metrics=pd.DataFrame(), coefficients=pd.DataFrame(), model_paths=(),
+            **{attribute: tables[name] for name, attribute in _STAGE_TABLE_ATTRIBUTES.items()},
+        )
+        binding = _stage_manifest_binding(
+            result, output_dir, manifest["model_artifact_sha256"],
+            manifest.get("dataset_sha256"), manifest.get("universe_version"),
+        )
+        if binding != manifest.get("stage_diagnostic_provenance"):
+            raise FactorLabError("%s stage diagnostics differ from producer provenance" % model_name)
+        # These small CSVs are the human-readable views of the canonical
+        # Parquets, not independent sources of metrics. Check their cells
+        # even if somebody reseals the byte inventory after changing a CSV.
+        # Raw expanding-Train CSV is streamed only and never parsed here.
+        for name, table in tables.items():
+            if name == "stage_predictions":
+                continue
+            stored_csv = pd.read_csv(
+                io.BytesIO(artifacts[name + ".csv"]),
+                dtype=str, keep_default_na=False,
+            )
+            canonical_csv = pd.read_csv(
+                io.BytesIO(table.to_csv(index=False).encode("utf-8")),
+                dtype=str, keep_default_na=False,
+            )
+            try:
+                pd.testing.assert_frame_equal(stored_csv, canonical_csv, check_exact=True)
+            except AssertionError as exc:
+                raise FactorLabError(
+                    "%s stage diagnostic CSV/Parquet values differ (%s)" % (model_name, name)
+                ) from exc
+        audit = tables["stage_prediction_audit"]
+        if not audit["model_name"].eq(model_name).all():
+            raise FactorLabError("Stage diagnostic model identity differs from its report")
+        config = manifest.get("config", {})
+        factors = config.get("factors")
+        target = "EXCESS_RET%d" % config.get("label", {}).get("holding_days", 5)
+        expected = {
+            "random_seed": config.get("seed"),
+            "top_k": config.get("portfolio", {}).get("top_k"),
+            "minimum_cross_section": config.get("evaluation", {}).get("min_cross_section"),
+            "target_column": target,
+            # CLI does not offer a mutable selection metric. The fixed
+            # default is part of its experiment protocol, not Test feedback.
+            "selection_metric": "prediction_rank_ic_mean",
+        }
+        if any(value is None or not audit[name].eq(value).all() for name, value in expected.items()):
+            raise FactorLabError("Stage diagnostic protocol differs from producer config")
+        if any(json.loads(value) != factors for value in audit["feature_names"]):
+            raise FactorLabError("Stage diagnostic features differ from producer config")
+        # Scores and selected parameters legitimately differ by model; only
+        # actual cohort/feature/label/fit-input identities must match.
+        columns = [
+            "fold", "stage", "source_keys_sha256", "source_sha256",
+            "fit_source_keys_sha256", "fit_source_sha256",
+            "signal_start", "signal_end", "label_min_entry", "label_max_entry",
+            "label_min_exit", "label_max_exit", "maturity_boundary", "rows", "labeled_rows",
+        ]
+        return audit[columns].sort_values(["fold", "stage"], kind="mergesort").reset_index(drop=True)
+    except FactorLabError:
+        raise
+    except Exception as exc:
+        raise FactorLabError("%s stage diagnostic evidence is invalid: %s" % (model_name, exc)) from exc
+
+
 def _comparison_record(model_name: str, output_dir: Path, *, artifacts: Optional[Dict[str, bytes]] = None) -> Dict[str, Any]:
     def read_csv(filename):
         return pd.read_csv(output_dir / filename if artifacts is None else io.BytesIO(artifacts[filename]))
@@ -2077,6 +2310,10 @@ def _comparison_record(model_name: str, output_dir: Path, *, artifacts: Optional
     record: Dict[str, Any] = {
         "model_name": model_name,
         "run_id": output_dir.name,
+        "stage_diagnostics_available": (
+            "stage_prediction_summary.parquet" in artifacts if artifacts is not None
+            else (output_dir / "stage_prediction_summary.parquet").is_file()
+        ),
     }
     record.update(
         {
@@ -2125,11 +2362,20 @@ def _combine_model_tables(
                 )
             continue
         try:
-            table = pd.read_csv(path if snapshot is None else io.BytesIO(snapshot[filename]))
+            reader = pd.read_parquet if path.suffix == ".parquet" else pd.read_csv
+            table = reader(path if snapshot is None else io.BytesIO(snapshot[filename]))
         except Exception as exc:
             raise FactorLabError(
                 "%s report has unreadable %s" % (model_name, filename)
             ) from exc
+        if filename == "stage_prediction_audit.parquet":
+            # Fixed-weight/tree models have an entirely missing alpha;
+            # Ridge has floats. Give this optional numeric field the same
+            # explicit type before concat, rather than relying on pandas'
+            # deprecated all-NA inference. Never drop the audit column.
+            table["selected_alpha"] = pd.to_numeric(
+                table["selected_alpha"], errors="raise",
+            ).astype("float64")
         table.insert(0, "source_run_id", output_dir.name)
         if "model_name" not in table:
             table.insert(1, "model_name", model_name)
@@ -2220,7 +2466,6 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
     current_provenance = _comparison_provenance(
         run.payload, "Current compare-models run"
     )
-    artifact_snapshots = {}
     for name, payload in manifests.items():
         source_provenance = _comparison_provenance(
             payload, "%s source run" % name
@@ -2235,7 +2480,6 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
                 "%s source run provenance differs from the current environment (%s)"
                 % (name, ", ".join(provenance_mismatches))
             )
-        artifact_snapshots[name] = _verify_model_artifacts(name, outputs[name], payload)
     current_config = config.to_dict()
     if any(payload.get("config") != current_config for payload in manifests.values()):
         raise FactorLabError(
@@ -2257,6 +2501,36 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         or not _is_sha256(next(iter(universe_versions), None))
     ):
         raise FactorLabError("Model reports use different or unknown PIT universe versions")
+    # Check shared input identities before interpreting the new stage
+    # evidence. An unknown dataset must retain its original fail-fast error,
+    # even when its report also includes diagnostic tables.
+    artifact_snapshots = {}
+    stage_cohorts = {}
+    oos_keys = {}
+    for name, payload in manifests.items():
+        artifact_snapshots[name] = _verify_model_artifacts(name, outputs[name], payload)
+        oos_keys[name] = _prediction_oos_keys(
+            name, outputs[name], payload, _target_column(config),
+            content=artifact_snapshots[name]["predictions.parquet"],
+        )
+        if name != model_names[0] and not oos_keys[model_names[0]].equals(oos_keys[name]):
+            raise FactorLabError(
+                "Model reports do not use identical out-of-sample keys, label "
+                "windows, and realised targets"
+            )
+        stage_cohorts[name] = _verified_stage_cohort(
+            name, outputs[name], payload, artifact_snapshots[name],
+        )
+        # Raw Train/Validation predictions stay in each source report. Do
+        # not retain or concatenate millions of expanding-training rows.
+        artifact_snapshots[name].pop("stage_predictions.parquet", None)
+    stage_available = all(cohort is not None for cohort in stage_cohorts.values())
+    if any(cohort is not None for cohort in stage_cohorts.values()) != stage_available:
+        raise FactorLabError("Cannot mix legacy reports and complete stage diagnostics")
+    if stage_available:
+        reference_stage = stage_cohorts[model_names[0]]
+        if any(not reference_stage.equals(stage_cohorts[name]) for name in model_names[1:]):
+            raise FactorLabError("Model reports use different stage cohorts or fitted Train inputs")
     bar_versions = {payload.get("bar_data_version") for payload in manifests.values()}
     if len(bar_versions) != 1 or not _is_sha256(next(iter(bar_versions), None)):
         raise FactorLabError("Model reports use different or unknown raw bar-data versions")
@@ -2294,24 +2568,6 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         raise FactorLabError(
             "Model reports use different or unknown execution-bar inputs"
         )
-    oos_keys = {
-        name: _prediction_oos_keys(
-            name,
-            outputs[name],
-            manifests[name],
-            _target_column(config),
-            content=artifact_snapshots[name]["predictions.parquet"],
-        )
-        for name in model_names
-    }
-    reference_keys = oos_keys[model_names[0]]
-    if any(
-        not reference_keys.equals(oos_keys[name]) for name in model_names[1:]
-    ):
-        raise FactorLabError(
-            "Model reports do not use identical out-of-sample keys, label "
-            "windows, and realised targets"
-        )
     comparison = pd.DataFrame(
         [_comparison_record(name, outputs[name], artifacts=artifact_snapshots[name]) for name in model_names]
     )
@@ -2334,6 +2590,11 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         "feature_importance": ("feature_importance.csv", False),
         "ridge_coefficients": ("ridge_coefficients.csv", False),
     }
+    if stage_available:
+        detail_files.update({
+            name: (name + ".parquet", True)
+            for name in _STAGE_TABLE_ATTRIBUTES if name != "stage_predictions"
+        })
     details = {
         "walk_forward_results": combined_folds,
         **{
@@ -2354,6 +2615,13 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
     run.payload["source_model_runs"] = {
         name: path.name for name, path in outputs.items()
     }
+    run.payload["stage_diagnostics_available"] = stage_available
+    if stage_available:
+        run.payload["stage_diagnostics_version"] = 1
+        run.payload["stage_diagnostic_policy"] = _stage_diagnostic_policy()
+        run.payload["source_stage_diagnostic_provenance"] = {
+            name: manifests[name]["stage_diagnostic_provenance"] for name in model_names
+        }
     run.payload["source_predictions_sha256"] = {
         name: manifests[name]["predictions_sha256"] for name in model_names
     }

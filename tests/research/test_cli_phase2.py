@@ -1199,6 +1199,8 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
                 "model_artifact_sha256": run.payload[
                     "model_artifact_sha256"
                 ],
+                "stage_diagnostics_version": run.payload["stage_diagnostics_version"],
+                "stage_diagnostic_provenance": run.payload["stage_diagnostic_provenance"],
                 **_provenance(),
             },
             config.paths.runs_dir / run.run_id / "manifest.json",
@@ -1235,6 +1237,19 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
     ):
         assert (comparison_dir / name).is_file()
     assert "execution_cumulative_return" in comparison.columns
+    assert comparison["stage_diagnostics_available"].all()
+    for table_name in ("stage_prediction_daily", "stage_prediction_summary", "stage_prediction_audit"):
+        stage_table = pd.read_parquet(comparison_dir / (table_name + ".parquet"))
+        assert set(stage_table["model_name"]) == set(runs)
+        assert set(stage_table["stage"]) == {"TRAIN_IN_SAMPLE", "VALIDATION_SELECTION", "HISTORICAL_TEST"}
+        if table_name == "stage_prediction_daily":
+            assert pd.api.types.is_datetime64_ns_dtype(stage_table["date"])
+        elif table_name == "stage_prediction_audit":
+            assert pd.api.types.is_datetime64_ns_dtype(stage_table["signal_start"])
+    assert not (comparison_dir / "stage_predictions.parquet").exists()
+    assert comparison_run.payload["stage_diagnostics_available"] is True
+    assert comparison_run.payload["stage_diagnostics_version"] == 1
+    assert "TRAIN_IN_SAMPLE" in (comparison_dir / "summary.md").read_text(encoding="utf-8")
     assert comparison_run.payload["compared_models"] == [
         "factor_score",
         "ridge",
@@ -1264,6 +1279,27 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
 
     ridge_manifest_path = config.paths.runs_dir / ridge_run.run_id / "manifest.json"
     ridge_manifest = json.loads(ridge_manifest_path.read_text(encoding="utf-8"))
+    # Explicit old reports are still readable, but cannot be compared as if
+    # all four models had complete Train/Validation evidence.
+    factor_manifest_path = config.paths.runs_dir / factor_run.run_id / "manifest.json"
+    complete_factor_manifest = json.loads(factor_manifest_path.read_text(encoding="utf-8"))
+    factor_output = config.paths.model_results_dir / "factor_score" / factor_run.run_id
+    stage_bytes = {name: (factor_output / name).read_bytes() for name in cli._STAGE_ARTIFACTS}
+    legacy_factor_manifest = dict(complete_factor_manifest)
+    legacy_factor_manifest.pop("stage_diagnostics_version")
+    legacy_factor_manifest.pop("stage_diagnostic_provenance")
+    try:
+        for name in stage_bytes:
+            (factor_output / name).unlink()
+        legacy_factor_manifest["model_artifact_sha256"] = cli._artifact_sha256(factor_output)
+        cli._atomic_json(legacy_factor_manifest, factor_manifest_path)
+        with pytest.raises(FactorLabError, match="Cannot mix legacy reports"):
+            cli.command_compare_models(config, _Run("mixed-stage-evidence"))
+        assert not (config.paths.report_dir / "mixed-stage-evidence").exists()
+    finally:
+        for name, content in stage_bytes.items():
+            (factor_output / name).write_bytes(content)
+        cli._atomic_json(complete_factor_manifest, factor_manifest_path)
     mismatched_raw_bars = json.loads(json.dumps(ridge_manifest))
     symbol = sorted(mismatched_raw_bars["bar_data_provenance"]["stocks"])[0]
     mismatched_raw_bars["bar_data_provenance"]["stocks"][symbol]["content_sha256"] = "f" * 64

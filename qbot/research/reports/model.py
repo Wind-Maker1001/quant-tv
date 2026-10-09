@@ -1,6 +1,6 @@
 """Deterministic, headless reporting for FactorLab model experiments.
 
-The writer consumes only already-produced out-of-sample predictions and
+The writer consumes already-produced stage diagnostics, test predictions and
 backtest results. It does not fit a model, select hyperparameters, or infer a
 "winner" from test performance.  Every tabular artifact is written both as
 CSV (easy to inspect) and Parquet (lossless and efficient to reload).
@@ -9,6 +9,8 @@ CSV (easy to inspect) and Parquet (lossless and efficient to reload).
 from __future__ import annotations
 
 import os
+import json
+import re
 import uuid
 from pathlib import Path
 from collections.abc import Iterable
@@ -24,7 +26,7 @@ import pandas as pd
 from qbot.research.backtest.fast import FastBacktestResult
 from qbot.research.backtest.execution import ExecutionBacktestResult
 from qbot.research.metrics.prediction import PredictionEvaluation
-from qbot.research.validation.walk_forward import WalkForwardResult
+from qbot.research.validation.walk_forward import WalkForwardResult, diagnostic_frame_sha256
 
 
 class ModelReportError(ValueError):
@@ -43,6 +45,277 @@ _TABLE_NAMES = (
     "signals",
     "portfolio_metrics",
 )
+
+_DIAGNOSTIC_TABLES = {
+    "stage_predictions": "diagnostic_predictions",
+    "stage_prediction_daily": "diagnostic_daily",
+    "stage_prediction_summary": "diagnostic_summary",
+    "stage_prediction_audit": "diagnostic_audit",
+}
+_STAGE_USAGE = {
+    "TRAIN_IN_SAMPLE": "diagnostic_only",
+    "VALIDATION_SELECTION": "selection_and_diagnostic",
+    "HISTORICAL_TEST": "evaluation_only",
+}
+
+
+def _diagnostic_dates(values: pd.Series, name: str) -> pd.Series:
+    try:
+        dates = pd.to_datetime(values, errors="raise")
+        if dates.isna().any() or getattr(dates.dt, "tz", None) is not None or not dates.eq(dates.dt.normalize()).all():
+            raise ValueError("not date-only")
+        return dates
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise ModelReportError("Stage diagnostics require complete date-only %s" % name) from exc
+
+
+def _diagnostic_sha(value: object) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
+
+
+def _diagnostic_integer(value: object, name: str, minimum: int = 0) -> int:
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, np.integer)) or int(value) < minimum:
+        raise ModelReportError("Stage diagnostics require integer %s" % name)
+    return int(value)
+
+
+def _diagnostic_same(left: object, right: object) -> bool:
+    left_missing, right_missing = bool(pd.isna(left)), bool(pd.isna(right))
+    return left_missing and right_missing if left_missing or right_missing else bool(left == right)
+
+
+def validate_stage_diagnostics(walk_forward: WalkForwardResult) -> Dict[str, pd.DataFrame]:
+    """Validate producer diagnostics without fitting or rescoring any model.
+
+    Complete stage tables bind existing scores and mature sample keys. Source
+    hashes containing features require the CLI's separately verified dataset;
+    these tables do not establish independently authoritative market data.
+    Legacy results with all four default-empty fields explicitly return {}.
+    """
+    if not isinstance(walk_forward, WalkForwardResult):
+        raise ModelReportError("walk_forward must be a WalkForwardResult")
+    tables = {}
+    for name, attribute in _DIAGNOSTIC_TABLES.items():
+        frame = getattr(walk_forward, attribute)
+        if not isinstance(frame, pd.DataFrame) or frame.columns.has_duplicates:
+            raise ModelReportError("Stage diagnostics must be DataFrames with unique columns")
+        tables[name] = frame.copy(deep=True)
+    if all(frame.empty for frame in tables.values()):
+        return {}
+    if any(frame.empty for frame in tables.values()):
+        raise ModelReportError("Stage diagnostics are incomplete: all four tables are required")
+    if "fold" not in walk_forward.fold_summary or walk_forward.fold_summary["fold"].duplicated().any():
+        raise ModelReportError("Stage diagnostics require unique fold audit rows")
+    folds = {_diagnostic_integer(value, "fold") for value in walk_forward.fold_summary["fold"]}
+    if not folds:
+        raise ModelReportError("Stage diagnostics require declared folds")
+    metadata = {"fold", "model_name", "stage", "fit_scope", "selection_usage"}
+    predictions = tables["stage_predictions"]
+    daily = tables["stage_prediction_daily"]
+    summary = tables["stage_prediction_summary"]
+    audit = tables["stage_prediction_audit"]
+    required = {
+        "stage_predictions": metadata | {"date", "symbol", "score", "rank", "entry_date", "exit_date"},
+        "stage_prediction_daily": metadata | {"date", "prediction_ic", "prediction_rank_ic", "coverage"},
+        "stage_prediction_summary": metadata | {"scope", "period", "prediction_ic_mean", "prediction_rank_ic_mean"},
+        "stage_prediction_audit": metadata | {
+            "schema_version", "selected_alpha", "selected_parameters", "model_parameters", "feature_names", "target_column",
+            "selection_metric", "top_k", "minimum_cross_section", "random_seed", "model_path", "saved_model_sha256",
+            "signal_start", "signal_end", "label_min_entry", "label_max_entry", "label_min_exit", "label_max_exit",
+            "labeled_max_exit", "maturity_boundary", "rows", "labeled_rows", "scored_rows", "source_keys_sha256",
+            "source_sha256", "fit_source_keys_sha256", "fit_source_sha256", "prediction_sha256", "daily_sha256", "summary_sha256",
+        },
+    }
+    for name, frame in tables.items():
+        if not required[name].issubset(frame.columns):
+            raise ModelReportError("Stage diagnostics have missing columns: %s" % name)
+        for value in frame["fold"].unique():
+            _diagnostic_integer(value, "fold")
+        expected_stages = {"TRAIN_IN_SAMPLE", "VALIDATION_SELECTION"} if name == "stage_predictions" else set(_STAGE_USAGE)
+        pairs = set(map(tuple, frame[["fold", "stage"]].drop_duplicates().to_numpy()))
+        if pairs != {(fold, stage) for fold in folds for stage in expected_stages}:
+            raise ModelReportError("Stage diagnostics have incomplete or unexpected fold/stage groups")
+        if not frame["fit_scope"].eq("train_only").all():
+            raise ModelReportError("Stage diagnostics must identify train_only fitting")
+        for stage, usage in _STAGE_USAGE.items():
+            if not frame.loc[frame["stage"].eq(stage), "selection_usage"].eq(usage).all():
+                raise ModelReportError("Stage diagnostics have invalid selection_usage")
+        for column in frame:
+            if pd.api.types.is_numeric_dtype(frame[column].dtype):
+                values = frame[column].to_numpy(dtype=float, na_value=np.nan)
+                if np.isinf(values).any() or pd.api.types.is_complex_dtype(frame[column].dtype):
+                    raise ModelReportError("Stage diagnostics contain nonfinite or complex numeric data")
+    for frame, keys in (
+        (predictions, ["fold", "stage", "date", "symbol"]),
+        (daily, ["fold", "stage", "date"]),
+        (summary, ["fold", "stage", "scope", "period"]),
+        (audit, ["fold", "stage"]),
+    ):
+        if frame.duplicated(keys).any():
+            raise ModelReportError("Stage diagnostics contain duplicate stage observations")
+    test = walk_forward.predictions
+    if not isinstance(test, pd.DataFrame) or not {"fold", "model_name", "date", "symbol", "score", "rank", "entry_date", "exit_date"}.issubset(test):
+        raise ModelReportError("Stage diagnostics require independent Test-only predictions")
+    if test.duplicated(["date", "symbol"]).any() or set(test["fold"].unique()) != folds:
+        raise ModelReportError("Independent Test predictions have invalid fold/sample keys")
+    for fold in folds:
+        fold_row = walk_forward.fold_summary.loc[walk_forward.fold_summary["fold"].eq(fold)].iloc[0]
+        if fold_row.get("fit_scope") != "train_only":
+            raise ModelReportError("Stage diagnostics conflict with fold model fitting policy")
+        fold_audit = audit.loc[audit["fold"].eq(fold)]
+        protocol = (
+            "model_parameters", "feature_names", "target_column", "selection_metric", "top_k",
+            "minimum_cross_section", "random_seed", "saved_model_sha256",
+        )
+        for name in protocol:
+            baseline = fold_audit.iloc[0][name]
+            if not all(_diagnostic_same(value, baseline) for value in fold_audit[name]):
+                raise ModelReportError("Stage diagnostics disagree on the selected model/evaluation protocol")
+        train = predictions.loc[predictions["fold"].eq(fold) & predictions["stage"].eq("TRAIN_IN_SAMPLE")]
+        targets = fold_audit["target_column"].unique()
+        if len(targets) != 1 or not isinstance(targets[0], str) or targets[0] not in train:
+            raise ModelReportError("Stage diagnostics have inconsistent target columns")
+        target = targets[0]
+        fitted_keys = diagnostic_frame_sha256(train.loc[train[target].notna(), ["date", "symbol"]])
+        if fold_audit["fit_source_keys_sha256"].nunique() != 1 or not fold_audit["fit_source_keys_sha256"].eq(fitted_keys).all():
+            raise ModelReportError("Stage diagnostics fit-source keys differ from labeled Train")
+        if fold_audit["fit_source_sha256"].nunique() != 1:
+            raise ModelReportError("Stage diagnostics do not share one fitted Train source")
+        for stage in _STAGE_USAGE:
+            row = fold_audit.loc[fold_audit["stage"].eq(stage)].iloc[0]
+            if _diagnostic_integer(row["schema_version"], "schema_version", 1) != 1:
+                raise ModelReportError("Stage diagnostic audit schema version is invalid")
+            _diagnostic_integer(row["top_k"], "top_k", 1)
+            _diagnostic_integer(row["minimum_cross_section"], "minimum_cross_section", 2)
+            _diagnostic_integer(row["random_seed"], "random_seed")
+            source = (test.loc[test["fold"].eq(fold)].assign(stage=stage, fit_scope="train_only", selection_usage=_STAGE_USAGE[stage])
+                      if stage == "HISTORICAL_TEST" else predictions.loc[predictions["fold"].eq(fold) & predictions["stage"].eq(stage)])
+            stage_daily = daily.loc[daily["fold"].eq(fold) & daily["stage"].eq(stage)]
+            stage_summary = summary.loc[summary["fold"].eq(fold) & summary["stage"].eq(stage)]
+            if len(stage_summary.loc[stage_summary["scope"].eq("OVERALL")]) != 1:
+                raise ModelReportError("Stage diagnostics require one OVERALL row per fold/stage")
+            if target not in source or source["symbol"].isna().any() or source["symbol"].astype(str).str.strip().eq("").any():
+                raise ModelReportError("Stage diagnostics require valid target and symbol observations")
+            dates = _diagnostic_dates(source["date"], "signal dates")
+            entry = _diagnostic_dates(source["entry_date"], "entry dates")
+            exit_ = _diagnostic_dates(source["exit_date"], "exit dates")
+            if not (dates.lt(entry) & entry.lt(exit_)).all():
+                raise ModelReportError("Stage diagnostic label timing is invalid")
+            bounds = {
+                "signal_start": dates.min(), "signal_end": dates.max(),
+                "label_min_entry": entry.min(), "label_max_entry": entry.max(),
+                "label_min_exit": exit_.min(), "label_max_exit": exit_.max(),
+                "labeled_max_exit": exit_.loc[source[target].notna()].max(),
+            }
+            for name, expected in bounds.items():
+                actual = pd.Timestamp(row[name]) if not pd.isna(row[name]) else pd.NaT
+                if not _diagnostic_same(actual, expected):
+                    raise ModelReportError("Stage diagnostic %s differs from its samples" % name)
+            prefix = {"TRAIN_IN_SAMPLE": "train", "VALIDATION_SELECTION": "validation", "HISTORICAL_TEST": "test"}[stage]
+            for suffix in ("start", "end"):
+                key = prefix + "_" + suffix
+                if key not in fold_row or pd.Timestamp(fold_row[key]) != bounds["signal_" + suffix]:
+                    raise ModelReportError("Stage diagnostic signal window differs from fold audit")
+            boundary_key = {"TRAIN_IN_SAMPLE": "audit_validation_first_date", "VALIDATION_SELECTION": "audit_test_first_date"}.get(stage)
+            if boundary_key is None:
+                if not pd.isna(row["maturity_boundary"]):
+                    raise ModelReportError("Historical Test must not claim a training maturity boundary")
+            elif (boundary_key not in fold_row or pd.isna(row["maturity_boundary"])
+                  or pd.Timestamp(row["maturity_boundary"]) != pd.Timestamp(fold_row[boundary_key])
+                  or not exit_.lt(pd.Timestamp(row["maturity_boundary"])).all()):
+                raise ModelReportError("Stage diagnostic label exits violate mature fold boundaries")
+            counts = {"rows": len(source), "labeled_rows": int(source[target].notna().sum()), "scored_rows": int(source["score"].notna().sum())}
+            for name, expected in counts.items():
+                if _diagnostic_integer(row[name], name) != expected:
+                    raise ModelReportError("Stage diagnostic %s differs from its samples" % name)
+            hashes = {
+                "source_keys_sha256": diagnostic_frame_sha256(source[["date", "symbol"]]),
+                "prediction_sha256": diagnostic_frame_sha256(source),
+                "daily_sha256": diagnostic_frame_sha256(stage_daily),
+                "summary_sha256": diagnostic_frame_sha256(stage_summary),
+            }
+            if any(row[name] != digest for name, digest in hashes.items()):
+                raise ModelReportError("Stage diagnostic sample or artifact SHA-256 mismatch")
+            for name in ("source_sha256", "fit_source_sha256", "fit_source_keys_sha256"):
+                if not _diagnostic_sha(row[name]):
+                    raise ModelReportError("Stage diagnostic source SHA-256 is invalid")
+            if not pd.isna(row["saved_model_sha256"]) and not _diagnostic_sha(row["saved_model_sha256"]):
+                raise ModelReportError("Stage diagnostic saved model SHA-256 is invalid")
+            if pd.isna(row["model_path"]) != pd.isna(row["saved_model_sha256"]):
+                raise ModelReportError("Stage diagnostic model path/hash evidence is incomplete")
+            for name in ("model_name", "selected_alpha", "selected_parameters", "model_path", "selection_metric"):
+                if name not in fold_row or not _diagnostic_same(row[name], fold_row[name]):
+                    raise ModelReportError("Stage diagnostics identify a different selected model")
+            if not source["model_name"].eq(row["model_name"]).all() or not stage_daily["model_name"].eq(row["model_name"]).all() or not stage_summary["model_name"].eq(row["model_name"]).all():
+                raise ModelReportError("Stage diagnostics have mixed model identities")
+            try:
+                feature_names = json.loads(row["feature_names"])
+                parameters = json.loads(row["model_parameters"])
+                selected = json.loads(row["selected_parameters"])
+                json.dumps([feature_names, parameters, selected], allow_nan=False)
+                if not isinstance(parameters, dict) or not isinstance(selected, dict) or not isinstance(feature_names, list) or not feature_names or any(not isinstance(value, str) or not value for value in feature_names):
+                    raise ValueError("invalid metadata")
+            except (ValueError, TypeError) as exc:
+                raise ModelReportError("Stage diagnostic model metadata is invalid JSON") from exc
+            if set(pd.to_datetime(stage_daily["date"])) != set(dates):
+                raise ModelReportError("Stage diagnostic daily dates differ from source predictions")
+    return tables
+
+
+def _validate_test_stage_metrics(tables: Mapping[str, pd.DataFrame], prediction: PredictionEvaluation) -> None:
+    if not tables:
+        return
+    daily = tables["stage_prediction_daily"].loc[lambda frame: frame["stage"].eq("HISTORICAL_TEST")]
+    if not set(prediction.daily.columns).issubset(daily) or "fold" not in prediction.daily:
+        raise ModelReportError("Historical Test diagnostics require independent Test metrics")
+    left = daily[list(prediction.daily.columns)].sort_values(["fold", "date"]).reset_index(drop=True)
+    right = prediction.daily.sort_values(["fold", "date"]).reset_index(drop=True)
+    try:
+        # Concatenation can represent an absent regime as NaN rather than pd.NA.
+        # Normalize missing representations only in comparison copies; all scores
+        # and realised metric values remain exact and persisted tables unchanged.
+        pd.testing.assert_frame_equal(left.astype(object).where(left.notna(), None), right.astype(object).where(right.notna(), None), check_dtype=False, check_exact=True)
+        metrics = [name for name in prediction.summary if name not in {"scope", "period"}]
+        for fold, values in tables["stage_prediction_summary"].loc[lambda frame: frame["stage"].eq("HISTORICAL_TEST")].groupby("fold"):
+            actual = values.loc[values["scope"].eq("OVERALL"), metrics].reset_index(drop=True)
+            expected = prediction.summary.loc[prediction.summary["scope"].eq("FOLD") & prediction.summary["period"].astype(str).eq(str(fold)), metrics].reset_index(drop=True)
+            pd.testing.assert_frame_equal(actual, expected, check_dtype=False, check_exact=True)
+    except (AssertionError, KeyError) as exc:
+        raise ModelReportError("Historical Test diagnostic metrics differ from independent Test evaluation") from exc
+
+
+def _plot_stage_ic_comparison(summary: pd.DataFrame, destination: Path) -> None:
+    """Display each fold separately; never pool expanding training samples."""
+    figure, axes = plt.subplots(1, 2, figsize=(12, 4.8))
+    overall = summary.loc[summary["scope"].eq("OVERALL")]
+    labels = {
+        "TRAIN_IN_SAMPLE": "Train (in-sample diagnostic)",
+        "VALIDATION_SELECTION": "Validation (selection)",
+        "HISTORICAL_TEST": "Historical Test (evaluation)",
+    }
+    for axis, column, title in zip(
+        axes, ("prediction_ic_mean", "prediction_rank_ic_mean"),
+        ("Pearson IC by fold", "RankIC by fold"),
+    ):
+        plotted = False
+        for stage in _STAGE_USAGE:
+            values = overall.loc[overall["stage"].eq(stage)].sort_values("fold")
+            numeric = pd.to_numeric(values[column], errors="raise")
+            if numeric.notna().any():
+                axis.plot(values["fold"], numeric, marker="o", label=labels[stage])
+                plotted = True
+        if plotted:
+            axis.set_title(title)
+            axis.set_xlabel("Walk-forward fold")
+            axis.set_xticks(sorted(overall["fold"].unique()))
+            axis.set_ylabel("Mean daily correlation")
+            axis.grid(alpha=0.2)
+            axis.legend(fontsize=8)
+        else:
+            _placeholder(axis, title)
+            axis.text(0.5, 0.35, "Insufficient observations (NaN)", ha="center", transform=axis.transAxes)
+    figure.suptitle("Train-only models; stage diagnostics are not model selection from Test")
+    _save_figure(figure, destination)
 
 
 def _temporary_path(destination: Path) -> Path:
@@ -653,6 +926,28 @@ def _comparison_markdown(
         lines.append("No completed model records are available.")
         lines.append("")
         return "\n".join(lines)
+    if (
+        "stage_diagnostics_available" in comparison
+        and comparison["stage_diagnostics_available"].eq(True).all()
+    ):
+        lines.extend([
+            "## Train / Validation / Historical Test diagnostics",
+            "",
+            "stage_prediction_summary/daily/audit 按模型、fold 和 stage 并列。"
+            "TRAIN_IN_SAMPLE 是训练内拟合诊断；VALIDATION_SELECTION 已用于选参，"
+            "不是独立留出样本；HISTORICAL_TEST 才是历史样本外评价。"
+            "扩大训练集会重复包含旧日期，禁止把所有 Train folds 拼成一条独立收益序列。",
+            "",
+            "这些 Top/Bottom 收益是成本前未来超额标签，不是实际成交后的 NAV。"
+            "主表与两级回测仍只使用 Test；没有真实 Forward 数据时不能回答真实样本外差距。",
+            "",
+        ])
+    else:
+        lines.extend([
+            "Train/Validation diagnostics unavailable：旧报告未保存完整分阶段证据，"
+            "不重新预测或从 Test 指标推测训练与验证表现。",
+            "",
+        ])
     preferred = [
         "model_name",
         "prediction_ic_mean",
@@ -716,7 +1011,8 @@ def _summary_markdown(
             "- Backtest trading dates: %d" % nav_rows,
             "- Recorded trades: %d" % trade_rows,
             "",
-            "所有预测指标均来自 Walk-Forward 的测试区间；验证区间仅用于已配置候选参数的选择。"
+            "主 prediction_* 指标与组合回测均仅来自 Walk-Forward 的测试区间；"
+            "另列的 stage_* 表是逐 fold 的训练/验证/历史测试诊断。"
             "本报告不依据最终测试收益重新选择因子、模型、Top-K 或交易成本。",
             "",
             "## Prediction quality",
@@ -747,6 +1043,28 @@ def _summary_markdown(
         for metric in selected:
             if metric in overall.columns:
                 lines.append("| %s | %s |" % (metric, _format_value(row[metric])))
+    lines.extend(["", "## Train / Validation / Historical Test diagnostics", ""])
+    if walk_forward.diagnostic_summary.empty:
+        lines.append("Stage diagnostics unavailable: legacy result has no recorded Train/Validation diagnostics; no metrics were reconstructed or invented.")
+    else:
+        lines.extend([
+            "TRAIN_IN_SAMPLE is an in-sample diagnostic only. VALIDATION_SELECTION was used to choose "
+            "configured parameters and may have selection optimism; it is not an independent final holdout. "
+            "HISTORICAL_TEST is evaluation only. All three use the selected train_only model, "
+            "not a train-plus-validation refit.",
+            "",
+            "Each fold is evaluated separately; overlapping expanding Train observations are not pooled. "
+            "Stage gaps do not by themselves isolate future generalization. Top/Bottom returns are "
+            "future excess-return labels before transaction costs, not realised portfolio returns. "
+            "Input feature hashes remain bound to the CLI dataset provenance; hashes alone do not establish market truth.",
+            "",
+            "| Fold | Stage | Usage | IC | RankIC | Valid dates | Coverage |",
+            "|---:|---|---|---:|---:|---:|---:|",
+        ])
+        overall_stages = walk_forward.diagnostic_summary.loc[walk_forward.diagnostic_summary["scope"].eq("OVERALL")]
+        for _, row in overall_stages.sort_values(["fold", "stage"]).iterrows():
+            values = [row.get(name, np.nan) for name in ("fold", "stage", "selection_usage", "prediction_ic_mean", "prediction_rank_ic_mean", "valid_dates", "coverage")]
+            lines.append("| %s |" % " | ".join(_format_value(value) for value in values))
     lines.extend(["", "## Portfolio performance", ""])
     if metrics.empty:
         lines.append("No portfolio metrics are available.")
@@ -830,9 +1148,11 @@ def write_model_report(
             "execution_metrics require execution_backtest"
         )
 
+    stage_tables = validate_stage_diagnostics(walk_forward)
+    _validate_test_stage_metrics(stage_tables, prediction_evaluation)
     destination = Path(output_dir)
-    destination.mkdir(parents=True, exist_ok=True)
     metric_table = _metric_frame(portfolio_metrics)
+    destination.mkdir(parents=True, exist_ok=True)
     tables: Dict[str, pd.DataFrame] = {
         "predictions": walk_forward.predictions,
         "walk_forward_results": walk_forward.fold_summary,
@@ -847,6 +1167,10 @@ def write_model_report(
     }
     for name in _TABLE_NAMES:
         _write_table(tables[name].copy(), name, destination)
+    if stage_tables:
+        for name, frame in stage_tables.items():
+            _write_table(frame, name, destination)
+        _plot_stage_ic_comparison(stage_tables["stage_prediction_summary"], destination / "stage_ic_comparison.png")
 
     execution_metric_table = pd.DataFrame(columns=["metric", "value"])
     if execution_backtest is not None:
@@ -1002,6 +1326,7 @@ def write_model_comparison_report(
 
 __all__ = [
     "ModelReportError",
+    "validate_stage_diagnostics",
     "write_model_comparison_report",
     "write_model_report",
 ]

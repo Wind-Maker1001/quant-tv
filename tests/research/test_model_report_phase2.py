@@ -144,6 +144,9 @@ def test_write_model_report_emits_complete_ridge_artifacts(tmp_path):
     assert "prediction_rank_ic_mean" in text
     assert "top_label_coverage" in text
     assert "cumulative_return" in text
+    assert "Stage diagnostics unavailable" in text
+    assert not list(tmp_path.glob("stage_*.csv"))
+    assert not (tmp_path / "stage_ic_comparison.png").exists()
     assert pd.read_parquet(tmp_path / "predictions.parquet").equals(
         walk_forward.predictions
     )
@@ -173,6 +176,7 @@ def test_empty_factor_score_report_is_explicit_and_omits_ridge_artifacts(tmp_pat
     )
 
     assert "No realised out-of-sample" in summary.read_text(encoding="utf-8")
+    assert "Stage diagnostics unavailable" in summary.read_text(encoding="utf-8")
     assert not (tmp_path / "ridge_coefficients.csv").exists()
     assert not (tmp_path / "ridge_coefficients.png").exists()
     for name in (

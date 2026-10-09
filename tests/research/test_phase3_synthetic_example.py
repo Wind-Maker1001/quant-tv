@@ -1,6 +1,7 @@
 """The public Phase-3 example must be offline, small, and complete."""
 
 import json
+import hashlib
 
 import pandas as pd
 
@@ -20,6 +21,11 @@ def test_phase3_synthetic_demo_runs_complete_offline_path(tmp_path):
     assert stored["network_used"] is False
     assert stored["warning"] == WARNING
     assert set(stored["models"]) == set(MODEL_NAMES)
+    assert stored["stage_diagnostic_scope"]["train_folds_pooled"] is False
+    assert stored["stage_diagnostic_scope"]["real_forward_available"] is False
+    assert stored["configuration"]["runner"]["random_seed"] == 42
+    assert "pandas" in stored["package_versions"]
+    assert set(stored["synthetic_input_sha256"]) == {"dataset", "stock_bars", "benchmark"}
     assert set(stored["market_regime_counts"]) == {"BULL", "BEAR", "SIDEWAYS"}
     assert all(value > 0 for value in stored["market_regime_counts"].values())
 
@@ -48,6 +54,16 @@ def test_phase3_synthetic_demo_runs_complete_offline_path(tmp_path):
         assert "REGIME" in set(prediction_summary["scope"])
         assert (model_dir / "execution_rejections.parquet").is_file()
         assert WARNING in (model_dir / "summary.md").read_text(encoding="utf-8")
+        for name in ("stage_predictions", "stage_prediction_daily", "stage_prediction_summary", "stage_prediction_audit"):
+            assert (model_dir / (name + ".csv")).is_file()
+            assert not pd.read_parquet(model_dir / (name + ".parquet")).empty
+        stage_audit = pd.read_parquet(model_dir / "stage_prediction_audit.parquet")
+        assert set(stage_audit["stage"]) == {"TRAIN_IN_SAMPLE", "VALIDATION_SELECTION", "HISTORICAL_TEST"}
+        assert stored["models"][model_name]["stage_audit_rows"] == len(stage_audit)
+        inventory = stored["models"][model_name]["artifact_sha256"]
+        for filename, digest in inventory.items():
+            assert hashlib.sha256((model_dir / filename).read_bytes()).hexdigest() == digest
+        assert (model_dir / "stage_ic_comparison.png").is_file()
 
     assert (destination / "ridge" / "ridge_coefficients.parquet").is_file()
     for model_name in ("lightgbm", "xgboost"):
@@ -56,6 +72,13 @@ def test_phase3_synthetic_demo_runs_complete_offline_path(tmp_path):
     comparison = pd.read_csv(destination / "comparison" / "model_comparison.csv")
     assert set(comparison["model_name"]) == set(MODEL_NAMES)
     assert (destination / "comparison" / "execution_nav.parquet").is_file()
+    stage_summary = pd.read_parquet(destination / "comparison" / "stage_prediction_summary.parquet")
+    assert set(stage_summary["model_name"]) == set(MODEL_NAMES)
+    assert set(stage_summary["stage"]) == {"TRAIN_IN_SAMPLE", "VALIDATION_SELECTION", "HISTORICAL_TEST"}
+    assert not (destination / "comparison" / "stage_predictions.parquet").exists()
+    assert comparison["stage_diagnostics_available"].all()
+    for filename, digest in stored["comparison_artifact_sha256"].items():
+        assert hashlib.sha256((destination / "comparison" / filename).read_bytes()).hexdigest() == digest
     assert WARNING in (destination / "comparison" / "summary.md").read_text(
         encoding="utf-8"
     )

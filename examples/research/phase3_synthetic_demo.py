@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -37,8 +38,12 @@ from qbot.research.reports import (
     write_model_comparison_report,
     write_model_report,
 )
-from qbot.research.reproducibility import set_random_seed
-from qbot.research.validation import ExpandingWalkForwardSplitter, WalkForwardRunner
+from qbot.research.reproducibility import (
+    git_commit, git_worktree_state, package_versions, set_random_seed,
+)
+from qbot.research.validation import (
+    ExpandingWalkForwardSplitter, WalkForwardRunner, diagnostic_frame_sha256,
+)
 
 
 WARNING = "SYNTHETIC SOFTWARE DEMO ONLY - NOT A RESEARCH RESULT"
@@ -171,12 +176,27 @@ def _tag(model_name: str, frame: pd.DataFrame) -> pd.DataFrame:
     ]
 
 
+def _artifact_inventory(directory: Path) -> Dict[str, str]:
+    inventory = {}
+    for path in sorted(directory.rglob("*")):
+        if not path.is_file():
+            continue
+        digest = hashlib.sha256()
+        with path.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(chunk)
+        inventory[path.relative_to(directory).as_posix()] = digest.hexdigest()
+    return inventory
+
+
 def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
     """Run all four models, both backtests, and the Phase-3 reports."""
 
     set_random_seed(seed)
     dates, dataset, bars, benchmark, market = build_synthetic_inputs(seed=seed)
-    destination = Path(output_dir)
+    destination = Path(output_dir).resolve()
+    repo_root = Path(__file__).resolve().parents[2]
+    provenance = {"git_commit": git_commit(repo_root), **git_worktree_state(repo_root)}
     destination.mkdir(parents=True, exist_ok=True)
     _atomic_text(
         "# %s\n\n"
@@ -243,6 +263,9 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
         "execution_nav": [],
         "feature_importance": [],
         "ridge_coefficients": [],
+        "stage_prediction_daily": [],
+        "stage_prediction_summary": [],
+        "stage_prediction_audit": [],
     }
     outputs: Dict[str, object] = {}
     fees = FeeSchedule.a_share_default(slippage_bps=0.0)
@@ -323,6 +346,7 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
                 "model_name": model_name,
                 "prediction": prediction,
                 "portfolio_metrics": fast_metrics,
+                "stage_diagnostics_available": True,
             }
         )
         detail_frames["walk_forward_results"].append(
@@ -333,6 +357,12 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
         )
         detail_frames["nav"].append(_tag(model_name, fast.nav))
         detail_frames["execution_nav"].append(_tag(model_name, execution.nav))
+        for name, table in (
+            ("stage_prediction_daily", walk_forward.diagnostic_daily),
+            ("stage_prediction_summary", walk_forward.diagnostic_summary),
+            ("stage_prediction_audit", walk_forward.diagnostic_audit),
+        ):
+            detail_frames[name].append(_tag(model_name, table))
         if not walk_forward.feature_importance.empty:
             detail_frames["feature_importance"].append(
                 _tag(model_name, walk_forward.feature_importance)
@@ -348,6 +378,9 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
             "fast_trades": int(len(fast.trades)),
             "execution_trades": int(len(execution.trades)),
             "execution_rejections": int(len(execution.rejections)),
+            "stage_prediction_rows": int(len(walk_forward.diagnostic_predictions)),
+            "stage_audit_rows": int(len(walk_forward.diagnostic_audit)),
+            "artifact_sha256": _artifact_inventory(model_output),
         }
 
     details = {
@@ -372,6 +405,27 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
         "seed": seed,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "python_version": platform.python_version(),
+        "package_versions": package_versions(),
+        **provenance,
+        "configuration": {
+            "splitter": splitter_options, "runner": common,
+            "models": model_options,
+            "backtests": {
+                "initial_cash": 1_000_000.0, "rebalance_days": 5,
+                "board_lot": 100, "fee_schedule": "a_share_default",
+                "slippage_bps": 0.0, "price_limit_schedule": "a_share_default",
+            },
+        },
+        "synthetic_input_sha256": {
+            "dataset": diagnostic_frame_sha256(dataset),
+            "stock_bars": diagnostic_frame_sha256(bars),
+            "benchmark": diagnostic_frame_sha256(benchmark),
+        },
+        "stage_diagnostic_scope": {
+            "fit_scope": "train_only", "validation": "selection_and_diagnostic",
+            "train": "in_sample_diagnostic_only", "test": "evaluation_only",
+            "train_folds_pooled": False, "real_forward_available": False,
+        },
         "date_start": dates.min().date().isoformat(),
         "date_end": dates.max().date().isoformat(),
         "symbols": int(dataset["symbol"].nunique()),
@@ -380,6 +434,7 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
         },
         "models": outputs,
         "comparison_summary": str(comparison_summary),
+        "comparison_artifact_sha256": _artifact_inventory(destination / "comparison"),
     }
     _atomic_json(manifest, destination / "manifest.json")
     return manifest
