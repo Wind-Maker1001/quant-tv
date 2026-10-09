@@ -135,6 +135,7 @@ market_regime:
 # version are deliberately registered. Never set this to the missed
 # 2026-09-14 date or backfill signals as if they had existed then.
 forward:
+  evaluation_version_policy: FIRST_ON_TIME
   enabled: false
   activation_date: null
   model_name: ridge

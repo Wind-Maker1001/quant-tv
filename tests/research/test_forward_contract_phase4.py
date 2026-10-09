@@ -3,7 +3,10 @@
 from dataclasses import replace
 from datetime import date
 
+import pytest
+
 from qbot.research.config import ForwardConfig, load_config
+from qbot.research.errors import ConfigurationError
 from qbot.research.forward.contract import (
     forward_contract_payload,
     forward_contract_sha256,
@@ -77,3 +80,25 @@ def test_xgboost_contract_includes_the_fixed_non_tuned_gamma_default():
     parameters = selected_forward_model_parameters(config)
 
     assert parameters["gamma"] == 0.0
+
+
+def test_forward_version_selection_is_explicitly_frozen_before_outcomes():
+    config = _enabled_config()
+    payload = forward_contract_payload(config)
+    assert payload["schema_version"] == 2
+    assert payload["forward"]["evaluation_version_policy"] == "FIRST_ON_TIME"
+    altered = replace(
+        config,
+        forward=replace(config.forward, evaluation_version_policy="BEST_RETURN"),
+    )
+    assert forward_contract_sha256(altered) != forward_contract_sha256(config)
+    with pytest.raises(ConfigurationError, match="FIRST_ON_TIME"):
+        altered.validate()
+
+
+@pytest.mark.parametrize("policy", [None, True, 1, "LATEST", "first_on_time", "FIRST_ON_TIME "])
+def test_no_loose_version_selection_flag_is_accepted(policy):
+    config = _enabled_config()
+    config = replace(config, forward=replace(config.forward, evaluation_version_policy=policy))
+    with pytest.raises(ConfigurationError, match="FIRST_ON_TIME"):
+        config.validate()

@@ -267,6 +267,7 @@ class ForwardConfig:
     market_close_hour: int = 15
     market_close_minute: int = 30
     require_clean_worktree: bool = True
+    evaluation_version_policy: str = "FIRST_ON_TIME"
 
 
 @dataclass(frozen=True)
@@ -709,6 +710,11 @@ class ResearchConfig:
         if type(config.require_clean_worktree) is not bool:
             raise ConfigurationError(
                 "forward.require_clean_worktree must be boolean"
+            )
+        if config.evaluation_version_policy != "FIRST_ON_TIME":
+            raise ConfigurationError(
+                "forward.evaluation_version_policy must be FIRST_ON_TIME; "
+                "outcome-dependent version selection is forbidden"
             )
         model_name = str(config.model_name).strip().lower().replace("-", "_")
         supported = {"factor_score", "ridge", "lightgbm", "xgboost"}

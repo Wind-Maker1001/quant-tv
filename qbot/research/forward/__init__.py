@@ -16,6 +16,18 @@ from .contract import (
     forward_contract_sha256,
     selected_forward_model_parameters,
 )
+from .evaluation import (
+    LABEL_STATUSES,
+    ForwardEvaluation,
+    ForwardEvaluationError,
+    evaluate_forward_predictions,
+)
+from .evidence import (
+    FIRST_ON_TIME,
+    ForwardEvidenceError,
+    ForwardPredictionEvidence,
+    select_forward_prediction_records,
+)
 from .model_bundle import (
     BundleExistsError,
     BundleIntegrityError,
@@ -56,15 +68,21 @@ __all__ = [
     "BundleExistsError",
     "BundleIntegrityError",
     "FinalModelFit",
+    "FIRST_ON_TIME",
     "FORWARD_PREDICTION_COLUMNS",
     "FORWARD_SIGNAL_COLUMNS",
     "ForwardActivation",
     "ForwardActivationError",
+    "ForwardEvaluation",
+    "ForwardEvaluationError",
+    "ForwardEvidenceError",
     "ForwardIntegrityError",
+    "ForwardPredictionEvidence",
     "ForwardTiming",
     "ForwardTimingError",
     "ForwardWorkflowLockError",
     "FrozenModelBundle",
+    "LABEL_STATUSES",
     "ModelBundleError",
     "SignalLockError",
     "SignalLockTimeoutError",
@@ -76,6 +94,7 @@ __all__ = [
     "activation_id",
     "assert_no_link_components",
     "classify_forward_timing",
+    "evaluate_forward_predictions",
     "fit_and_save_model_bundle",
     "fit_final_model",
     "finalize_signal_record",
@@ -91,5 +110,6 @@ __all__ = [
     "research_source_sha256",
     "save_model_bundle",
     "selected_forward_model_parameters",
+    "select_forward_prediction_records",
     "workflow_lock",
 ]

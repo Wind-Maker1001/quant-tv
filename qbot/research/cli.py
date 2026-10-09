@@ -188,6 +188,11 @@ def _parser() -> argparse.ArgumentParser:
     forward_signal.add_argument("--date", required=True, type=date.fromisoformat)
     forward_signal.add_argument("--reissue-reason")
     forward_signal.add_argument("--version")
+    forward_evaluation = subparsers.add_parser("evaluate-forward")
+    forward_evaluation.add_argument("--config", required=True)
+    forward_evaluation.add_argument("--as-of", required=True, type=date.fromisoformat)
+    forward_evaluation.add_argument("--start", type=date.fromisoformat)
+    forward_evaluation.add_argument("--end", type=date.fromisoformat)
     return parser
 
 
@@ -2476,6 +2481,45 @@ def _registered_forward_context(
     return provenance, contract, activation, source
 
 
+def _load_registered_forward_bundle(config, activation, contract, source):
+    """Verify the immutable pre-activation model, never fit or rescore here."""
+
+    model_version = config.forward.model_version
+    if model_version is None:
+        raise FactorLabError("forward.model_version is required")
+    bundle = load_model_bundle(
+        config.paths.forward_models_dir / config.forward.model_name / model_version,
+        expected_model_name=config.forward.model_name,
+        expected_feature_names=config.factors,
+        expected_source_sha256=source,
+    )
+    expected = {
+        "model_version": model_version,
+        "target": _target_column(config),
+        "training_asof": config.forward.training_asof.isoformat()
+        if config.forward.training_asof is not None else None,
+        "research_contract_sha256": contract,
+        "source_sha256": source,
+        "seed": config.seed,
+        "parameters": selected_forward_model_parameters(config),
+    }
+    mismatches = [key for key, value in expected.items() if bundle.metadata.get(key) != value]
+    if mismatches:
+        raise FactorLabError(
+            "Forward model bundle differs from the registered contract (%s)"
+            % ", ".join(mismatches)
+        )
+    try:
+        frozen_at = datetime.strptime(
+            bundle.metadata["frozen_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
+        ).replace(tzinfo=timezone.utc)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise FactorLabError("Forward model bundle has an invalid frozen_at") from exc
+    if frozen_at.astimezone(ZoneInfo(config.forward.timezone)).date() >= activation.activation_date:
+        raise FactorLabError("Forward model bundle was not frozen before the activation date")
+    return bundle
+
+
 def command_activate_forward(
     config: ResearchConfig,
     run: RunManifest,
@@ -2682,51 +2726,7 @@ def _command_forward_signal_locked(
     model_version = config.forward.model_version
     if model_version is None:
         raise FactorLabError("forward.model_version is required")
-    bundle_path = (
-        config.paths.forward_models_dir
-        / config.forward.model_name
-        / model_version
-    )
-    bundle = load_model_bundle(
-        bundle_path,
-        expected_model_name=config.forward.model_name,
-        expected_feature_names=config.factors,
-        expected_source_sha256=source,
-    )
-    bundle_expected = {
-        "model_version": model_version,
-        "target": _target_column(config),
-        "training_asof": config.forward.training_asof.isoformat()
-        if config.forward.training_asof is not None
-        else None,
-        "research_contract_sha256": contract,
-        "source_sha256": source,
-        "seed": config.seed,
-        "parameters": selected_forward_model_parameters(config),
-    }
-    mismatches = [
-        name
-        for name, expected in bundle_expected.items()
-        if bundle.metadata.get(name) != expected
-    ]
-    if mismatches:
-        raise FactorLabError(
-            "Forward model bundle differs from the registered contract (%s)"
-            % ", ".join(mismatches)
-        )
-    try:
-        frozen_at = datetime.strptime(
-            bundle.metadata["frozen_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
-        ).replace(tzinfo=timezone.utc)
-    except (KeyError, TypeError, ValueError) as exc:
-        raise FactorLabError("Forward model bundle has an invalid frozen_at") from exc
-    if (
-        frozen_at.astimezone(ZoneInfo(config.forward.timezone)).date()
-        >= activation.activation_date
-    ):
-        raise FactorLabError(
-            "Forward model bundle was not frozen before the activation date"
-        )
+    bundle = _load_registered_forward_bundle(config, activation, contract, source)
 
     if refresh_data:
         _run_forward_child(
@@ -2887,6 +2887,178 @@ def _command_forward_signal_locked(
     )
 
 
+def _snapshot_covers(snapshot, start: date, end: date, symbol: str) -> None:
+    """Check requested coverage from the *same* verified cache snapshot."""
+
+    if not snapshot.metadata:
+        raise FactorLabError("Forward evaluation has no verified cache for %s" % symbol)
+    cursor = pd.Timestamp(start)
+    stop = pd.Timestamp(end)
+    intervals = sorted(
+        (pd.Timestamp(item["start"]), pd.Timestamp(item["end"]))
+        for item in snapshot.metadata.get("covered_ranges", [])
+    )
+    for left, right in intervals:
+        if right < cursor:
+            continue
+        if left > cursor:
+            break
+        cursor = max(cursor, right + pd.Timedelta(days=1))
+        if cursor > stop:
+            return
+    raise FactorLabError(
+        "Forward evaluation cache coverage is incomplete for %s (%s through %s); "
+        "update data explicitly before evaluation, no automatic refill is allowed"
+        % (symbol, start.isoformat(), end.isoformat())
+    )
+
+
+def command_evaluate_forward(
+    config: ResearchConfig,
+    run: RunManifest,
+    as_of: date,
+    *,
+    start: Optional[date] = None,
+    end: Optional[date] = None,
+) -> None:
+    """Append mature-label diagnostics for original complete predictions only."""
+
+    from qbot.research.forward.evidence import select_forward_prediction_records
+    from qbot.research.forward.evaluation import evaluate_forward_predictions
+    from qbot.research.reports.forward import write_forward_evaluation_report
+
+    if type(as_of) is not date:
+        raise FactorLabError("Forward evaluation --as-of must be a canonical date")
+    now = _forward_now()
+    if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
+        raise FactorLabError("internal forward clock must be timezone-aware")
+    now = now.astimezone(ZoneInfo(config.forward.timezone))
+    if as_of > now.date():
+        raise FactorLabError("Forward evaluation --as-of cannot be in the future")
+    if as_of == now.date() and (now.hour, now.minute) < (
+        config.forward.market_close_hour, config.forward.market_close_minute
+    ):
+        raise FactorLabError("Today's forward evaluation must wait until 15:30 Asia/Shanghai")
+    lock_path = config.paths.data_root / ".locks" / "forward-workflow.lock"
+    with workflow_lock(lock_path, timeout_seconds=0.0):
+        provenance, contract, activation, source = _registered_forward_context(config, run)
+        bundle = _load_registered_forward_bundle(config, activation, contract, source)
+        first = activation.activation_date if start is None else start
+        last = as_of if end is None else end
+        if type(first) is not date or type(last) is not date:
+            raise FactorLabError("Forward evaluation range must contain canonical dates")
+        if first < activation.activation_date or first > last or last > as_of:
+            raise FactorLabError("Forward evaluation range must lie between activation_date and --as-of")
+        benchmark_snapshot = _load_benchmark_snapshot(config)
+        _snapshot_covers(benchmark_snapshot, first, as_of, config.data.benchmark)
+        benchmark = benchmark_snapshot.frame.loc[
+            benchmark_snapshot.frame["date"].le(pd.Timestamp(as_of))
+        ].copy()
+        calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
+        if pd.Timestamp(as_of) not in calendar:
+            raise FactorLabError("Forward evaluation --as-of is not an observed benchmark session")
+        evidence = select_forward_prediction_records(
+            config.paths.forward_dir / "signals",
+            start=first,
+            end=last,
+            activation_id=activation.activation_id,
+            activation_manifest_sha256=activation.manifest_sha256,
+            research_contract_sha256=contract,
+            source_sha256=source,
+            model_name=config.forward.model_name,
+            model_version=config.forward.model_version,
+            model_bundle_sha256=bundle.metadata["content_sha256"],
+            market_close_hour=config.forward.market_close_hour,
+            market_close_minute=config.forward.market_close_minute,
+            version_policy=config.forward.evaluation_version_policy,
+        )
+        predictions = evidence.predictions
+        signal_dates = pd.DatetimeIndex(pd.to_datetime(predictions["signal_date"].unique()))
+        if not signal_dates.isin(calendar).all():
+            raise FactorLabError("A recorded signal date is not an observed benchmark session")
+        symbols = sorted(predictions["symbol"].unique())
+        provider = _provider(config)
+        provider_name = provider.__class__.__name__
+        cache = _stock_cache(config)
+        identities = {
+            symbol: (provider_name, provider.cache_source_version(symbol, False))
+            for symbol in symbols
+        }
+        snapshots = {
+            symbol: cache.load_snapshot(
+                symbol, expected_source=identities[symbol][0],
+                expected_source_version=identities[symbol][1],
+            )
+            for symbol in symbols
+        }
+        for symbol, snapshot in snapshots.items():
+            symbol_start = pd.Timestamp(
+                predictions.loc[predictions["symbol"].eq(symbol), "signal_date"].min()
+            ).date()
+            _snapshot_covers(snapshot, symbol_start, as_of, symbol)
+        bar_provenance = build_bar_data_provenance(
+            config.data.benchmark, benchmark_snapshot, snapshots, identities,
+            (provider_name, provider.cache_source_version(config.data.benchmark, True)),
+        )
+        evaluation = evaluate_forward_predictions(
+            predictions,
+            pd.concat([snapshot.frame for snapshot in snapshots.values()], ignore_index=True),
+            benchmark,
+            as_of=as_of,
+            holding_days=config.label.holding_days,
+            top_k=config.portfolio.top_k,
+            minimum_cross_section=config.evaluation.min_cross_section,
+            benchmark_symbol=config.data.benchmark,
+            include_regime=config.market_regime.enabled,
+        )
+        expected_dates = calendar[(calendar >= pd.Timestamp(first)) & (calendar <= pd.Timestamp(last))]
+        missing_dates = expected_dates.difference(signal_dates)
+        report_provenance = {
+            **provenance,
+            "source_sha256": source,
+            "research_contract_sha256": contract,
+            "activation_id": activation.activation_id,
+            "activation_manifest_sha256": activation.manifest_sha256,
+            "model_name": config.forward.model_name,
+            "model_version": config.forward.model_version,
+            "model_bundle_sha256": bundle.metadata["content_sha256"],
+            "config": config.to_dict(),
+            "bar_data_version": bar_data_version(bar_provenance),
+            "bar_data_provenance": bar_provenance,
+            "signal_start": first.isoformat(),
+            "signal_end": last.isoformat(),
+            "as_of": as_of.isoformat(),
+            "expected_signal_dates": expected_dates.strftime("%Y-%m-%d").tolist(),
+            "missing_signal_dates": missing_dates.strftime("%Y-%m-%d").tolist(),
+            "selected_rows": len(predictions),
+            "version_policy": config.forward.evaluation_version_policy,
+        }
+        _assert_current_forward_worktree(config, provenance)
+        if research_source_sha256(config.repo_root or Path.cwd()) != source:
+            raise FactorLabError("FactorLab source changed during forward evaluation")
+        report = write_forward_evaluation_report(
+            evaluation, evidence,
+            config.paths.forward_dir / "evaluations" / run.run_id,
+            run_id=run.run_id, provenance=report_provenance,
+        )
+        # Plotting/publication can take time. A changed worktree leaves an
+        # unfinalized report, never evidence authorized by a successful run.
+        _assert_current_forward_worktree(config, provenance)
+        if research_source_sha256(config.repo_root or Path.cwd()) != source:
+            raise FactorLabError("FactorLab source changed during forward report publication")
+        run.payload.update({
+            "forward_evaluation_manifest_sha256": report.manifest_sha256,
+            "forward_evaluation_artifact_sha256": dict(report.artifact_sha256),
+            "forward_evaluation": report_provenance,
+        })
+        run.add_output("forward_evaluation_report", report.directory)
+        run.add_output("forward_evaluation_manifest", report.manifest_path)
+        LOGGER.info(
+            "Recorded forward evaluation: %d original predictions, %d missing signal dates; %s",
+            len(predictions), len(missing_dates), report.directory,
+        )
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = _parser()
     arguments = parser.parse_args(argv)
@@ -2898,6 +3070,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         config = load_config(arguments.config)
         if arguments.command == "forward-signal":
             config = _forward_runtime_config(config, arguments.date)
+        elif arguments.command == "evaluate-forward":
+            config = _forward_runtime_config(config, arguments.as_of)
     except FactorLabError as exc:
         LOGGER.error("%s", exc)
         return 2
@@ -2916,6 +3090,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         if arguments.command in {
             "build-dataset", "evaluate-factors", "walk-forward", "compare-models",
             "activate-forward", "freeze-forward-model", "forward-signal",
+            "evaluate-forward",
         }:
             assert_no_unresolved(_download_guard_root(config))
         if arguments.command == "audit":
@@ -2955,6 +3130,10 @@ def main(argv: Optional[List[str]] = None) -> int:
                 arguments.date,
                 reissue_reason=arguments.reissue_reason,
                 version=arguments.version,
+            )
+        elif arguments.command == "evaluate-forward":
+            command_evaluate_forward(
+                config, run, arguments.as_of, start=arguments.start, end=arguments.end
             )
         else:  # argparse prevents this branch
             raise FactorLabError("Unsupported command %s" % arguments.command)
@@ -2996,6 +3175,13 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "Finalized append-only forward signal receipt: %s",
                 finalized.completion_path,
             )
+        elif arguments.command == "evaluate-forward":
+            from qbot.research.reports.forward import finalize_forward_evaluation_report
+
+            directory = run.payload.get("outputs", {}).get("forward_evaluation_report")
+            if not isinstance(directory, str) or not directory:
+                raise FactorLabError("Forward evaluation run has no published report to finalize")
+            finalize_forward_evaluation_report(Path(directory), run.path)
     except Exception as exc:
         try:
             run.finish("failed", "signal/run finalization failed: %s" % exc)

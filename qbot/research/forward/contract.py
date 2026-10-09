@@ -58,7 +58,7 @@ def forward_contract_payload(config: ResearchConfig) -> Dict[str, Any]:
 
     snapshot = config.to_dict()
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "project": config.project.name,
         "seed": config.seed,
         "live_trading": config.live_trading,
@@ -101,6 +101,7 @@ def forward_contract_payload(config: ResearchConfig) -> Dict[str, Any]:
             "market_close_hour": config.forward.market_close_hour,
             "market_close_minute": config.forward.market_close_minute,
             "require_clean_worktree": config.forward.require_clean_worktree,
+            "evaluation_version_policy": config.forward.evaluation_version_policy,
         },
         "model_parameters": selected_forward_model_parameters(config),
     }

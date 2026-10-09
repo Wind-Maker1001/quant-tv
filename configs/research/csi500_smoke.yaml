@@ -133,6 +133,7 @@ market_regime:
 
 # Disabled in smoke: synthetic/offline runs are never forward evidence.
 forward:
+  evaluation_version_policy: FIRST_ON_TIME
   enabled: false
   activation_date: null
   model_name: ridge
