@@ -29,6 +29,12 @@ from qbot.research.backtest import (
 from qbot.research.config import ResearchConfig, load_config
 from qbot.research.data import AKShareProvider, ParquetBarCache, TradingCalendar
 from qbot.research.data.providers.base import MarketDataProvider
+from qbot.research.data.download_status import (
+    assert_no_unresolved,
+    list_unresolved,
+    record_fatal,
+    resolve_fatal,
+)
 from qbot.research.data.providers.local import (
     LocalParquetProvider,
     publish_local_market_data,
@@ -40,8 +46,10 @@ from qbot.research.data.provenance import (
 )
 from qbot.research.dataset import DatasetBuildOptions, DatasetBuilder
 from qbot.research.errors import (
+    DataQualityError,
     FactorLabError,
     PointInTimeUniverseRequiredError,
+    ProviderNetworkError,
     SecurityStatusDataError,
 )
 from qbot.research.forward import (
@@ -328,6 +336,90 @@ def _stock_cache(config: ResearchConfig) -> ParquetBarCache:
     )
 
 
+def _download_guard_root(config: ResearchConfig) -> Path:
+    # Never partition fatal evidence by provider: switching source is not repair.
+    return config.paths.raw_dir / "download_status"
+
+
+def _record_fatal_download(
+    config: ResearchConfig, run: RunManifest, provider: MarketDataProvider,
+    symbol: str, start: Any, end: Any, is_index: bool, error: Exception,
+) -> None:
+    try:
+        source_version = provider.cache_source_version(symbol, is_index)
+    except Exception:
+        source_version = None  # Explicitly unverifiable, never a fake identity.
+    # Keep diagnostics in memory first.  Ledger publication must not depend on
+    # a successful rewrite of the separate run manifest (for example on a full
+    # disk); an interrupted first ledger write also remains fail-closed.
+    run.payload["failures"]["fatal_market_data"] = {
+        "symbol": symbol, "error_type": type(error).__name__,
+        "error_message": str(error) or type(error).__name__,
+    }
+    root = _download_guard_root(config)
+    run.payload["outputs"]["download_contract_ledger"] = str(root)
+    receipt = record_fatal(
+        root, symbol=symbol, provider_class=type(provider).__name__,
+        source_version=source_version, start=start, end=end, run_id=run.run_id,
+        git_commit=run.payload["git_commit"], error_type=type(error).__name__,
+        error_message=str(error) or type(error).__name__,
+    )
+    run.payload.setdefault("fatal_download_receipts", []).append(receipt)
+    run.add_output("download_contract_ledger", root)
+
+
+def _update_guarded_bars(
+    config: ResearchConfig, run: RunManifest, provider: MarketDataProvider,
+    cache: ParquetBarCache, symbol: str, start: Any, end: Any,
+    is_index: bool = False,
+) -> pd.DataFrame:
+    """Only a fresh, verified fetch can repair an observed fatal contract."""
+
+    pending = [
+        item for item in list_unresolved(_download_guard_root(config))
+        if item["context"]["symbol"] == symbol
+    ]
+    first, last = pd.Timestamp(start), pd.Timestamp(end)
+    if pending:
+        first = min([first] + [pd.Timestamp(item["context"]["start"]) for item in pending])
+        last = max([last] + [pd.Timestamp(item["context"]["end"]) for item in pending])
+    try:
+        if not pending:
+            return cache.update_from_provider(provider, symbol, first, last, is_index=is_index)
+        source = type(provider).__name__
+        source_version = provider.cache_source_version(symbol, is_index)
+        cache.assert_source_identity(symbol, source=source, source_version=source_version)
+        fetch = provider.get_index_bars if is_index else provider.get_daily_bars
+        incoming = fetch(symbol, first, last)
+        if not isinstance(incoming, pd.DataFrame) or incoming.empty:
+            raise DataQualityError("Fatal download repair requires a nonempty actual refetch for %s" % symbol)
+        if is_index:
+            # Validate the actual response, not a merged old cache, before a
+            # benchmark repair can clear its receipt.  Old prices must not
+            # hide a fresh response missing the required research boundaries.
+            _select_benchmark_with_warmup(config, incoming)
+        cache.update(symbol, incoming, first, last, source=source, source_version=source_version)
+        snapshot = cache.load_snapshot(
+            symbol, expected_source=source, expected_source_version=source_version,
+        )
+        resolved = resolve_fatal(
+            _download_guard_root(config), symbol=symbol, provider_class=source,
+            source_version=source_version, start=first, end=last,
+            run_id=run.run_id, git_commit=run.payload["git_commit"],
+            expected_fatal_receipt_ids=[item["receipt_id"] for item in pending],
+            cache_metadata_sha256=snapshot.metadata_sha256,
+            force_refetched=True, schema_verified=True, refetched_rows=len(incoming),
+        )
+        run.payload.setdefault("resolved_download_receipts", []).extend(resolved)
+        run.add_output("download_contract_ledger", _download_guard_root(config))
+        return snapshot.frame
+    except ProviderNetworkError:
+        raise  # Stock loop may skip this; never clear earlier fatal receipts.
+    except Exception as exc:
+        _record_fatal_download(config, run, provider, symbol, first, last, is_index, exc)
+        raise
+
+
 def _resolve_input_path(config: ResearchConfig, value: str) -> Path:
     """Resolve every imported file from the repository, not the process cwd."""
 
@@ -414,6 +506,7 @@ def _load_benchmark_with_warmup(config: ResearchConfig) -> pd.DataFrame:
 def _load_benchmark_snapshot(config: ResearchConfig):
     """Pin benchmark bars and their evidence to a single cache generation."""
 
+    assert_no_unresolved(_download_guard_root(config))
     provider = _provider(config)
     snapshot = _benchmark_cache(config).load_snapshot(
         config.data.benchmark,
@@ -676,7 +769,24 @@ def command_audit(config: ResearchConfig, run: RunManifest) -> None:
 def command_download(config: ResearchConfig, run: RunManifest) -> None:
     provider = _provider(config)
     benchmark_cache = _benchmark_cache(config)
-    benchmark = _download_benchmark_with_warmup(config, provider)
+    pending = list_unresolved(_download_guard_root(config))
+    if any(item["context"]["symbol"] == config.data.benchmark for item in pending):
+        bars = _update_guarded_bars(
+            config, run, provider, benchmark_cache, config.data.benchmark,
+            _benchmark_request_start(config), config.data.end, is_index=True,
+        )
+        benchmark = _select_benchmark_with_warmup(config, bars)
+    else:
+        try:
+            benchmark = _download_benchmark_with_warmup(config, provider)
+        except ProviderNetworkError:
+            raise  # Benchmark is mandatory even for a recoverable network error.
+        except Exception as exc:
+            _record_fatal_download(
+                config, run, provider, config.data.benchmark,
+                _benchmark_request_start(config), config.data.end, True, exc,
+            )
+            raise
     full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
     calendar = _research_calendar(config, full_calendar)
     run.add_output("benchmark", benchmark_cache.data_path(config.data.benchmark))
@@ -842,24 +952,39 @@ def command_download(config: ResearchConfig, run: RunManifest) -> None:
 
     cache = _stock_cache(config)
     failures: Dict[str, str] = {}
+    failure_path = config.paths.raw_dir / config.data.provider / "failed_symbols.json"
+
+    def publish_failures() -> None:
+        _atomic_json(failures, failure_path)
+        run.add_failures("market_data", failures)
+        run.add_output("failed_symbols", failure_path)
+
     for number, symbol in enumerate(symbols, start=1):
         try:
-            cache.update_from_provider(
-                provider,
-                symbol,
-                full_calendar.min(),
-                full_calendar.max(),
-                is_index=False,
+            _update_guarded_bars(
+                config, run, provider, cache, symbol,
+                full_calendar.min(), full_calendar.max(),
             )
-        except Exception as exc:
+        except ProviderNetworkError as exc:
             failures[symbol] = str(exc)
             LOGGER.warning("Market data failed for %s: %s", symbol, exc)
+        except Exception as exc:
+            failures[symbol] = str(exc)
+            publish_failures()
+            LOGGER.error("Fatal market-data contract for %s: %s", symbol, exc)
+            raise
         if number % 25 == 0 or number == len(symbols):
             LOGGER.info("Downloaded/checked %d/%d securities", number, len(symbols))
-    failure_path = config.paths.raw_dir / config.data.provider / "failed_symbols.json"
-    _atomic_json(failures, failure_path)
-    run.add_failures("market_data", failures)
-    run.add_output("failed_symbols", failure_path)
+    publish_failures()
+    pending = list_unresolved(_download_guard_root(config))
+    run.payload["unresolved_download_receipts"] = [item["receipt_id"] for item in pending]
+    if pending:
+        run.add_output("download_contract_ledger", _download_guard_root(config))
+        LOGGER.warning(
+            "Download scan finished with %d unresolved fatal receipt(s); "
+            "research commands remain blocked even when old caches exist",
+            len(pending),
+        )
     LOGGER.info("Market data completed with %d failed symbols", len(failures))
     if status_error is not None:
         raise status_error
@@ -990,6 +1115,7 @@ def command_import_security_data(
 
 
 def _load_stock_bars(config: ResearchConfig, symbols: Iterable[str]) -> pd.DataFrame:
+    assert_no_unresolved(_download_guard_root(config))
     cache = _stock_cache(config)
     provider = _provider(config)
     parts: List[pd.DataFrame] = []
@@ -1018,6 +1144,7 @@ def _load_bar_inputs(config: ResearchConfig, membership: pd.DataFrame, benchmark
     the research window invalidates prior datasets until they are rebuilt.
     """
 
+    assert_no_unresolved(_download_guard_root(config))
     provider = _provider(config)
     source = provider.__class__.__name__
     if benchmark_snapshot is None:
@@ -1174,6 +1301,7 @@ def _load_verified_dataset(
     full_calendar: Optional[pd.DatetimeIndex] = None,
     bar_inputs: Optional[tuple] = None,
 ) -> tuple:
+    assert_no_unresolved(_download_guard_root(config))
     membership = _load_verified_membership(config, research_calendar)
     universe_version = dataframe_sha256(membership)
     if bar_inputs is None:
@@ -2072,6 +2200,7 @@ def _shared_model_security_provenance(
 def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
     """Compare all four pre-registered models without selecting a winner."""
 
+    assert_no_unresolved(_download_guard_root(config))
     model_names = ("factor_score", "ridge", "lightgbm", "xgboost")
     outputs = {name: _latest_model_output(config, name) for name in model_names}
     manifests = {
@@ -2767,6 +2896,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 2
     LOGGER.info("Run ID: %s", run.run_id)
     try:
+        if arguments.command in {
+            "build-dataset", "evaluate-factors", "walk-forward", "compare-models",
+            "activate-forward", "freeze-forward-model", "forward-signal",
+        }:
+            assert_no_unresolved(_download_guard_root(config))
         if arguments.command == "audit":
             command_audit(config, run)
         elif arguments.command == "download-data":
