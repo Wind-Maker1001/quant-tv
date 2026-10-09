@@ -14,6 +14,7 @@ Qbot FactorLab 是 Qbot 内部隔离的 A 股横截面研究模块。它仅用�
 | Test 预测指标、Top-K、Fast Backtest、费用与模型报告 | Phase 2 已实现 |
 | LightGBM、XGBoost、Market Regime、规则执行回测 | Phase 3 已实现 |
 | 未来激活、冻结模型、append-only Paper Signal | Phase 4 核心已实现，尚未正式激活 |
+| 完整 Forward 预测的成熟标签关联及追加报告 | 已实现；只有软件/合成验收，没有真实 Forward IC |
 
 每次模型运行同时生成快速目标权重回测和规则执行回测。执行层包含 T+1、100 股整数手、现金、停牌及开盘涨跌停拒单；但日线仍无法还原盘口队列、部分成交和盘中路径。
 
@@ -167,6 +168,14 @@ compare-models 不自动挑选“赢家”，也不据 Test 调参。它读取 F
 
     python -m qbot.research.cli forward-signal --date YYYY-MM-DD --config configs/research/csi500_5y.yaml
 
+标签成熟后可追加评价（仅本地已校验行情，不重新评分或联网补数据）：
+
+    python -m qbot.research.cli evaluate-forward --as-of YYYY-MM-DD --config configs/research/csi500_5y.yaml
+
+`FIRST_ON_TIME` 选版规则在契约中事前冻结；不以收益挑历史版本。缺失信号日期、
+未成熟标签与成熟但缺价均如实记录，Top-K 缺价不会晋升候选。默认配置保持关闭，
+当前没有可供该正式命令评价的真实信号或模型。
+
 每日信号命令会在全流程独占锁内把运行时 `data.end` 固定到请求日，增量下载、重建
 并验证数据集；任一下载失败或当日特征缺失都会停止。随后加载与 activation 共同绑定
 源码摘要、且在 activation 日前冻结的模型，生成 Top-K 等权记录。旧日期只能带
@@ -199,6 +208,14 @@ Phase 4 另提供不联网的软件生命周期示例：
 成熟标签冻结、`ON_TIME`、`LATE_REISSUE` 以及 producer completion receipt。所有产物
 均醒目标记 `SYNTHETIC SOFTWARE DEMO ONLY - NOT A RESEARCH RESULT`，不得引用为真实
 Forward Test 或论文实证。
+
+完整预测选版、成熟标签与不可覆盖评价报告另有合成演示：
+
+    python -m examples.research.forward_evaluation_synthetic_demo --output results/examples/forward_evaluation_synthetic --seed 42
+
+其中2099年日期、生成时刻、股票价格和身份哈希均为模拟。演示只调用存储/评价
+组件，不绕过正式 CLI 的时钟、PIT 或预注册门禁，不会启用真实 Forward。
+详见 [FORWARD_EVALUATION_AUDIT.md](FORWARD_EVALUATION_AUDIT.md)。
 
 ## 7. 数据与模型产物
 

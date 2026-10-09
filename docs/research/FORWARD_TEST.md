@@ -36,6 +36,7 @@ forward:
   market_close_hour: 15
   market_close_minute: 30
   require_clean_worktree: true
+  evaluation_version_policy: FIRST_ON_TIME  # 在观察未来收益前固定
 ```
 
 冻结模型时，`data.end` 必须等于 `training_asof`。先审核配置并本地提交，确保
@@ -194,9 +195,9 @@ CSV 字节返回完整表的副本，避免哈希验证与解析读到不同内�
 `TOP_K_ONLY`：可以读取原来的组合信号，但读取完整预测会明确失败；不得往旧目录
 添加预测文件，也不得重新评分旧日期后伪装成当时完整预测。新版本不会改变旧目录。
 
-保存完整预测是未来 Forward IC、Bottom-K 与 Q4 对比的必要前置，不等于已经完成
-标签成熟后的关联评价。当前尚无 `evaluate-forward` 命令或真实 Forward IC；未来实现
-必须只追加关联产物，按事前版本选择规则使用原始预测，不修改或重评分原始文件。
+完整预测现在可通过 `evaluate-forward` 只追加关联成熟标签；仍没有真实 Forward IC。
+该命令不重新评分、拟合模型或修改原始信号。详见下文与
+[FORWARD_EVALUATION_AUDIT.md](FORWARD_EVALUATION_AUDIT.md)。
 
 Manifest 记录行数、列顺序、CSV 字节数和 SHA-256，自身摘要由 sidecar 保存。信号
 数据先原子发布，只有 producer run 成功落盘后才原子追加 `completion/`；该目录保存
@@ -206,7 +207,55 @@ Manifest 记录行数、列顺序、CSV 字节数和 SHA-256，自身摘要由 s
 `results/runs/<run_id>/manifest.json` 还记录当日数据集、模型 bundle、股票池、环境、
 配置和子运行来源。
 
-## 6. 证据保存规则
+## 6. 成熟预测评价
+
+在真实数据及预注册实验具备后，先单独更新本地行情缓存，再运行：
+
+```powershell
+python -m qbot.research.cli evaluate-forward `
+  --as-of YYYY-MM-DD `
+  --config configs/research/csi500_5y.yaml
+```
+
+可用 `--start`、`--end` 限定信号日期；范围必须在 activation date 与 `--as-of`
+之间。不传时评价 activation date 至 as-of。as-of 必须是缓存基准的实际交易日，
+不得晚于上海当前日期；当天评价需等到15:30。这里不提供绕过内部时钟的 CLI 参数。
+
+研究契约 schema 2 事前冻结 `FIRST_ON_TIME`：每个信号日只选择最早生成的、
+具有成功收据的完整横截面 ON_TIME 版本。若最早时间相同，则仅允许用无歧义的
+自动递增版本号判定，不能按未来 IC 或收益挑版本。后续版本、LATE_REISSUE 与
+旧 Top-K-only 记录均列入排除表；范围内的坏哈希、orphan 或混入不同实验身份
+直接失败，而不是偷偷跳过。没有合格记录时明确失败，不生成“空成功”报告。
+
+评价与日终信号共用流程锁。只读取已校验的缓存快照与原始预测，验证激活、
+冻结模型、干净工作区、源码、契约、原始 producer completion 和行情来源；
+不联网补行情、不重建数据集、不重新调用 predict。行情覆盖任一记录股票所需区间
+不完整时停止，不能按当前成分或当前可交易股票删除历史预测。
+
+标签仍是 `adj_open[t+6]/adj_open[t+1]-1` 减去基准同窗口收益，实际日期由基准
+交易日历映射。仅纳入截至 as-of 已观察的价格，停牌或缺失开盘价不填充：
+
+- `MATURE`：退出日已到且股票/基准开盘价齐全；
+- `MATURE_MISSING_PRICE`：日历上成熟但价格缺失；
+- `IMMATURE`：退出窗口尚未成熟。
+
+全部原始分数/排名和未成熟行保留，报告列出覆盖率与缺失信号交易日。Top-K 在
+检查标签前按原始排名确定，缺价不会晋升第 K+1 名。IC、RankIC、ICIR、Top/Bottom
+与 spread 按 Year/Quarter/Regime 分解；不足最小横截面的 IC 不强行计算。
+若原信号未保存市场状态，则追加 `EVALUATION_MARKET_REGIME`，仍只用 t 及以前
+的基准 MA20/MA60，明确这是评价分组，不冒称原信号保存字段。
+
+产物追加在 `results/forward/evaluations/<run_id>/`：全预测与成熟标签、每日指标、
+分期摘要的 CSV/Parquet，选用/排除版本 CSV，四张图片、summary.md、manifest
+及独立摘要。CLI producer 成功后再原子追加自包含 `completion/`；默认读取器
+拒绝未完成报告、覆盖旧 run_id、链接路径、异常文件集合、CSV/Parquet 或摘要
+不一致。原始 signals/predictions/receipts 不变。
+
+这些未来开盘超额标签是**交易成本前的预测评价，不是实际成交或 Paper NAV**，
+不能用来回答执行约束后收益还剩多少。新增源码与契约改变了身份摘要；正式激活
+与模型必须基于最终审核版本重新事前冻结，不给旧实验偷偷换代码。
+
+## 7. 证据保存规则
 
 `results/forward/` 没有被 `.gitignore` 整体忽略，目的是让激活收据、冻结模型和每日
 信号能按顺序进入本地提交。建议流程是：
@@ -223,7 +272,7 @@ Manifest 记录行数、列顺序、CSV 字节数和 SHA-256，自身摘要由 s
 时间戳/WORM 存储。本项目只声称可检测普通修改并保留可审计链路，不声称提供法律级
 防篡改证明。
 
-## 7. 当前真实状态
+## 8. 当前真实状态
 
 - `2026-09-14` 至今没有可被追认为当时生成的正式信号；
 - 正式 YAML 仍保持 `forward.enabled: false`，没有擅自替用户选择新起点；

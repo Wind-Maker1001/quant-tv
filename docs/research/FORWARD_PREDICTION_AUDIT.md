@@ -1,5 +1,9 @@
 # Forward 完整预测证据与读取语义补强
 
+后续补充：[FORWARD_EVALUATION_AUDIT.md](FORWARD_EVALUATION_AUDIT.md) 已实现成熟标签
+关联与 evaluate-forward CLI。本文下方测试和“未实现”描述保留为本次存档补强完成时
+的历史证据；后续软件进展不代表已取得真实 Forward IC 或解除 PIT 门禁。
+
 日期：2026-10-09（Asia/Shanghai）。范围为研究模块软件正确性，不是真实 Forward 实验。
 
 ## 发现与处理

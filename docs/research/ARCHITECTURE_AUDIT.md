@@ -105,7 +105,8 @@ Phase 4 继续不导入 Legacy 实盘链路：
 - `forward/model_bundle.py` 只拟合一个显式模型，以 `exit_date <= training_asof` 阻止未成熟标签进入训练，并用内部身份摘要绑定训练审计字段；
 - `forward/policy.py` 以 Asia/Shanghai 收盘时点区分 `ON_TIME` 与必须说明原因的 `LATE_REISSUE`；
 - `forward/signal_recorder.py` 使用日期锁、锁内版本分配、staging 与原子目录发布，并只在 producer run 成功后追加自包含 completion 收据；
-- CLI 的 `forward-signal` 先运行独立 download/build 子清单，再核对当日 benchmark、PIT、数据集、模型和契约哈希，原子保存完整合格横截面预测与 Paper Top-K。Schema 3 的行数/摘要绑定成功 producer；旧 Top-K-only 记录不补评分。Writer/Reader 共用时间语义校验，详见 [FORWARD_PREDICTION_AUDIT.md](FORWARD_PREDICTION_AUDIT.md)。成熟 Forward 关联评价尚未实现。
+- CLI 的 `forward-signal` 先运行独立 download/build 子清单，再核对当日 benchmark、PIT、数据集、模型和契约哈希，原子保存完整合格横截面预测与 Paper Top-K。Schema 3 的行数/摘要绑定成功 producer；旧 Top-K-only 记录不补评分。Writer/Reader 共用时间语义校验，详见 [FORWARD_PREDICTION_AUDIT.md](FORWARD_PREDICTION_AUDIT.md)。
+- `forward/evidence.py` 按事前固定 FIRST_ON_TIME 选择完整成功证据，`forward/evaluation.py` 只以本地截至 as-of 的真实交易日历关联成熟标签。CLI `evaluate-forward` 共用日终流程锁，不联网、重评分或修改原预测；`reports/forward.py` 以新 run_id 原子追加 CSV/Parquet、覆盖/分期指标、图片及独立成功收据。软件与合成验收见 [FORWARD_EVALUATION_AUDIT.md](FORWARD_EVALUATION_AUDIT.md)，没有真实 Forward 结果。
 
 正式 YAML 仍保持关闭；这表示软件路径完成但真实实验尚未启动，而不是 Phase 4 结果已经存在。
 
