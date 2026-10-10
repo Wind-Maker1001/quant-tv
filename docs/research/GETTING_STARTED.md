@@ -386,3 +386,19 @@ INSUFFICIENT_DATES，不是运行故障。旧模型报告没有可信完整 benc
 原BaoStock门禁联合定向验收56项通过。正式 `build-dataset` 实际复核在旧基准
 缓存元数据版本1处失败，尚未进入 PIT 阶段；应实际重新取数生成新合同缓存，
 不能直接修改旧版本号放行。完整命令、JUnit及诊断证据见上述来源归档文档。
+
+2026-10-10后续已实际恢复正式 benchmark：旧330行 v1 文件成对归档，重新下载的
+当前合同数据以v3发布，正式使用1341行（1211个研究日期+130日预热）。再次运行
+`build-dataset` 已不报旧缓存错误，当前硬阻塞是 PIT 成员实际生效语义未核验。
+可重复的独立抓取入口（不会自动覆盖正式缓存）为：
+
+```text
+.venv-py39\python.exe -m examples.research.refetch_benchmark --config configs/research/csi500_5y.yaml --deadline-seconds 120
+```
+
+它有真实子进程截止时间、全新独立缓存和成功/失败收据。不得把仅 benchmark
+恢复当作五年数据集或正式实验完成。日期异常、归档和哈希见
+[BENCHMARK_RECOVERY.md](BENCHMARK_RECOVERY.md)。
+
+本轮恢复与日历守卫的完整研究回归实际 **1992 passed、2 deselected**；真实
+benchmark 请求成功，正式数据集命令则明确在未核验 PIT 生效语义处失败。
