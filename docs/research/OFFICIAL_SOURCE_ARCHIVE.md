@@ -283,3 +283,128 @@ Matplotlib/Pyparsing弃用提示。没有执行具联网、邮件或GUI副作用
 5份解码正文 UTF-8 哈希也另用 .NET SHA-256 独立复核一致；原 LICENSE 对象哈希
 仍为 `9fb99866c50772b1afadab1657cc45cc72cdc2d4`。CLI `audit` 实际成功，运行
 `20261010T102029.249530Z-audit-acc36f20`，没有生成或授权正式研究数据。
+
+## 旧式正文附件与起点前补证
+
+同日继续读取3份实际公开正文；保存方式与上面的浏览器观察合同相同，分别保留
+原始 `response.text()` 字符串、输入容器和 UTF-8 哈希。采集时刻使用标准 ISO UTC
+`Z` 表示，读取器针对 Python 3.9 解析为 UTC，仍保留原表示，不补造外部时间戳。
+
+| 公告 | 发布日 | 原文明示的生效语义 | 正文中实际文件链接 |
+| --- | --- | --- | --- |
+| [13307](https://www.csindex.com.cn/#/about/newsDetail?id=13307) | 2021-03-03 | 自2021年3月15日起 | 1份 XLSX |
+| [12470](https://www.csindex.com.cn/#/about/newsDetail?id=12470) | 2021-05-28 | 2021年6月11日收盘后 | 2版 XLSX |
+| [13420](https://www.csindex.com.cn/#/about/newsDetail?id=13420) | 2021-08-30 | 自中国能建上市日起 | 1份 XLSX |
+
+三份的 `enclosureList` 都为空，文件链接实际上在 HTML `<a href=...>` 中。
+只遍历该元数据字段会漏掉真实附件。因此新增 `notice_attachments.py`，供官方
+收集器和浏览器正文复核共同调用。精确发现正文文件链接，保留原 href、解析 URL、
+可见标签/实际 title、出现位置及元数据来源；忽略普通官网链接和 script/style。
+相同编码请求别名可合并来源，`/notice%2F` 与 `/notice/` 不猜成相同资源；不同
+日期目录的两个实际文件保留为两版，不以更新日期选择历史可用版本。嵌套、重复
+属性或未闭合的锚点明确失败。发现链接不意味着授权下载，客户端仍核验来源路径。
+
+实际观察的旧式路径范围仅为：
+
+```text
+https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/YYYYMMDD/16位数字.xlsx
+```
+
+新增独立合同 `csindex-legacy-static-notice-attachments-observed-20261010-v1`，
+不扩展为任意 static 文件或当前 constituents 文件；旧 API、`/notice/` 与 SSE
+缓存请求身份不变。目录穿越、反斜线、重复编码、外站或该旧式路径 query 均拒绝；
+401/403 后停止同批后续 HTTP，缓存仍按原收据逐次核验。
+
+候选语义字段另加 `explicit_start_date` 和 `conditional_effective_clause`，与
+`explicit_after_close_date` 并存。不把“上市日起”改成公告日或 URL 日期，不把
+“自某日起”改成收盘后，也不自动平移至下一交易日。两种明确日期或额外条件
+同时出现时要求独立复核；不产生正式成员有效日期。
+
+### 实际下载的四个历史文件
+
+运行 `20261010T104038.381041Z-review-browser-notices-1e22aba3` 实际成功：
+3份输入正文、4次 HTTP、4份附件，无失败。该次与此前5份附件超时是不同资源，
+不能重写此前失败历史。档案位于
+`data/research/diagnostics/official-browser-attachments/20261010-starting-boundaries/`。
+
+| 公告/版本 | 实际原始 URL | 字节数 | SHA-256 |
+| --- | --- | ---: | --- |
+| 13307 | [20210312/1615540258900287.xlsx](https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/20210312/1615540258900287.xlsx) | 13898 | `72b98f7c258494d57a2af39c9daa18f52a7fce07b7519226e94103b2b85fbe49` |
+| 12470，6月1日目录 | [20210601/1622509386248149.xlsx](https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/20210601/1622509386248149.xlsx) | 789788 | `ea291da157e677490e8d7287f1fa33aa17f69665e76fe6b71b295b038b360e54` |
+| 12470，6月10日目录 | [20210610/1623319091660435.xlsx](https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/20210610/1623319091660435.xlsx) | 772131 | `07e8c58d5f02cbaaf5e5b4a98f7c541208218d7a3de9b9627fbff37f31770a07` |
+| 13420 | [20210830/1630328886593411.xlsx](https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/20210830/1630328886593411.xlsx) | 12000 | `1a8f0c4d1e172eb3ec503b636d64ef06f237ce085604fb02ad97a78217b4b306` |
+
+HTTP 收据均为200，保留 Content-Type、ETag 与 Last-Modified。四个 Last-Modified
+都是2024-11-30，不能将它们、2021目录名或当前抓取时刻当作2021历史可用性证明。
+浏览器容器获取时间也仅是供应的观察标签，不是外部可信时戳或历史来源认证。
+
+### 独立只读名单核验
+
+使用技能要求的 bundled Artifact Tool 导入，没有编辑、导出或重写源工作簿。
+按真实工作表和精确指数代码字符串 `000905` 取行，保留代码前导零和方向：
+
+- 12470两版：各50调入、50调出；动作/证券代码/证券简称全部一致，也与独立
+  HTML 候选解析的100条记录逐项一致。两版各25行“备选名单”都有独立“排序”列，
+  不是已调入成员，全部排除。其他指数行不参与中证500统计。
+- 13307：调入表 A10:D11 为600764（中国海防）、600956（新天绿能）；调出表
+  A12:D13 为000564（*ST大集）、600515（*ST基础）。这是2对变更，不是500基线。
+- 13420：Sheet1!A11:F11 为调出600068（葛洲坝），调入代码原值为 `-`，名称
+  中国能建。诊断保留 `UNRESOLVED_SYMBOL_NOT_FILLED`，不从当前证券代码补齐。
+
+完整 typed values 的只读检查文件位于
+`data/research/diagnostics/workbook-inspector/20261010-starting-boundaries/`；
+独立比较结果 `csi500-comparison.json` 的 SHA 为
+`8f59e3838ccd6d7e326b1fce8d304c4f0c4eaf80f95655452a3b8cd51c996d07`。
+检查文件绑定原 XLSX 哈希与检查脚本哈希，原始文件读取前后均校验未改变。
+脚本仍在同一个 `inspect.mjs` 上增量维护，旧版本按 SHA 独占保留在 `helper_versions/`。
+首轮比较遇到备选名单额外“排序”列时明确报错，没有输出猜测结果；读取真实表头
+后按实际列修正，重新比较成功。保留该失败脚本版本
+`d4fd7b55dad1c115a1810db0be97d9433b0b546ffa3d6903d5ef52a39cebb8e7`。
+只读导入版本脚本 SHA 为 `ccae39d427a1cdd47eac1e62921a69b2c967d252053531b643783f5fa8cabf05`，
+最终比较脚本 SHA 为 `89016cf991990cbe6722a82df509c4c6afb2743ff44392668fa4113bd2dffb21`。
+这些独立工具不进入 FactorLab 运行依赖，没有修改研究 Provider 或数据集入口。
+
+另实际读取 [上交所葛洲坝终止上市公告](http://www.sse.com.cn/disclosure/announcement/listing/stock/c/c_20210909_82957014.shtml)，
+发布于2021-09-09，写明2021-09-13起终止股票上市交易。仅能证明交易所退市事实，
+不能替代指数公司“自中国能建上市日起”的成员事件日期。独立保存的是 Firecrawl
+当前页面 markdown，明确不是原始 HTML 字节，容器 SHA 为
+`bfdacc16fdba17246e14ec68cb57e545c655ee9bf4cc6b9e701efaff677d7399`，文件
+`data/research/diagnostics/sse-corporate-source/20261010-gezhouba-delisting.observation.json`。
+有限检索没有取得可独立核验的完整2021年500成员基线；不以搜索摘要推断日期、
+不把股票退市日期和指数成员退出日期混同，不用499快照加猜测证券补出500。
+
+### 最新复跑与验收
+
+实际执行下面四个命令，前三个没有 HTTP 回退：
+
+```text
+.venv-py39\python.exe -m examples.research.review_browser_notices --input-directory data/research/diagnostics/official-browser-notices/20261010
+.venv-py39\python.exe -m examples.research.review_browser_notices --input-directory data/research/diagnostics/official-browser-subsets/20261010-starting-boundaries --download-attachments --cache-only --archive-root data/research/diagnostics/official-browser-attachments/20261010-starting-boundaries
+.venv-py39\python.exe -m examples.research.collect_official_notices --notice-ids 13716 3006027 --archive-root data/research/diagnostics/official-notices/20261010-csi-rebalance --cache-only
+.venv-py39\python.exe -m qbot.research.cli audit --config configs/research/csi500_5y.yaml
+```
+
+- `20261010T110640.990434Z-review-browser-notices-f70feaf3`：success，8份正文、
+  4张内嵌表、400候选变更、9个实际附件链接、0 HTTP。
+- `20261010T110641.096256Z-review-browser-notices-fb43e9b8`：success，3份正文、
+  4份已验证缓存附件、0 HTTP。
+- `20261010T110641.095255Z-collect-official-notices-8d5fd713`：success，原2份公告、
+  12次已验证缓存读取、0 HTTP；原缓存合同未失效。
+- `20261010T110641.608707Z-audit-4d0051e5`：success。以上 run 诚实记录未提交工作区。
+
+另用 PowerShell/.NET 独立核验8份容器、各 run 快照和响应 UTF-8 哈希，候选 CSV、
+review JSON、4个 XLSX 和原 HTTP 收据、检查 JSON 与旧脚本 SHA 全部一致。
+46份旧正文与当前8份 ID 无交集，合计54个独立公告正文；不是246条目录窗口完整覆盖。
+新的公开浏览器会话已实际释放；没有改用代理、认证、API key 或绕过站点权限拒绝。
+
+定向测试实际 **241 passed**（来源77、HTML候选56、浏览器容器/CLI67、正文链接27、
+BaoStock门禁14）；JUnit 为 `results/runs/body-link-targeted-final-20261010.xml`。
+冻结生产代码的完整研究测试实际 **1919 passed、2 deselected、13 warnings，608.18秒**，
+命令：`.venv-py39\python.exe -m pytest -q --tb=short --junitxml=results/runs/body-link-full-final-20261010.xml`。
+独立 JUnit 检查1919个测试、0失败/0错误/0跳过；默认排除的2个网络测试不算通过。
+13条警告仍是原 Matplotlib/Pyparsing 弃用提示，Legacy suite 没有运行。
+
+当前仍无完整起点500成员、完整临时链和真实逐日证券状态；2023年两份 PDF 未取得。
+正式 dataset、真实横截面 RankIC、五年四模型实证和真实 Forward 仍未完成。
+本轮不启用 Forward，不放行 BaoStock 周更新股票池，下一阶段入口仍是完成可核验
+历史成员链和状态输入后，运行真实多股票 CLI，再进行冻结五年研究。
