@@ -366,7 +366,23 @@ INSUFFICIENT_DATES，不是运行故障。旧模型报告没有可信完整 benc
 代码回填。当前8份公开浏览器正文能生成400条候选事件和发现9条附件链接，
 不能恢复完整起点500成员或证明调整链无遗漏。2023年两份 PDF 尚未取得。
 
-最新完整研究测试为 **1919 passed、2 deselected**；本轮定向测试241项通过。
+此前正文链接增量的完整研究测试为 **1919 passed、2 deselected**；定向测试241项通过。
 默认排除的两项网络测试不计入通过数。来源、缓存复跑、失败历史和独立哈希
 复核见 [OFFICIAL_SOURCE_ARCHIVE.md](OFFICIAL_SOURCE_ARCHIVE.md)。正式 PIT 门禁、
 证券状态要求与未启用的 Forward 状态不变；真实横截面烟雾和五年实证仍待完成。
+
+同日进一步补读24份正文后遇到403，已停止剩余受控请求。现为78/246份正文，
+168份缺失；单独的来源覆盖入口不再把这一缺口留在人工统计中：
+
+```text
+.venv-py39\python.exe -m examples.research.audit_official_coverage --archive-root data/research/diagnostics/official-notices/20261010-csi-rebalance --browser-directories data/research/diagnostics/official-browser-notices/20261010 data/research/diagnostics/official-browser-notices/20261010-remaining
+```
+
+命令只读已有档案并写新的独占诊断报告，绝不联网回退。返回1/partial表示本次
+目录窗口存在缺正文，不是程序把它们当成零调整。报告还列出所有发现的附件引用，
+但不会声称已经检查附件内容，即使某文件在另一 run 已经归档。它不是 PIT Provider。
+
+来源覆盖增量的完整研究测试实际 **1961 passed、2 deselected**，新的42项测试与
+原BaoStock门禁联合定向验收56项通过。正式 `build-dataset` 实际复核在旧基准
+缓存元数据版本1处失败，尚未进入 PIT 阶段；应实际重新取数生成新合同缓存，
+不能直接修改旧版本号放行。完整命令、JUnit及诊断证据见上述来源归档文档。

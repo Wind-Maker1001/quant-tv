@@ -158,4 +158,9 @@ PIT Provider 增加可绕过的 verified 开关。独立复核与 SSE 归档示�
 不将条件事件转成公告日，不添加正式成员查询接口。1919项完整研究测试通过，
 实际4份附件和完整验收记录见 [OFFICIAL_SOURCE_ARCHIVE.md](OFFICIAL_SOURCE_ARCHIVE.md)。
 
+同日来源补证新增 `universe/source_coverage.py`，仅在已绑定目录和验证正文之间
+核对覆盖；独立示例只读缓存和浏览器容器，保留来源区别、输入快照和缺失清单。
+缺正文为 unknown/partial，不以无文件链接或没有中证500字样排除事件；不读取
+行情或模型、不新增网络回退、不实现 PIT 查询或解除正式研究门禁。
+
 第一阶段完成隔离的数据与因子核心；第二阶段以 Pandas/NumPy 实现与 Legacy 无关的基线模型验证和快速回测；第三阶段以延迟导入的 LightGBM/XGBoost 扩展同一模型接口，并直接实现不依赖 Backtrader 的规则执行回测和四模型统一比较；第四阶段在独立 `forward/` 中实现预注册、冻结和 append-only Forward Signal。即使 Legacy 提供实盘能力，FactorLab 也永久默认 `live_trading=false`，不发送真实订单。

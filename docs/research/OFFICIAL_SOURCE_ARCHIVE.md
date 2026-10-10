@@ -408,3 +408,80 @@ BaoStock门禁14）；JUnit 为 `results/runs/body-link-targeted-final-20261010.
 正式 dataset、真实横截面 RankIC、五年四模型实证和真实 Forward 仍未完成。
 本轮不启用 Forward，不放行 BaoStock 周更新股票池，下一阶段入口仍是完成可核验
 历史成员链和状态输入后，运行真实多股票 CLI，再进行冻结五年研究。
+
+## 明确正文覆盖缺口的离线审计
+
+同日再次尝试两份2023年 PDF 原链接：运行
+`20261010T111459.591141Z-review-browser-notices-be131164` 为 partial，2次本机 HTTP，
+2个请求超时，0附件；没有将失败重写成不存在或零调整，也没有更换路径或代理。
+
+随后从已绑定目录中选出尚未读取的192个 ID，不以“标题没提中证500”为排除规则。
+普通公开浏览器逐条读取，匿名 `credentials=omit`，间隔1秒，单次8秒中止、每批
+有时间上限。前24份得到200，ID、标题、发布日期与目录逐项一致；第25个受控
+正文请求（[12466](https://www.csindex.com.cn/#/about/newsDetail?id=12466)）返回403，
+停止全部剩余受控读取，随后实际释放浏览器，没有重新开启会话或改变认证/代理。
+403响应文本也保存，单独标记为拒绝，绝不包装成200正文观察。
+
+24份成功容器位于 `data/research/diagnostics/official-browser-notices/20261010-remaining/`。
+`capture.receipt.json` 保留192项实际目录工作清单、各批受控请求状态、24个成功 ID、
+拒绝响应及观察时刻，SHA 为
+`0d8fa97a17317fa7fe80d9c2e0d2bbe55ebbaea9d64d12fb60f2ed001ec1795a`。
+25是显式正文 fetch 数，不包含页面导航、预检或应用自行加载的资源；没有声称
+观察到了整个浏览器的 HTTP 总数。保存时刻不是失败发生时刻或外部认证时戳。
+
+新增纯标准库 `universe/source_coverage.py` 与独立入口
+`examples/research/audit_official_coverage.py`，默认且唯一模式为离线：
+
+```text
+.venv-py39\python.exe -m examples.research.audit_official_coverage --archive-root data/research/diagnostics/official-notices/20261010-csi-rebalance --browser-directories data/research/diagnostics/official-browser-notices/20261010 data/research/diagnostics/official-browser-notices/20261010-remaining
+```
+
+HTTP档案由原 `OfficialNoticeSource(cache_only=True)` 重新检查请求身份、字节和 SHA，
+浏览器容器由原严格读取器检查，彼此保持不同原表示。目录缺页、重复 ID、正文
+身份不符、坏缓存、未知容器字段或同 ID 多版本明确失败；不自动选新版本或重抓。
+输入全部验证后才保存逐 run 独占字节快照、覆盖 CSV/JSON、附件缺口 JSON 和摘要，
+每份输入快照与输出都绑定内容 SHA。源码不提供 `get_members` 或正式 PIT 发布入口。
+
+首次实际运行 `20261010T112651.687929Z-audit-official-coverage-5d218f34`：
+
+- 目录726条，本次发布日窗口246条；46份已验证 HTTP 正文＋32份浏览器正文＝78。
+- 168份正文缺失，返回码1、manifest 为 partial；完整数据消费者仍保持阻断。
+- 15份正文提到中证500，不足以排除其他公告附件中的中证500事件。
+- 发现54个附件引用：无论是否另已归档，本次覆盖审计都未检查其内容，统一明确
+  标注 `CONTENT_NOT_REVIEWED_BY_THIS_AUDIT`，不误报为54个文件缺失或54个已审核。
+- 缺正文时，附件数量和中证500提及状态为 null/unknown，不填0；没有发现文件
+  链接也不是“无成员调整”。目录窗口正文齐全亦不能证明完整 PIT 或历史可用性。
+- 全程0 HTTP、54次已验证缓存读取；绑定86份输入（8页目录、46份HTTP正文、
+  32份浏览器容器）。没有创建股票池、dataset、RankIC 或 Forward 信号。
+
+PowerShell独立核验86份原输入/快照、四个输出 SHA 均一致；24份成功容器与各 ID
+相符。清单诚实记录未提交工作区。新测试实际42项通过（纯逻辑26、文件/CLI16），
+JUnit 为 `results/runs/source-coverage-targeted-20261010.xml`；包括缺正文的 partial、
+零HTTP、哈希/快照、来源表示不混淆、重复版本与目录身份拒绝、旧输出不覆盖和
+写入异常终止收据。人工响应只用于软件验收，不构成真实历史成员证据。
+
+剩余168份正文、2023年两份 PDF、完整成员基线、条件事件实际生效及证券状态
+仍缺；不能用本轮目录覆盖改善替代真正五年研究或真实样本外结果。
+
+正式配置入口亦实际复核：
+`python -m qbot.research.cli build-dataset --config configs/research/csi500_5y.yaml`
+运行 `20261010T113601.500013Z-build-dataset-0f3c5834` 为 failed，先在读取旧基准
+缓存时报告 `unsupported cache metadata version for 000905.SH: 1`，尚未进入
+成员读取阶段，不能把这一次失败原因称为已触发 PIT 门禁。没有写正式 dataset，
+也没有修改旧缓存的版本号/来源字段来放行。后续须按新合同实际重新取数；即使
+基准刷新成功，未核验 BaoStock 成员生效日及完整证券状态的问题仍不因此解决。
+CLI `audit` 同日正常成功，run 为 `20261010T113344.435806Z-audit-0a975517`。
+
+冻结生产代码的全量研究测试实际 **1961 passed、2 deselected、13 warnings，650.26秒**，
+JUnit `results/runs/source-coverage-full-final-20261010.xml`；独立 XML 检查0失败、
+0错误、0跳过。命令为 `.venv-py39\python.exe -m pytest -q --tb=short --junitxml=results/runs/source-coverage-full-final-20261010.xml`。
+新42项与原BaoStock生效语义门禁14项联合验收 **56 passed**，JUnit为
+`results/runs/source-coverage-targeted-final-20261010.xml`。2项网络测试默认未运行，
+13条警告仍是旧 Matplotlib/Pyparsing 弃用提示，不包括 Legacy 副作用测试。
+正式入口失败记录也未删除；许可证对象仍为原 `9fb99866c50772b1afadab1657cc45cc72cdc2d4`。
+
+原拒绝捕获收据不修改，另追加 `capture.catalogue-binding.json`：保存原目录 producer
+run/提交及完整目录文件 SHA `b7c47695844db8c014dfe89bda8ada230e8150cded105c01afea3260be713281`，
+已经独立与原producer输出清单匹配；同时保存浏览器成功释放的工具结果。
+追加绑定文件的 SHA 为 `d3b3bae95b17d19ad5d5c2af202932d8b15da4c298484b65da25779e435f3a0a`。
+本輪另独立核验32份解码正文 UTF-8 哈希；86份原输入/快照与4个输出均保持匹配。
