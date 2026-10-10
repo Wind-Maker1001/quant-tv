@@ -58,3 +58,16 @@ def test_calendar_rejects_duplicates_and_unsorted_dates():
         TradingCalendar(pd.DatetimeIndex(["2024-01-02", "2024-01-02"]))
     with pytest.raises(SchemaError, match="monotonically"):
         TradingCalendar(pd.DatetimeIndex(["2024-01-03", "2024-01-02"]))
+
+
+@pytest.mark.parametrize("weekend", ["2024-01-06", "2024-01-07"])
+def test_benchmark_calendar_rejects_weekend_instead_of_inventing_session(weekend):
+    bars = _bars(["2024-01-05", weekend, "2024-01-08"])
+    with pytest.raises(SchemaError, match="weekend"):
+        TradingCalendar.from_benchmark_bars(bars)
+
+
+def test_benchmark_calendar_does_not_insert_weekdays_or_assume_holidays():
+    dates = ["2024-01-05", "2024-01-09"]
+    calendar = TradingCalendar.from_benchmark_bars(_bars(dates))
+    assert list(calendar.dates) == list(pd.to_datetime(dates))

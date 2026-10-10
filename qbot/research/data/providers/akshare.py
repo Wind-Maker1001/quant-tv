@@ -524,7 +524,9 @@ class AKShareProvider(MarketDataProvider):
             raise DataQualityError(
                 "benchmark returned no dates; a trading calendar cannot be built"
             )
-        return pd.DatetimeIndex(bars["date"].drop_duplicates().sort_values(), name="date")
+        from qbot.research.data.calendar import TradingCalendar
+
+        return TradingCalendar.from_benchmark_bars(bars).dates
 
     def get_index_constituents(
         self, symbol: str, as_of: Optional[DateLike] = None

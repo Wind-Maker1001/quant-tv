@@ -53,6 +53,8 @@ class TradingCalendar:
             raise SchemaError("benchmark bars are empty")
         if canonical["symbol"].nunique() != 1:
             raise SchemaError("benchmark bars must contain exactly one symbol")
+        if canonical["date"].dt.dayofweek.ge(5).any():
+            raise SchemaError("A-share benchmark calendar contains a weekend observation")
         return cls(pd.DatetimeIndex(canonical["date"], name="date"))
 
     def sessions(
