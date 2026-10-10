@@ -15,6 +15,10 @@
 
 因子、标签和数据集代码不直接调用任何数据供应商，只消费统一 Provider/Schema 输出。AKShare 当前成分快照不得用于历史日期。
 
+官方调样证据可通过 `python -m examples.research.collect_official_notices` 单独归档，
+见 [OFFICIAL_SOURCE_ARCHIVE.md](OFFICIAL_SOURCE_ARCHIVE.md)。原始请求/附件哈希与获取
+时刻便于逐份复查，但不能替代完整权威起点名单及实际生效链；该模块没有 PIT 发布接口。
+
 ## Canonical symbol 和日期
 
 - 沪市：`600000.SH`；深市：`000001.SZ`。

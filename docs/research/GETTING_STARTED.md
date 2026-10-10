@@ -21,6 +21,10 @@ Qbot FactorLab 是 Qbot 内部隔离的 A 股横截面研究模块。它仅用�
 
 当前第三阶段验收与仍存在的真实数据阻塞见 [PHASE3_DELIVERY_REPORT.md](PHASE3_DELIVERY_REPORT.md)；正式启用协议见 [FORWARD_TEST.md](FORWARD_TEST.md)。
 
+2026-10-10 已增加[官方调样来源归档](OFFICIAL_SOURCE_ARCHIVE.md)：能保存公开目录、正文
+及附件并校验字节，已实际核对两份 XLSX。批量来源仍不完整；归档不是可直接用于
+回测的 PIT 股票池，不会解除正式下载/建数据集的门禁。
+
 ## 1. 创建独立环境
 
 优先使用 Python 3.9，不要将根 requirements.txt 的 Legacy GUI/交易依赖混入研究环境。

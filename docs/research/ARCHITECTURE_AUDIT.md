@@ -138,4 +138,10 @@ Legacy 或真实交易组件。CLI 保存并核验 benchmark 日历与相同 Tes
 报告/manifest 记录统计协议和不可检验状态；不会由 Test 选择模型。增量证据见
 [MODEL_INFERENCE_AUDIT.md](MODEL_INFERENCE_AUDIT.md)，真实 PIT 缺口不变。
 
+2026-10-10：新增标准库实现的官方公告证据归档 `universe/official_sources.py` 与
+独立示例，记录实际公开目录/正文/附件原始字节及内容哈希。它刻意不实现 PIT
+Provider，不解除正式成员门禁，不添加 GUI/交易/文档解析库为研究核心依赖。
+实际来源范围、部分下载失败、两份 XLSX 及 PDF 候选核对见
+[OFFICIAL_SOURCE_ARCHIVE.md](OFFICIAL_SOURCE_ARCHIVE.md)。
+
 第一阶段完成隔离的数据与因子核心；第二阶段以 Pandas/NumPy 实现与 Legacy 无关的基线模型验证和快速回测；第三阶段以延迟导入的 LightGBM/XGBoost 扩展同一模型接口，并直接实现不依赖 Backtrader 的规则执行回测和四模型统一比较；第四阶段在独立 `forward/` 中实现预注册、冻结和 append-only Forward Signal。即使 Legacy 提供实盘能力，FactorLab 也永久默认 `live_trading=false`，不发送真实订单。
