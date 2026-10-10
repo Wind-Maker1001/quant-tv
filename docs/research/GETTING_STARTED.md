@@ -34,6 +34,11 @@ Qbot FactorLab 是 Qbot 内部隔离的 A 股横截面研究模块。它仅用�
 默认无网络；附件要另加 `--download-attachments`，本次5份附件均超时，不能称为
 下载成功。来源范围、实际 run_id 与严格边界见同一[来源审计](OFFICIAL_SOURCE_ARCHIVE.md)。
 
+2026-10-11更新：上述失败作为历史记录保留。3份早期定期 XLSX和两份2023年 PDF
+已后续取得；新增[严格离线 PDF复核入口](PDF_NOTICE_REVIEW.md)，200条事件与独立
+表格提取一致，50条备选未并入。可选读取器与研究核心隔离；这些证据仍不等于
+完整 PIT，也未形成正式五年数据集或真实横截面研究验收。
+
 ## 1. 创建独立环境
 
 优先使用 Python 3.9，不要将根 requirements.txt 的 Legacy GUI/交易依赖混入研究环境。
