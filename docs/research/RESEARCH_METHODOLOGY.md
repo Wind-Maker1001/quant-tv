@@ -100,6 +100,16 @@ EXCESS_RET5        = STOCK_FWD_RET5 - BENCHMARK_FWD_RET5
 
 对每个有效交易日分别计算 Pearson IC 和 Spearman RankIC，再汇总 IC/RankIC 均值、日度样本标准差、未年化 ICIR/RankICIR、正值比例、有效日期数和平均覆盖率。
 
+ICIR 本身不是统计显著性。历史四模型比较另外只对 Test 逐日指标做不确定性评价：
+ML−FactorScore 按同日配对，总体 RankIC 的三个差值为固定双侧主检验，并用 Holm
+校正。未来5日标签重叠使用 Bartlett HAC；另用非循环 moving-block Bootstrap
+给出个别 percentile CI。参数进入实验前完整配置，不以 Test 优化。日期内的股票
+相关性已由逐日 IC 聚合处理，不把全部股票—日视作独立观测；缺失日不被压缩。
+分期/状态等分组和其他指标属于探索性评价，个别区间未校正；非平稳、缺失非随机
+及 fold 重拟合限制推断。实现/原论文来源见
+[MODEL_INFERENCE_AUDIT.md](MODEL_INFERENCE_AUDIT.md)。这只增加研究工具，尚无真实
+五年数据支持优劣结论，也不等于对大量因子搜索或事后选模型作了全局校正。
+
 每个因子先仅按当日可知的因子排名固定五组，再观察未来标签，报告 Q1 至 Q5 的未来 `EXCESS_RET5` 均值、每组标签覆盖率和 Q5-Q1。未来标签是否缺失不会改变分组边界或让下一名事后补位。还报告：
 
 - 完整 benchmark 日历中相邻交易日、同股票因子值的 Spearman 自相关；

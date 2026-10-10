@@ -132,4 +132,10 @@ Validation 分数复用、Test 单次预测与回测原边界不变。CLI 绑定
 模型，比较不重复累计扩大训练行，不重评分或由 Test 选优。增量软件与真实数据限制
 见 [STAGE_DIAGNOSTICS_AUDIT.md](STAGE_DIAGNOSTICS_AUDIT.md)。
 
+2026-10-10：新增纯 NumPy/Pandas/SciPy `metrics/robustness.py`，只消费已产生的
+历史 Test 逐日指标；HAC、moving-block Bootstrap 与固定三项 Holm，不导入模型、
+Legacy 或真实交易组件。CLI 保存并核验 benchmark 日历与相同 Test scores 的指标，
+报告/manifest 记录统计协议和不可检验状态；不会由 Test 选择模型。增量证据见
+[MODEL_INFERENCE_AUDIT.md](MODEL_INFERENCE_AUDIT.md)，真实 PIT 缺口不变。
+
 第一阶段完成隔离的数据与因子核心；第二阶段以 Pandas/NumPy 实现与 Legacy 无关的基线模型验证和快速回测；第三阶段以延迟导入的 LightGBM/XGBoost 扩展同一模型接口，并直接实现不依赖 Backtrader 的规则执行回测和四模型统一比较；第四阶段在独立 `forward/` 中实现预注册、冻结和 append-only Forward Signal。即使 Legacy 提供实盘能力，FactorLab 也永久默认 `live_trading=false`，不发送真实订单。

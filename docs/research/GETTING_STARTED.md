@@ -330,3 +330,17 @@ Schema 错误表示 symbol、日期、主键、OHLC 关系或数值单位不符�
 - 费用、执行拒单和日线近似局限性如实披露。
 
 Phase 4 核心软件已经实现，但正式配置尚未激活，也没有真实 forward signal。任何模型都可能亏损或落后 benchmark；这不构成修改 Test 后参数的理由。当前公开数据端点仍未提供可验证的完整真实五年输入，因此不得把离线验收当成正式实证结果。
+
+## 10. 模型差异的不确定性
+
+`compare-models` 现在另写 `model_inference.csv/parquet`、`inference_daily`、
+`inference_audit`、`inference_protocol.json` 与 `model_inference.png`。
+默认 `inference` 在配置/manifest 中冻结：95%置信水平、HAC lag20、Bootstrap
+块20日/2000次、至少60个有效日期且覆盖80%。固定三项总体 RankIC 配对差值的
+Holm p 不自动产生模型赢家；缺失结果不报成0。小合成示例因 Test 较短，正常报告
+INSUFFICIENT_DATES，不是运行故障。旧模型报告没有可信完整 benchmark 日历时
+必须重建，不能从 score 日期反推或手工修改清单放行。
+
+方法、严格输入条件与局限见 [MODEL_INFERENCE_AUDIT.md](MODEL_INFERENCE_AUDIT.md)。
+新的检验软件不改变目前缺乏真实五年 PIT/状态数据的事实，不能仅凭合成示例
+回答“机器学习显著优于固定多因子模型”。

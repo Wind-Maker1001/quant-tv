@@ -154,3 +154,15 @@ AKShare/BaoStock 公开端点可能受代理、限频、断连或字段变化影
 ## 研究完整性
 
 模型或回测收益为负不是测试失败。数据时点错误、PIT 不完整、标签 off-by-one、fold 标签窗口泄漏、Test 参与选择或清单不可复现，才是必须阻止实验的错误。模型比较还要求源运行与当前运行的 Git commit、工作区 diff 指纹、包版本、数据/PIT 哈希和实际 OOS `(date,symbol,fold)` 键一致。烟雾配置和 synthetic fixture 仅验证软件链路，不能形成课程论文结论。
+
+## 历史 Test 统计稳健性
+
+2026-10-10：模型比较新增按相同交易日配对的 ML−FactorScore 检验，考虑5日标签
+重叠：Bartlett HAC 与非循环 moving-block Bootstrap；主检验固定三个总体 RankIC
+差值，双侧 p 经 Holm 校正。ICIR 不是显著性检验；其他指标/分组及个别区间未做
+多重比较校正，仅探索性解释，不选模型或调参数。Train/Validation 不进入主检验。
+日历来自已经验证的 benchmark，缺失日保留槽位不压缩；常数、样本不足和覆盖不足
+保留缺失 p/CI。新 CLI 报告绑定完整日历并在比较时从固定 Test scores 重算指标，
+不 fit/predict。详情及条件/验收见 [MODEL_INFERENCE_AUDIT.md](MODEL_INFERENCE_AUDIT.md)。
+上面的2026-09网络失败记录为历史证据，最新 PIT 来源限制见
+[BAOSTOCK_SOURCE_AUDIT.md](BAOSTOCK_SOURCE_AUDIT.md)。

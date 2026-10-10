@@ -2,6 +2,12 @@
 
 验收日期：2026-09-23
 
+2026-10-10补充：下面保留原阶段证据。后续已补 Train/Validation/Test 诊断及
+仅 Test 的统计稳健性检验，见 [STAGE_DIAGNOSTICS_AUDIT.md](STAGE_DIAGNOSTICS_AUDIT.md)
+和 [MODEL_INFERENCE_AUDIT.md](MODEL_INFERENCE_AUDIT.md)。最新真实股票池阻断原因为
+生效语义未验证，而不只网络登录失败，见 [BAOSTOCK_SOURCE_AUDIT.md](BAOSTOCK_SOURCE_AUDIT.md)。
+软件补强不表示已取得真实五年优劣结论。
+
 ## 结论
 
 Phase 3 的软件实现与离线验收已完成：CSI500 Market Regime、LightGBM、XGBoost、四模型 Validation-only 选参、gain feature importance、日线 A 股规则执行回测、市场状态分解与统一比较报告均已接入独立的 `qbot.research` 管线。FactorLab 仍不导入 Legacy GUI、Qlib、Backtrader、easyquant 或实盘接口。
