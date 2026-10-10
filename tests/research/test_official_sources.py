@@ -1,7 +1,9 @@
 """Artificial API contracts; no claim that fixtures prove real PIT membership."""
 
 import io
+import http.client
 import json
+import socket
 import urllib.error
 
 import pytest
@@ -118,12 +120,80 @@ def test_unicode_attachment_url_encoded_without_double_encoding(tmp_path):
     assert "调整" in first.receipt["request"]["url"]
 
 
+def test_observed_percent_encoded_notice_separator_preserves_request_identity(tmp_path):
+    url = "https://oss-ch.csindex.com.cn/notice%2F20220527185038-%E8%B0%83%E6%95%B4.xlsx"
+    client, calls = source(tmp_path, [b"PK artificial"])
+    artifact = client.attachment(url)
+    assert calls[0][0] == url and artifact.receipt["request"]["url"] == url
+    assert client.attachment(url).content == artifact.content and len(calls) == 1
+
+
+@pytest.mark.parametrize("path", ["/notice/../private/a.xlsx", "/notice/%2e%2e/private/a.xlsx",
+                                  "/notice%252Fprivate.xlsx", "/notice/%5cprivate.xlsx",
+                                  "/notice/%00a.xlsx", "/notice/%ffa.xlsx"])
+def test_attachment_path_decoding_must_not_escape_observed_directory(tmp_path, path):
+    client, calls = source(tmp_path, [])
+    with pytest.raises(ProviderError):
+        client.attachment("https://oss-ch.csindex.com.cn" + path)
+    assert calls == []
+
+
+@pytest.mark.parametrize("url", ["https://www.csindex.com.cn/csindex-home/announcement/queryAnnouncementById?id=1",
+                                "https://www.sse.com.cn/market/sseindex/diclosure/c/c_20210528_5476672.shtml"])
+def test_announcement_api_and_html_article_are_not_relabelled_as_attachments(tmp_path, url):
+    client, calls = source(tmp_path, [])
+    with pytest.raises(ProviderError, match="attachment host"):
+        client.attachment(url)
+    assert calls == []
+
+
+def test_enclosure_api_url_is_rejected_as_wrong_resource_kind(tmp_path):
+    payload = detail()
+    payload["data"]["enclosureList"][0]["fileUrl"] = "https://www.csindex.com.cn/csindex-home/announcement/queryAnnouncementById?id=13716"
+    client, calls = source(tmp_path, [payload])
+    with pytest.raises(ProviderError, match="attachment host"):
+        client.notice(13716)
+    assert len(calls) == 1
+
+
 def test_transport_exhaustion(tmp_path):
     client, calls = source(tmp_path, [TimeoutError()] * 4)
     with pytest.raises(ProviderNetworkError):
         client.notice(13716)
     assert len(calls) == 4
     assert not list(tmp_path.glob("*.receipt.json"))
+
+
+@pytest.mark.parametrize("exception", [socket.timeout("read timeout"),
+                                       http.client.IncompleteRead(b"truncated", 100),
+                                       http.client.BadStatusLine("truncated")])
+def test_python39_direct_read_failures_use_bounded_transport_retry(tmp_path, exception):
+    client, calls = source(tmp_path, [exception, detail()])
+    client.notice(13716)
+    assert len(calls) == 2
+
+
+def test_generic_os_error_is_not_misclassified_as_transient_transport(tmp_path):
+    client, calls = source(tmp_path, [OSError("local disk or programming failure")])
+    with pytest.raises(OSError):
+        client.notice(13716)
+    assert len(calls) == 1 and not list(tmp_path.glob("*.receipt.json"))
+
+
+@pytest.mark.parametrize("status", [401, 403])
+def test_response_access_denial_not_only_urllib_http_error_stops_batch(tmp_path, status):
+    calls = []
+    def opener(request, timeout):
+        calls.append(request.full_url)
+        response = Response(request.full_url, b"denied")
+        response.status = status
+        return response
+    client = OfficialNoticeSource(tmp_path, opener=opener, sleeper=lambda _: None)
+    with pytest.raises(OfficialAccessDeniedError) as first:
+        client.notice(1)
+    with pytest.raises(OfficialAccessDeniedError) as second:
+        client.notice(2)
+    assert first.value.request_performed is True and second.value.request_performed is False and len(calls) == 1
 
 
 def test_permanent_http_error_is_not_retried(tmp_path):
@@ -156,6 +226,37 @@ def test_cache_only_never_opens_network(tmp_path):
     with pytest.raises(ProviderError, match="absent from the verified cache"):
         offline.notice(13420)
     assert offline.network_requests == 0 and offline.cache_reads == 1
+
+
+def test_exchange_article_contract_and_raw_html_cache(tmp_path):
+    url = "https://www.sse.com.cn/market/sseindex/diclosure/c/c_20210528_5476672.shtml"
+    body = b"<!doctype html><html><title>SYNTHETIC INDEX ARTICLE</title></html>"
+    client, calls = source(tmp_path, [body])
+    artifact = client.exchange_article(url)
+    assert artifact.content == body and artifact.path.suffix == ".html"
+    assert artifact.receipt["request"]["contract"].startswith("sse-public-index-notices")
+    assert artifact.receipt["point_in_time_universe_verified"] is False
+    assert client.exchange_article(url).content == body and len(calls) == 1
+
+
+@pytest.mark.parametrize("url", [
+    "https://www.sse.com.cn/market/sseindex/diclosure/c/c_20210528_5476672.shtml?date=2021",
+    "https://www.sse.com.cn/account/login", "https://www.sse.com.cn/disclosure/unobserved.pdf",
+    "https://www.sse.com.cn.evil.com/market/sseindex/diclosure/c/c_20210528_5476672.shtml",
+    "https://www.csindex.com.cn/csindex-home/announcement/queryAnnouncementById?id=13716",
+])
+def test_exchange_article_only_observed_public_route(tmp_path, url):
+    client, calls = source(tmp_path, [])
+    with pytest.raises(ProviderError):
+        client.exchange_article(url)
+    assert calls == []
+
+
+@pytest.mark.parametrize("body", [b"not html", b"<!doctype html>\xff"])
+def test_exchange_malformed_response_rejected(tmp_path, body):
+    client, _ = source(tmp_path, [body])
+    with pytest.raises(ProviderError):
+        client.exchange_article("https://www.sse.com.cn/market/sseindex/diclosure/c/c_20210528_5476672.shtml")
 
 
 @pytest.mark.parametrize("content", [b"<html>error</html>", b"", b"x" * (20 * 1024 * 1024 + 1)], ids=["html", "empty", "oversized"])

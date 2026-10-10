@@ -1,4 +1,4 @@
-"""Read-only CSI public announcement evidence, NOT a PIT universe provider.
+"""Read-only CSI/SSE public announcement evidence, NOT a PIT universe provider.
 
 The endpoints below were observed on the publisher's public website. Their
 undocumented JSON contract may change. Complete pagination of this catalogue
@@ -8,11 +8,14 @@ does not establish complete effective index membership or historical availabilit
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 import hashlib
+import http.client
 import json
 import logging
 import math
 import os
 from pathlib import Path
+import re
+import socket
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 import urllib.error
@@ -27,6 +30,7 @@ LOGGER = logging.getLogger(__name__)
 CATALOGUE_URL = "https://www.csindex.com.cn/csindex-home/announcement/queryAnnouncementByVo"
 DETAIL_URL = "https://www.csindex.com.cn/csindex-home/announcement/queryAnnouncementById"
 CONTRACT_VERSION = "csindex-public-announcements-observed-20261010-v1"
+EXCHANGE_CONTRACT_VERSION = "sse-public-index-notices-observed-20261010-v1"
 _SUFFIXES = {".xlsx": b"PK", ".zip": b"PK", ".pdf": b"%PDF-", ".xls": b"\xd0\xcf\x11\xe0"}
 
 
@@ -70,8 +74,22 @@ def _approved_url(url: str) -> None:
                 "/csindex-home/announcement/queryAnnouncementByVo",
                 "/csindex-home/announcement/queryAnnouncementById"):
             raise ProviderError("unobserved official announcement endpoint")
+    elif parsed.hostname == "www.sse.com.cn":
+        if (not re.fullmatch(r"/market/sseindex/diclosure/c/c_\d{8}_\d+\.shtml", parsed.path)
+                or parsed.query):
+            raise ProviderError("unobserved Shanghai exchange index notice URL")
     elif parsed.hostname == "oss-ch.csindex.com.cn":
-        if not parsed.path.startswith("/notice/"):
+        # Two observed historical notices encode the slash after 'notice'.
+        # Decode only to validate scope; retain the publisher URL/wire encoding
+        # in the request identity. Reject traversal and double-encoding rather
+        # than resolving them into a different resource.
+        try:
+            decoded_path = urllib.parse.unquote(parsed.path, errors="strict")
+        except UnicodeDecodeError as exc:
+            raise ProviderError("invalid attachment path encoding") from exc
+        if (not decoded_path.startswith("/notice/") or "\\" in decoded_path or "%" in decoded_path or
+                any(part in (".", "..") for part in decoded_path.split("/")) or
+                any(ord(character) < 32 for character in decoded_path)):
             raise ProviderError("attachment must be in the publisher notice directory")
     else:
         raise ProviderError("unapproved official evidence host")
@@ -137,16 +155,19 @@ class OfficialNoticeSource:
 
     def _request(self, url: str, body: Optional[Dict[str, Any]] = None) -> SourceArtifact:
         _approved_url(url)
-        suffix = ".json" if urllib.parse.urlsplit(url).hostname == "www.csindex.com.cn" else Path(
-            urllib.parse.unquote(urllib.parse.urlsplit(url).path)).suffix.lower()
-        if suffix != ".json" and suffix not in _SUFFIXES:
+        host = urllib.parse.urlsplit(url).hostname
+        suffix = ".json" if host == "www.csindex.com.cn" else (
+            ".html" if host == "www.sse.com.cn" else Path(
+                urllib.parse.unquote(urllib.parse.urlsplit(url).path)).suffix.lower())
+        if suffix not in (".json", ".html") and suffix not in _SUFFIXES:
             raise ProviderError("unsupported official attachment format: %s" % suffix)
         method = "GET" if body is None else "POST"
         parsed_url = urllib.parse.urlsplit(url)
         wire_url = urllib.parse.urlunsplit((parsed_url.scheme, parsed_url.netloc,
             urllib.parse.quote(parsed_url.path, safe="/%:@"),
             urllib.parse.quote(parsed_url.query, safe="=&%+,:"), ""))
-        identity = {"url": url, "method": method, "body": body, "contract": CONTRACT_VERSION}
+        identity = {"url": url, "method": method, "body": body,
+                    "contract": EXCHANGE_CONTRACT_VERSION if host == "www.sse.com.cn" else CONTRACT_VERSION}
         identity_bytes = json.dumps(identity, sort_keys=True, separators=(",", ":")).encode("utf-8")
         key = hashlib.sha256(identity_bytes).hexdigest()
         receipt_path = self.root / (key + ".receipt.json")
@@ -178,7 +199,7 @@ class OfficialNoticeSource:
             raise ProviderError("official evidence is absent from the verified cache: %s" % url)
         if self._site_denied:
             raise OfficialAccessDeniedError("further HTTP reads skipped after publisher access denial", False)
-        limit = 2 * 1024 * 1024 if suffix == ".json" else 20 * 1024 * 1024
+        limit = 2 * 1024 * 1024 if suffix in (".json", ".html") else 20 * 1024 * 1024
         headers = {"User-Agent": "Qbot-FactorLab/1.0 (public research evidence)"}
         encoded = None
         if body is not None:
@@ -194,6 +215,10 @@ class OfficialNoticeSource:
                                 timeout=self.timeout_seconds) as response:
                     _approved_url(response.geturl())
                     if response.status != 200:
+                        if response.status in (401, 403):
+                            self._site_denied = True
+                            raise OfficialAccessDeniedError(
+                                "official HTTP status %s; batch HTTP reads stopped" % response.status, True)
                         raise ProviderError("unexpected official HTTP status %s" % response.status)
                     content = response.read(limit + 1)
                     if not content or len(content) > limit:
@@ -209,7 +234,8 @@ class OfficialNoticeSource:
                 if exc.code not in (408, 429) and not 500 <= exc.code <= 599:
                     raise ProviderError("official HTTP status %s" % exc.code) from exc
                 failure = exc
-            except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+            except (urllib.error.URLError, TimeoutError, socket.timeout, ConnectionError,
+                    http.client.IncompleteRead, http.client.BadStatusLine) as exc:
                 failure = exc
             if attempt == self.max_retries:
                 raise ProviderNetworkError("official evidence request failed: %s" % url) from failure
@@ -217,6 +243,13 @@ class OfficialNoticeSource:
             self._sleep(2 ** attempt)
         if suffix == ".json":
             SourceArtifact(content, {}, self.root).json()
+        elif suffix == ".html":
+            if not content.lstrip().lower().startswith((b"<!doctype html", b"<html")):
+                raise ProviderError("exchange notice is not an HTML document")
+            try:
+                content.decode("utf-8")
+            except UnicodeDecodeError as exc:
+                raise ProviderError("exchange notice is not UTF-8 HTML") from exc
         elif not content.startswith(_SUFFIXES[suffix]):
             raise ProviderError("official attachment signature does not match extension")
         digest = hashlib.sha256(content).hexdigest()
@@ -306,8 +339,16 @@ class OfficialNoticeSource:
     def notice(self, notice_id: int) -> Tuple[Dict[str, Any], SourceArtifact]:
         _positive_integer(notice_id, "notice ID")
         artifact = self._request(DETAIL_URL + "?id=%d" % notice_id)
-        row = self._response(artifact).get("data")
-        self._entry(row)
+        return self.parse_notice_payload(artifact.json(), notice_id), artifact
+
+    @staticmethod
+    def parse_notice_payload(payload: Dict[str, Any], notice_id: int) -> Dict[str, Any]:
+        """Validate an already observed public JSON payload; no HTTP or PIT claims."""
+        _positive_integer(notice_id, "notice ID")
+        if not isinstance(payload, dict) or payload.get("success") is not True or payload.get("code") != "200":
+            raise ProviderError("official announcement API reported failure")
+        row = payload.get("data")
+        OfficialNoticeSource._entry(row)
         if row["id"] != notice_id or not isinstance(row.get("content"), str):
             raise ProviderError("official notice identity/content mismatch")
         enclosures = row.get("enclosureList")
@@ -315,11 +356,22 @@ class OfficialNoticeSource:
             raise ProviderError("official notice enclosureList is missing")
         for enclosure in enclosures:
             if (not isinstance(enclosure, dict) or type(enclosure.get("noticeId")) is not int or enclosure["noticeId"] != notice_id or
-                    not isinstance(enclosure.get("fileName"), str) or not isinstance(enclosure.get("fileUrl"), str)):
+                    not isinstance(enclosure.get("fileName"), str) or not enclosure["fileName"].strip() or
+                    not isinstance(enclosure.get("fileUrl"), str)):
                 raise ProviderError("official notice enclosure identity is invalid")
             _approved_url(enclosure["fileUrl"])
-        return row, artifact
+            if urllib.parse.urlsplit(enclosure["fileUrl"]).hostname != "oss-ch.csindex.com.cn":
+                raise ProviderError("notice enclosure must reference the observed publisher attachment host")
+        return row
 
     def attachment(self, url: str) -> SourceArtifact:
         """Archive a link read from an official notice; this does not interpret it."""
+        if urllib.parse.urlsplit(url).hostname != "oss-ch.csindex.com.cn":
+            raise ProviderError("attachment requires the observed publisher attachment host")
+        return self._request(url)
+
+    def exchange_article(self, url: str) -> SourceArtifact:
+        """Archive an observed public SSE index article, never infer members from it."""
+        if urllib.parse.urlsplit(url).hostname != "www.sse.com.cn":
+            raise ProviderError("exchange article requires the observed Shanghai exchange host")
         return self._request(url)

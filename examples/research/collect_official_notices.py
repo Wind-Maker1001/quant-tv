@@ -18,6 +18,7 @@ from qbot.research.config import load_config
 from qbot.research.errors import FactorLabError
 from qbot.research.reproducibility import RunManifest
 from qbot.research.universe.official_sources import OfficialAccessDeniedError, OfficialNoticeSource
+from qbot.research.universe.notice_review import mentions_csi500
 
 
 LOGGER = logging.getLogger(__name__)
@@ -76,6 +77,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     failures = []
     evidence = []
     completed = []
+    source = None
     try:
         source = OfficialNoticeSource(root, timeout_seconds=args.timeout_seconds,
                                       max_retries=args.max_retries, cache_only=args.cache_only)
@@ -105,7 +107,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 if notice["title"] != listing["title"] or notice["publishDate"] != listing["publishDate"]:
                     raise FactorLabError("official catalogue/detail title or publication date mismatch")
                 attachments = []
-                mentioned = "中证500" in notice["title"] + notice["content"]
+                mentioned = mentions_csi500(notice["title"] + notice["content"])
                 for enclosure in notice["enclosureList"]:
                     row = {"label": enclosure["fileName"], "url": enclosure["fileUrl"],
                            "publisher_create_at": enclosure.get("createAt"), "status": "NOT_SELECTED"}
@@ -148,6 +150,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         LOGGER.info("Run manifest: %s", manifest.path)
         return 1 if failures else 0
     except (FactorLabError, OSError) as exc:
+        manifest.payload.update({"network_requests": source.network_requests if source else 0,
+                                 "verified_cache_reads": source.cache_reads if source else 0})
         manifest.add_failures("official_sources", failures + [{"error": str(exc)}])
         manifest.finish("failed", str(exc))
         LOGGER.error("Official evidence collection failed: %s", exc)
@@ -155,6 +159,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     except Exception as exc:
         # Unexpected implementation errors remain fatal, but leave a terminal
         # receipt instead of a misleading indefinitely-running manifest.
+        manifest.payload.update({"network_requests": source.network_requests if source else 0,
+                                 "verified_cache_reads": source.cache_reads if source else 0})
         manifest.finish("failed", "%s: %s" % (type(exc).__name__, exc))
         LOGGER.exception("Unexpected official evidence collection failure")
         return 1
