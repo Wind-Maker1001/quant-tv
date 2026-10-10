@@ -31,6 +31,7 @@ CATALOGUE_URL = "https://www.csindex.com.cn/csindex-home/announcement/queryAnnou
 DETAIL_URL = "https://www.csindex.com.cn/csindex-home/announcement/queryAnnouncementById"
 CONTRACT_VERSION = "csindex-public-announcements-observed-20261010-v1"
 EXCHANGE_CONTRACT_VERSION = "sse-public-index-notices-observed-20261010-v1"
+LEGACY_ATTACHMENT_CONTRACT_VERSION = "csindex-legacy-static-notice-attachments-observed-20261010-v1"
 _SUFFIXES = {".xlsx": b"PK", ".zip": b"PK", ".pdf": b"%PDF-", ".xls": b"\xd0\xcf\x11\xe0"}
 
 
@@ -87,10 +88,12 @@ def _approved_url(url: str) -> None:
             decoded_path = urllib.parse.unquote(parsed.path, errors="strict")
         except UnicodeDecodeError as exc:
             raise ProviderError("invalid attachment path encoding") from exc
-        if (not decoded_path.startswith("/notice/") or "\\" in decoded_path or "%" in decoded_path or
+        legacy = re.fullmatch(r"/static/html/csindex/public/uploads/indices/info/files/\d{8}/\d{16}\.xlsx", decoded_path)
+        if ((not decoded_path.startswith("/notice/") and not legacy) or
+                (legacy and parsed.query) or "\\" in decoded_path or "%" in decoded_path or
                 any(part in (".", "..") for part in decoded_path.split("/")) or
                 any(ord(character) < 32 for character in decoded_path)):
-            raise ProviderError("attachment must be in the publisher notice directory")
+            raise ProviderError("attachment must be in an observed publisher notice archive directory")
     else:
         raise ProviderError("unapproved official evidence host")
 
@@ -167,7 +170,9 @@ class OfficialNoticeSource:
             urllib.parse.quote(parsed_url.path, safe="/%:@"),
             urllib.parse.quote(parsed_url.query, safe="=&%+,:"), ""))
         identity = {"url": url, "method": method, "body": body,
-                    "contract": EXCHANGE_CONTRACT_VERSION if host == "www.sse.com.cn" else CONTRACT_VERSION}
+                    "contract": EXCHANGE_CONTRACT_VERSION if host == "www.sse.com.cn" else (
+                        LEGACY_ATTACHMENT_CONTRACT_VERSION if host == "oss-ch.csindex.com.cn" and
+                        urllib.parse.unquote(parsed_url.path).startswith("/static/") else CONTRACT_VERSION)}
         identity_bytes = json.dumps(identity, sort_keys=True, separators=(",", ":")).encode("utf-8")
         key = hashlib.sha256(identity_bytes).hexdigest()
         receipt_path = self.root / (key + ".receipt.json")

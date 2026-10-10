@@ -156,6 +156,27 @@ def test_enclosure_api_url_is_rejected_as_wrong_resource_kind(tmp_path):
     assert len(calls) == 1
 
 
+def test_observed_old_numeric_static_attachment_has_separate_cache_contract(tmp_path):
+    url = "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/20210610/1623319091660435.xlsx"
+    client, calls = source(tmp_path, [b"PK ARTIFICIAL OLD WORKBOOK"])
+    item = client.attachment(url)
+    assert item.receipt["request"]["url"] == url
+    assert item.receipt["request"]["contract"].startswith("csindex-legacy-static-notice-attachments")
+    assert client.attachment(url).content == item.content and len(calls) == 1
+
+
+@pytest.mark.parametrize("path", ["/static/html/csindex/public/uploads/file/autofile/cons/000905cons.xls",
+                                  "/static/html/csindex/public/uploads/indices/info/files/20210610/1623319091660435.xlsx?date=2021",
+                                  "/static/html/csindex/public/uploads/indices/info/files/20210610/short.xlsx",
+                                  "/static/html/csindex/public/uploads/indices/info/files/../../private/1623319091660435.xlsx",
+                                  "/static/html/csindex/public/uploads/indices/info/files/20210610/1623319091660435.csv"])
+def test_legacy_scope_not_current_constituents_guessed_queries_or_other_directories(tmp_path, path):
+    client, calls = source(tmp_path, [])
+    with pytest.raises(ProviderError):
+        client.attachment("https://oss-ch.csindex.com.cn" + path)
+    assert calls == []
+
+
 def test_transport_exhaustion(tmp_path):
     client, calls = source(tmp_path, [TimeoutError()] * 4)
     with pytest.raises(ProviderNetworkError):

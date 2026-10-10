@@ -106,6 +106,12 @@ def test_explicit_iso_utc_capture_preserves_original_representation(tmp_path):
     assert read_browser_notice(write(tmp_path, {**container(), "observed_at": value})).observed_at == value
 
 
+def test_standard_browser_utc_z_timestamp_supported_on_python39(tmp_path):
+    value = "2022-01-10T09:00:00.987Z"
+    item = read_browser_notice(write(tmp_path, {**container(), "observed_at": value}))
+    assert item.observed_at == value and item.observed_at_utc == "2022-01-10T09:00:00.987000+00:00"
+
+
 @pytest.mark.parametrize("field,value", [("id", 2), ("publishDate", "2022-02-10"), ("content", None),
                                         ("title", ""), ("enclosureList", None),
                                         ("enclosureList", [{"noticeId": 2, "fileName": "x", "fileUrl": "https://oss-ch.csindex.com.cn/notice/x.xlsx"}])])
@@ -392,3 +398,67 @@ def test_catalogue_fatal_error_keeps_actual_network_count(cli, monkeypatch):
     assert collect_official_notices.main(["--archive-root", str(config.paths.data_root / "catalogue")]) == 1
     run = latest_manifest(config)
     assert run["status"] == "failed" and run["network_requests"] == len(calls) == 1
+
+
+def test_browser_review_empty_enclosure_list_discovers_and_archives_literal_body_link(cli, monkeypatch):
+    config, directory = cli
+    url = "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/20210610/1623319091660435.xlsx"
+    write(directory, container(content='<p>自2021年12月13日起调整，附件<a href="%s">原名单</a></p>' % url, enclosure=False))
+    calls = http_boundary(monkeypatch, example, [b"PK ARTIFICIAL"])
+    assert example.main(["--input-directory", str(directory), "--download-attachments",
+                         "--archive-root", str(config.paths.data_root / "archive")]) == 0
+    run = latest_manifest(config)
+    assert calls == [url] and run["discovered_attachments"] == run["attachments_archived_not_interpreted"] == 1
+    summary = json.loads(Path(run["outputs"]["review"]).read_text(encoding="utf-8"))
+    record = summary["attachments"][0]
+    assert record["publisher_url"] == url and record["discovery_sources"][0]["kind"] == "body_href"
+    assert record["source_evidence"]["request"]["contract"].startswith("csindex-legacy-static-notice")
+    assert summary["notices"][0]["review"]["explicit_start_date"] == "2021-12-13"
+
+
+def test_duplicate_metadata_and_body_link_only_one_attachment_request(cli, monkeypatch):
+    config, directory = cli
+    url = "https://oss-ch.csindex.com.cn/notice/artificial-1.xlsx"
+    write(directory, container(content='<a href="%s">same</a>' % url))
+    calls = http_boundary(monkeypatch, example, [b"PK ARTIFICIAL"])
+    assert example.main(["--input-directory", str(directory), "--download-attachments",
+                         "--archive-root", str(config.paths.data_root / "archive")]) == 0
+    run = latest_manifest(config)
+    record = json.loads(Path(run["outputs"]["review"]).read_text(encoding="utf-8"))["attachments"][0]
+    assert len(calls) == run["discovered_attachments"] == 1 and len(record["discovery_sources"]) == 2
+
+
+def test_unapproved_body_link_recorded_failed_without_any_http(cli, monkeypatch):
+    config, directory = cli
+    write(directory, container(content='<a href="https://unapproved.invalid/private.xlsx">file</a>', enclosure=False))
+    calls = http_boundary(monkeypatch, example, [])
+    assert example.main(["--input-directory", str(directory), "--download-attachments",
+                         "--archive-root", str(config.paths.data_root / "archive")]) == 1
+    run = latest_manifest(config)
+    assert calls == [] and run["status"] == "partial" and run["network_requests"] == 0
+
+
+def test_two_body_revisions_both_preserved_neither_implicitly_selected(cli, monkeypatch):
+    config, directory = cli
+    a = "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/20210610/1623319091660435.xlsx"
+    b = a.replace("20210610/1623319091660435", "20210601/1622509386248149")
+    write(directory, container(content='<a href="%s">名单</a><a href="%s">名单</a>' % (a, b), enclosure=False))
+    calls = http_boundary(monkeypatch, example, [b"PK ARTIFICIAL A", b"PK ARTIFICIAL B"])
+    assert example.main(["--input-directory", str(directory), "--download-attachments",
+                         "--archive-root", str(config.paths.data_root / "archive")]) == 0
+    run = latest_manifest(config)
+    assert calls == [a, b] and run["discovered_attachments"] == 2 and run["point_in_time_universe_verified"] is False
+
+
+def test_catalogue_collector_also_finds_body_file_when_metadata_list_empty(cli, monkeypatch):
+    config, _ = cli
+    url = "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/20210610/1623319091660435.xlsx"
+    payload = container(content='<p>中证500<a href="%s">名单</a></p>' % url, enclosure=False)
+    detail = json.loads(payload["response_text"])
+    listing = {key: detail["data"][key] for key in ("id", "title", "publishDate")}
+    catalogue = {"success": True, "code": "200", "total": 1, "currentPage": 1, "pageSize": 100, "data": [listing]}
+    calls = http_boundary(monkeypatch, collect_official_notices, [json.dumps(catalogue).encode("utf-8"),
+                                                              payload["response_text"].encode("utf-8"), b"PK ARTIFICIAL"])
+    assert collect_official_notices.main(["--archive-root", str(config.paths.data_root / "catalogue")]) == 0
+    run = latest_manifest(config)
+    assert calls[-1] == url and run["archived_attachments"] == 1

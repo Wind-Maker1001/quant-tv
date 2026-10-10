@@ -19,11 +19,13 @@ from qbot.research.errors import FactorLabError, ProviderError
 from qbot.research.reproducibility import RunManifest
 from qbot.research.universe.browser_observations import read_browser_notice
 from qbot.research.universe.notice_review import review_csi500_notice
+from qbot.research.universe.notice_attachments import discover_notice_attachments
 from qbot.research.universe.official_sources import OfficialAccessDeniedError, OfficialNoticeSource
 
 
 LOGGER = logging.getLogger(__name__)
-FIELDS = ("notice_id", "publish_date", "explicit_after_close_date", "action", "symbol", "name",
+FIELDS = ("notice_id", "publish_date", "explicit_after_close_date", "explicit_start_date",
+          "conditional_effective_clause", "action", "symbol", "name",
           "source_table_row", "observation_sha256", "response_text_utf8_sha256", "status",
           "point_in_time_universe_verified")
 
@@ -91,6 +93,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 for row in review.changes:
                     candidates.append({"notice_id": review.notice_id, "publish_date": review.publish_date,
                                        "explicit_after_close_date": review.explicit_after_close_date,
+                                       "explicit_start_date": review.explicit_start_date,
+                                       "conditional_effective_clause": review.conditional_effective_clause,
                                        **row, "observation_sha256": item.container_sha256,
                                        "response_text_utf8_sha256": item.response_text_sha256,
                                        "status": review.status, "point_in_time_universe_verified": False})
@@ -99,9 +103,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 summary["review"] = {"status": "REVIEW_FAILED", "error": str(exc), "point_in_time_universe_verified": False}
                 failures.append({"notice_id": notice["id"], "stage": "review", "error": str(exc)})
             summaries.append(summary)
-            for enclosure in notice["enclosureList"]:
+            for enclosure in discover_notice_attachments(notice):
                 record = {"notice_id": notice["id"], "publisher_url": enclosure["fileUrl"],
                           "label": enclosure["fileName"], "publisher_create_at": enclosure.get("createAt"),
+                          "discovery_sources": enclosure["discovery_sources"],
                           "status": "DISCOVERED_NOT_DOWNLOADED", "point_in_time_universe_verified": False}
                 if source is not None:
                     try:
@@ -131,6 +136,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                                  "manual_review_required_notices": [row["notice_id"] for row in summaries if
                                      row["review"]["status"] != "PARSED_SOURCE_CANDIDATE_NOT_PIT"],
                                  "attachments_archived_not_interpreted": sum(row["status"] == "ARCHIVED_NOT_INTERPRETED" for row in attachments),
+                                 "discovered_attachments": len(attachments),
                                  "output_artifacts": {path.name: {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
                                                       for path in (candidate_path, summary_path)},
                                  "network_requests": source.network_requests if source else 0,

@@ -146,6 +146,8 @@ class NoticeReview:
     status: str
     changes: Tuple[Dict[str, Any], ...]
     point_in_time_universe_verified: bool = False
+    explicit_start_date: Optional[str] = None
+    conditional_effective_clause: Optional[str] = None
 
 
 def review_csi500_notice(notice: Dict[str, Any]) -> NoticeReview:
@@ -175,12 +177,30 @@ def review_csi500_notice(notice: Dict[str, Any]) -> NoticeReview:
     effective = next(iter(dates)) if dates else None
     if effective and effective < published:
         raise ProviderError("source after-close date precedes publication; independent review required")
+    starts = set()
+    for year, month, day in re.findall(r"自(\d{4})年(\d{1,2})月(\d{1,2})日起", text):
+        try:
+            starts.add(date(int(year), int(month), int(day)))
+        except ValueError as exc:
+            raise ProviderError("invalid explicit start source date") from exc
+    if len(starts) > 1:
+        raise ProviderError("multiple explicit start dates require independent review")
+    start = next(iter(starts)) if starts else None
+    if start and start < published:
+        raise ProviderError("source start date precedes publication; independent review required")
+    clauses = {match.group(0) for match in re.finditer(r"自([^，。；]*?)日起", text)
+               if not re.fullmatch(r"自\d{4}年\d{1,2}月\d{1,2}日起", match.group(0))}
+    conditional = "；".join(sorted(clauses)) if clauses else None
     numbers = set(re.findall(r"中证500指数更换(\d+)只", text))
     if len(numbers) > 1:
         raise ProviderError("conflicting CSI500 stated change counts")
     count = int(next(iter(numbers))) if numbers else None
     if count is not None and not 1 <= count <= 500:
         raise ProviderError("CSI500 stated change count must be between 1 and 500")
+    common = {"notice_id": notice["id"], "publish_date": publication,
+              "explicit_after_close_date": effective.isoformat() if effective else None,
+              "stated_change_count": count, "explicit_start_date": start.isoformat() if start else None,
+              "conditional_effective_clause": conditional}
     reader = _TableReader()
     reader.feed(content)
     if reader.table is not None:
@@ -188,8 +208,7 @@ def review_csi500_notice(notice: Dict[str, Any]) -> NoticeReview:
     matching = [table for heading, table in reader.tables
                 if _compact(heading).rstrip("：:") == "中证500指数样本调整名单"]
     if not matching:
-        return NoticeReview(notice["id"], publication, effective.isoformat() if effective else None,
-                            count, "ATTACHMENT_OR_LAYOUT_REVIEW_REQUIRED", ())
+        return NoticeReview(status="ATTACHMENT_OR_LAYOUT_REVIEW_REQUIRED", changes=(), **common)
     if len(matching) != 1:
         raise ProviderError("multiple CSI500 change tables require independent review")
     rows = matching[0]
@@ -210,6 +229,7 @@ def review_csi500_notice(notice: Dict[str, Any]) -> NoticeReview:
         raise ProviderError("duplicate or overlapping CSI500 change symbols")
     if count is None or count < 1 or len(groups["ADD"]) != count or len(groups["REMOVE"]) != count:
         raise ProviderError("CSI500 table does not match explicit stated change count")
-    status = "PARSED_SOURCE_CANDIDATE_NOT_PIT" if effective else "EFFECTIVE_DATE_REVIEW_REQUIRED"
-    return NoticeReview(notice["id"], publication, effective.isoformat() if effective else None,
-                        count, status, tuple(changes))
+    # Calendar mapping and any conditional event still need independent review.
+    # In particular, two different date semantics cannot silently overwrite each other.
+    status = "PARSED_SOURCE_CANDIDATE_NOT_PIT" if (bool(effective) != bool(start)) and not conditional else "EFFECTIVE_DATE_REVIEW_REQUIRED"
+    return NoticeReview(status=status, changes=tuple(changes), **common)

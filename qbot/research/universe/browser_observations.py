@@ -53,7 +53,9 @@ def _observed_at(value: Any) -> str:
         if re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC", value):
             parsed = datetime.strptime(value, "%Y-%m-%d %H:%M:%S UTC").replace(tzinfo=timezone.utc)
         else:
-            parsed = datetime.fromisoformat(value)
+            # Python 3.9 does not yet accept the standard UTC 'Z' spelling.
+            # Preserve the original supplied timestamp while parsing it as UTC.
+            parsed = datetime.fromisoformat(value[:-1] + "+00:00" if value.endswith("Z") else value)
     except ValueError as exc:
         raise ProviderError("invalid browser observation timestamp") from exc
     if parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(parsed):

@@ -19,6 +19,7 @@ from qbot.research.errors import FactorLabError
 from qbot.research.reproducibility import RunManifest
 from qbot.research.universe.official_sources import OfficialAccessDeniedError, OfficialNoticeSource
 from qbot.research.universe.notice_review import mentions_csi500
+from qbot.research.universe.notice_attachments import discover_notice_attachments
 
 
 LOGGER = logging.getLogger(__name__)
@@ -108,8 +109,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     raise FactorLabError("official catalogue/detail title or publication date mismatch")
                 attachments = []
                 mentioned = mentions_csi500(notice["title"] + notice["content"])
-                for enclosure in notice["enclosureList"]:
+                for enclosure in discover_notice_attachments(notice):
                     row = {"label": enclosure["fileName"], "url": enclosure["fileUrl"],
+                           "discovery_sources": enclosure["discovery_sources"],
                            "publisher_create_at": enclosure.get("createAt"), "status": "NOT_SELECTED"}
                     if mentioned or args.notice_ids:
                         try:

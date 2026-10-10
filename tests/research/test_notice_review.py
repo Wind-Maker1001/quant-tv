@@ -150,3 +150,52 @@ def test_unsupported_or_unclosed_table_never_silently_recovers(old, new):
 def test_plain_decoded_heading_not_reparsed_as_markup():
     content = '<p>不相关&lt;文字&gt;</p>\n' + table()
     assert len(review_csi500_notice(notice(content)).changes) == 4
+
+
+def test_explicit_start_date_not_reinterpreted_as_after_close_or_publication():
+    row = notice(effective="2021年12月13日起")
+    result = review_csi500_notice(row)
+    assert result.explicit_start_date == "2021-12-13"
+    assert result.explicit_after_close_date is None and result.conditional_effective_clause is None
+    assert result.publish_date == "2021-11-26" and result.point_in_time_universe_verified is False
+
+
+def test_conditional_listing_day_retains_source_clause_without_assigning_a_date():
+    row = notice(effective="人工公司上市日起")
+    result = review_csi500_notice(row)
+    assert result.conditional_effective_clause == "自人工公司上市日起"
+    assert result.explicit_start_date is None and result.explicit_after_close_date is None
+    assert result.status == "EFFECTIVE_DATE_REVIEW_REQUIRED"
+
+
+def test_conditional_delisting_day_is_not_publication_date():
+    result = review_csi500_notice(notice(effective="相关证券退市之日起"))
+    assert result.conditional_effective_clause == "自相关证券退市之日起"
+    assert result.explicit_start_date is None and result.explicit_after_close_date is None
+
+
+def test_two_date_semantics_are_retained_but_not_resolved_without_calendar():
+    row = notice(table() + "<p>自2021年12月13日起进行调整。</p>")
+    result = review_csi500_notice(row)
+    assert result.explicit_after_close_date == "2021-12-10" and result.explicit_start_date == "2021-12-13"
+    assert result.status == "EFFECTIVE_DATE_REVIEW_REQUIRED"
+
+
+def test_conditional_event_not_erased_by_another_explicit_source_date():
+    row = notice(table() + "<p>自人工公司上市日起进行调整。</p>")
+    result = review_csi500_notice(row)
+    assert result.explicit_after_close_date == "2021-12-10" and result.conditional_effective_clause
+    assert result.status == "EFFECTIVE_DATE_REVIEW_REQUIRED"
+
+
+@pytest.mark.parametrize("date_text", ["2021年2月30日", "2021年11月25日"])
+def test_invalid_or_retroactive_start_date_requires_review(date_text):
+    with pytest.raises(ProviderError):
+        review_csi500_notice(notice(effective=date_text + "起"))
+
+
+def test_multiple_start_dates_not_silently_collapsed():
+    row = notice(effective="2021年12月13日起")
+    row["content"] += "<p>自2021年12月14日起进行其他调整。</p>"
+    with pytest.raises(ProviderError, match="multiple explicit start"):
+        review_csi500_notice(row)
