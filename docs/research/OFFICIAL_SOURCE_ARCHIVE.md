@@ -485,3 +485,66 @@ run/提交及完整目录文件 SHA `b7c47695844db8c014dfe89bda8ada230e8150cded1
 已经独立与原producer输出清单匹配；同时保存浏览器成功释放的工具结果。
 追加绑定文件的 SHA 为 `d3b3bae95b17d19ad5d5c2af202932d8b15da4c298484b65da25779e435f3a0a`。
 本輪另独立核验32份解码正文 UTF-8 哈希；86份原输入/快照与4个输出均保持匹配。
+
+## 三份早期定期工作簿的补齐与只读比较
+
+同日稍后，使用已观察到的原附件链接进行一次新的显式子集下载，运行
+`20261010T142707.396052Z-review-browser-notices-9fa2a500` 实际 success：3份正文、
+300条内嵌候选事件、3次附件 HTTP 请求、3份 XLSX，失败0。此前5份附件超时和
+两份2023 PDF失败均原样保留，未重写为本次成功；没有重开已被拒绝的公告读取流程。
+
+档案：`data/research/diagnostics/official-browser-attachments/20261010-regular-workbooks/`。
+
+| 公告 | 工作簿 SHA-256 | 字节数 | 调入真实范围 | 调出真实范围 | 备选真实范围 |
+| --- | --- | ---: | --- | --- | --- |
+| [13888](https://www.csindex.com.cn/#/about/newsDetail?id=13888) | `f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909` | 872904 | 调入!A1034:D1083 | 调出!A838:D887 | 备选名单!A22:E46 |
+| [14223](https://www.csindex.com.cn/#/about/newsDetail?id=14223) | `a3cceb28f6df96a77d4747a804b10a346a17f22d9b521261c222bdb03d4ca7a5` | 754024 | 调入!A947:D996 | 调出!A771:D820 | 备选名单!A17:E41 |
+| [14497](https://www.csindex.com.cn/#/about/newsDetail?id=14497) | `acbf06876606a980fd65c3e3185b7725634ad7530f4fa83ee1d3a3963ee23490` | 673136 | 调入!A987:D1036 | 调出!A725:D774 | 备选名单!A17:E41 |
+
+三个工作簿均只读导入，按六位文本指数代码 `000905` 和真实表头筛选，证券代码
+不丢前导零。各50条调入、50条调出与各自公告 HTML 的动作、canonical symbol、
+证券简称逐项一致。各25条备选保留独立排序，合计75条全部排除成员统计。
+300是三次变更事件数，不是300个完整成员，也不证明逐日500成员链完整。
+
+沿用并增量扩展原 `inspect.mjs`，先按 SHA 保存旧版本，未另造工作簿或重导出
+源文件。原导入脚本 SHA 为 `89016cf991990cbe6722a82df509c4c6afb2743ff44392668fa4113bd2dffb21`；
+新增严格附件哈希绑定的比较模式 SHA 为
+`50a82f001659b75453a8b5c94bb66f82041b50ae1c54f43c678588cada6b5cb4`。
+新模式拒绝未知表头、缺失/重复绑定、代码/名称冲突、重复备选代码/排序或正文
+与工作簿不一致。原四个起点前工作簿比较也实际复跑，仍保留新增代码 `-` 和未解析状态。
+
+检查 JSON 位于 `data/research/diagnostics/official-workbook-inspection/20261010-regular-workbooks/`。
+`csi500-comparison.json` SHA 为
+`2c87c86be166ab086947aa6ae3669f93278ba20a2fd17263e07dd83fac8f9796`。
+输入检查文件、原工作簿、下载收据和独立 HTML 来源分别绑定，读取前后原文件 SHA 一致。
+本轮附加模型/PDF来源核验没有修改任何历史公告容器或原附件。
+
+不能把当前附件当作原发布日期时可得的同一版本：13888附件 `createAt` 为2021-11-30，
+14497为2022-12-07（正文分别发布于2021-11-26、2022-11-25）；三份 HTTP
+`Last-Modified` 都为2024-11-30。所有日期保留原含义，不用它们代替成员生效日期。
+
+实际缓存复跑与定向回归：
+
+```text
+.venv-py39\python.exe -m examples.research.review_browser_notices --input-directory data/research/diagnostics/official-browser-subsets/20261010-regular-workbooks --download-attachments --cache-only --archive-root data/research/diagnostics/official-browser-attachments/20261010-regular-workbooks
+.venv-py39\python.exe -m pytest -q --tb=short tests/research/test_official_sources.py tests/research/test_notice_attachments.py tests/research/test_notice_review.py tests/research/test_browser_notice_observations.py tests/research/test_baostock_effective_semantics.py --junitxml=results/runs/regular-workbook-source-targeted-20261010.xml
+```
+
+缓存 run `20261010T144217.512073Z-review-browser-notices-d571067e` success：0 HTTP、
+3次已核验附件缓存读取；另有3份逐 run 正文快照与300候选事件。
+定向 **241 passed，10.40秒**；独立 JUnit 检查241 tests、0失败、0错误、0跳过。
+这些是软件合同回归，真实工作簿比较是上述独立检查，二者不互相冒充。
+生产研究源码没有变化，最近的完整1992项回归仍见 [BENCHMARK_RECOVERY.md](BENCHMARK_RECOVERY.md)。
+
+另保存了此前8次限定公开检索的原 MCP 响应，文件
+`data/research/diagnostics/pit-baseline-discovery/20261010-bounded-search/search-responses.json`，
+SHA 为 `ba735859eb9f3d007c715ea3018ce2b1742bae15b2883f0de7b25decf02fb4f4`。
+这是搜索摘要而非原始出版物字节；返回包含窗口外日期、其他500指数和基金持仓，
+日期过滤本身没有证明2021年名单完整。本次有限检索没有取得合格起点基线，
+不据此宣称所有公开来源都不存在该数据。
+
+“中国能建上市日起”的条件事件又取得两份实际披露 PDF、相关页文本和视觉核验，
+见 [CONDITIONAL_EVENT_EVIDENCE.md](CONDITIONAL_EVENT_EVIDENCE.md)。上市事实的补证
+没有生成成员日期或填写原表 `-`，也没有解除正式 PIT 门禁。
+仍需完整起点500成员、全部定期/临时链、过渡期成员语义和逐日证券状态；2023年
+两份定期 PDF仍未取得。正式 dataset、横截面 RankIC、五年实证和真实 Forward尚未完成。
