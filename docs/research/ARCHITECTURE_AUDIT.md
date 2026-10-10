@@ -144,4 +144,10 @@ Provider，不解除正式成员门禁，不添加 GUI/交易/文档解析库为
 实际来源范围、部分下载失败、两份 XLSX 及 PDF 候选核对见
 [OFFICIAL_SOURCE_ARCHIVE.md](OFFICIAL_SOURCE_ARCHIVE.md)。
 
+同日继续新增纯标准库的 `universe/browser_observations.py` 与 `notice_review.py`：
+前者只读独立公开浏览器保存的响应容器并保留原表示/获取方式，后者按观察到的
+显式 HTML 表头提取候选变更而非成员。这些模块没有 `get_members`，不会给正式
+PIT Provider 增加可绕过的 verified 开关。独立复核与 SSE 归档示例默认不连行情、
+模型或实盘；没有引入浏览器、PDF或电子表格库作为研究核心依赖。
+
 第一阶段完成隔离的数据与因子核心；第二阶段以 Pandas/NumPy 实现与 Legacy 无关的基线模型验证和快速回测；第三阶段以延迟导入的 LightGBM/XGBoost 扩展同一模型接口，并直接实现不依赖 Backtrader 的规则执行回测和四模型统一比较；第四阶段在独立 `forward/` 中实现预注册、冻结和 append-only Forward Signal。即使 Legacy 提供实盘能力，FactorLab 也永久默认 `live_trading=false`，不发送真实订单。

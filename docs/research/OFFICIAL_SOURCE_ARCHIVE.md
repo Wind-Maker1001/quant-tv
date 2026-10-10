@@ -138,7 +138,8 @@ PDF 的全部文本页只读提取；2026-05-29附件第1、2页另用 Poppler �
 
 ## 下载与缓存合同
 
-- 仅访问观察到的 `www.csindex.com.cn` 公告接口和 `oss-ch.csindex.com.cn/notice/`；
+- 仅访问观察到的 `www.csindex.com.cn` 公告接口、`oss-ch.csindex.com.cn/notice/`，
+  以及本轮新增的 `www.sse.com.cn/market/sseindex/diclosure/c/c_<日期>_<ID>.shtml`；
   限定 HTTPS、无凭证、无非标准端口，重定向仍验证允许目标。
 - 原始对象按内容哈希保存，临时文件 fsync 后原子发布；请求收据同样原子替换。
   断点续跑按请求 URL/方法/查询体/合同版本定位，重新核验对象字节 SHA。
@@ -180,3 +181,105 @@ git diff --check
 还需检查只在附件提及中证500的公告、证券代码变化和条件生效事件；完成全部链条
 后才能建立新的受审计 PIT 来源合同，再解决 ST/停牌/上市日期输入与正式实证。
 现有 `POINT-IN-TIME UNIVERSE REQUIRED` 错误仍是正式数据消费的正确结果。
+
+## 早期定期公告的独立浏览器证据与候选解析
+
+此前的本机 HTTP 403 清单完整保留。公开只读浏览器另外读到五份公告，保存为
+`data/research/diagnostics/official-browser-notices/20261010/*.observation.json`。
+它们没有注入原 `OfficialNoticeSource` 请求缓存，不能把独立浏览器成功改写成
+本机下载成功，或用它取消第一次401/403后停止当前批 HTTP 请求的规则。
+
+新增 `universe/browser_observations.py` 严格读取这些本地容器：核验 Schema、唯一
+JSON键、公开 URL/公告 ID、成功响应、发布日和明确 UTC 的保存时刻；分别绑定
+完整容器字节 SHA-256 与原 `response.text()` 字符串编码为 UTF-8 后的 SHA-256。
+这不是压缩 HTTP 线缆字节哈希，也没有第三方时间戳或独立来源认证证明。
+正文是当下读取的历史公告，不等于这些当前字节在历史发布日已经可获得。
+
+新增 `universe/notice_review.py` 只支持本轮实际观察到的内嵌调整表布局。
+它先还原可见文本节点，忽略 script/style，精确选择“中证500指数样本调整名单”；
+排除备选名单和其他指数。表头必须明确调出／调入方向，证券代码保留六位并做
+canonical 转换；两个方向分别去重、无交集且均与正文声明的更换数量相符。
+嵌套表、rowspan、未闭合单元格、多个生效日或冲突数量均要求独立复核，而非猜测。
+
+| 公告 | 发布日 | 正文明示收盘后日期 | 内嵌候选调出／调入 |
+| --- | --- | --- | --- |
+| [13888](https://www.csindex.com.cn/#/about/newsDetail?id=13888) | 2021-11-26 | 2021-12-10 | 50／50 |
+| [14223](https://www.csindex.com.cn/#/about/newsDetail?id=14223) | 2022-05-27 | 2022-06-10 | 50／50 |
+| [14497](https://www.csindex.com.cn/#/about/newsDetail?id=14497) | 2022-11-25 | 2022-12-09 | 50／50 |
+| [14796](https://www.csindex.com.cn/#/about/newsDetail?id=14796) | 2023-05-26 | 2023-06-09 | 无内嵌表，待 PDF |
+| [15044](https://www.csindex.com.cn/#/about/newsDetail?id=15044) | 2023-11-24 | 2023-12-08 | 无内嵌表，待 PDF |
+
+三个表合计300条是 **3次 ×（50调出 + 50调入）**，不是300只完整起点成员。
+`explicit_after_close_date` 保留正文陈述；不直接当作当日开盘成员日期，不自动
+推断下一交易日，也不生成正式 `date,symbol,is_member` 数据。
+同一显式日期重复出现可以接受；条件生效而未给固定日期时不会代用公告日。
+
+可运行入口默认完全离线，保存原容器的逐 run 独占副本、候选 CSV、复核 JSON
+和完整运行清单。缺少内嵌表是 `ATTACHMENT_OR_LAYOUT_REVIEW_REQUIRED`，不是已
+核验的零调整；解析失败为 `REVIEW_FAILED` 并使诊断状态 partial。诊断成功也只
+表示这个显式输入子集处理完成，不能表示调整链或 PIT 完整。
+
+```text
+.venv-py39\python.exe -m examples.research.review_browser_notices --input-directory data/research/diagnostics/official-browser-notices/20261010
+.venv-py39\python.exe -m examples.research.review_browser_notices --input-directory data/research/diagnostics/official-browser-notices/20261010 --download-attachments --archive-root data/research/diagnostics/official-browser-attachments/20261010-early-regular
+```
+
+显式附件下载仍使用本机标准公开 HTTP 客户端、原限速/权限拒绝规则，记录独立
+HTTP 请求收据；默认离线复核不实例化该客户端。观察到两条附件 URL 使用
+`/notice%2F...`，范围核验只解码一次并拒绝目录穿越/重复编码，保存及请求身份
+仍保留原 URL；没有猜测或替换另一文件。
+
+实际运行与失败：
+
+- 离线初轮 `20261010T100008.621992Z-review-browser-notices-afe81336`：5份正文，
+  3张表，300候选事件，0 HTTP 请求。
+- 第一轮附件 `20261010T100405.682635Z-review-browser-notices-1353684c`：failed，
+  1次请求，Python 3.9 `socket.timeout`，未取得附件。失败清单未重写。
+- 补充直接 socket/read 异常分类与单测后，重跑
+  `20261010T100709.308505Z-review-browser-notices-addcd5a4`：partial，5次请求，
+  5个附件均超时，0归档附件；继续处理其他附件的行为已真实执行。
+  只识别明确网络异常，普通 OSError 仍 fatal；权限拒绝仍停止后续 HTTP。
+- 两个 PDF 的独立公开浏览器请求也在8秒中止限制内失败，没有读到文件或 HTTP
+  状态；实际错误保存在 `data/research/diagnostics/browser-attachment-failures/20261010.json`，
+  其 `archived_at_utc` 是保存记录的时刻，不补造失败响应时刻。浏览器已释放。
+- 冻结代码离线复跑 `20261010T101512.328012Z-review-browser-notices-eb7c255e`：
+  success，5份正文/300候选/0 HTTP；5个源容器与逐 run 副本、CSV/JSON文件 SHA
+  已另用 PowerShell 独立复核一致，运行记录仍诚实标明 dirty 工作区。
+- 原两份 XLSX 来源缓存复跑
+  `20261010T101515.010643Z-collect-official-notices-6f70486b`：success，0 HTTP、
+  12次已核验缓存读取。新合同没有破坏旧请求缓存身份。
+
+旧46份正文与新增5份 ID 无交集，合计51个不同公告正文；仍远少于目录窗口246条。
+研究区间十次定期公告的正文证据现已覆盖，但2023年两份 PDF 尚未取得，完整
+临时调整、退市条件、历史代码变更、完整起点500成员与证券状态仍未核验。
+这些差距不因候选事件数量对上而消失；正式建数据集门禁和 Forward 启用状态不变。
+
+## 独立交易所公告
+
+新增只读示例 `examples/research/collect_exchange_article.py`，只读取实际观察到的
+上交所指数公告路径，保留原 HTML 字节及 SHA；文件链接只发现、不自动下载。
+它不把网站重生成日期、模板页日期或多个 title 拼接当作公告日期/起点名单。
+
+[上交所2021-05-28公告](https://www.sse.com.cn/market/sseindex/diclosure/c/c_20210528_5476672.shtml)
+本机实际 HTTP 200取得29496字节，正文概要指出中证500更换50个样本；没有完整
+500成员基线，也没有发现实际附件链接。首轮运行
+`20261010T093935.209133Z-collect-exchange-article-38634c54` 保留原记录；修正模板
+重复 title 处理后只读缓存复跑
+`20261010T101513.704012Z-collect-exchange-article-d5675660` 成功，0 HTTP、1缓存。
+另一次 Firecrawl scrape 失败不是该公开文件不存在的证明；其他有限检索也没有
+取得2021年完整成员。不能由当前中证500成分或ETF持仓偷偷补出历史起点。
+
+## 本轮软件验收
+
+194项定向测试通过（来源71、HTML候选48、浏览器容器/CLI61、BaoStock门禁14），
+JUnit：`results/runs/browser-notice-targeted-final2-20261010.xml`。
+它们使用明确人工响应，只验证软件合同；上面的实际公开数据运行另行记录，
+不把 mock 成功算作真实附件下载成功。没有升级核心依赖、修改 Legacy 或许可证。
+
+冻结代码的完整研究测试实际通过 **1872 passed、2 deselected、13 warnings，311.38秒**；
+JUnit：`results/runs/browser-notice-full-final-20261010.xml`，独立 XML 检查1872个测试、
+0失败/0错误/0跳过。两个 deselected 是默认排除的网络测试；13个警告仍是既有
+Matplotlib/Pyparsing弃用提示。没有执行具联网、邮件或GUI副作用的 Legacy suite。
+5份解码正文 UTF-8 哈希也另用 .NET SHA-256 独立复核一致；原 LICENSE 对象哈希
+仍为 `9fb99866c50772b1afadab1657cc45cc72cdc2d4`。CLI `audit` 实际成功，运行
+`20261010T102029.249530Z-audit-acc36f20`，没有生成或授权正式研究数据。

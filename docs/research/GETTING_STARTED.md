@@ -25,6 +25,15 @@ Qbot FactorLab 是 Qbot 内部隔离的 A 股横截面研究模块。它仅用�
 及附件并校验字节，已实际核对两份 XLSX。批量来源仍不完整；归档不是可直接用于
 回测的 PIT 股票池，不会解除正式下载/建数据集的门禁。
 
+同日后续增加已保存公开浏览器正文的严格离线复核入口：
+
+    .venv-py39\python.exe -m examples.research.review_browser_notices --input-directory data/research/diagnostics/official-browser-notices/20261010
+
+实际5份早期正文中3张内嵌表产生300条候选调整事件，另外2份需要 PDF；不是完整
+历史股票池。正文容器与解码文本分别绑定哈希，每次复跑保留独占输入副本。
+默认无网络；附件要另加 `--download-attachments`，本次5份附件均超时，不能称为
+下载成功。来源范围、实际 run_id 与严格边界见同一[来源审计](OFFICIAL_SOURCE_ARCHIVE.md)。
+
 ## 1. 创建独立环境
 
 优先使用 Python 3.9，不要将根 requirements.txt 的 Legacy GUI/交易依赖混入研究环境。
