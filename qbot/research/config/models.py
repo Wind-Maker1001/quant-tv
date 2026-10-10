@@ -138,6 +138,19 @@ class EvaluationConfig:
 
 
 @dataclass(frozen=True)
+class InferenceConfig:
+    """Pre-declared, evaluation-only historical model uncertainty protocol."""
+
+    enabled: bool = True
+    confidence_level: float = 0.95
+    hac_lags: int = 20
+    bootstrap_block_days: int = 20
+    bootstrap_repetitions: int = 2000
+    min_valid_days: int = 60
+    min_coverage: float = 0.8
+
+
+@dataclass(frozen=True)
 class FactorScoreConfig:
     """Fixed, interpretable baseline weights for enabled factors."""
 
@@ -385,6 +398,7 @@ class ResearchConfig:
     label: LabelConfig = field(default_factory=LabelConfig)
     preprocessing: PreprocessingConfig = field(default_factory=PreprocessingConfig)
     evaluation: EvaluationConfig = field(default_factory=EvaluationConfig)
+    inference: InferenceConfig = field(default_factory=InferenceConfig)
     models: ModelsConfig = field(default_factory=ModelsConfig)
     market_regime: MarketRegimeConfig = field(default_factory=MarketRegimeConfig)
     forward: ForwardConfig = field(default_factory=ForwardConfig)
@@ -520,6 +534,17 @@ class ResearchConfig:
             raise ConfigurationError(
                 "evaluation.min_cross_section must be at least evaluation.quantiles"
             )
+        if type(self.inference.enabled) is not bool:
+            raise ConfigurationError("inference.enabled must be a boolean")
+        from qbot.research.metrics.robustness import RobustnessError, RobustnessOptions
+
+        try:
+            RobustnessOptions(
+                **{key: value for key, value in asdict(self.inference).items() if key != "enabled"},
+                holding_days=self.label.holding_days, random_seed=self.seed,
+            )
+        except RobustnessError as exc:
+            raise ConfigurationError("inference: %s" % exc) from exc
         if not self.factors:
             raise ConfigurationError("factors must contain at least one factor")
         if len(set(self.factors)) != len(self.factors):
@@ -946,6 +971,7 @@ __all__ = [
     "CacheConfig",
     "DataConfig",
     "EvaluationConfig",
+    "InferenceConfig",
     "BacktestConfig",
     "FactorScoreConfig",
     "FeesConfig",

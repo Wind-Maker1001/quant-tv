@@ -40,6 +40,14 @@ preprocessing:
 evaluation:
   quantiles: 5
   min_cross_section: 20
+inference:
+  enabled: true
+  confidence_level: 0.95
+  hac_lags: 20
+  bootstrap_block_days: 20
+  bootstrap_repetitions: 2000
+  min_valid_days: 60
+  min_coverage: 0.8
 market_regime:
   enabled: false
 forward:

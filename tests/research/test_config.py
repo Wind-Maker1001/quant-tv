@@ -395,3 +395,43 @@ def test_cache_lock_timeout_can_be_configured(tmp_path):
     document["cache"] = {"lock_timeout_seconds": 0.25}
     config = load_config(_write_config(tmp_path, document), repo_root=tmp_path)
     assert config.cache.lock_timeout_seconds == 0.25
+
+
+def test_inference_defaults_are_frozen_in_serialized_config(tmp_path):
+    config = load_config(_write_config(tmp_path, _valid_document()), repo_root=tmp_path)
+    assert config.inference.enabled is True
+    assert config.inference.hac_lags == 20
+    assert config.inference.bootstrap_repetitions == 2000
+    assert config.to_dict()["inference"]["min_coverage"] == .8
+
+
+@pytest.mark.parametrize("inference,match", [
+    ({"enabled": "true"}, "enabled"), ({"enabled": 1}, "enabled"),
+    ({"hac_lags": True}, "hac_lags"), ({"hac_lags": 3}, "overlapping"),
+    ({"bootstrap_block_days": 4}, "holding_days"),
+    ({"bootstrap_repetitions": 50}, "repetitions"),
+    ({"min_valid_days": 10}, "two blocks"),
+    ({"confidence_level": 1.}, "probabilities"),
+    ({"min_coverage": float("nan")}, "finite"),
+    ({"baseline": "ridge"}, "unknown field"),
+    ({"primary_metric": "net_alpha"}, "unknown field"),
+])
+def test_inference_protocol_rejects_unsafe_or_test_selected_choices(tmp_path, inference, match):
+    document = _valid_document()
+    document["inference"] = inference
+    with pytest.raises(ConfigurationError, match=match):
+        load_config(_write_config(tmp_path, document), repo_root=tmp_path)
+
+
+def test_inference_can_be_explicitly_disabled_but_invalid_parameters_still_fail(tmp_path):
+    document = _valid_document()
+    document["inference"] = {"enabled": False}
+    config = load_config(_write_config(tmp_path, document), repo_root=tmp_path)
+    assert config.inference.enabled is False
+
+
+def test_holding_period_and_inference_horizon_must_agree(tmp_path):
+    document = _valid_document()
+    document["label"] = {"holding_days": 21}
+    with pytest.raises(ConfigurationError, match="bootstrap_block_days"):
+        load_config(_write_config(tmp_path, document), repo_root=tmp_path)
