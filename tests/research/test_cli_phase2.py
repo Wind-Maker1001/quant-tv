@@ -1201,6 +1201,8 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
                 ],
                 "stage_diagnostics_version": run.payload["stage_diagnostics_version"],
                 "stage_diagnostic_provenance": run.payload["stage_diagnostic_provenance"],
+                "inference_input_version": run.payload["inference_input_version"],
+                "inference_calendar_sha256": run.payload["inference_calendar_sha256"],
                 **_provenance(),
             },
             config.paths.runs_dir / run.run_id / "manifest.json",
@@ -1248,6 +1250,13 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
             assert pd.api.types.is_datetime64_ns_dtype(stage_table["signal_start"])
     assert not (comparison_dir / "stage_predictions.parquet").exists()
     assert comparison_run.payload["stage_diagnostics_available"] is True
+    assert comparison_run.payload["inference_available"] is True
+    assert comparison_run.payload["inference_protocol"]["primary_family_size"] == 3
+    inference = pd.read_parquet(comparison_dir / "model_inference.parquet")
+    assert inference["primary_hypothesis"].sum() == 3
+    assert set(inference.loc[inference.primary_hypothesis, "model_name"]) == {"ridge", "lightgbm", "xgboost"}
+    assert (comparison_dir / "model_inference.png").is_file()
+    assert (comparison_dir / "inference_protocol.json").is_file()
     assert comparison_run.payload["stage_diagnostics_version"] == 1
     assert "TRAIN_IN_SAMPLE" in (comparison_dir / "summary.md").read_text(encoding="utf-8")
     assert comparison_run.payload["compared_models"] == [
@@ -1279,6 +1288,39 @@ def test_walk_forward_and_compare_commands_are_offline_and_complete(tmp_path, mo
 
     ridge_manifest_path = config.paths.runs_dir / ridge_run.run_id / "manifest.json"
     ridge_manifest = json.loads(ridge_manifest_path.read_text(encoding="utf-8"))
+    ridge_output = config.paths.model_results_dir / "ridge" / ridge_run.run_id
+    calendar_files = {filename: (ridge_output / filename).read_bytes() for filename in (
+        "evaluation_calendar.csv", "evaluation_calendar.parquet",
+    )}
+    try:
+        # Remove a Train-only calendar date so all Test/cohort keys remain
+        # untouched. A perfectly well-formed but different calendar is still
+        # forbidden; independent byte and semantic hashes alone are not enough.
+        altered_calendar = pd.read_parquet(ridge_output / "evaluation_calendar.parquet").iloc[1:].reset_index(drop=True)
+        altered_calendar.to_csv(ridge_output / "evaluation_calendar.csv", index=False)
+        altered_calendar.to_parquet(ridge_output / "evaluation_calendar.parquet", index=False)
+        altered_manifest = dict(ridge_manifest,
+            inference_calendar_sha256=cli.diagnostic_frame_sha256(altered_calendar),
+            model_artifact_sha256=cli._artifact_sha256(ridge_output),
+        )
+        cli._atomic_json(altered_manifest, ridge_manifest_path)
+        with pytest.raises(FactorLabError, match="different inference benchmark calendars"):
+            cli.command_compare_models(config, _Run("inference-calendar-mismatch"))
+        assert not (config.paths.report_dir / "inference-calendar-mismatch").exists()
+        for filename in calendar_files:
+            (ridge_output / filename).unlink()
+        legacy_calendar_manifest = dict(ridge_manifest)
+        legacy_calendar_manifest.pop("inference_input_version")
+        legacy_calendar_manifest.pop("inference_calendar_sha256")
+        legacy_calendar_manifest["model_artifact_sha256"] = cli._artifact_sha256(ridge_output)
+        cli._atomic_json(legacy_calendar_manifest, ridge_manifest_path)
+        with pytest.raises(FactorLabError, match="verified benchmark calendars; rebuild"):
+            cli.command_compare_models(config, _Run("missing-inference-calendar"))
+        assert not (config.paths.report_dir / "missing-inference-calendar").exists()
+    finally:
+        for filename, content in calendar_files.items():
+            (ridge_output / filename).write_bytes(content)
+        cli._atomic_json(ridge_manifest, ridge_manifest_path)
     # Explicit old reports are still readable, but cannot be compared as if
     # all four models had complete Train/Validation evidence.
     factor_manifest_path = config.paths.runs_dir / factor_run.run_id / "manifest.json"

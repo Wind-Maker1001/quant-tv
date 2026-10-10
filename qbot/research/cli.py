@@ -67,8 +67,11 @@ from qbot.research.forward import (
 )
 from qbot.research.forward.integrity import research_source_sha256, workflow_lock
 from qbot.research.metrics import (
+    RobustnessError,
+    RobustnessOptions,
     calculate_portfolio_metrics,
     evaluate_factors,
+    evaluate_model_robustness,
     evaluate_predictions,
 )
 from qbot.research.market import MARKET_FEATURE_COLUMNS, MARKET_REGIMES
@@ -1804,6 +1807,11 @@ def command_walk_forward(
         config, research_calendar, run, full_calendar=full_calendar,
         bar_inputs=bar_inputs,
     )
+    pinned_calendar = _research_calendar(
+        config, TradingCalendar.from_benchmark_bars(benchmark).dates,
+    )
+    if not research_calendar.equals(pinned_calendar):
+        raise FactorLabError("Benchmark calendar changed between verified input snapshots")
     output_dir = config.paths.model_results_dir / model_name / run.run_id
     model_dir = output_dir / "fold_models"
 
@@ -1955,6 +1963,11 @@ def command_walk_forward(
         execution_backtest=execution,
         execution_metrics=execution_metrics,
     )
+    calendar_table = pd.DataFrame({"date": pinned_calendar})
+    _atomic_csv(calendar_table, output_dir / "evaluation_calendar.csv")
+    _atomic_parquet(calendar_table, output_dir / "evaluation_calendar.parquet")
+    run.payload["inference_input_version"] = 1
+    run.payload["inference_calendar_sha256"] = diagnostic_frame_sha256(calendar_table)
 
     run.payload["model"] = model_name
     run.payload["dataset_sha256"] = dataset_sha256
@@ -1990,6 +2003,7 @@ def command_walk_forward(
     run.add_output("walk_forward_results", output_dir / "walk_forward_results.csv")
     for name in _STAGE_TABLE_ATTRIBUTES:
         run.add_output(name, output_dir / (name + ".parquet"))
+    run.add_output("evaluation_calendar", output_dir / "evaluation_calendar.parquet")
     run.add_output("nav", output_dir / "nav.csv")
     run.add_output("execution_nav", output_dir / "execution_nav.csv")
     run.add_output(
@@ -2172,6 +2186,14 @@ def _verify_model_artifacts(
         required |= _STAGE_ARTIFACTS | {"walk_forward_results.parquet"}
     elif _STAGE_ARTIFACTS.intersection(expected):
         raise FactorLabError("%s stage diagnostic artifacts lack producer provenance" % model_name)
+    calendar_artifacts = {"evaluation_calendar.csv", "evaluation_calendar.parquet"}
+    if "inference_input_version" in manifest:
+        version = manifest["inference_input_version"]
+        if type(version) is not int or version != 1 or not _is_sha256(manifest.get("inference_calendar_sha256")):
+            raise FactorLabError("%s has unknown inference calendar policy/version" % model_name)
+        required |= calendar_artifacts
+    elif calendar_artifacts.intersection(expected) or "inference_calendar_sha256" in manifest:
+        raise FactorLabError("%s inference calendar artifacts lack producer provenance" % model_name)
     if not required.issubset(expected):
         missing = sorted(required.difference(expected))
         raise FactorLabError(
@@ -2211,6 +2233,75 @@ def _verify_model_artifacts(
             % (model_name, ", ".join(modified))
         )
     return snapshots
+
+
+def _verified_inference_calendar(
+    model_name: str, manifest: Dict[str, Any], artifacts: Dict[str, bytes],
+) -> Optional[pd.DatetimeIndex]:
+    """Use only pinned report bytes. Never infer sessions or reopen market caches."""
+    if "inference_input_version" not in manifest:
+        return None
+    try:
+        if type(manifest["inference_input_version"]) is not int or manifest["inference_input_version"] != 1:
+            raise ValueError("unknown version")
+        table = pd.read_parquet(io.BytesIO(artifacts["evaluation_calendar.parquet"]))
+        if list(table.columns) != ["date"] or table.empty:
+            raise ValueError("calendar must contain exactly the date column")
+        if not pd.api.types.is_datetime64_ns_dtype(table["date"].dtype):
+            raise ValueError("calendar dates must be datetime64[ns]")
+        dates = pd.DatetimeIndex(table["date"])
+        if (dates.hasnans or dates.tz is not None or dates.has_duplicates
+                or not dates.is_monotonic_increasing or not dates.equals(dates.normalize())):
+            raise ValueError("calendar must contain unique increasing tz-naive trading dates")
+        data_config = manifest.get("config", {}).get("data", {})
+        if (dates.min() < pd.Timestamp(data_config["start"])
+                or dates.max() > pd.Timestamp(data_config["end"])):
+            raise ValueError("calendar lies outside the producer research window")
+        if diagnostic_frame_sha256(table) != manifest.get("inference_calendar_sha256"):
+            raise ValueError("calendar semantic SHA-256 differs from producer evidence")
+        stored = pd.read_csv(io.BytesIO(artifacts["evaluation_calendar.csv"]), dtype=str, keep_default_na=False)
+        canonical = pd.read_csv(io.BytesIO(table.to_csv(index=False).encode("utf-8")), dtype=str, keep_default_na=False)
+        pd.testing.assert_frame_equal(stored, canonical, check_exact=True)
+        return dates
+    except Exception as exc:
+        raise FactorLabError("%s inference calendar evidence is invalid: %s" % (model_name, exc)) from exc
+
+
+def _inference_options(config: ResearchConfig) -> RobustnessOptions:
+    return RobustnessOptions(
+        **{key: value for key, value in asdict(config.inference).items() if key != "enabled"},
+        holding_days=config.label.holding_days, random_seed=config.seed,
+    )
+
+
+def _verified_inference_daily(
+    config: ResearchConfig, model_name: str, artifacts: Dict[str, bytes],
+) -> pd.DataFrame:
+    """Recompute metrics from fixed Test scores; do not refit/rescore/select."""
+    try:
+        predictions = pd.read_parquet(io.BytesIO(artifacts["predictions.parquet"]))
+        evaluation = evaluate_predictions(
+            predictions, target_col=_target_column(config),
+            top_k=config.portfolio.top_k, minimum_cross_section=config.evaluation.min_cross_section,
+            regime_col="MARKET_REGIME" if config.market_regime.enabled else None,
+        )
+        stages = pd.read_parquet(io.BytesIO(artifacts["stage_prediction_daily.parquet"]))
+        stages = stages.loc[stages["stage"].eq("HISTORICAL_TEST")]
+        columns = list(evaluation.daily.columns)
+        actual = stages[columns].sort_values(["fold", "date"]).reset_index(drop=True)
+        expected = evaluation.daily.sort_values(["fold", "date"]).reset_index(drop=True)
+        pd.testing.assert_frame_equal(
+            actual.astype(object).where(actual.notna(), None),
+            expected.astype(object).where(expected.notna(), None), check_dtype=False, check_exact=True,
+        )
+        daily = evaluation.daily.copy()
+        if not config.market_regime.enabled:
+            daily = daily.drop(columns="regime")
+        daily["model_name"] = model_name
+        daily["stage"] = "HISTORICAL_TEST"
+        return daily
+    except Exception as exc:
+        raise FactorLabError("%s inference Test metrics differ from verified scores: %s" % (model_name, exc)) from exc
 
 
 def _verified_stage_cohort(
@@ -2506,6 +2597,7 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
     # even when its report also includes diagnostic tables.
     artifact_snapshots = {}
     stage_cohorts = {}
+    inference_calendars = {}
     oos_keys = {}
     for name, payload in manifests.items():
         artifact_snapshots[name] = _verify_model_artifacts(name, outputs[name], payload)
@@ -2521,6 +2613,7 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         stage_cohorts[name] = _verified_stage_cohort(
             name, outputs[name], payload, artifact_snapshots[name],
         )
+        inference_calendars[name] = _verified_inference_calendar(name, payload, artifact_snapshots[name])
         # Raw Train/Validation predictions stay in each source report. Do
         # not retain or concatenate millions of expanding-training rows.
         artifact_snapshots[name].pop("stage_predictions.parquet", None)
@@ -2531,6 +2624,13 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         reference_stage = stage_cohorts[model_names[0]]
         if any(not reference_stage.equals(stage_cohorts[name]) for name in model_names[1:]):
             raise FactorLabError("Model reports use different stage cohorts or fitted Train inputs")
+    inference_calendar = None
+    if config.inference.enabled:
+        if not stage_available or any(value is None for value in inference_calendars.values()):
+            raise FactorLabError("Inference requires complete stage diagnostics and verified benchmark calendars; rebuild model reports")
+        inference_calendar = inference_calendars[model_names[0]]
+        if any(not inference_calendar.equals(inference_calendars[name]) for name in model_names[1:]):
+            raise FactorLabError("Model reports use different inference benchmark calendars")
     bar_versions = {payload.get("bar_data_version") for payload in manifests.values()}
     if len(bar_versions) != 1 or not _is_sha256(next(iter(bar_versions), None)):
         raise FactorLabError("Model reports use different or unknown raw bar-data versions")
@@ -2605,10 +2705,20 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
             for output_name, (filename, required) in detail_files.items()
         },
     }
+    robustness = None
+    if config.inference.enabled:
+        inference_daily = pd.concat([
+            _verified_inference_daily(config, name, artifact_snapshots[name]) for name in model_names
+        ], ignore_index=True)
+        try:
+            robustness = evaluate_model_robustness(inference_daily, inference_calendar, _inference_options(config))
+        except RobustnessError as exc:
+            raise FactorLabError("Historical Test inference: %s" % exc) from exc
     summary_path = write_model_comparison_report(
         comparison,
         comparison_dir,
         details=details,
+        robustness=robustness,
     )
     fold_path = comparison_dir / "walk_forward_results.csv"
     run.payload["compared_models"] = list(model_names)
@@ -2616,6 +2726,19 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         name: path.name for name, path in outputs.items()
     }
     run.payload["stage_diagnostics_available"] = stage_available
+    run.payload["inference_available"] = robustness is not None
+    if robustness is not None:
+        run.payload["inference_protocol"] = robustness.protocol
+        run.payload["inference_evidence"] = robustness.evidence
+        run.payload["inference_calendar_sha256"] = manifests[model_names[0]]["inference_calendar_sha256"]
+        run.payload["inference_table_sha256"] = {
+            name: diagnostic_frame_sha256(table) for name, table in (
+                ("inference_daily", robustness.daily), ("model_inference", robustness.summary),
+                ("inference_audit", robustness.audit),
+            )
+        }
+        for name in ("inference_daily", "model_inference", "inference_audit"):
+            run.add_output(name, comparison_dir / (name + ".parquet"))
     if stage_available:
         run.payload["stage_diagnostics_version"] = 1
         run.payload["stage_diagnostic_policy"] = _stage_diagnostic_policy()

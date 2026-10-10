@@ -26,6 +26,9 @@ import pandas as pd
 from qbot.research.backtest.fast import FastBacktestResult
 from qbot.research.backtest.execution import ExecutionBacktestResult
 from qbot.research.metrics.prediction import PredictionEvaluation
+from qbot.research.metrics.robustness import (
+    RobustnessError, RobustnessEvaluation, validate_robustness_evaluation,
+)
 from qbot.research.validation.walk_forward import WalkForwardResult, diagnostic_frame_sha256
 
 
@@ -907,7 +910,8 @@ def _plot_comparison_regime(
 
 
 def _comparison_markdown(
-    comparison: pd.DataFrame, disclaimer: Optional[str] = None
+    comparison: pd.DataFrame, disclaimer: Optional[str] = None,
+    robustness: Optional[RobustnessEvaluation] = None,
 ) -> str:
     lines = [
         "# FactorLab Phase 3 模型比较",
@@ -976,7 +980,78 @@ def _comparison_markdown(
     for row in comparison.loc[:, columns].itertuples(index=False, name=None):
         lines.append("| %s |" % " | ".join(_format_value(value) for value in row))
     lines.append("")
+    if robustness is None:
+        lines.extend([
+            "统计稳健性检验 unavailable：未提供已验证的逐日 Test 指标和 benchmark 交易日历。"
+            "ICIR 不是显著性检验；本报告不据此声称机器学习显著优于 FactorScore。", "",
+        ])
+    else:
+        options = robustness.protocol["options"]
+        lines.extend([
+            "## Historical Test 统计稳健性（evaluation-only）", "",
+            "以市场交易日而非股票—日为统计单位；按相同日期配对 ML − FactorScore。"
+            "未来%d日标签重叠：Bartlett HAC 使用%d个交易日 lag，"
+            "非循环 moving-block bootstrap 使用%d日块、%d次重采样。"
+            % (options["holding_days"], options["hac_lags"], options["bootstrap_block_days"], options["bootstrap_repetitions"]),
+            "",
+            "固定主检验范围为总体 RankIC 的三个 ML − FactorScore 差值，双侧 p-value "
+            "经 Holm 校正；不可检验项不缩小三项范围。拒绝零差异不等于优势，仍须看差值方向。"
+            "不选择模型、不重新评分，也不反馈选参。", "",
+            "HAC normal CI 和 bootstrap percentile CI 均为未做多重比较校正的个别区间；"
+            "其他指标、Year/Quarter/Fold/Regime 分组均为探索性诊断，不能用分组挑出最佳模型。"
+            "缺失交易日保留原日历位置，缺失非随机、市场非平稳和 fold 重拟合会削弱推断。", "",
+            "| model | mean RankIC delta | HAC CI | block CI | Holm p | status |",
+            "| --- | ---: | --- | --- | ---: | --- |",
+        ])
+        primary = robustness.summary.loc[robustness.summary["primary_hypothesis"]]
+        for row in primary.itertuples(index=False):
+            lines.append("| %s | %s | [%s, %s] | [%s, %s] | %s | %s |" % (
+                row.model_name, _format_value(row.mean),
+                _format_value(row.hac_ci_lower), _format_value(row.hac_ci_upper),
+                _format_value(row.bootstrap_ci_lower), _format_value(row.bootstrap_ci_upper),
+                _format_value(row.holm_adjusted_p_value), row.status,
+            ))
+        lines.extend([
+            "", "完整结果见 model_inference.csv/parquet、inference_daily、inference_audit "
+            "及 inference_protocol.json。样本不足、覆盖不足和零方差的 p/CI 保留缺失，不报成0。",
+            "这些是成本前超额标签的预测能力检验，不是净交易 Alpha 或真实 Forward 结果；"
+            "统计方法不能证明 PIT 数据源真实性。", "",
+        ])
     return "\n".join(lines)
+
+
+def _plot_model_inference(
+    result: RobustnessEvaluation, destination: Path, disclaimer: Optional[str] = None,
+) -> None:
+    primary = result.summary.loc[result.summary["primary_hypothesis"]].reset_index(drop=True)
+    figure, axis = plt.subplots(figsize=(9.5, 4.8))
+    for position, row in enumerate(primary.itertuples(index=False)):
+        if pd.notna(row.mean):
+            axis.scatter(row.mean, position, color="#264c86", zorder=3)
+        if pd.notna(row.hac_ci_lower) and pd.notna(row.hac_ci_upper):
+            axis.hlines(position, row.hac_ci_lower, row.hac_ci_upper, color="#264c86", linewidth=2)
+        if pd.notna(row.bootstrap_ci_lower) and pd.notna(row.bootstrap_ci_upper):
+            axis.hlines(position + .16, row.bootstrap_ci_lower, row.bootstrap_ci_upper, color="#b46820", linewidth=2)
+        annotation = None
+        if row.status != "OK":
+            annotation = "%s (n=%d)" % (row.status, row.valid_dates)
+        elif row.bootstrap_status != "OK":
+            annotation = "Bootstrap CI unavailable"
+        if annotation:
+            axis.text(1.02, position, annotation, transform=axis.get_yaxis_transform(), ha="left", fontsize=8)
+    axis.axvline(0, color="#777777", linestyle="--", linewidth=1)
+    axis.set_yticks(np.arange(len(primary)))
+    axis.set_yticklabels(primary["model_name"])
+    axis.set_ylim(-.45, len(primary) - .45)
+    axis.set_xlabel("Mean paired daily RankIC difference: ML minus FactorScore")
+    axis.set_title("Historical Test only; individual CIs are not multiplicity-adjusted")
+    axis.plot([], [], color="#264c86", label="HAC normal CI")
+    axis.plot([], [], color="#b46820", label="Moving-block percentile CI")
+    axis.legend(fontsize=8, loc="upper center", bbox_to_anchor=(.5, -.2), ncol=2)
+    axis.grid(axis="x", alpha=.2)
+    if disclaimer:
+        figure.suptitle(disclaimer.strip(), fontsize=9)
+    _save_figure(figure, destination)
 
 
 def _summary_markdown(
@@ -1263,6 +1338,7 @@ def write_model_comparison_report(
     output_dir: Path,
     disclaimer: Optional[str] = None,
     details: Optional[Mapping[str, pd.DataFrame]] = None,
+    robustness: Optional[RobustnessEvaluation] = None,
 ) -> Path:
     """Write an objective, non-selecting comparison of completed model runs.
 
@@ -1274,6 +1350,16 @@ def write_model_comparison_report(
     """
 
     comparison = _comparison_frame(comparison)
+    if robustness is not None:
+        try:
+            validate_robustness_evaluation(robustness)
+            if set(comparison["model_name"]) != set(robustness.daily["model_name"]):
+                raise RobustnessError("inference and comparison model identities differ")
+        except RobustnessError as exc:
+            raise ModelReportError(str(exc)) from exc
+    reserved = {"inference_daily", "model_inference", "inference_audit"}
+    if details is not None and isinstance(details, Mapping) and reserved.intersection(details):
+        raise ModelReportError("Inference details require the verified robustness argument")
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
     _atomic_csv(comparison, destination / "model_comparison.csv")
@@ -1319,8 +1405,19 @@ def write_model_comparison_report(
         detail_tables.get("prediction_summary", pd.DataFrame()),
         destination / "regime_performance.png",
     )
+    if robustness is not None:
+        for name, table in (
+            ("inference_daily", robustness.daily), ("model_inference", robustness.summary),
+            ("inference_audit", robustness.audit),
+        ):
+            _write_table(table, name, destination)
+        _atomic_text(json.dumps(
+            {"protocol": robustness.protocol, "evidence": robustness.evidence},
+            ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False,
+        ) + "\n", destination / "inference_protocol.json")
+        _plot_model_inference(robustness, destination / "model_inference.png", disclaimer)
     summary_path = destination / "summary.md"
-    _atomic_text(_comparison_markdown(comparison, disclaimer), summary_path)
+    _atomic_text(_comparison_markdown(comparison, disclaimer, robustness), summary_path)
     return summary_path
 
 

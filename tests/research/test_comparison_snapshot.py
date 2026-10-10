@@ -97,6 +97,29 @@ def test_verifier_returns_tabular_bytes_only_and_checks_all_artifacts(report, mo
     assert read_counts == {name: 1 for name in expected}
 
 
+@pytest.mark.parametrize("version", [True, 1.0, "1", 2, None])
+def test_calendar_producer_version_is_strict_before_artifact_consumption(report, version):
+    output, manifest, _ = report
+    manifest.update(inference_input_version=version, inference_calendar_sha256="a" * 64)
+    with pytest.raises(FactorLabError, match="calendar policy/version"):
+        cli._verify_model_artifacts("ridge", output, manifest)
+
+
+def test_calendar_producer_requires_both_inventory_artifacts(report):
+    output, manifest, _ = report
+    manifest.update(inference_input_version=1, inference_calendar_sha256="a" * 64)
+    with pytest.raises(FactorLabError, match="inventory is missing"):
+        cli._verify_model_artifacts("ridge", output, manifest)
+
+
+def test_calendar_cannot_masquerade_as_legacy_without_producer_version(report):
+    output, manifest, _ = report
+    (output / "evaluation_calendar.csv").write_text("date\n2024-01-02\n", encoding="utf-8")
+    manifest["model_artifact_sha256"] = cli._artifact_sha256(output)
+    with pytest.raises(FactorLabError, match="lack producer provenance"):
+        cli._verify_model_artifacts("ridge", output, manifest)
+
+
 @pytest.mark.parametrize("filename", ["predictions.parquet", "portfolio_metrics.csv", "nav_curve.png"])
 def test_verifier_rejects_changed_tabular_and_streamed_artifacts(report, filename):
     output, manifest, _ = report

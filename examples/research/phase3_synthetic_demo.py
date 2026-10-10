@@ -33,7 +33,10 @@ from qbot.research.backtest import (
     run_fast_backtest,
 )
 from qbot.research.market import build_market_regime_features
-from qbot.research.metrics import calculate_portfolio_metrics, evaluate_predictions
+from qbot.research.metrics import (
+    RobustnessOptions, calculate_portfolio_metrics, evaluate_model_robustness,
+    evaluate_predictions,
+)
 from qbot.research.reports import (
     write_model_comparison_report,
     write_model_report,
@@ -391,11 +394,21 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
         for name, frames in detail_frames.items()
         if frames
     }
+    inference_daily = details["stage_prediction_daily"].loc[
+        details["stage_prediction_daily"]["stage"].eq("HISTORICAL_TEST")
+    ]
+    # The example intentionally has a short Test. Default minimum sample
+    # requirements remain unchanged: report unavailable CIs rather than tune
+    # the threshold/block size to manufacture synthetic significance.
+    robustness = evaluate_model_robustness(
+        inference_daily, dates, RobustnessOptions(random_seed=seed),
+    )
     comparison_summary = write_model_comparison_report(
         comparison_records,
         destination / "comparison",
         disclaimer=WARNING,
         details=details,
+        robustness=robustness,
     )
     regime_counts = market["MARKET_REGIME"].value_counts().sort_index()
     manifest = {
@@ -410,6 +423,7 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
         "configuration": {
             "splitter": splitter_options, "runner": common,
             "models": model_options,
+            "inference": robustness.protocol,
             "backtests": {
                 "initial_cash": 1_000_000.0, "rebalance_days": 5,
                 "board_lot": 100, "fee_schedule": "a_share_default",
@@ -426,6 +440,8 @@ def run_demo(output_dir: Path, seed: int = 42) -> Dict[str, object]:
             "train": "in_sample_diagnostic_only", "test": "evaluation_only",
             "train_folds_pooled": False, "real_forward_available": False,
         },
+        "inference_evidence": robustness.evidence,
+        "inference_calendar_sha256": diagnostic_frame_sha256(pd.DataFrame({"date": dates})),
         "date_start": dates.min().date().isoformat(),
         "date_end": dates.max().date().isoformat(),
         "symbols": int(dataset["symbol"].nunique()),

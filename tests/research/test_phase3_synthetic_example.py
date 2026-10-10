@@ -76,6 +76,16 @@ def test_phase3_synthetic_demo_runs_complete_offline_path(tmp_path):
     assert set(stage_summary["model_name"]) == set(MODEL_NAMES)
     assert set(stage_summary["stage"]) == {"TRAIN_IN_SAMPLE", "VALIDATION_SELECTION", "HISTORICAL_TEST"}
     assert not (destination / "comparison" / "stage_predictions.parquet").exists()
+    inference = pd.read_parquet(destination / "comparison" / "model_inference.parquet")
+    primary = inference.loc[inference.primary_hypothesis]
+    assert len(primary) == 3
+    assert primary.status.eq("INSUFFICIENT_DATES").all()
+    assert primary.holm_adjusted_p_value.isna().all()
+    assert primary.holm_reject.isna().all()
+    assert stored["configuration"]["inference"]["automatic_model_selection"] is False
+    assert stored["configuration"]["inference"]["options"]["min_valid_days"] == 60
+    assert (destination / "comparison" / "model_inference.png").is_file()
+    assert set(stored["inference_evidence"]) == {"daily_sha256", "summary_sha256", "audit_sha256", "protocol_sha256"}
     assert comparison["stage_diagnostics_available"].all()
     for filename, digest in stored["comparison_artifact_sha256"].items():
         assert hashlib.sha256((destination / "comparison" / filename).read_bytes()).hexdigest() == digest
