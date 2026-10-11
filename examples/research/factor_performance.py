@@ -25,7 +25,7 @@ class MemoryProbe:
                     (name, ctypes.c_size_t) for name in (
                         "PeakWorkingSetSize", "WorkingSetSize", "QuotaPeakPagedPoolUsage",
                         "QuotaPagedPoolUsage", "QuotaPeakNonPagedPoolUsage", "QuotaNonPagedPoolUsage",
-                        "PagefileUsage", "PeakPagefileUsage")]
+                        "PagefileUsage", "PeakPagefileUsage", "PrivateUsage")]
             self.counters = Counters
             self.kernel = ctypes.WinDLL("kernel32", use_last_error=True)
             self.psapi = ctypes.WinDLL("psapi", use_last_error=True)
@@ -45,7 +45,7 @@ class MemoryProbe:
                 raise OSError(ctypes.get_last_error(), "GetProcessMemoryInfo failed")
             return {"resident_bytes": int(values.WorkingSetSize),
                     "process_lifetime_peak_resident_bytes": int(values.PeakWorkingSetSize),
-                    "private_commit_bytes": int(values.PagefileUsage)}
+                    "private_commit_bytes": int(values.PrivateUsage)}
         if self.metric.startswith("Linux"):
             entries = {}
             for line in Path("/proc/self/status").read_text().splitlines():
@@ -62,6 +62,7 @@ class PerformanceRecorder:
         self.timings = {}
         self.current_phase = "initialization"
         self.phase_memory = {}
+        self.memory_lock = threading.Lock()
         self.sample_interval_seconds = 0.05
         self.probe = MemoryProbe() if measure_memory else None
         self.sampling_error = None
@@ -72,9 +73,10 @@ class PerformanceRecorder:
         try:
             values = self.probe.snapshot()
             if values:
-                phase = self.phase_memory.setdefault(self.current_phase, {"samples": 0, "sampled_max_resident_bytes": 0})
-                phase["samples"] += 1
-                phase["sampled_max_resident_bytes"] = max(phase["sampled_max_resident_bytes"], values["resident_bytes"])
+                with self.memory_lock:
+                    phase = self.phase_memory.setdefault(self.current_phase, {"samples": 0, "sampled_max_resident_bytes": 0})
+                    phase["samples"] += 1
+                    phase["sampled_max_resident_bytes"] = max(phase["sampled_max_resident_bytes"], values["resident_bytes"])
         except (OSError, ValueError, KeyError) as exc:
             self.sampling_error = "%s: %s" % (type(exc).__name__, exc)
 
@@ -169,10 +171,12 @@ class PerformanceRecorder:
             yield
 
     def payload(self):
+        with self.memory_lock:
+            sampled = {name: dict(values) for name, values in self.phase_memory.items()}
         memory = {"measured": self.probe is not None and self.probe.metric != "unsupported",
                   "metric": self.probe.metric if self.probe is not None else "not measured",
                   "sample_interval_seconds": self.sample_interval_seconds,
-                  "phase_sampled_maxima_not_exact_peaks": {name: dict(values) for name, values in self.phase_memory.items()},
+                  "phase_sampled_maxima_not_exact_peaks": sampled,
                   "sampling_error": self.sampling_error}
         if self.probe is not None:
             memory["at_recording_end"] = self.probe.snapshot()
