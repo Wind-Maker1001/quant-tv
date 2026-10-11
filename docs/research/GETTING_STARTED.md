@@ -412,3 +412,20 @@ benchmark 请求成功，正式数据集命令则明确在未核验 PIT 生效�
 但附件包含调整的实例。它们只输出来源候选，不能用于绕过 PIT 或补造过去信号。
 运行前须按只读流程提取所有工作表；原文件不修改、重算或重导出。源码接口、
 实际命令、日期/版本限制及回归记录见 [WORKBOOK_NOTICE_REVIEW.md](WORKBOOK_NOTICE_REVIEW.md)。
+
+## 12. 因子流水线规模验证（仅人工数据）
+
+该离线入口使用生产 DatasetBuilder 和因子评价器，明确生成的是人工价格、成员、
+状态和 business-day 日历，不下载行情、不发布正式股票池、不训练模型、不产生
+真实研究或Forward证据：
+
+```powershell
+.venv-py39\python.exe -X utf8 -m examples.research.scale_factor_pipeline --config configs/research/csi500_5y.yaml --stocks 20 --research-days 20 --warmup-days 130
+```
+
+完整规模把参数改为 `--stocks 500 --research-days 1200 --warmup-days 130`。实测
+生成60万行数据集，构建约20.16秒、ALL范围因子评价约209.81秒，并通过未来价格
+突变后的过去特征精确比较。每次写入独占的 diagnostics 目录和运行清单，不改变
+正式数据路径。当前增量全量回归为2147项通过、2项网络测试未运行。
+具体时间口径、内存限制、人工日期、失败记录及产物摘要见
+[PERFORMANCE_BASELINE.md](PERFORMANCE_BASELINE.md)。

@@ -224,6 +224,12 @@ Train/Validation/Test 的逐 fold 诊断软件，但没有补齐真实研究输�
 
 默认 `pytest` 只收集安全的 `tests/research` 且排除 network marker。真实网络烟雾运行必须单独执行并据实记录，mock 单测和 `python -m examples.research.phase3_synthetic_demo` 只能证明软件链路可执行，不能冒充真实数据成功或形成研究结论。
 
+2026-10-11另以人工500股票×1200研究日验证生产数据集/因子评价引擎的工程规模。
+对未来价格进行100万倍突变后，截止日及以前300500行非标签特征精确相同。
+人工日历、成员及证券状态没有真实来源，计时与内存只描述该本机工程运行，不增加
+真实因子/模型有效性的证据。入口、完整收据和局限见
+[PERFORMANCE_BASELINE.md](PERFORMANCE_BASELINE.md)。
+
 ## 14. 局限性与结论纪律
 
 - AKShare/BaoStock 是公开接口，可能限频、变更字段或事后修订；它们不等同于交易所级不可变行情库。
