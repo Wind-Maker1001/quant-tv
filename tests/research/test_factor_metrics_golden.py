@@ -30,6 +30,12 @@ def golden_input(case="normal"):
         frame.loc[::3, "F1"] = np.nan
         frame.loc[::4, "F2"] = np.nan
         frame.loc[::5, "EXCESS_RET5"] = np.nan
+    elif case == "light_missing":
+        # Both pairs remain above the minimum, with equal counts but different
+        # masks: target rank caching must use actual members, not just n.
+        frame.loc[frame.symbol.eq("000001.SZ"), "F1"] = np.nan
+        frame.loc[frame.symbol.eq("000002.SZ"), "F2"] = np.nan
+        frame.loc[frame.symbol.eq("000003.SZ"), "EXCESS_RET5"] = np.nan
     elif case == "infinity":
         frame.loc[::3, "F1"] = np.inf
         frame.loc[1::4, "F2"] = -np.inf
@@ -77,13 +83,22 @@ def golden_input(case="normal"):
         frame.loc[::5, "F1"] = pd.NA
     elif case == "null_symbol":
         frame.loc[frame.symbol.eq("000001.SZ"), "symbol"] = None
+    elif case == "near_zero_std":
+        x = np.linspace(-1.0, 1.0, size)
+        frame["F1"] = np.tile(x, len(dates))
+        frame["EXCESS_RET5"] = frame.F1 + rng.normal(scale=1e-7, size=len(frame))
+    elif case == "categorical_regime":
+        frame["REGIME"] = pd.Categorical(frame.REGIME, categories=["ALL", "BEAR", "BULL", "NEVER", "SIDEWAYS"])
+    elif case == "literal_all_regime":
+        frame["REGIME"] = "ALL"
     return frame, dates
 
 
-CASES = ("normal", "missing", "infinity", "constant", "ties", "pool_change",
+CASES = ("normal", "missing", "light_missing", "infinity", "constant", "ties", "pool_change",
          "absent_session", "invalid_session", "unmatured_tail", "missing_regime",
          "partial_regime", "all_missing", "offset", "extreme", "cancellation",
-         "single_date", "shuffled", "calendar_edges", "float32", "nullable", "null_symbol")
+         "single_date", "shuffled", "calendar_edges", "float32", "nullable", "null_symbol",
+         "near_zero_std", "categorical_regime", "literal_all_regime")
 
 
 def test_frozen_reference_checksum_and_comparison_policy():
@@ -132,6 +147,21 @@ def test_failure_contract_matches_reference(mutation):
         reference.evaluate_factors(frame, ["F1", "F2"], **options)
     with pytest.raises(type(before.value)) as after:
         evaluate_factors(frame, ["F1", "F2"], **options)
+    assert str(after.value) == str(before.value)
+
+
+@pytest.mark.parametrize("empty", ["rows", "factors"])
+def test_empty_input_preserves_reference_exception(empty):
+    frame, dates = golden_input()
+    names = ["F1", "F2"]
+    if empty == "rows":
+        frame = frame.iloc[:0]
+    else:
+        names = []
+    with pytest.raises(Exception) as before:
+        reference.evaluate_factors(frame, names, calendar=dates)
+    with pytest.raises(type(before.value)) as after:
+        evaluate_factors(frame, names, calendar=dates)
     assert str(after.value) == str(before.value)
 
 
