@@ -176,3 +176,29 @@ class _PreparedFactors:
                              "observations": selected_count, "labeled_observations": labelled_count,
                              "label_coverage": labelled_count / float(selected_count) if selected_count else np.nan})
         return pd.DataFrame(rows)
+
+    def turnover(self, quantiles: int, minimum_cross_section: int, scope: str, dates: pd.DatetimeIndex) -> pd.DataFrame:
+        rows = []
+        symbol_codes = pd.factorize(self.symbols, sort=False)[0]
+        for number, factor in enumerate(self.factors):
+            previous = None
+            for date in dates:
+                indexer = self.by_date.get(date, slice(0, 0))
+                valid = self.finite[indexer, number]
+                if int(valid.sum()) < minimum_cross_section:
+                    previous = None
+                    continue
+                values = self.values[indexer, number]
+                top = _top_positions(values[valid], quantiles)
+                current = symbol_codes[indexer][valid][top]
+                if previous is not None:
+                    union = np.union1d(previous, current)
+                    before = np.zeros(len(union), dtype=float)
+                    after = np.zeros(len(union), dtype=float)
+                    before[np.searchsorted(union, previous)] = 1.0 / len(previous)
+                    after[np.searchsorted(union, current)] = 1.0 / len(current)
+                    value = 0.5 * np.abs(after - before).sum()
+                    rows.append({"scope": scope, "date": date, "factor": factor,
+                                 "top_quantile_turnover": float(value), "holdings": len(current)})
+                previous = current
+        return pd.DataFrame(rows)
