@@ -10,29 +10,7 @@ import pytest
 
 from qbot.research.metrics.factor import evaluate_factors
 from tests.research.reference import factor_reference as reference
-
-
-TABLES = ("daily_ic", "summary", "quantile_returns", "autocorrelation", "turnover", "correlation")
-ATOL = RTOL = 1e-12
-
-
-def assert_evaluation_equal(actual, expected):
-    """Check schema/discrete data/missingness before the fixed finite tolerance."""
-    for name in TABLES:
-        left, right = getattr(actual, name), getattr(expected, name)
-        pd.testing.assert_index_equal(left.index, right.index, exact=True)
-        pd.testing.assert_index_equal(left.columns, right.columns, exact=True)
-        pd.testing.assert_series_equal(left.dtypes, right.dtypes)
-        pd.testing.assert_frame_equal(left.isna(), right.isna(), check_exact=True)
-        for column in left:
-            if pd.api.types.is_float_dtype(left[column]):
-                a, b = left[column].to_numpy(), right[column].to_numpy()
-                np.testing.assert_array_equal(np.isposinf(a), np.isposinf(b))
-                np.testing.assert_array_equal(np.isneginf(a), np.isneginf(b))
-                valid = np.isfinite(b)
-                np.testing.assert_allclose(a[valid], b[valid], rtol=RTOL, atol=ATOL)
-            else:
-                pd.testing.assert_series_equal(left[column], right[column], check_exact=True)
+from tests.research.reference.compare import ATOL, RTOL, TABLES, assert_evaluation_equal
 
 
 def golden_input(case="normal"):
@@ -177,3 +155,22 @@ def test_stored_golden_tables_and_member_traces():
         frame, dates = golden_input(case)
         expected = reference.FactorEvaluation(**{name: pd.read_parquet(root / case / (name + ".parquet")) for name in TABLES})
         assert_evaluation_equal(evaluate_factors(frame, ["F2", "F1"], calendar=dates, group_column="REGIME"), expected)
+        from qbot.research.metrics._factor_arrays import _quantile_codes, _top_positions
+        for trace in json.loads((root / case / "traces.json").read_text(encoding="utf-8")):
+            cross = frame.loc[frame.date.eq(pd.Timestamp(trace["date"]))]
+            values = cross[trace["factor"]].to_numpy()
+            np.testing.assert_array_equal(_quantile_codes(values, 5, {}), trace["bucket_codes"])
+            assert cross.iloc[_top_positions(values, 5)].symbol.tolist() == trace["turnover_symbols"]
+            np.testing.assert_array_equal(cross[trace["factor"]].rank(method="average"), trace["average_ranks"])
+
+
+@pytest.mark.parametrize("size,quantiles", [(n, q) for n in range(2, 65) for q in (2, 3, 5, 7) if n >= q])
+def test_ordinal_qcut_and_stable_top_members_match_original_primitives(size, quantiles):
+    from qbot.research.metrics._factor_arrays import _quantile_codes, _top_positions
+    values = np.random.default_rng(size).integers(-3, 4, size=size).astype(float)
+    series = pd.Series(values, index=np.arange(size) // 2)
+    expected = pd.qcut(series.rank(method="first"), q=quantiles, labels=False)
+    np.testing.assert_array_equal(_quantile_codes(values, quantiles, {}), expected)
+    expected_top = pd.DataFrame({"position": np.arange(size), "factor": values}).nlargest(
+        int(np.ceil(size / quantiles)), "factor", keep="first").position.to_numpy()
+    np.testing.assert_array_equal(_top_positions(values, quantiles), expected_top)

@@ -102,6 +102,8 @@ def _quantile_returns(
     minimum_cross_section: int,
     scope: str,
 ) -> pd.DataFrame:
+    if isinstance(frame, _PreparedFactors):
+        return frame.quantile_returns(quantiles, minimum_cross_section, scope)
     rows = []
     labels = ["Q%d" % number for number in range(1, quantiles + 1)]
     for date, cross_section in frame.groupby("date", sort=True):
@@ -340,7 +342,8 @@ def evaluate_factors(
             daily_parts.append(_daily_ic(workspace if workspace is not None else subset,
                                          factors, target, minimum_cross_section, scope))
             quantile_parts.append(
-                _quantile_returns(subset, factors, target, quantiles, minimum_cross_section, scope)
+                _quantile_returns(workspace if workspace is not None else subset,
+                                  factors, target, quantiles, minimum_cross_section, scope)
             )
     # Temporal metrics must always compare adjacent dates on the complete
     # market calendar.  Filtering to one regime first would incorrectly treat

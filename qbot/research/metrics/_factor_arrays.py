@@ -5,6 +5,7 @@ path. Other accepted public inputs keep the original Pandas implementation.
 """
 
 from typing import Dict, List, Optional
+import math
 
 import numpy as np
 import pandas as pd
@@ -29,6 +30,25 @@ def _rank_finite(
     # Same orientation and coefficient as scipy.stats.spearmanr, without its
     # unused p-value calculation. Ranks are computed AFTER pairwise filtering.
     return float(np.corrcoef(ranked, rowvar=False)[1, 0])
+
+
+def _quantile_codes(values: np.ndarray, quantiles: int, cache: dict) -> np.ndarray:
+    """Exact qcut of ordinal ranks, including its floating boundary policy."""
+    key = len(values), quantiles
+    if key not in cache:
+        cache[key] = np.asarray(pd.qcut(np.arange(1, len(values) + 1, dtype=float),
+                                        q=quantiles, labels=False), dtype=np.int64)
+    order = np.argsort(values, kind="mergesort")
+    codes = np.empty(len(values), dtype=np.int64)
+    codes[order] = cache[key]
+    return codes
+
+
+def _top_positions(values: np.ndarray, quantiles: int) -> np.ndarray:
+    count = max(1, int(math.ceil(len(values) / float(quantiles))))
+    # Descending STABLE order matches nlargest(keep='first'). Reversing an
+    # ascending order would reverse ties and does not have the same members.
+    return np.argsort(-values, kind="mergesort")[:count]
 
 
 class _PreparedFactors:
@@ -118,3 +138,41 @@ class _PreparedFactors:
                                                "autocorrelation": value, "observations": count})
             previous = symbols, values
         return pd.DataFrame([row for rows in by_factor for row in rows])
+
+    def quantile_returns(self, quantiles: int, minimum_cross_section: int, scope: str) -> pd.DataFrame:
+        rows = []
+        labels = ["Q%d" % number for number in range(1, quantiles + 1)]
+        cache = {}
+        for date, indexer in self.days:
+            values, finite = self.values[indexer], self.finite[indexer]
+            target = self.target[indexer]
+            target_finite = self.target_finite[indexer]
+            for number, factor in enumerate(self.factors):
+                valid = finite[:, number]
+                if int(valid.sum()) < max(minimum_cross_section, quantiles):
+                    continue
+                try:
+                    codes = _quantile_codes(values[valid, number], quantiles, cache)
+                except ValueError:
+                    continue
+                realised = target_finite[valid]
+                clean_target = np.where(realised, target[valid], np.nan)
+                buckets = pd.Categorical.from_codes(codes, categories=labels)
+                # Retain pandas' compensated GroupBy mean and the input order.
+                # A naive bincount/sum can change cancellation-heavy returns.
+                means = pd.Series(clean_target, copy=False).groupby(buckets, observed=False).mean().to_numpy()
+                counts = np.bincount(codes, minlength=quantiles)
+                labelled = np.bincount(codes[realised], minlength=quantiles)
+                for bucket, label in enumerate(labels):
+                    selected_count, labelled_count = int(counts[bucket]), int(labelled[bucket])
+                    rows.append({"scope": scope, "date": date, "factor": factor, "quantile": label,
+                                 "future_return": means[bucket], "observations": selected_count,
+                                 "labeled_observations": labelled_count,
+                                 "label_coverage": labelled_count / float(selected_count) if selected_count else np.nan})
+                selected_count = int(counts[0] + counts[-1])
+                labelled_count = int(labelled[0] + labelled[-1])
+                rows.append({"scope": scope, "date": date, "factor": factor,
+                             "quantile": "Q%d-Q1" % quantiles, "future_return": means[-1] - means[0],
+                             "observations": selected_count, "labeled_observations": labelled_count,
+                             "label_coverage": labelled_count / float(selected_count) if selected_count else np.nan})
+        return pd.DataFrame(rows)
