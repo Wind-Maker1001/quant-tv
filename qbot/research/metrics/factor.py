@@ -9,6 +9,7 @@ import pandas as pd
 
 from qbot.research.data.calendar import TradingCalendar
 from qbot.research.errors import ConfigurationError, SchemaError
+from qbot.research.metrics._factor_arrays import _PreparedFactors
 
 
 @dataclass
@@ -35,6 +36,8 @@ def _daily_ic(
     minimum_cross_section: int,
     scope: str,
 ) -> pd.DataFrame:
+    if isinstance(frame, _PreparedFactors):
+        return frame.daily_ic(minimum_cross_section, scope)
     rows = []
     for date, cross_section in frame.groupby("date", sort=True):
         for factor in factors:
@@ -321,6 +324,7 @@ def evaluate_factors(
     quantile_parts = []
     autocorrelation_parts = []
     turnover_parts = []
+    prepared = _PreparedFactors.create(data, factors, target)
     complete_groups = group_column is not None and data[group_column].notna().all()
     for number, (scope, subset) in enumerate(scopes):
         if number and complete_groups:
@@ -330,7 +334,9 @@ def evaluate_factors(
         else:
             # Partial date-level missing groups deliberately retain the legacy
             # subset calculation: their coverage denominator differs from ALL.
-            daily_parts.append(_daily_ic(subset, factors, target, minimum_cross_section, scope))
+            workspace = prepared if not number else _PreparedFactors.create(subset, factors, target)
+            daily_parts.append(_daily_ic(workspace if workspace is not None else subset,
+                                         factors, target, minimum_cross_section, scope))
             quantile_parts.append(
                 _quantile_returns(subset, factors, target, quantiles, minimum_cross_section, scope)
             )
