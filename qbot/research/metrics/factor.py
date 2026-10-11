@@ -178,6 +178,8 @@ def _autocorrelation(
     scope: str,
     dates: pd.DatetimeIndex,
 ) -> pd.DataFrame:
+    if isinstance(frame, _PreparedFactors):
+        return frame.autocorrelation(minimum_cross_section, scope, dates)
     rows = []
     cross_sections = dict(tuple(frame.groupby("date", sort=True)))
     empty = frame.iloc[:0]
@@ -344,7 +346,7 @@ def evaluate_factors(
     # market calendar.  Filtering to one regime first would incorrectly treat
     # BULL -> BEAR -> BULL as two adjacent BULL observations.
     all_autocorrelation = _autocorrelation(
-        data, factors, minimum_cross_section, "ALL", dates
+        prepared if prepared is not None else data, factors, minimum_cross_section, "ALL", dates
     )
     all_turnover = _top_quantile_turnover(
         data, factors, quantiles, minimum_cross_section, "ALL", dates

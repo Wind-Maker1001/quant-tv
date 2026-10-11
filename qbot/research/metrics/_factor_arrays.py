@@ -87,3 +87,34 @@ class _PreparedFactors:
                              "observations": count, "coverage": count / float(len(values)),
                              "IC": pearson, "RankIC": rank_ic})
         return pd.DataFrame(rows)
+
+    def autocorrelation(self, minimum_cross_section: int, scope: str, dates: pd.DatetimeIndex) -> pd.DataFrame:
+        # One key alignment per adjacent session, rather than one merge per
+        # factor. get_indexer preserves the current (left merge) row order.
+        by_factor = [[] for _ in self.factors]
+        previous = None
+        for date in dates:
+            indexer = self.by_date.get(date, slice(0, 0))
+            symbols = self.symbols[indexer]
+            values = self.values[indexer]
+            if previous is not None:
+                previous_symbols, previous_values = previous
+                matches = pd.Index(previous_symbols).get_indexer(symbols)
+                found = matches >= 0
+                current = values[found]
+                earlier = previous_values[matches[found]]
+                for number, factor in enumerate(self.factors):
+                    left, right = current[:, number], earlier[:, number]
+                    # The legacy observation count removes NaN BEFORE testing
+                    # the threshold; infinities still count here. Its correlation
+                    # helper then removes infinities and requires at least two.
+                    not_missing = ~np.isnan(left) & ~np.isnan(right)
+                    count = int(not_missing.sum())
+                    value = float("nan")
+                    if count >= minimum_cross_section:
+                        finite = np.isfinite(left) & np.isfinite(right)
+                        value = _rank_finite(left[finite], right[finite])
+                    by_factor[number].append({"scope": scope, "date": date, "factor": factor,
+                                               "autocorrelation": value, "observations": count})
+            previous = symbols, values
+        return pd.DataFrame([row for rows in by_factor for row in rows])
