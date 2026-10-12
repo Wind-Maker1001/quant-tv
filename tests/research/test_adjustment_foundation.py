@@ -205,7 +205,9 @@ def test_per_share_conversion_requires_explicit_units():
             normalize_per_share("4.1", base)
 
 
-def test_future_prices_and_events_leave_builder_features_and_fixed_signal_unchanged(tmp_path):
+@pytest.mark.parametrize("method", [AFFINE, RATIO])
+@pytest.mark.parametrize("change", ["future_event", "late_correction", "late_cancel", "late_reschedule"])
+def test_future_prices_and_events_leave_builder_features_and_fixed_signal_unchanged(tmp_path, method, change):
     from qbot.research.config import load_config
     from qbot.research.dataset import DatasetBuilder, DatasetBuildOptions
     from qbot.research.models.factor_score import FactorScoreModel
@@ -214,16 +216,34 @@ def test_future_prices_and_events_leave_builder_features_and_fixed_signal_unchan
     config = load_config(Path(__file__).resolve().parents[2] / "configs/research/csi500_5y.yaml")
     dates = pd.bdate_range("2024-01-02", periods=150)
     base = raw(dates, 100 + np.sin(np.arange(len(dates)) / 4))
-    action_day = dates[110].date().isoformat()
-    action = event(artifact, day=action_day, reference_close=Decimal(str(base.close.iloc[109])))
+    action_position = 110 if change == "future_event" else 90
+    action_day = dates[action_position].date().isoformat()
+    action = event(artifact, day=action_day,
+                   reference_close=Decimal(str(base.close.iloc[action_position - 1])))
     first_snapshot = snapshot(artifact, (action,))
     changed = base.copy()
     cutoff = dates[100]
     for field in ("open", "high", "low", "close", "amount"):
         changed.loc[changed.date.gt(cutoff), field] *= 1000000
-    changed_action = replace(action, reference_close=Decimal(str(changed.close.iloc[109])), cash=Decimal(5),
-                              announced_at=str(dates[103].date()), available_at=str(dates[103].date()))
-    results = [build(base, first_snapshot, artifact), build(changed, snapshot(artifact, (changed_action,)), artifact)]
+    changed_action = replace(action, cash=Decimal(5),
+                             announced_at=str(dates[103].date()), available_at=str(dates[103].date()))
+    if change == "future_event":
+        changed_action = replace(changed_action, reference_close=Decimal(str(changed.close.iloc[109])))
+        changed_events = (changed_action,)
+    else:
+        changed_action = replace(changed_action, revision=2)
+        if change == "late_cancel":
+            changed_action = replace(changed_action, status="CANCELLED")
+        elif change == "late_reschedule":
+            changed_action = replace(changed_action, effective_date="2024-12-20")
+        changed_events = (action, changed_action)
+    results = [build(base, first_snapshot, artifact, method),
+               build(changed, snapshot(artifact, changed_events), artifact, method)]
+    if change != "future_event":
+        assert "LATE_EVENT_REVISION_REQUIRES_VINTAGE_FEATURE_VIEW" in results[1].issues
+        contract = SourceAdjustmentContract("INDEPENDENT_ORACLE", "v1", method, artifact.sha256,
+                                            table_sha256(results[1].bars), synthetic_only=True)
+        assert validate_adjustment(results[1], results[1].bars.copy(), contract).status == "INCOMPLETE"
 
     def dataset(prices, adjustment):
         stocks = prices.copy()
