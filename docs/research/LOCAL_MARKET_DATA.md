@@ -47,3 +47,10 @@ Provider 第一次使用时固定一份清单并验证两份文件，随后固�
     python -m pytest -q tests/research/test_local_market_provider.py tests/research/test_config_local_provider.py tests/research/test_local_cli_pipeline.py
 
 CLI 整链测试使用人工85日、两股票文件，禁止 HTTP 与 BaoStock 登录，实际运行全部六命令，检查40行数据集、28条成熟标签、14因子、有效 RankIC 和六份成功清单。这是离线工程证据，不是研究结果。
+
+## 通达信原生 DAY 的独立入口
+
+原生 DAY 必须先使用 [TDX_LOCAL_DATA.md](TDX_LOCAL_DATA.md) 的只读审计和 RAW staging
+工具。该产物保留未知单位和未核验调整语义，没有 `adj_*` 或 `turnover`，不能直接导入
+本 Provider。补充独立样本、证券历史身份、复权和状态证据后，另行组装上述精确生产
+Schema，再经过原来源/PIT/状态门禁；本地文件的发现数或工程转换成功不代表研究合格。
