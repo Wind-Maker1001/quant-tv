@@ -41,10 +41,11 @@ Git 空白规则承认 CRLF 为行尾，同时仍拒绝真实行尾空格；冻�
 `sync-labels=false`。标签预先创建，所以 job 只需要 `contents: read` 和
 `pull-requests: write`，不需要 `issues: write`。
 
-自动事件使用 `pull_request_target` 的可信 base SHA，稀疏读取 `.github/labeler.yml`；
+自动事件使用 `pull_request_target` 的可信 base SHA，通过 GitHub API 读取 `.github/labeler.yml`；
 没有检出 PR head、运行仓库脚本、安装 PR 依赖或执行 PR 配置中的代码。
 手动 dispatch 仅供有仓库写权限的维护者选择已审查 ref，并指定本仓库 PR 编号。
-checkout 不保留凭据，Actions 都固定完整 commit SHA。
+标签流程不检出仓库；其余检查只在 Git fetch 进程环境传入只读凭据，不写入 Git 配置。
+Actions 都固定完整 commit SHA。
 
 **当前 PR 的部署限制：** `pull_request_target` 执行目标分支上的工作流。
 在 PR #1 尚未人工合并时，`main` 的旧 labeler 和缺失配置仍可能被执行。
@@ -124,7 +125,7 @@ Linux workflow 使用可用的 shellcheck。覆盖率执行方式变更需要一
 2026-10-13 本地实测：Python 3.9.25 / Windows，完整覆盖率研究测试仅执行一次，
 2666 passed、0 failures、0 errors、0 skipped、2 deselected、88 warnings；pytest
 耗时 975.02 秒，包装进程耗时 977.268 秒。真实覆盖率 XML 为 13019 / 15004 行，
-line-rate=0.8677，无百分比门槛。18 项 CI 合同测试、221 份 Python 编译、上述
+line-rate=0.8677，无百分比门槛。最终 19 项 CI 合同测试、221 份 Python 编译、上述
 Flake8 规则、3 份 CI 脚本 Black、pip check、全部活动 YAML 的 actionlint 通过。
 
 一次报告校验失败暴露了 coverage 将仓库根目录写入 source、研究路径写入 filename
@@ -134,3 +135,13 @@ Flake8 规则、3 份 CI 脚本 Black、pip check、全部活动 YAML 的 action
 本轮原始命令、日志、JUnit、覆盖率和哈希收据保存在新的本地目录
 `results/diagnostics/ci-standardization/20261013-v1/`；历史验收目录没有改写。
 此处记录本地事实；远端 CI 结果以 PR #1 checks 及最终交付报告中的运行链接为准。
+
+首次远端运行在 checkout v7 的凭据清理阶段失败：基线存在缺少 `.gitmodules` 定义的
+`pyfunds/funds` 和 `utils/thsauto` gitlink。稀疏检出的本地复现仍失败，故不以此冒充修复。
+没有修改这些 Legacy 记录、创建假子模块来源或忽略错误。研究/静态/workflow 检查
+改用相同的原生 Git 检出命令：获取完整历史及事件指定 SHA，不初始化子模块，
+凭据仅存在于单次 fetch 进程环境中，派生授权头用 GitHub 日志掩码保护。
+检出后核对精确 HEAD；研究文件、测试、Golden 和配置范围全部保留。
+标签配置直接通过固定版本 github-script 调用 API 读取可信 base SHA 或经授权手动 ref。
+新增 CI 合同断言检查三组检出一致、完整历史、事件 SHA 和不保存凭据。
+这些修复只需定向验证；首次失败均未开始研究测试，不重复本地完整研究验收。

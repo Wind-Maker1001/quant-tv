@@ -30,10 +30,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
+      - name: Check out exact commit and full history with ephemeral credentials
+        env:
+          CHECKOUT_TOKEN: ${{ github.token }}
+          CHECKOUT_SHA: ${{ github.sha }}
+          CHECKOUT_SERVER: ${{ github.server_url }}
+          CHECKOUT_REPOSITORY: ${{ github.repository }}
+        run: |
+          [[ "$CHECKOUT_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git init .
+          git remote add origin "$CHECKOUT_SERVER/$CHECKOUT_REPOSITORY.git"
+          auth_header="$(printf 'x-access-token:%s' "$CHECKOUT_TOKEN" | base64 -w0)"
+          printf '::add-mask::%s\n' "$auth_header"
+          GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.$CHECKOUT_SERVER/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
+            git fetch --no-tags --no-recurse-submodules origin \
+            '+refs/heads/*:refs/remotes/origin/*' "$CHECKOUT_SHA"
+          git checkout --detach "$CHECKOUT_SHA"
+          test "$(git rev-parse HEAD)" = "$CHECKOUT_SHA"
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.9'

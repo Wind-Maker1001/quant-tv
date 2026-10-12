@@ -180,10 +180,30 @@ class WorkflowTests(unittest.TestCase):
             job["permissions"], {"contents": "read", "pull-requests": "write"}
         )
         self.assertTrue(all("run" not in step for step in job["steps"]))
-        ref = job["steps"][0]["with"]["ref"]
-        self.assertIn("pull_request.base.sha", ref)
-        self.assertNotIn("pull_request.head", ref)
-        self.assertEqual(job["steps"][0]["with"]["persist-credentials"], "false")
+        script = job["steps"][0]["with"]["script"]
+        self.assertIn("pull_request.base.sha", script)
+        self.assertIn("context.sha", script)
+        self.assertNotIn("pull_request.head", script)
+        self.assertIn("repos.getContent", script)
+        self.assertTrue(all("checkout@" not in step["uses"] for step in job["steps"]))
+
+    def test_checkouts_use_exact_sha_full_history_and_no_stored_credentials(self):
+        commands = []
+        for name in ("research-tests.yml", "pylint.yml", "ci-workflows.yml"):
+            workflow = self.load(name)
+            job = next(iter(workflow["jobs"].values()))
+            checkout = job["steps"][0]
+            command = checkout["run"]
+            self.assertEqual(checkout["env"]["CHECKOUT_SHA"], "${{ github.sha }}")
+            self.assertIn("GIT_CONFIG_COUNT=1", command)
+            self.assertIn("--no-recurse-submodules", command)
+            self.assertIn("+refs/heads/*:refs/remotes/origin/*", command)
+            self.assertIn('git checkout --detach "$CHECKOUT_SHA"', command)
+            self.assertNotIn("--depth", command)
+            self.assertNotIn("git config", command)
+            self.assertNotIn("submodule foreach", command)
+            commands.append(command)
+        self.assertEqual(len(set(commands)), 1)
 
     def test_maintained_actions_are_commit_pinned(self):
         for path in sorted((ROOT / ".github/workflows").glob("*.yml")):
