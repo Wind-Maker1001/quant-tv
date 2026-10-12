@@ -208,7 +208,23 @@ DatasetBuilder及标签逻辑没有修改。哈希同时重写全套数据仍不
 最终新增定向验收71 passed、13条既有第三方警告，43.04秒；另有311项Local/CLI/
 provenance联合开发回归通过。开发中间工作区全量2656项通过，但期间继续修复了
 取消/改期时间边界；该XML保留为中间记录，不冒充最终代码的干净验收。
-最终提交后的独立干净检出全量验收与源码/产物SHA由追加验收收据另行绑定。
+最终提交`8cbc2bef173a187463578bb61712c798d2bd08f9`在独立干净检出中完成
+2630项离线测试，0失败、0错误、0跳过；其中71项为新增基础测试。
+JUnit记录的suite耗时703.245秒；两项真实Provider网络测试由原`pytest.ini`排除，
+本验收不据此声明真实行情验证通过。验收观察和结束时检出均干净，192份研究/测试
+Python文件在运行中和结束后SHA一致；原工作区的对应源码只有50份CRLF/LF差异，
+归一化后内容全部一致。最初逐字节镜像断言因CLI行尾差异没有生成起始收据，
+因此`release-clean-observed.json`明确记作运行期间观察，不冒充运行开始记录。
+
+追加验收收据为
+[`release-verification.json`](../../results/diagnostics/market-data-foundation/implementation-20261012T103426Z-3e4705ca/release-verification.json)，
+SHA为`e116db42ce31e72183b042dcb65b260add3be959986315fbabf1fbb19e51b864`。
+最终JUnit为同目录`release-clean-research.xml`，SHA为
+`554d948453415768dfdc718e9bea78410c997c37af353ba5edf3718c90ea63c6`。
+收据绑定测试源码、49份冻结/用户文件、原标签集及manifest、TDX原清单、旧性能收据、
+24份因子Golden及新增合成Golden，并复核Python 3.9语法与`pip check`。
+9374份DAY和9371份RAW/转换收据的完整逐文件核验记录保留在
+`precommit-integrity.json`；本次只追加新验收，不重写旧记录。
 软件覆盖无事件、现金、连续事件、送转、配股、拆合股、OHLC一致性、分段锚点、
 停牌、换码、退市边界、信息时间、未来修订、幂等、篡改、发布失败保留旧代及来源修订。
 正式缺资料及合成v2都必须拒绝。真实样本不齐时不把这些测试称真实市场验收。
