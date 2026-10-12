@@ -62,8 +62,9 @@ _MANIFEST_FIELDS = {
 }
 _LOCATOR_FIELDS = {
     "generated_at", "generation_id", "stocks_file", "benchmark_file",
-    "input_files", "bundle_version",
+    "input_files", "bundle_version", "qualification_dir",
 }
+_QUALIFICATION_FIELDS = {"qualification_dir", "qualification_manifest_sha256", "qualification_report"}
 
 
 def _fail(detail: str) -> ProviderError:
@@ -253,7 +254,8 @@ def _atomic_manifest(payload: Dict[str, Any], destination: Path) -> None:
 def _bundle_version(manifest: Dict[str, Any]) -> str:
     payload = {name: value for name, value in manifest.items() if name not in _LOCATOR_FIELDS}
     encoded = json.dumps(payload, ensure_ascii=True, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("ascii")
-    return hashlib.sha256(b"factorlab-local-market-v1\0" + encoded).hexdigest()
+    prefix = b"factorlab-local-market-v2\0" if manifest.get("schema_version") == 2 else b"factorlab-local-market-v1\0"
+    return hashlib.sha256(prefix + encoded).hexdigest()
 
 
 def _table_statistics(stocks: pd.DataFrame, benchmark: pd.DataFrame) -> Dict[str, Any]:
@@ -280,6 +282,7 @@ def publish_local_market_data(
     source: str,
     source_version: str,
     benchmark_symbol: str = "000905.SH",
+    qualification_manifest: Optional[Path] = None,
 ) -> Dict[str, Any]:
     """Publish a declared HFQ stock/raw-index bundle; commit the pointer last.
 
@@ -296,10 +299,23 @@ def publish_local_market_data(
     stocks = _strict_bars(raw_stocks, is_index=False, benchmark_symbol=benchmark_symbol)
     benchmark = _strict_bars(raw_benchmark, is_index=True, benchmark_symbol=benchmark_symbol)
     _validate_pair(stocks, benchmark)
+    qualification = None
+    if qualification_manifest is not None:
+        from qbot.research.data.market_qualification import load_qualification
+        qualification = load_qualification(Path(qualification_manifest), stocks=stocks, benchmark=benchmark)
+        report = qualification[0]
+        if any(report.stages[name] != "PASS" for name in ("RAW", "ADJUSTMENT", "STATUS", "PIT")):
+            raise _fail("v2 qualification is incomplete; retain a diagnostic package only")
+        if not report.formal_admission and not report.synthetic_only:
+            raise _fail("real v2 data require full source/time qualification")
+        if report.source_version != source_version:
+            raise _fail("qualification source_version differs from declared source")
+    elif "tdx" in source.casefold():
+        raise _fail("TDX-derived prices require a replayable v2 qualification; v1 declarations cannot promote RAW")
     output = _root(Path(output_dir), create=True)
     generation_id = uuid.uuid4().hex
     manifest: Dict[str, Any] = {
-        "schema_version": LOCAL_MARKET_SCHEMA_VERSION,
+        "schema_version": 2 if qualification is not None else LOCAL_MARKET_SCHEMA_VERSION,
         "source": source,
         "source_version": source_version,
         "source_declaration": SOURCE_DECLARATION,
@@ -320,6 +336,35 @@ def publish_local_market_data(
         stocks_file = _artifact(output, manifest["stocks_file"])
         benchmark_file = _artifact(output, manifest["benchmark_file"])
         manifest_file = _artifact(output, "manifest.json")
+        if qualification is not None:
+            from dataclasses import asdict
+            from qbot.research.data.tdx import read_snapshot, safe_path
+            report, _, _, _, qualification_digest = qualification
+            original_root = safe_path(Path(qualification_manifest).parent)
+            content, actual = read_snapshot(original_root / "manifest.json", original_root)
+            if actual != qualification_digest:
+                raise _fail("qualification changed during publication")
+            qualification_payload = json.loads(content)
+            manifest["qualification_dir"] = "qualification.%s" % generation_id
+            qualification_root = _artifact(output, manifest["qualification_dir"])
+            qualification_root.mkdir()
+            for filename, digest in qualification_payload["artifacts"].items():
+                data, actual = read_snapshot(original_root / filename, original_root)
+                if actual != digest:
+                    raise _fail("qualification artifact changed during publication")
+                with (qualification_root / filename).open("xb") as handle:
+                    handle.write(data)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+            with (qualification_root / "manifest.json").open("xb") as handle:
+                handle.write(content)
+                handle.flush()
+                os.fsync(handle.fileno())
+            copied = load_qualification(qualification_root / "manifest.json", stocks=stocks, benchmark=benchmark)
+            if copied[4] != qualification_digest:
+                raise _fail("copied qualification digest differs")
+            manifest["qualification_manifest_sha256"] = qualification_digest
+            manifest["qualification_report"] = asdict(report)
         _write_immutable_parquet(stocks, stocks_file)
         _write_immutable_parquet(benchmark, benchmark_file)
         manifest["stocks_file_sha256"] = hashlib.sha256(stocks_file.read_bytes()).hexdigest()
@@ -334,10 +379,13 @@ def publish_local_market_data(
 
 
 def _validate_manifest(manifest: Any, benchmark_symbol: str) -> Dict[str, Any]:
-    if not isinstance(manifest, dict) or set(manifest) != _MANIFEST_FIELDS:
+    if not isinstance(manifest, dict):
+        raise _fail("manifest must be an object")
+    schema = manifest.get("schema_version")
+    expected_fields = _MANIFEST_FIELDS | (_QUALIFICATION_FIELDS if schema == 2 else set())
+    if set(manifest) != expected_fields:
         raise _fail("manifest has missing or unknown fields")
-    schema = manifest["schema_version"]
-    if isinstance(schema, bool) or not isinstance(schema, int) or schema != LOCAL_MARKET_SCHEMA_VERSION:
+    if isinstance(schema, bool) or not isinstance(schema, int) or schema not in {1, 2}:
         raise _fail("unsupported manifest schema")
     _identity(manifest["source"], "source")
     _identity(manifest["source_version"], "source_version")
@@ -358,6 +406,13 @@ def _validate_manifest(manifest: Any, benchmark_symbol: str) -> Dict[str, Any]:
     for name in ("stocks_file_sha256", "benchmark_file_sha256", "bundle_version"):
         if not isinstance(manifest[name], str) or not _HASH.fullmatch(manifest[name]):
             raise _fail("manifest %s is invalid" % name)
+    if schema == 2:
+        if manifest["qualification_dir"] != "qualification.%s" % generation:
+            raise _fail("unsafe qualification generation name")
+        if not isinstance(manifest["qualification_manifest_sha256"], str) or not _HASH.fullmatch(manifest["qualification_manifest_sha256"]):
+            raise _fail("invalid qualification manifest hash")
+        if not isinstance(manifest["qualification_report"], dict):
+            raise _fail("qualification report required")
     for name in ("input_sha256", "input_files"):
         values = manifest[name]
         if not isinstance(values, dict) or set(values) != {"stocks", "benchmark"}:
@@ -423,6 +478,7 @@ class LocalParquetProvider(MarketDataProvider):
         self._benchmark: Optional[pd.DataFrame] = None
         self._stock_indices: Dict[str, Any] = {}
         self._load_lock = threading.RLock()
+        self._qualification = None
 
     def _ensure_loaded(self) -> None:
         if self._manifest is not None:
@@ -455,18 +511,83 @@ class LocalParquetProvider(MarketDataProvider):
             expected_stats = _table_statistics(stocks, benchmark)
             if any(manifest[name] != value for name, value in expected_stats.items()):
                 raise _fail("manifest row counts, date bounds or symbols disagree with artifacts")
+            qualification = None
+            if manifest["schema_version"] == 2:
+                from dataclasses import asdict
+                from qbot.research.data.market_qualification import load_qualification
+                qualification = load_qualification(
+                    _artifact(root, manifest["qualification_dir"]) / "manifest.json",
+                    stocks=stocks, benchmark=benchmark,
+                )
+                if (qualification[4] != manifest["qualification_manifest_sha256"]
+                        or json.dumps(asdict(qualification[0]), sort_keys=True) != json.dumps(manifest["qualification_report"], sort_keys=True)
+                        or qualification[0].source_version != manifest["source_version"]):
+                    raise _fail("pinned qualification disagrees with local bundle")
             self.root = root
             self._stocks = stocks
             self._benchmark = benchmark
             self._stock_indices = stocks.groupby("symbol", sort=False).indices
             self._manifest_sha256 = hashlib.sha256(manifest_content).hexdigest()
+            self._qualification = qualification
             # Set the publication flag last, only after every check succeeds.
             self._manifest = manifest
 
     @property
     def source_version(self) -> str:
         self._ensure_loaded()
-        return "local-parquet-v1;bundle=%s" % self._manifest["bundle_version"]
+        return "local-parquet-v%d;bundle=%s" % (self._manifest["schema_version"], self._manifest["bundle_version"])
+
+    @property
+    def qualification_report(self) -> Optional[Dict[str, Any]]:
+        self._ensure_loaded()
+        return deepcopy(self._manifest.get("qualification_report"))
+
+    def assert_research_admission(self, membership: pd.DataFrame, calendar: pd.DatetimeIndex,
+                                  bars: pd.DataFrame) -> None:
+        self._ensure_loaded()
+        if self._qualification is None:
+            if "tdx" in self._manifest["source"].casefold():
+                raise _fail("TDX-derived v1 data have no research qualification")
+            return  # Existing v1 declaration behavior is not retroactive certification.
+        report, inputs, keys, qualified_calendar, _ = self._qualification
+        if not report.formal_admission or report.synthetic_only:
+            raise _fail("v2 bundle is SOFTWARE_ONLY or lacks formal qualification")
+        if len(calendar.difference(qualified_calendar)):
+            raise _fail("research calendar exceeds qualified scope")
+        expected = inputs.membership.loc[inputs.membership.date.isin(membership.date), ["date", "symbol", "is_member"]]
+        actual = membership[["date", "symbol", "is_member"]]
+        expected = expected.sort_values(["date", "symbol"]).reset_index(drop=True)
+        actual = actual.sort_values(["date", "symbol"]).reset_index(drop=True)
+        if not actual.equals(expected):
+            raise _fail("actual PIT members differ from qualified effective membership")
+        needed = keys.loc[keys.date.isin(calendar) & keys.symbol.isin(membership.symbol)]
+        index = pd.MultiIndex.from_frame(needed)
+        cached = bars.set_index(["date", "symbol"]).reindex(index).reset_index()
+        qualified = self._stocks.set_index(["date", "symbol"]).reindex(index).reset_index()
+        try:
+            pd.testing.assert_frame_equal(cached, qualified, check_exact=True)
+        except AssertionError as exc:
+            raise _fail("cached prices differ from qualified source rows") from exc
+
+    def assert_security_binding(self, status: pd.DataFrame, listings: pd.DataFrame) -> None:
+        self._ensure_loaded()
+        if self._qualification is None:
+            return
+        _, inputs, keys, _, _ = self._qualification
+        index = pd.MultiIndex.from_frame(keys)
+        left = status.set_index(["date", "symbol"])[["trade_status", "is_st"]].reindex(index)
+        right = inputs.status.set_index(["date", "symbol"])[["trade_status", "is_st"]].reindex(index)
+        if not left.eq(right).all().all():
+            raise _fail("actual security status differs from qualification")
+        left_list = listings.set_index("symbol")["listing_date"]
+        right_list = inputs.listings.set_index("symbol")["listing_date"]
+        if not left_list.reindex(right_list.index).equals(right_list):
+            raise _fail("actual listing dates differ from qualification")
+
+    def assert_execution_admission(self) -> None:
+        self._ensure_loaded()
+        if self._qualification is not None and not self._qualification[0].execution_admission:
+            raise _fail("corporate-action execution ledger/protocol remains unqualified")
 
     @property
     def bundle_version(self) -> str:

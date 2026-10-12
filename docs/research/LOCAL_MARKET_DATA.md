@@ -54,3 +54,12 @@ CLI 整链测试使用人工85日、两股票文件，禁止 HTTP 与 BaoStock �
 工具。该产物保留未知单位和未核验调整语义，没有 `adj_*` 或 `turnover`，不能直接导入
 本 Provider。补充独立样本、证券历史身份、复权和状态证据后，另行组装上述精确生产
 Schema，再经过原来源/PIT/状态门禁；本地文件的发现数或工程转换成功不代表研究合格。
+
+## v2证据资格
+
+`import-market-data`现支持可选`--qualification-manifest`，发布自包含、可复算的v2
+证据包并绑定来源版本。旧v1可读，但明确TDX来源不得只靠v1声明升级RAW。
+合成v2包永不通过正式行情加载；真实资料缺单位、身份、事件、独立参考、状态、
+PIT或历史时间/覆盖证据也拒绝。协议未补齐的公司行为执行资格单独阻断。
+模块、公式、精确证据合同和真实来源限制见
+[DATA_ADJUSTMENT_FOUNDATION.md](DATA_ADJUSTMENT_FOUNDATION.md)。

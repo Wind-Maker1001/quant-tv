@@ -200,6 +200,8 @@ def _parser() -> argparse.ArgumentParser:
         help="Verifiable original data source; not a claim of authority",
     )
     market_importer.add_argument("--source-version", required=True)
+    market_importer.add_argument("--qualification-manifest", default=None,
+                                 help="Replayable v2 evidence package; synthetic packages remain SOFTWARE_ONLY")
     walk_forward = subparsers.add_parser("walk-forward")
     walk_forward.add_argument("--config", required=True)
     walk_forward.add_argument(
@@ -1067,6 +1069,7 @@ def command_import_market_data(
     benchmark_path: str,
     source: str,
     source_version: str,
+    qualification_manifest: Optional[str] = None,
 ) -> None:
     """Publish a verified static local snapshot without contacting any vendor."""
 
@@ -1074,11 +1077,15 @@ def command_import_market_data(
         raise FactorLabError(
             "import-market-data requires local_parquet and paths.market_input_root"
         )
+    qualification_args = {}
+    if qualification_manifest is not None:
+        qualification_args["qualification_manifest"] = _resolve_input_path(config, qualification_manifest)
     manifest = publish_local_market_data(
         _resolve_input_path(config, stock_path),
         _resolve_input_path(config, benchmark_path),
         config.paths.market_input_root, source, source_version,
         benchmark_symbol=config.data.benchmark,
+        **qualification_args,
     )
     run.payload["market_data_bundle_version"] = manifest["bundle_version"]
     run.payload["market_data_bundle_manifest"] = manifest
@@ -1090,6 +1097,10 @@ def command_import_market_data(
             "market_data_" + role,
             config.paths.market_input_root / manifest[role + "_file"],
         )
+    if manifest["schema_version"] == 2:
+        run.payload["market_data_qualification"] = manifest["qualification_report"]
+        run.add_output("market_qualification_manifest",
+                       config.paths.market_input_root / manifest["qualification_dir"] / "manifest.json")
     LOGGER.info("Local market-data snapshot published: %s", manifest["bundle_version"])
 
 
@@ -1174,6 +1185,15 @@ def _load_stock_bars(config: ResearchConfig, symbols: Iterable[str]) -> pd.DataF
     return pd.concat(parts, ignore_index=True)
 
 
+class _PinnedBarInputs(tuple):
+    """Keep the existing four-value interface plus the already pinned provider."""
+
+    def __new__(cls, values, provider):
+        result = super().__new__(cls, values)
+        result.provider = provider
+        return result
+
+
 def _load_bar_inputs(config: ResearchConfig, membership: pd.DataFrame, benchmark_snapshot=None) -> tuple:
     """Pin complete bar inputs, including absent PIT members, before research.
 
@@ -1206,11 +1226,16 @@ def _load_bar_inputs(config: ResearchConfig, membership: pd.DataFrame, benchmark
     missing = [symbol for symbol, snapshot in snapshots.items() if snapshot.frame.empty]
     if missing:
         LOGGER.warning("No cached bars for %d member securities", len(missing))
+    bars = pd.concat(parts, ignore_index=True)
+    if isinstance(provider, LocalParquetProvider):
+        provider.assert_research_admission(
+            membership, TradingCalendar.from_benchmark_bars(benchmark).dates, bars,
+        )
     provenance = build_bar_data_provenance(
         config.data.benchmark, benchmark_snapshot, snapshots, identities,
         (source, provider.cache_source_version(config.data.benchmark, True)),
     )
-    return benchmark, pd.concat(parts, ignore_index=True), provenance, bar_data_version(provenance)
+    return _PinnedBarInputs((benchmark, bars, provenance, bar_data_version(provenance)), provider)
 
 
 def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
@@ -1228,9 +1253,14 @@ def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
         universe_sha256=universe_version,
         expected_provider=config.universe.status_provider,
     )
-    benchmark, bars, bar_provenance, bar_version = _load_bar_inputs(
+    bar_inputs = _load_bar_inputs(
         config, membership, benchmark_snapshot
     )
+    benchmark, bars, bar_provenance, bar_version = bar_inputs
+    if isinstance(getattr(bar_inputs, "provider", None), LocalParquetProvider):
+        bar_inputs.provider.assert_security_binding(status, listings)
+        if bar_inputs.provider.qualification_report is not None:
+            run.payload["market_data_qualification"] = bar_inputs.provider.qualification_report
     filter_config = UniverseFilterConfig(
         min_listed_days=config.universe.min_listed_days,
         exclude_st=config.universe.exclude_st,
@@ -1355,13 +1385,15 @@ def _load_verified_dataset(
     )
     if not TradingCalendar.from_benchmark_bars(benchmark).dates.equals(security_calendar):
         raise FactorLabError("Pinned benchmark calendar differs from the dataset consumer calendar")
-    _, _, security_manifest = load_verified_security_data(
+    security_status, security_listings, security_manifest = load_verified_security_data(
         config.paths.universe_dir,
         calendar=security_calendar,
         membership=membership,
         universe_sha256=universe_version,
         expected_provider=config.universe.status_provider,
     )
+    if isinstance(getattr(bar_inputs, "provider", None), LocalParquetProvider):
+        bar_inputs.provider.assert_security_binding(security_status, security_listings)
     dataset_path = config.paths.processed_dir / "dataset.parquet"
     manifest_path = config.paths.processed_dir / "dataset_manifest.json"
     if not dataset_path.exists():
@@ -1802,6 +1834,8 @@ def command_walk_forward(
     research_calendar = _research_calendar(config, full_calendar)
     membership = _load_verified_membership(config, research_calendar)
     bar_inputs = _load_bar_inputs(config, membership)
+    if isinstance(getattr(bar_inputs, "provider", None), LocalParquetProvider):
+        bar_inputs.provider.assert_execution_admission()
     benchmark, pinned_stock_bars, _, _ = bar_inputs
     dataset, dataset_sha256, universe_version = _load_verified_dataset(
         config, research_calendar, run, full_calendar=full_calendar,
@@ -3498,10 +3532,11 @@ def main(argv: Optional[List[str]] = None) -> int:
                 arguments.listings_path,
             )
         elif arguments.command == "import-market-data":
-            command_import_market_data(
-                config, run, arguments.stock_path, arguments.benchmark_path,
-                arguments.source, arguments.source_version,
-            )
+            import_args = {}
+            if arguments.qualification_manifest is not None:
+                import_args["qualification_manifest"] = arguments.qualification_manifest
+            command_import_market_data(config, run, arguments.stock_path, arguments.benchmark_path,
+                                       arguments.source, arguments.source_version, **import_args)
         elif arguments.command == "build-dataset":
             command_build_dataset(config, run)
         elif arguments.command == "evaluate-factors":
