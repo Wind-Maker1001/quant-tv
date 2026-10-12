@@ -163,8 +163,12 @@ class DayAudit:
 def audit_day(path: Path, market: str, root: Path, start: str, end: str,
               calendar: Optional[pd.DatetimeIndex] = None,
               research_start: Optional[str] = None, research_end: Optional[str] = None,
-              warmup_days: int = 130) -> DayAudit:
-    """Audit every record without sorting, filtering or repairing source values."""
+              warmup_days: int = 130, *, source_bytes: Optional[bytes] = None) -> DayAudit:
+    """Audit every record; replay can supply already hash-checked source bytes.
+
+    With source_bytes, path supplies original filename metadata only and is
+    never opened. Neither decoding mode certifies financial units or identity.
+    """
     info = {"source_file": str(path), "source_market": market, "filename": path.name,
             "symbol": "", "source_sha256": "", "size_bytes": None,
             "record_count": 0, "trailing_bytes": 0, "first_date": "", "last_date": ""}
@@ -197,7 +201,11 @@ def audit_day(path: Path, market: str, root: Path, start: str, end: str,
                 "warmup_expected_dates": None, "warmup_observed_dates": None,
                 "research_and_warmup_complete": "UNKNOWN"}
     try:
-        content, digest = read_snapshot(path, root)
+        if source_bytes is None:
+            content, digest = read_snapshot(path, root)
+        else:
+            content = source_bytes
+            digest = hashlib.sha256(content).hexdigest()
         read_end = time.perf_counter()
         info.update(source_sha256=digest, size_bytes=len(content),
                     record_count=len(content) // 32, trailing_bytes=len(content) % 32)

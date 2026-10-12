@@ -1,5 +1,10 @@
 # Qbot FactorLab 架构审计
 
+2026-10-13 PR #1 合并前补充：quant-tv 长期目标为研究 → 回测 → 模拟盘 → 受控实盘。
+Legacy 保留审计、模块授权边界与未来启用验收见
+[PLATFORM_EVOLUTION_AND_LIVE_BOUNDARY.md](PLATFORM_EVOLUTION_AND_LIVE_BOUNDARY.md)。
+FactorLab 继续隔离真实订单权限；本轮只修复数据准入，不实现或启用交易网关。
+
 > 审计基线：UFund-Me/Qbot 上游提交 f0425ae4ae8bd02b79656b8f7039f4cd6874095e（2026-03-11）。2026-09-14 已通过官方 origin 获取完整 Git 对象；当前 `factorlab/phase-1` 分支直接以该上游提交为基线重放 FactorLab 历史提交，现已在同一隔离架构上推进至 Phase 3。早期归档恢复历史完整保留在 `factorlab/phase-1-archive`，其中本地基线 `58dc392` 仅用于追溯，不属于当前分支祖先。
 
 ## 审计范围

@@ -100,7 +100,8 @@ def qualification_inputs(tmp_path, periods=8):
     inputs = QualificationInputs(source, turnover, identity, units, {"fixture-security": spec}, cutoffs(dates),
                                   "synthetic-v1", status, listings, membership, (artifact,),
                                   pd.DataFrame({"date": dates}), artifact, artifact, artifact,
-                                  expected_member_count=1, synthetic_only=True)
+                                  expected_member_count=1, synthetic_only=True,
+                                  research_start=str(dates.min().date()), research_end=str(dates.max().date()))
     from qbot.research.data.assemble import assemble_market_data
     result = build(source, snap, artifact)
     tables = assemble_market_data(source, {"fixture-security": result}, turnover, identity, units,

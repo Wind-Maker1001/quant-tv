@@ -1,9 +1,10 @@
 """Replayable evidence qualification, separate from local source declarations.
 
-No arbitrary PASS input or verified boolean promotes a data source. Every
-generation contains a replay recipe and bound evidence. A real source also
-requires explicit independent time/coverage reviews; local hashes do not
-certify those human judgments. Synthetic evidence is never research eligible.
+No arbitrary PASS input or verified boolean promotes a data source. Byte
+hashes and normalized table hashes alone do not bind one to the other. TDX
+DAY candidate RAW is reparsed; all remaining real source contracts currently
+fail closed, even with complete local review declarations. Synthetic evidence
+is never research eligible.
 """
 
 from dataclasses import asdict, dataclass, fields, is_dataclass
@@ -66,6 +67,10 @@ class QualificationInputs:
     expected_member_count: int = 500
     synthetic_only: bool = False
     benchmark_source: Optional[SourceArtifact] = None
+    # Independent frozen research range, never inferred from membership.
+    # The supplied calendar can also contain earlier RAW/status warmup days.
+    research_start: str = ""
+    research_end: str = ""
 
 
 @dataclass(frozen=True)
@@ -81,6 +86,60 @@ class QualificationReport:
     formal_admission: bool
     execution_admission: bool
     implementation_sha256: str
+
+
+def _reparse_raw(inputs: QualificationInputs, synthetic: bool) -> bool:
+    """One existing decoder, not a supplier registry or financial certificate.
+
+    The source_id selects a fixed candidate byte layout. The original locator
+    supplies its filename/code hypothesis; historical identity/units remain
+    separately unbound. Compare every supplied column/row, without repairing,
+    sorting, clipping or accepting a caller's table hash as a parse proof.
+    """
+    from qbot.research.data.tdx import NAME, audit_day, raw_frame
+    parsed = []
+    supported = True
+    for artifact in inputs.raw_sources:
+        content = artifact.read()
+        if artifact.source_id != "TDX_DAY_BYTES_V1":
+            supported = False
+            continue
+        original = Path(artifact.locator)
+        match = NAME.fullmatch(original.name)
+        if not match:
+            fail("TDX RAW original filename required for reparsed source")
+        audit = audit_day(original, match.group(1).lower(), original.parent,
+                          str(inputs.raw.date.min().date()), str(inputs.raw.date.max().date()),
+                          source_bytes=content)
+        frame = raw_frame(audit)
+        if not set(inputs.raw.columns).issubset(frame.columns):
+            fail("RAW columns lack a reparsed source contract")
+        parsed.append(frame[list(inputs.raw.columns)])
+    if parsed and not supported:
+        fail("mixed RAW sources lack a complete reparsed source contract")
+    if not supported or not parsed:
+        if not synthetic:
+            fail("RAW lacks a deterministic reparsed source contract")
+        return False
+    try:
+        pd.testing.assert_frame_equal(pd.concat(parsed, ignore_index=True), inputs.raw.reset_index(drop=True),
+                                      check_exact=True, check_dtype=False)
+    except AssertionError:
+        fail("RAW differs from reparsed source bytes")
+    return True
+
+
+def _unbound_real_roles(raw_bound: bool) -> Tuple[str, ...]:
+    """Only code-owned parsers can remove a role from this fail-closed list.
+
+    A normalized JSON/Parquet generation, manual declaration, COMPLETE event
+    coverage, review receipt or self-recomputed hash is not an upstream parser.
+    Sina factors are observations, not event terms or independent OHLC. There
+    is currently no complete real admission path; do not invent one here.
+    """
+    roles = ("PIT", "STATUS", "CALENDAR", "IDENTITY", "UNITS", "ADJUSTMENT", "REFERENCE",
+             "BENCHMARK", "TURNOVER", "LISTINGS", "ANCHOR")
+    return roles if raw_bound else ("RAW",) + roles
 
 
 def _reviews(inputs: QualificationInputs) -> None:
@@ -140,10 +199,12 @@ def qualify_market_data(inputs: QualificationInputs, required_keys: pd.DataFrame
     import qbot.research.data.units as units_module
     import qbot.research.universe.identity as identity_module
     import qbot.research.data.evidence as evidence_module
+    import qbot.research.data.tdx as tdx_module
     implementation = implementation_sha256([__file__, assembly_module.__file__, engine_module.__file__,
                                              adjustment_validation.__file__, event_validation.__file__,
-                                             units_module.__file__, identity_module.__file__, evidence_module.__file__])
-    stages = {name: "INCOMPLETE" for name in ("RAW", "ADJUSTMENT", "STATUS", "PIT", "FORMAL")}
+                                             units_module.__file__, identity_module.__file__, evidence_module.__file__,
+                                             tdx_module.__file__])
+    stages = {name: "INCOMPLETE" for name in ("RAW", "ADJUSTMENT", "STATUS", "PIT", "SOURCE_BINDING", "FORMAL")}
     issues = []
     if not isinstance(inputs.synthetic_only, bool):
         fail("qualification synthetic boundary must be explicit")
@@ -170,7 +231,9 @@ def qualify_market_data(inputs: QualificationInputs, required_keys: pd.DataFrame
         except (DataQualityError, ValueError, TypeError, KeyError) as exc:
             issues.append(name + ": " + str(exc))
 
+    raw_bound = False
     def raw_check():
+        nonlocal raw_bound
         if not inputs.raw_sources:
             fail("RAW source bytes required")
         for artifact in inputs.raw_sources:
@@ -178,7 +241,14 @@ def qualify_market_data(inputs: QualificationInputs, required_keys: pd.DataFrame
         if (not {"date", "symbol", "open", "high", "low", "close", "volume", "amount"}.issubset(inputs.raw)
                 or inputs.raw.empty or inputs.raw.duplicated(["date", "symbol"]).any()):
             fail("RAW engineering keys/fields incomplete")
+        raw_bound = _reparse_raw(inputs, synthetic)
     run_stage("RAW", raw_check)
+
+    if synthetic:
+        stages["SOURCE_BINDING"] = "SOFTWARE_ONLY"
+    else:
+        for role in _unbound_real_roles(raw_bound):
+            issues.append("SOURCE_BINDING/" + role + ": deterministic upstream-to-normalized parser contract incomplete")
 
     results = {}
     def adjustment_check():
@@ -227,6 +297,14 @@ def qualify_market_data(inputs: QualificationInputs, required_keys: pd.DataFrame
     run_stage("ADJUSTMENT", adjustment_check)
 
     def pit_check():
+        if not inputs.research_start or not inputs.research_end:
+            fail("independent research window start/end required; membership cannot define it")
+        start, end = date(inputs.research_start), date(inputs.research_end)
+        if start > end or start not in calendar or end not in calendar:
+            fail("research window must have ordered boundaries in the independent trading calendar")
+        research = calendar[(calendar >= start) & (calendar <= end)]
+        if not synthetic and inputs.expected_member_count != 500:
+            fail("formal CSI500 requires exactly 500 PIT members per research trading day")
         inputs.pit_source.read()
         inputs.calendar_source.read()
         if inputs.benchmark_source is not None:
@@ -241,7 +319,6 @@ def qualify_market_data(inputs: QualificationInputs, required_keys: pd.DataFrame
             fail("benchmark calendar differs")
         if inputs.membership.empty:
             fail("PIT membership required")
-        research = calendar[(calendar >= inputs.membership.date.min()) & (calendar <= inputs.membership.date.max())]
         validate_daily_membership(inputs.membership, requested_dates=research,
                                   expected_member_count=inputs.expected_member_count)
         index = pd.MultiIndex.from_frame(required_keys)

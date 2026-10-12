@@ -37,7 +37,8 @@ def local_bundle(tmp_path, stocks, benchmark, qualification):
 def test_all_software_stages_never_imply_real_admission(tmp_path):
     i, k, c, s, b = qualification_inputs(tmp_path)
     report = qualify_market_data(i, k, c, stocks=s, benchmark=b)
-    assert report.stages == {"RAW": "PASS", "ADJUSTMENT": "PASS", "STATUS": "PASS", "PIT": "PASS", "FORMAL": "SOFTWARE_ONLY"}
+    assert report.stages == {"RAW": "PASS", "ADJUSTMENT": "PASS", "STATUS": "PASS", "PIT": "PASS",
+                             "SOURCE_BINDING": "SOFTWARE_ONLY", "FORMAL": "SOFTWARE_ONLY"}
     assert report.synthetic_only and not report.formal_admission and not report.execution_admission
     # Changing just the top-level flag cannot relabel nested evidence as real.
     report2 = qualify_market_data(replace(i, synthetic_only=False), k, c, stocks=s, benchmark=b)
