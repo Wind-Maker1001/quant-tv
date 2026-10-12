@@ -1,0 +1,42 @@
+name: FactorLab workflow validation
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - '.github/labeler.yml'
+      - '.github/scripts/ci/**'
+      - 'docs/ci/optional-workflows/**'
+  push:
+    branches: [main, 'codex/**']
+    paths:
+      - '.github/workflows/**'
+      - '.github/labeler.yml'
+      - '.github/scripts/ci/**'
+      - 'docs/ci/optional-workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install checksum-pinned actionlint
+        env:
+          ACTIONLINT_URL: https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          curl --fail --location --output "$RUNNER_TEMP/actionlint.tar.gz" "$ACTIONLINT_URL"
+          printf '%s  %s\n' "$ACTIONLINT_SHA256" "$RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+      - name: Check every active workflow and optional CodeQL template
+        run: >-
+          "$RUNNER_TEMP/actionlint"
+          .github/workflows/*.yml
+          docs/ci/optional-workflows/codeql-analysis.yml
