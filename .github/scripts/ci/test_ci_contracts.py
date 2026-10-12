@@ -199,6 +199,7 @@ class WorkflowTests(unittest.TestCase):
             self.assertIn("--no-recurse-submodules", command)
             self.assertIn("+refs/heads/*:refs/remotes/origin/*", command)
             self.assertIn('git checkout --detach "$CHECKOUT_SHA"', command)
+            self.assertIn("GIT_LFS_SKIP_SMUDGE=1 git checkout", command)
             self.assertNotIn("--depth", command)
             self.assertNotIn("git config", command)
             self.assertNotIn("submodule foreach", command)

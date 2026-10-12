@@ -36,7 +36,7 @@ jobs:
             GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
             git fetch --no-tags --no-recurse-submodules origin \
             '+refs/heads/*:refs/remotes/origin/*' "$CHECKOUT_SHA"
-          git checkout --detach "$CHECKOUT_SHA"
+          GIT_LFS_SKIP_SMUDGE=1 git checkout --detach "$CHECKOUT_SHA"
           test "$(git rev-parse HEAD)" = "$CHECKOUT_SHA"
       - uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4
         with:

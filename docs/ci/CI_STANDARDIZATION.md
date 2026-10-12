@@ -145,3 +145,9 @@ Flake8 规则、3 份 CI 脚本 Black、pip check、全部活动 YAML 的 action
 标签配置直接通过固定版本 github-script 调用 API 读取可信 base SHA 或经授权手动 ref。
 新增 CI 合同断言检查三组检出一致、完整历史、事件 SHA 和不保存凭据。
 这些修复只需定向验证；首次失败均未开始研究测试，不重复本地完整研究验收。
+
+原生 fetch 已在远端成功；之后发现 Runner 的 Git LFS 全局过滤器试图下载 Legacy
+wxPython Linux wheel，而临时 fetch 凭据已结束。已显式设置检出进程的
+`GIT_LFS_SKIP_SMUDGE=1`，延续原 checkout 默认不下载 LFS 的研究边界。
+当前 `git lfs ls-files` 仅列出 3 个 `dev/wxPython*.whl`，没有研究源码、Golden 或
+研究数据文件。没有更改 `.gitattributes`、LFS 记录、二进制或任何来源资格。
