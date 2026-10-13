@@ -1,5 +1,9 @@
 # FactorLab 数据规范
 
+2026-10-12：新增公司行为/复权软件基础及Local v2资格绑定，见
+[DATA_ADJUSTMENT_FOUNDATION.md](DATA_ADJUSTMENT_FOUNDATION.md)。它不改变18列、
+因子/标签或PIT/状态合同；真实单位、事件、身份、状态和PIT仍未合格，不代表五年准入。
+
 本文保留 Phase 1 建立的原始数据边界，并补充 Phase 3 的市场状态与规则执行输入合同。其中 PIT 股票池、benchmark、证券状态和 Schema 是正式研究的硬前置，不允许静默降级。
 
 ## 数据源与责任边界

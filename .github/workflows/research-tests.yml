@@ -5,18 +5,24 @@ on:
     paths:
       - "qbot/research/**"
       - "tests/research/**"
+      - "examples/research/**"
       - "configs/research/**"
       - "dev/requirements-research.txt"
+      - "dev/requirements-research-ci.txt"
       - "pytest.ini"
-      - ".github/workflows/research-tests.yml"
+      - ".github/workflows/**"
+      - ".github/scripts/ci/**"
   pull_request:
     paths:
       - "qbot/research/**"
       - "tests/research/**"
+      - "examples/research/**"
       - "configs/research/**"
       - "dev/requirements-research.txt"
+      - "dev/requirements-research-ci.txt"
       - "pytest.ini"
-      - ".github/workflows/research-tests.yml"
+      - ".github/workflows/**"
+      - ".github/scripts/ci/**"
   workflow_dispatch:
 
 permissions:
@@ -30,34 +36,72 @@ jobs:
   phase-1-offline:
     name: Python 3.9 offline suite
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       MPLBACKEND: Agg
       PYTHONUTF8: "1"
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        env:
+          CHECKOUT_TOKEN: ${{ github.token }}
+          CHECKOUT_SHA: ${{ github.sha }}
+          CHECKOUT_SERVER: ${{ github.server_url }}
+          CHECKOUT_REPOSITORY: ${{ github.repository }}
+        run: |
+          [[ "$CHECKOUT_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git init .
+          git remote add origin "$CHECKOUT_SERVER/$CHECKOUT_REPOSITORY.git"
+          auth_header="$(printf 'x-access-token:%s' "$CHECKOUT_TOKEN" | base64 -w0)"
+          printf '::add-mask::%s\n' "$auth_header"
+          GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.$CHECKOUT_SERVER/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
+            git fetch --no-tags --no-recurse-submodules origin \
+            '+refs/heads/*:refs/remotes/origin/*' "$CHECKOUT_SHA"
+          GIT_LFS_SKIP_SMUDGE=1 git checkout --detach "$CHECKOUT_SHA"
+          test "$(git rev-parse HEAD)" = "$CHECKOUT_SHA"
 
       - name: Set up Python 3.9
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.9"
           cache: pip
-          cache-dependency-path: dev/requirements-research.txt
+          cache-dependency-path: |
+            dev/requirements-research.txt
+            dev/requirements-research-ci.txt
 
       - name: Install isolated research dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r dev/requirements-research.txt
+          python -m pip install -r dev/requirements-research-ci.txt
+          python -m pip check
 
       - name: Verify isolated import
         run: python -c "import qbot.research"
 
-      - name: Run Phase 1 offline tests
-        run: python -m pytest -q
+      - name: Run all offline research tests with coverage
+        run: >-
+          python -m pytest tests/research -q -m "not network"
+          --junitxml=results/diagnostics/ci/reports/research.xml
+          --cov=qbot.research --cov-report=term
+          --cov-report=xml:results/diagnostics/ci/reports/coverage.xml
+
+      - name: Validate actual coverage and test reports
+        run: >-
+          python .github/scripts/ci/validate_reports.py
+          results/diagnostics/ci/reports/coverage.xml
+          results/diagnostics/ci/reports/research.xml
 
       - name: Run configuration and architecture audit smoke check
         run: >-
           python -m qbot.research.cli audit
           --config configs/research/csi500_smoke.yaml
+
+      - name: Save coverage and JUnit evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: research-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: results/diagnostics/ci/reports/*.xml
+          retention-days: 14
+          if-no-files-found: warn

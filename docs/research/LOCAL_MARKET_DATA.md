@@ -2,6 +2,11 @@
 
 本入口用于导入来自可核验数据源的静态历史文件，不负责提供数据、不认证来源权威性，也不替代历史股票池。当前用户没有此类文件，因此入口完成不代表真实端到端或五年实验已经完成。
 
+2026-10-13 最终复审补强：**所有本地正式研究必须具有可重放的 v2 qualification**，
+不依据 `source` 名称判断资格。旧 schema-v1 仍可导入、读取和填充诊断缓存，但不能进入
+build-dataset、evaluate-factors 或 walk-forward 的研究加载入口。来源改名、添加 synthetic
+字样或重算表哈希都不授予资格；未完成真实解析合同的 v2 和合成 v2 也不能正式准入。
+
 ## 输入合同
 
 使用 `configs/research/csi500_local_smoke.yaml`，或复制配置后显式指定 `data.provider: local_parquet` 和 `paths.market_input_root`。股票池与证券状态可分别选择 `local` 或 `baostock`；三个来源都为本地时，整个数据与因子流水线无需网络或 AKShare/BaoStock 登录。
@@ -17,9 +22,14 @@ Schema 拒绝重复、非法 OHLC、负成交量/金额/换手、无穷大，以
 
 覆盖范围应包含配置要求的全部预热日与研究日。股票文件应覆盖 PIT 历史出现过的股票，不是当前成分股的历史价格合集。日历由基准推导：首尾必须严格存在，但仍需人工以独立来源核对是否遗漏中间交易日。
 
-## 六命令流水线
+## 导入与研究命令边界
 
 下面的路径是用户真实导出文件的示例，不是仓库内置数据。相对输入路径与配置路径均相对仓库根目录解析。
+
+下面不提供资格包的导入仅发布 v1 诊断代。前四项可用于诊断导入/缓存；后两项会因
+缺少 v2 qualification 拒绝，不能把格式校验和成功导入当作金融认证。未来完整真实
+来源合同完成后，须在 import-market-data 显式传入 `--qualification-manifest path/to/manifest.json`，
+并由加载器重放核验正式准入。当前真实来源合同仍不完整，不能凭手工包补齐。
 
     python -m qbot.research.cli import-market-data --config configs/research/csi500_local_smoke.yaml --stocks path/to/stocks.csv --benchmark path/to/csi500.csv --source "原始数据机构和导出方法" --source-version "可核验导出版本"
     python -m qbot.research.cli import-universe --config configs/research/csi500_local_smoke.yaml --input path/to/pit_members.csv
@@ -46,4 +56,23 @@ Provider 第一次使用时固定一份清单并验证两份文件，随后固�
 
     python -m pytest -q tests/research/test_local_market_provider.py tests/research/test_config_local_provider.py tests/research/test_local_cli_pipeline.py
 
-CLI 整链测试使用人工85日、两股票文件，禁止 HTTP 与 BaoStock 登录，实际运行全部六命令，检查40行数据集、28条成熟标签、14因子、有效 RankIC 和六份成功清单。这是离线工程证据，不是研究结果。
+CLI 测试使用人工85日、两股票文件，禁止 HTTP 与 BaoStock 登录，不 mock Provider、
+缓存或准入逻辑。验证诊断导入/缓存成功，以及缺资格时 build/evaluate 失败、无研究
+输出，并保留版本/旧缓存拒绝守卫。独立 DatasetBuilder/因子软件测试仍验证合成链路；
+不能通过旧 v1 CLI 入口制造研究准入。新增来源别名反例见 test_local_admission_boundaries.py。
+
+## 通达信原生 DAY 的独立入口
+
+原生 DAY 必须先使用 [TDX_LOCAL_DATA.md](TDX_LOCAL_DATA.md) 的只读审计和 RAW staging
+工具。该产物保留未知单位和未核验调整语义，没有 `adj_*` 或 `turnover`，不能直接导入
+本 Provider。补充独立样本、证券历史身份、复权和状态证据后，另行组装上述精确生产
+Schema，再经过原来源/PIT/状态门禁；本地文件的发现数或工程转换成功不代表研究合格。
+
+## v2证据资格
+
+`import-market-data`现支持可选`--qualification-manifest`，发布自包含、可复算的v2
+证据包并绑定来源版本。旧 v1 可读，但任何来源名称均不得靠 v1 声明取得研究准入。
+合成v2包永不通过正式行情加载；真实资料缺单位、身份、事件、独立参考、状态、
+PIT或历史时间/覆盖证据也拒绝。协议未补齐的公司行为执行资格单独阻断。
+模块、公式、精确证据合同和真实来源限制见
+[DATA_ADJUSTMENT_FOUNDATION.md](DATA_ADJUSTMENT_FOUNDATION.md)。

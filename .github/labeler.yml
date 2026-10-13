@@ -1,0 +1,15 @@
+research:
+  - changed-files:
+      - any-glob-to-any-file: ['qbot/research/**', 'examples/research/**', 'configs/research/**']
+tests:
+  - changed-files:
+      - any-glob-to-any-file: ['tests/research/**']
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ['docs/**', '**/*.md']
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**', 'dev/requirements-research*.txt']
+data:
+  - changed-files:
+      - any-glob-to-any-file: ['qbot/research/data/**', 'qbot/research/universe/**']

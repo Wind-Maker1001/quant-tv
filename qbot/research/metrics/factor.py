@@ -9,6 +9,7 @@ import pandas as pd
 
 from qbot.research.data.calendar import TradingCalendar
 from qbot.research.errors import ConfigurationError, SchemaError
+from qbot.research.metrics._factor_arrays import _PreparedFactors
 
 
 @dataclass
@@ -35,6 +36,8 @@ def _daily_ic(
     minimum_cross_section: int,
     scope: str,
 ) -> pd.DataFrame:
+    if isinstance(frame, _PreparedFactors):
+        return frame.daily_ic(minimum_cross_section, scope)
     rows = []
     for date, cross_section in frame.groupby("date", sort=True):
         for factor in factors:
@@ -99,6 +102,8 @@ def _quantile_returns(
     minimum_cross_section: int,
     scope: str,
 ) -> pd.DataFrame:
+    if isinstance(frame, _PreparedFactors):
+        return frame.quantile_returns(quantiles, minimum_cross_section, scope)
     rows = []
     labels = ["Q%d" % number for number in range(1, quantiles + 1)]
     for date, cross_section in frame.groupby("date", sort=True):
@@ -175,6 +180,8 @@ def _autocorrelation(
     scope: str,
     dates: pd.DatetimeIndex,
 ) -> pd.DataFrame:
+    if isinstance(frame, _PreparedFactors):
+        return frame.autocorrelation(minimum_cross_section, scope, dates)
     rows = []
     cross_sections = dict(tuple(frame.groupby("date", sort=True)))
     empty = frame.iloc[:0]
@@ -212,6 +219,8 @@ def _top_quantile_turnover(
     scope: str,
     dates: pd.DatetimeIndex,
 ) -> pd.DataFrame:
+    if isinstance(frame, _PreparedFactors):
+        return frame.turnover(quantiles, minimum_cross_section, scope, dates)
     rows = []
     cross_sections = dict(tuple(frame.groupby("date", sort=True)))
     empty = frame.iloc[:0]
@@ -260,6 +269,15 @@ def _factor_correlation(frame: pd.DataFrame, factors: List[str]) -> pd.DataFrame
     return pd.DataFrame(averaged, index=factors, columns=factors)
 
 
+def _select_scope(table: pd.DataFrame, dates: Iterable[object], scope: str) -> pd.DataFrame:
+    """Assign already computed daily results to a complete date-level group."""
+    if table.empty:
+        return table.copy()
+    selected = table.loc[table["date"].isin(dates)].copy()
+    selected["scope"] = scope
+    return selected
+
+
 def evaluate_factors(
     frame: pd.DataFrame,
     factor_names: Iterable[str],
@@ -279,7 +297,10 @@ def evaluate_factors(
         raise ConfigurationError("quantiles must be at least 2")
     if minimum_cross_section < quantiles:
         raise ConfigurationError("minimum_cross_section must be >= quantiles")
-    data = frame.copy()
+    # Keep the caller's column and within-date row order.  Unrelated price,
+    # raw-factor and audit columns are not needed by any evaluation statistic.
+    columns = [name for name in frame.columns if name in required or name == group_column]
+    data = frame.loc[:, columns].copy()
     data["date"] = pd.to_datetime(data["date"], errors="raise").dt.normalize()
     if data["date"].isna().any() or data.duplicated(["date", "symbol"]).any():
         raise SchemaError("Factor evaluation requires valid unique (date, symbol) keys")
@@ -309,19 +330,31 @@ def evaluate_factors(
     quantile_parts = []
     autocorrelation_parts = []
     turnover_parts = []
-    for scope, subset in scopes:
-        daily_parts.append(_daily_ic(subset, factors, target, minimum_cross_section, scope))
-        quantile_parts.append(
-            _quantile_returns(subset, factors, target, quantiles, minimum_cross_section, scope)
-        )
+    prepared = _PreparedFactors.create(data, factors, target)
+    complete_groups = group_column is not None and data[group_column].notna().all()
+    for number, (scope, subset) in enumerate(scopes):
+        if number and complete_groups:
+            selected_dates = subset["date"].unique()
+            daily_parts.append(_select_scope(daily_parts[0], selected_dates, scope))
+            quantile_parts.append(_select_scope(quantile_parts[0], selected_dates, scope))
+        else:
+            # Partial date-level missing groups deliberately retain the legacy
+            # subset calculation: their coverage denominator differs from ALL.
+            workspace = prepared if not number else _PreparedFactors.create(subset, factors, target)
+            daily_parts.append(_daily_ic(workspace if workspace is not None else subset,
+                                         factors, target, minimum_cross_section, scope))
+            quantile_parts.append(
+                _quantile_returns(workspace if workspace is not None else subset,
+                                  factors, target, quantiles, minimum_cross_section, scope)
+            )
     # Temporal metrics must always compare adjacent dates on the complete
     # market calendar.  Filtering to one regime first would incorrectly treat
     # BULL -> BEAR -> BULL as two adjacent BULL observations.
     all_autocorrelation = _autocorrelation(
-        data, factors, minimum_cross_section, "ALL", dates
+        prepared if prepared is not None else data, factors, minimum_cross_section, "ALL", dates
     )
     all_turnover = _top_quantile_turnover(
-        data, factors, quantiles, minimum_cross_section, "ALL", dates
+        prepared if prepared is not None else data, factors, quantiles, minimum_cross_section, "ALL", dates
     )
     autocorrelation_parts.append(all_autocorrelation)
     turnover_parts.append(all_turnover)

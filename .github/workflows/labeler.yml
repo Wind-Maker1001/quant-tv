@@ -1,14 +1,43 @@
-name: "Add label automatically"
+name: Add label automatically
+
 on:
-- pull_request_target
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Existing PR number in this repository'
+        type: number
+        required: true
+
+permissions: {}
 
 jobs:
   triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: write
-    runs-on: ubuntu-latest
     steps:
-    - uses: actions/labeler@v4
-      with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Read only trusted base or explicitly dispatched configuration
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const ref = context.eventName === 'workflow_dispatch'
+              ? context.sha : context.payload.pull_request.base.sha;
+            const {data} = await github.rest.repos.getContent({
+              ...context.repo, path: '.github/labeler.yml', ref
+            });
+            if (Array.isArray(data) || data.type !== 'file' || data.encoding !== 'base64') {
+              throw new Error('Expected a trusted configuration file');
+            }
+            const fs = require('fs');
+            fs.mkdirSync('.github', {recursive: true});
+            fs.writeFileSync('.github/labeler.yml', Buffer.from(data.content, 'base64'));
+      - name: Apply configured labels without executing PR code
+        uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
+        with:
+          configuration-path: .github/labeler.yml
+          pr-number: ${{ github.event.pull_request.number || inputs.pr_number }}
+          sync-labels: false

@@ -1,5 +1,8 @@
 # FactorLab 因子流水线规模验证
 
+后续评价器优化的独立配对测量、Golden及验收见
+[FACTOR_PERFORMANCE_OPTIMIZATION.md](FACTOR_PERFORMANCE_OPTIMIZATION.md)。下文历史数值与原收据保持原义，不作为优化后测量结果。
+
 验证日期：2026-10-11。**仅合成数据工程诊断，不是 A 股历史实验。**
 
 ## 范围与复现入口

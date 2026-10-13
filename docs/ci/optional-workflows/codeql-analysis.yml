@@ -1,0 +1,47 @@
+# Inactive template. Copy into .github/workflows only after entitlement and
+# repository Code Scanning settings have been confirmed by an administrator.
+name: CodeQL (administrator-enabled optional scan)
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, javascript-typescript]
+    steps:
+      - name: Check out exact trusted commit with ephemeral credentials
+        env:
+          CHECKOUT_TOKEN: ${{ github.token }}
+          CHECKOUT_SHA: ${{ github.sha }}
+          CHECKOUT_SERVER: ${{ github.server_url }}
+          CHECKOUT_REPOSITORY: ${{ github.repository }}
+        run: |
+          [[ "$CHECKOUT_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git init .
+          git remote add origin "$CHECKOUT_SERVER/$CHECKOUT_REPOSITORY.git"
+          auth_header="$(printf 'x-access-token:%s' "$CHECKOUT_TOKEN" | base64 -w0)"
+          printf '::add-mask::%s\n' "$auth_header"
+          GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.$CHECKOUT_SERVER/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
+            git fetch --no-tags --no-recurse-submodules origin \
+            '+refs/heads/*:refs/remotes/origin/*' "$CHECKOUT_SHA"
+          GIT_LFS_SKIP_SMUDGE=1 git checkout --detach "$CHECKOUT_SHA"
+          test "$(git rev-parse HEAD)" = "$CHECKOUT_SHA"
+      - uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+      - uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4
+        with:
+          category: '/language:${{ matrix.language }}'
