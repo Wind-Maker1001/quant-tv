@@ -1,0 +1,2 @@
+# Preserve SHA-bound publication metadata; no market-source bytes are tracked here.
+*.json -text
