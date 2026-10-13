@@ -198,3 +198,65 @@ def test_missing_or_conflicting_kind_never_becomes_historical(tmp_path, evidence
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="synthetic"):
         pilot.replay(root)
+
+
+@pytest.mark.parametrize("mutation", ["duplicate_same", "duplicate_different", "unexpected", "missing"])
+def test_acquisition_ids_are_unique_and_closed_before_replay(tmp_path, evidence, mutation):
+    root = tmp_path / "evidence"
+    shutil.copytree(evidence, root)
+    path = root / "acquisition.json"
+    receipts = json.loads(path.read_bytes())
+    if mutation.startswith("duplicate"):
+        duplicate = dict(next(r for r in receipts if r["id"] == "tencent-hfq"))
+        if mutation == "duplicate_different":
+            # Valid alternate bytes and SHA: parsing first/reporting last must be impossible.
+            other = next(r for r in receipts if r["id"] == "tencent-raw")
+            duplicate.update(path=other["path"], sha256=other["sha256"])
+        receipts.append(duplicate)
+        expected = "duplicate acquisition"
+    elif mutation == "unexpected":
+        receipts[0]["id"] = "another-upstream"
+        expected = "unexpected acquisition"
+    else:
+        receipts.pop()
+        expected = "missing acquisition"
+    path.write_text(json.dumps(receipts), encoding="utf-8")
+    with pytest.raises(ValueError, match=expected):
+        pilot.replay(root)
+
+
+@pytest.mark.parametrize("mutation", ["synthetic_locator", "real_locator", "wrapper"])
+def test_sina_foreign_symbol_never_enters_pilot_step(tmp_path, evidence, mutation):
+    from qbot.research.data.evidence import sha256
+    root = tmp_path / "evidence"
+    shutil.copytree(evidence, root)
+    path = root / "acquisition.json"
+    receipts = json.loads(path.read_bytes())
+    receipt = next(r for r in receipts if r["id"] == "sina-factors")
+    if mutation == "synthetic_locator":
+        receipt["locator"] = "synthetic://sina-factors/sh600001"
+    else:
+        # Deliberate malicious relabeling exercises the real-URL identity guard.
+        audit_path = root / "initial-audit.json"
+        audit = json.loads(audit_path.read_bytes())
+        audit["synthetic_only"] = False
+        for source in audit["copied_sources"].values():
+            source["synthetic_only"] = False
+        audit_path.write_text(json.dumps(audit), encoding="utf-8")
+        review_path = root / "official-review.json"
+        review = json.loads(review_path.read_bytes())
+        review["synthetic_only"] = False
+        review_path.write_text(json.dumps(review), encoding="utf-8")
+        for entry in receipts:
+            entry["synthetic_only"] = False
+        receipt["url"] = "https://finance.sina.com.cn/realstock/company/sh600000/hfq.js"
+        if mutation == "real_locator":
+            receipt["url"] = receipt["url"].replace("sh600000", "sh600001")
+        else:
+            content_path = root / "sources/sina-factors.bin"
+            content = content_path.read_bytes().replace(b"sh600000hfq", b"sh600001hfq")
+            content_path.write_bytes(content)
+            receipt["sha256"] = sha256(content)
+    path.write_text(json.dumps(receipts), encoding="utf-8")
+    with pytest.raises(ValueError, match="Sina factor.*sh600000"):
+        pilot.replay(root)

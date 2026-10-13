@@ -32,8 +32,9 @@ def make_evidence(root):
         if source_id is None:
             copied[name] = info
         else:
+            locator = "synthetic://" + source_id + ("/sh600000" if source_id == "sina-factors" else "")
             acquisitions.append(dict(info, id=source_id, path="sources\\" + name,
-                                     http_status=200, locator="synthetic://" + source_id))
+                                     http_status=200, locator=locator))
         return info["sha256"]
 
     def encoded(value):
@@ -86,7 +87,7 @@ def make_evidence(root):
     with localcontext() as context:
         context.prec = 50
         after = str(Decimal(2) * Decimal(100) / Decimal("99.59"))
-    put("sina-factors.bin", b"var syntheticHfq=" + encoded({"total": 3, "data": [
+    put("sina-factors.bin", b"var sh600000hfq=" + encoded({"total": 3, "data": [
         {"d": "2024-07-18", "f": "2"}, {"d": "2025-07-16", "f": after},
         {"d": "1900-01-01", "f": "1"}]}) + b";", "sina-factors")
     (root / "initial-audit.json").write_bytes(encoded({"synthetic_only": True, "copied_sources": copied}))

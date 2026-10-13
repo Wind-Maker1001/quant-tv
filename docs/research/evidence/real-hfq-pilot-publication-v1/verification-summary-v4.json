@@ -1,0 +1,41 @@
+{
+  "schema": "bound-acquisition-verification-v4",
+  "addresses_p1_comments": [
+    4262145449,
+    4262145459
+  ],
+  "financial_status": "BLOCKED",
+  "certified_hfq_dates": 0,
+  "canonical_acquisition_mapping": {
+    "expected_ids": [
+      "tencent-raw",
+      "tencent-hfq",
+      "sohu-raw",
+      "sina-factors"
+    ],
+    "duplicates_unexpected_or_missing": "REJECTED_BEFORE_REPLAY",
+    "parsed_and_reported_receipt": "SAME_CANONICAL_RECORD"
+  },
+  "sina_identity_binding": {
+    "real_url": "https://finance.sina.com.cn/realstock/company/sh600000/hfq.js",
+    "synthetic_locator": "synthetic://sina-factors/sh600000",
+    "wrapper_variable": "sh600000hfq",
+    "scope": "current source symbol only; not historic identity or provenance attestation"
+  },
+  "legacy_receipts_and_raw_bytes": "UNCHANGED_PRIVATE",
+  "real_numeric_replay": "UNCHANGED_THROUGH_PREVIOUSLY_REVIEWED_EXPLICIT_KIND_VIEW",
+  "software_tests": {
+    "original_cases": 27,
+    "explicit_kind_cases": 10,
+    "acquisition_identity_cases": 7,
+    "passed": 44,
+    "failed": 0,
+    "skipped": 0,
+    "synthetic_only": true
+  },
+  "source_sha256_git_lf": {
+    "examples/research/real_hfq_evidence_pilot.py": "1a1976d7228f5830d317c0235532d5831cac4e27894003160d3b5020b8c28e60",
+    "tests/research/test_real_hfq_evidence_pilot.py": "de49b7f24148dfbe751f416d68703c7e00fe3500c13f21c489b6420286e3eb86",
+    "tests/research/hfq_pilot_fixture.py": "ecda9a7147fcfae18bb30ae841b9681dce7f044b1ba9cf5c54d6689ba0c18202"
+  }
+}

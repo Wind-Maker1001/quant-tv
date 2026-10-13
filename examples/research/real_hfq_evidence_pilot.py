@@ -21,7 +21,7 @@ from qbot.research.data.tdx import DAY_DTYPE, FORMAT_VERSION, safe_path
 from qbot.research.data.tdx_staging import frame_source_sha256, write_new
 
 
-VERSION = "600000-hfq-diagnostic-v3-explicit-evidence"
+VERSION = "600000-hfq-diagnostic-v4-bound-acquisitions"
 FIELDS = ("open", "high", "low", "close")
 DATES = ("2025-07-09", "2025-07-10", "2025-07-11", "2025-07-14",
          "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18")
@@ -177,13 +177,34 @@ def replay(root):
             raise ValueError("every evidence record requires an explicit synthetic boolean")
         if entry["synthetic_only"] is not synthetic:
             raise ValueError("inconsistent synthetic evidence classification")
+    expected_ids = {"tencent-raw", "tencent-hfq", "sohu-raw", "sina-factors"}
+    acquisitions_by_id = {}
+    for entry in acquired:
+        identity = entry.get("id")
+        if not isinstance(identity, str) or identity not in expected_ids:
+            raise ValueError("unexpected acquisition ID")
+        if identity in acquisitions_by_id:
+            raise ValueError("duplicate acquisition ID: " + identity)
+        acquisitions_by_id[identity] = entry
+    if set(acquisitions_by_id) != expected_ids:
+        raise ValueError("missing acquisition ID")
     def old(name):
         return read_bound(root, "sources/" + name, old_sources[name]["sha256"])
     def new(name):
-        receipt = next(item for item in acquired if item["id"] == name)
+        receipt = acquisitions_by_id[name]
         if receipt.get("http_status") != 200:
             raise ValueError("missing successful source: " + name)
-        return read_bound(root, receipt["path"], receipt["sha256"])
+        if name == "sina-factors":
+            field = "locator" if synthetic else "url"
+            expected = ("synthetic://sina-factors/sh600000" if synthetic else
+                        "https://finance.sina.com.cn/realstock/company/sh600000/hfq.js")
+            if receipt.get(field) != expected:
+                raise ValueError("Sina factor acquisition must bind sh600000")
+        content = read_bound(root, receipt["path"], receipt["sha256"])
+        if name == "sina-factors" and not re.match(
+                r"\s*var\s+sh600000hfq\s*=", content.decode("utf-8-sig")):
+            raise ValueError("Sina factor wrapper must bind sh600000")
+        return content
     pdf = old("official-cninfo.pdf")
     if review["source_sha256"] != sha256(pdf) or review["status"] != "LOCAL_REVIEWED_SINGLE_NOTICE":
         raise ValueError("notice review binding differs")
@@ -251,7 +272,8 @@ def replay(root):
             "cache_rows": len(cached), "cache_upstream": "EASTMONEY", "cache_kind": "SDK_GENERATED_PARQUET",
             "original_sdk_response_bytes": "NOT_PRESENT_FOR_NINE_ROW_CACHE",
             "sources": {name: info["sha256"] for name, info in old_sources.items()},
-            "new_sources": {r["id"]: r.get("sha256") for r in acquired},
+            "new_sources": {identity: receipt["sha256"]
+                            for identity, receipt in acquisitions_by_id.items()},
             "official_review_sha256": sha256((root / "official-review.json").read_bytes()),
             "raw_comparison": raw_comparison, "event_step": step, "algorithm_diagnostics": diagnostics,
             "computed_supplier_hfq": None, "certified_hfq_dates": [], "status": "BLOCKED",
