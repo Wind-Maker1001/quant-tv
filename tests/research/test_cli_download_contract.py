@@ -1,8 +1,8 @@
 """Offline download-integrity regressions, not evidence about real markets.
 
 Orchestration fixtures use fabricated bars and membership.  The public local
-pipeline below uses real files and production cache, receipt, dataset and
-report code, but its two synthetic securities are not a CSI500 history.
+pipeline below uses real files and production cache, receipt and admission
+code, but its two synthetic securities are not a CSI500 history.
 """
 
 import json
@@ -514,7 +514,7 @@ def test_actual_akshare_transport_exception_is_skipped_through_cache_and_cli(
     assert snapshot.metadata["source_version"] == provider.cache_source_version(SYMBOLS[1], False)
 
 
-def test_public_local_file_failure_blocks_old_cache_then_forced_recovery_succeeds(
+def test_public_local_file_failure_recovers_cache_but_still_rejects_research(
     local_files, monkeypatch,
 ):
     """Only an artificial provider fault is injected; networking is prohibited."""
@@ -523,6 +523,7 @@ def test_public_local_file_failure_blocks_old_cache_then_forced_recovery_succeed
     commands = _commands(files)
     assert [cli.main(command) for command in commands[:3]] == [0, 0, 0]
     config = load_config(files["config_path"])
+    assert _read_json(config.paths.market_input_root / "manifest.json")["schema_version"] == 1
     provider = LocalParquetProvider(
         config.paths.market_input_root, benchmark_symbol=config.data.benchmark
     )
@@ -571,25 +572,54 @@ def test_public_local_file_failure_blocks_old_cache_then_forced_recovery_succeed
         return original(self, symbol, start, end)
 
     monkeypatch.setattr(LocalParquetProvider, "get_daily_bars", repaired_stock)
+    # Download recovery proves cache integrity, independently of qualification.
     assert cli.main(commands[3]) == 0
     assert requests[0] == (SYMBOLS[0], dates.min(), dates.max())
     assert list_unresolved(receipt_root) == []
-    assert all(len(cache.load(symbol)) == 85 for symbol in SYMBOLS)
-    assert [cli.main(command) for command in commands[4:]] == [0, 0]
-    dataset = pd.read_parquet(config.paths.processed_dir / "dataset.parquet")
-    assert len(dataset) == 40
-    assert dataset["EXCESS_RET5"].notna().sum() == 28
-    assert pd.read_csv(config.paths.factor_results_dir / "daily_ic.csv")["RankIC"].notna().any()
+    for symbol in SYMBOLS:
+        snapshot = cache.load_snapshot(symbol)
+        pd.testing.assert_frame_equal(
+            snapshot.frame, original(provider, symbol, dates.min(), dates.max()),
+            check_exact=True,
+        )
+        assert snapshot.metadata_sha256 != before[symbol]
+        assert snapshot.metadata["covered_ranges"] == [{
+            "start": dates.min().date().isoformat(),
+            "end": dates.max().date().isoformat(),
+        }]
+    repaired = next(
+        run for run in _run_payloads(files)
+        if run["command"] == "download-data" and run["status"] == "success"
+    )
+    assert repaired["resolved_download_receipts"] == [fatal[0]["receipt_id"]]
+    assert repaired["unresolved_download_receipts"] == []
+
+    # A repaired schema-v1 cache remains diagnostic; it is not formal evidence.
+    recovered_metadata = {
+        symbol: cache.load_snapshot(symbol).metadata_sha256 for symbol in SYMBOLS
+    }
+    for command in commands[4:]:
+        assert cli.main(command) == 1
+        rejected = max(_run_payloads(files), key=lambda item: item["run_id"])
+        assert rejected["command"] == command[0]
+        assert rejected["status"] == "failed"
+        assert "v2 qualification" in rejected["error"]
+        assert "schema-v1 bundles are diagnostic only" in rejected["error"]
+        assert rejected["outputs"] == {}
+    assert list_unresolved(receipt_root) == []
+    assert {
+        symbol: cache.load_snapshot(symbol).metadata_sha256 for symbol in SYMBOLS
+    } == recovered_metadata
+    assert not (config.paths.processed_dir / "dataset.parquet").exists()
+    assert not (config.paths.processed_dir / "dataset_manifest.json").exists()
+    assert not list(config.paths.features_dir.glob("*.parquet"))
+    assert not list(config.paths.factor_results_dir.glob("*"))
     runs = _run_payloads(files)
     assert len(runs) == 9
-    assert sum(run["status"] == "failed" for run in runs) == 3
-    assert sum(run["status"] == "success" for run in runs) == 6
+    assert sum(run["status"] == "failed" for run in runs) == 5
+    assert sum(run["status"] == "success" for run in runs) == 4
     failed_download = next(
         run for run in runs if run["command"] == "download-data" and run["status"] == "failed"
     )
     assert "synthetic delayed adjustment-factor corruption" in failed_download["error"]
     assert fatal[0]["context"]["run_id"] == failed_download["run_id"]
-    repaired = next(
-        run for run in runs if run["command"] == "download-data" and run["status"] == "success"
-    )
-    assert repaired["resolved_download_receipts"] == [fatal[0]["receipt_id"]]
