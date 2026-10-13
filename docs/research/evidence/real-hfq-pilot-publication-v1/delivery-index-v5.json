@@ -1,0 +1,61 @@
+{
+  "schema": "public-delivery-index-v5",
+  "status": "BLOCKED",
+  "financial_admission": "UNVERIFIED",
+  "certified_hfq_dates": 0,
+  "files": {
+    "docs/research/REAL_HFQ_EVIDENCE_PILOT.md": {
+      "sha256_git_blob_lf": "3baf00f8dd290efb3daa5d6e36fd7c8618ff2e1f0a9966ce7e6ec6d44a9d028f"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/.gitattributes": {
+      "sha256_git_blob_lf": "c0eba0f5fa29f05c4be3f403cd0b8013e140f910b2bfad2424570e9137a73128"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/README.md": {
+      "sha256_git_blob_lf": "f3230c19f2c4a9b652b29df1a64e034c69aef3604ba0c46d31356afede654c88"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/claims-summary.json": {
+      "sha256_git_blob_lf": "b88bce56d4ed639ca95829f97af16614f45158199f6ac39d2d067a92247587a2"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/delivery-index-v3.json": {
+      "sha256_git_blob_lf": "5c5212cfce1cd525991714e7d4b152281379354a1c70689ff8e8a202ea2debc7"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/delivery-index-v4.json": {
+      "sha256_git_blob_lf": "ab35bc5a517c6c6f03403c257cbdf146db96451fe45bd3ad396fd533e122deed"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/delivery-index.json": {
+      "sha256_git_blob_lf": "a04d92890a7a0d04c95ab3d984ce6bfa784ce062f80cef5715f0e52fad4bbaf9"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/source-index.json": {
+      "sha256_git_blob_lf": "edee5929009719d88086a207a7cf8e0e332ca29a36491317518fb4487858fd10"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/verification-summary-v3.json": {
+      "sha256_git_blob_lf": "c7bcf3189fcab06e85bdeb61a022445c9fddde0251dcb69134ae01a81e802ec0"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/verification-summary-v4.json": {
+      "sha256_git_blob_lf": "f0e4d6415fecf7c23fad71e2601bc6f54383002c753932294d46aacc8faaae24"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/verification-summary-v5.json": {
+      "sha256_git_blob_lf": "d48470fbb23e86776b446979258bee55c99c653e0c60c9bfd3d94297405f49d7"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/verification-summary.json": {
+      "sha256_git_blob_lf": "b33d85db8ccde417574732d5ae6bf91fbd9fb1ea752a6b499c92585ea6337e8e"
+    },
+    "examples/research/real_hfq_evidence_pilot.py": {
+      "sha256_git_blob_lf": "a72f7d41c57f2fdfdaa629f82d2ed02550dc61dce5f43afcd28547bbcc30f48a"
+    },
+    "tests/research/hfq_pilot_fixture.py": {
+      "sha256_git_blob_lf": "ecda9a7147fcfae18bb30ae841b9681dce7f044b1ba9cf5c54d6689ba0c18202"
+    },
+    "tests/research/test_real_hfq_evidence_pilot.py": {
+      "sha256_git_blob_lf": "902c403bf00aec8f998ad5cc644d11d4a97f55d33acc2e922f923cecf215e4ba"
+    }
+  },
+  "raw_market_bytes_included": false,
+  "credentials_or_personal_paths_included": false,
+  "production_and_historical_experiment_files_changed": false,
+  "local_public_tests": {
+    "passed": 45,
+    "failed": 0,
+    "skipped": 0
+  }
+}

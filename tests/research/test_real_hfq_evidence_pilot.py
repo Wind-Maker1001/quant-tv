@@ -260,3 +260,20 @@ def test_sina_foreign_symbol_never_enters_pilot_step(tmp_path, evidence, mutatio
     path.write_text(json.dumps(receipts), encoding="utf-8")
     with pytest.raises(ValueError, match="Sina factor.*sh600000"):
         pilot.replay(root)
+
+
+def test_different_factor_step_is_observed_without_claiming_agreement(tmp_path, evidence):
+    from qbot.research.data.evidence import sha256
+    root = tmp_path / "evidence"
+    shutil.copytree(evidence, root)
+    content = b'var sh600000hfq={"total":2,"data":[{"d":"2024-07-18","f":"2"},{"d":"2025-07-16","f":"2"}]};'
+    (root / "sources/sina-factors.bin").write_bytes(content)
+    path = root / "acquisition.json"
+    receipts = json.loads(path.read_bytes())
+    next(r for r in receipts if r["id"] == "sina-factors")["sha256"] = sha256(content)
+    path.write_text(json.dumps(receipts), encoding="utf-8")
+    result = pilot.replay(root)
+    assert Decimal(result["event_step"]["absolute_step_difference"]) > Decimal("0.004")
+    assert result["event_step"]["status"] == "OBSERVED_STEP_DIFFERENCE_ONLY_NOT_HFQ_LEVEL_CERTIFICATION"
+    assert result["financial_admission"] == "UNVERIFIED"
+    assert result["certified_hfq_dates"] == []

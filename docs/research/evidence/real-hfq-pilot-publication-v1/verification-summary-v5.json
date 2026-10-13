@@ -1,0 +1,23 @@
+{
+  "schema": "observed-step-verification-v5",
+  "financial_status": "BLOCKED",
+  "certified_hfq_dates": 0,
+  "event_step_status": "OBSERVED_STEP_DIFFERENCE_ONLY_NOT_HFQ_LEVEL_CERTIFICATION",
+  "reason": "a large factor difference must not be labeled agreement; no uncertified tolerance is introduced",
+  "real_numeric_replay": "UNCHANGED; only neutral observation label, version and metadata hashes differ",
+  "legacy_raw_bytes_and_receipts": "UNCHANGED_PRIVATE",
+  "software_tests": {
+    "original_cases": 27,
+    "kind_receipt_and_identity_cases": 17,
+    "different_step_case": 1,
+    "passed": 45,
+    "failed": 0,
+    "skipped": 0,
+    "synthetic_only": true
+  },
+  "source_sha256_git_lf": {
+    "examples/research/real_hfq_evidence_pilot.py": "a72f7d41c57f2fdfdaa629f82d2ed02550dc61dce5f43afcd28547bbcc30f48a",
+    "tests/research/test_real_hfq_evidence_pilot.py": "902c403bf00aec8f998ad5cc644d11d4a97f55d33acc2e922f923cecf215e4ba",
+    "tests/research/hfq_pilot_fixture.py": "ecda9a7147fcfae18bb30ae841b9681dce7f044b1ba9cf5c54d6689ba0c18202"
+  }
+}

@@ -12,13 +12,14 @@
 未取得原字节再分发授权证明，因此首次推送前将该提交保存在本地私有Git引用、增量bundle及原字节副本中。
 该提交不进入发布分支祖先链；旧收据、缓存、DAY/staging、公告与历史实验未改写。
 
-发布内容是离线诊断示例、原27项软件边界及新增17项类型/来源绑定回归测试、虚构样本生成器和下列派生索引：
+发布内容是离线诊断示例、原27项软件边界及新增18项回归测试、虚构样本生成器和下列派生索引：
 
 - [来源索引](evidence/real-hfq-pilot-publication-v1/source-index.json)：来源类型、上游、取得日期、原字节SHA及字节数。
 - [派生结论](evidence/real-hfq-pilot-publication-v1/claims-summary.json)：局部RAW一致性、算法约束和缺口。
 - [原验证摘要](evidence/real-hfq-pilot-publication-v1/verification-summary.json)：原测试收据SHA与首次发布源码SHA。
 - [v3复核摘要](evidence/real-hfq-pilot-publication-v1/verification-summary-v3.json)：Codex P1类型标记修复、37项测试及该版本源码SHA。
-- [v4复核摘要](evidence/real-hfq-pilot-publication-v1/verification-summary-v4.json)：获取ID唯一性、新浪证券绑定、44项测试及当前源码SHA。
+- [v4复核摘要](evidence/real-hfq-pilot-publication-v1/verification-summary-v4.json)：获取ID唯一性、新浪证券绑定、44项测试及该版本源码SHA。
+- [v5复核摘要](evidence/real-hfq-pilot-publication-v1/verification-summary-v5.json)：中性事件差值标签、45项测试及当前源码SHA。
 
 不上传DAY、Parquet、供应商JSON/JSONP/因子原响应、公告全文/图片、个人路径或临时日志。
 公开SHA只索引本地保留字节，不代表授权、历史公开时间或完整覆盖。
@@ -102,7 +103,7 @@ TDX乘新浪因子生成的价格不会成为第三份独立HFQ证据。
 | 原真实字节试点 | 原27 passed，本轮再27 passed | 原收据及SHA保留私有，不改写 |
 | 原Windows完整离线集 | 2732 passed、2 network deselected、88 warnings、1010.60秒 | 原源码版本软件验收，不冒称发布HEAD或远端成功 |
 | 原索引/冻结 | 61份交付SHA、354份冻结文件、源码/报告一致 | 原字节及历史实验保留 |
-| 发布版测试 | 44 passed：原27项加17项回归，无网络、无跳过，全部虚构数据 | 解析、篡改、同上游包装、数学约束、写入/路径、类型及收据/证券绑定的软件验证 |
+| 发布版测试 | 45 passed：原27项加18项回归，无网络、无跳过，全部虚构数据 | 解析、篡改、同上游包装、数学约束、写入/路径、类型/收据/证券绑定及错误事件结论的软件验证 |
 | 新模块重放原真实资料 | 与旧数值结果一致，只改版本/实现SHA及显式synthetic标记 | 金融结论不变，价格未公开 |
 | 远端研究/静态/工作流CI | 以PR当前HEAD的GitHub checks及交付摘要为准 | 不用旧本地结果冒充远端CI |
 
@@ -114,7 +115,9 @@ Codex审查提出的P1已修复：根收据、各来源、获取收据、公告�
 后续两项P1亦已修复：获取ID只能是四个预期值且唯一，解析/报告共用同一映射；
 新浪因子同时核对取得地址和`sh600000hfq`响应包装，拒绝错证券。
 新增7项回归，包括不同SHA的重复ID、缺失/意外ID、错误真实地址和错误响应包装。
-最新交付哈希索引为`delivery-index-v4.json`。
+工具只标记实际观察到的事件差值，不无条件写“一致”，也不为此引入未经认证的容差。
+新增反例验证因子差异较大时仍保持中性观察及UNVERIFIED。
+真实原样本的数值和已人工复核结论未改变；最新交付哈希索引为`delivery-index-v5.json`。
 
 ```powershell
 .venv-py39\python.exe -B -X utf8 -m pytest tests/research/test_real_hfq_evidence_pilot.py -q

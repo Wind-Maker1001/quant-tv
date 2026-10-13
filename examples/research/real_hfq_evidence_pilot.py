@@ -21,7 +21,7 @@ from qbot.research.data.tdx import DAY_DTYPE, FORMAT_VERSION, safe_path
 from qbot.research.data.tdx_staging import frame_source_sha256, write_new
 
 
-VERSION = "600000-hfq-diagnostic-v4-bound-acquisitions"
+VERSION = "600000-hfq-diagnostic-v5-observed-step"
 FIELDS = ("open", "high", "low", "close")
 DATES = ("2025-07-09", "2025-07-10", "2025-07-11", "2025-07-14",
          "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18")
@@ -250,7 +250,7 @@ def replay(root):
                 "sina_before": before, "sina_after": after, "sina_step_observed": str(observed),
                 "absolute_step_difference": str(abs(theory - observed)),
                 "affine_step": "a_new=a_old; b_new=b_old+0.41*a_old",
-                "status": "OBSERVED_STEP_AGREEMENT_ONLY_NOT_HFQ_LEVEL_CERTIFICATION"}
+                "status": "OBSERVED_STEP_DIFFERENCE_ONLY_NOT_HFQ_LEVEL_CERTIFICATION"}
     diagnostics = []
     for vendor, adjusted in quotes.items():
         # These widths describe the response strings, NOT certified rounding rules.
