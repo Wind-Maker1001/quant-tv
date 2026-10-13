@@ -1,0 +1,44 @@
+{
+  "schema": "publication-verification-summary-v1",
+  "base_main": "ebca5fdcad7acaec6b54b83f42cb693ef131a764",
+  "original_local_commit_not_pushed": "e1ed9e81993fa47f1978cfc6e9cc3e0482016daa",
+  "original_private_bundle_files_verified": 61,
+  "original_source_and_receipt_hashes_preserved": true,
+  "original_frozen_files_unchanged": 354,
+  "original_real_tests": {
+    "tests": 27,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "junit_sha256": "6e6496b8f4e903902c09be75cd655af6a278688c043d125d325e82914e3da769"
+  },
+  "original_full_windows_tests": {
+    "tests": 2732,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "network_deselected": 2,
+    "seconds": 1010.6,
+    "junit_sha256": "c475af37fb70d9c43a07fc624ecbdeb294d94ef7902146694501b07368b42da2"
+  },
+  "original_real_tests_rechecked": {
+    "tests": 27,
+    "failures": 0,
+    "junit_sha256": "9c264c12b06aa6a9d4b036260d9457b2cd5007c54068f76bfa923c1807cd42a1"
+  },
+  "public_synthetic_tests": {
+    "tests": 27,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "synthetic_only": true
+  },
+  "published_source_sha256_lf": {
+    "examples/research/real_hfq_evidence_pilot.py": "8d17fc131a04c4586604b8a7427b97d781ced1876c7130c769af5a09e2e5dabb",
+    "tests/research/test_real_hfq_evidence_pilot.py": "0295a412c6dcf9a19095d99e235f4e638b7305414f1d0bb6567a82f2ecd3763a",
+    "tests/research/hfq_pilot_fixture.py": "e522358fe3ce6efed43c99a80600f7c06b5dbc833ad944245a3100014e5a6a15"
+  },
+  "real_numeric_replay_with_current_module": "UNCHANGED_EXCEPT_VERSION_HASH_AND_EXPLICIT_SYNTHETIC_FLAG",
+  "remote_ci": "PENDING_FIRST_PUSH",
+  "legacy_evidence_rewritten": false
+}

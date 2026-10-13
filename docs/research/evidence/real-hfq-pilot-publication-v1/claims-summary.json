@@ -1,0 +1,124 @@
+{
+  "schema": "derived-pilot-summary-v1",
+  "financial_status": "BLOCKED",
+  "financial_admission": "UNVERIFIED",
+  "certified_hfq_dates": [],
+  "observation_kind": "HISTORICALLY_RECONSTRUCTED",
+  "dates": [
+    "2025-07-09",
+    "2025-07-10",
+    "2025-07-11",
+    "2025-07-14",
+    "2025-07-15",
+    "2025-07-16",
+    "2025-07-17",
+    "2025-07-18"
+  ],
+  "raw_fields_checked": 32,
+  "raw_max_absolute_difference": "0",
+  "raw_upstreams": [
+    "TDX",
+    "EASTMONEY",
+    "TENCENT",
+    "SOHU"
+  ],
+  "raw_states": [
+    {
+      "date": "2025-07-09",
+      "checked_fields": 4,
+      "status": "CROSS_VENDOR_MATCH",
+      "hfq_certification": "UNVERIFIED"
+    },
+    {
+      "date": "2025-07-10",
+      "checked_fields": 4,
+      "status": "CROSS_VENDOR_MATCH",
+      "hfq_certification": "UNVERIFIED"
+    },
+    {
+      "date": "2025-07-11",
+      "checked_fields": 4,
+      "status": "CROSS_VENDOR_MATCH",
+      "hfq_certification": "UNVERIFIED"
+    },
+    {
+      "date": "2025-07-14",
+      "checked_fields": 4,
+      "status": "CROSS_VENDOR_MATCH",
+      "hfq_certification": "UNVERIFIED"
+    },
+    {
+      "date": "2025-07-15",
+      "checked_fields": 4,
+      "status": "CROSS_VENDOR_MATCH",
+      "hfq_certification": "UNVERIFIED"
+    },
+    {
+      "date": "2025-07-16",
+      "checked_fields": 4,
+      "status": "CROSS_VENDOR_MATCH",
+      "hfq_certification": "UNVERIFIED"
+    },
+    {
+      "date": "2025-07-17",
+      "checked_fields": 4,
+      "status": "CROSS_VENDOR_MATCH",
+      "hfq_certification": "UNVERIFIED"
+    },
+    {
+      "date": "2025-07-18",
+      "checked_fields": 4,
+      "status": "CROSS_VENDOR_MATCH",
+      "hfq_certification": "UNVERIFIED"
+    }
+  ],
+  "source_registry_sha256": "edee5929009719d88086a207a7cf8e0e332ca29a36491317518fb4487858fd10",
+  "private_claim_bindings_sha256": "08a68e0a89fa2b99a6736bdc85211c4a6394deeede16f2014b9398c093eddc25",
+  "private_review_sha256": "38e564977684edcfe12f0a09b8e0a77edd4ac372582b5a2ac51342e93a00faed",
+  "cash_event": {
+    "cash_cny_per_old_share": "0.41",
+    "record_date": "2025-07-15",
+    "ex_pay_date": "2025-07-16",
+    "notice_url": "https://static.cninfo.com.cn/finalpage/2025-07-10/1224119803.PDF",
+    "ratio_step_absolute_difference": "2.019100505242676124126227464918602E-16",
+    "scope": "single-event increment only; no full HFQ certification"
+  },
+  "algorithm_diagnostics": [
+    {
+      "vendor": "EASTMONEY",
+      "assumed_nearest_quantum": "0.01",
+      "rounding_contract": "UNVERIFIED",
+      "ratio_shape_under_hypothesis": "INCOMPATIBLE",
+      "affine_error_lower_bound": "0.004",
+      "affine_shape_under_hypothesis": "NECESSARY_CONDITION_NOT_REJECTED",
+      "absolute_hfq_error": null,
+      "relative_hfq_error": null,
+      "certification": "UNVERIFIED",
+      "anchor_estimated": false,
+      "ratio_error_lower_bound_min": 0.21294159042927516,
+      "ratio_error_lower_bound_max": 0.5320399429386591
+    },
+    {
+      "vendor": "TENCENT",
+      "assumed_nearest_quantum": "0.001",
+      "rounding_contract": "UNVERIFIED",
+      "ratio_shape_under_hypothesis": "INCOMPATIBLE",
+      "affine_error_lower_bound": "0.00046511627906976744186046511627906976744186046511628",
+      "affine_shape_under_hypothesis": "NECESSARY_CONDITION_NOT_REJECTED",
+      "absolute_hfq_error": null,
+      "relative_hfq_error": null,
+      "certification": "UNVERIFIED",
+      "anchor_estimated": false,
+      "ratio_error_lower_bound_min": 0.2766868402533427,
+      "ratio_error_lower_bound_max": 0.6856348074179743
+    }
+  ],
+  "blockers": [
+    "PROVED_HISTORICAL_ANCHORS",
+    "COMPLETE_EVENT_AND_REVISION_HISTORY",
+    "INDEPENDENT_SUPPLIER_ALGORITHM_AND_ROUNDING_CONTRACTS",
+    "BACKEND_SOURCE_LINEAGE",
+    "CONTEMPORANEOUS_VINTAGES"
+  ],
+  "raw_bytes_publicly_replayable": false
+}

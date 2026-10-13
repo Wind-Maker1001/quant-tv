@@ -1,0 +1,50 @@
+{
+  "schema": "public-delivery-index-v3",
+  "addresses_p1": 4262046631,
+  "status": "BLOCKED",
+  "financial_admission": "UNVERIFIED",
+  "certified_hfq_dates": 0,
+  "files": {
+    "docs/research/REAL_HFQ_EVIDENCE_PILOT.md": {
+      "sha256_git_blob_lf": "c7edb05fc02578fe3162a092f97611b6191673d0defe21549a12e211a873dcd7"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/.gitattributes": {
+      "sha256_git_blob_lf": "c0eba0f5fa29f05c4be3f403cd0b8013e140f910b2bfad2424570e9137a73128"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/README.md": {
+      "sha256_git_blob_lf": "95c6cc81d0d1e31f2ab1bfd013727830e77339b8a695568af37ad16c96bd4fe8"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/claims-summary.json": {
+      "sha256_git_blob_lf": "b88bce56d4ed639ca95829f97af16614f45158199f6ac39d2d067a92247587a2"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/delivery-index.json": {
+      "sha256_git_blob_lf": "a04d92890a7a0d04c95ab3d984ce6bfa784ce062f80cef5715f0e52fad4bbaf9"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/source-index.json": {
+      "sha256_git_blob_lf": "edee5929009719d88086a207a7cf8e0e332ca29a36491317518fb4487858fd10"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/verification-summary-v3.json": {
+      "sha256_git_blob_lf": "c7bcf3189fcab06e85bdeb61a022445c9fddde0251dcb69134ae01a81e802ec0"
+    },
+    "docs/research/evidence/real-hfq-pilot-publication-v1/verification-summary.json": {
+      "sha256_git_blob_lf": "b33d85db8ccde417574732d5ae6bf91fbd9fb1ea752a6b499c92585ea6337e8e"
+    },
+    "examples/research/real_hfq_evidence_pilot.py": {
+      "sha256_git_blob_lf": "455d849df54c9c703fcf447e7577a81948150374783319a1afd0cfae8ab79dd4"
+    },
+    "tests/research/hfq_pilot_fixture.py": {
+      "sha256_git_blob_lf": "e522358fe3ce6efed43c99a80600f7c06b5dbc833ad944245a3100014e5a6a15"
+    },
+    "tests/research/test_real_hfq_evidence_pilot.py": {
+      "sha256_git_blob_lf": "be6a54c59fd7cc0ca7e91fad7a9b2ff3fe842d1e942f13d57ead818574d52cb5"
+    }
+  },
+  "raw_market_bytes_included": false,
+  "credentials_or_personal_paths_included": false,
+  "production_and_historical_experiment_files_changed": false,
+  "local_public_tests": {
+    "passed": 37,
+    "failed": 0,
+    "skipped": 0
+  }
+}
