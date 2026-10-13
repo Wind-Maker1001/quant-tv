@@ -1,9 +1,11 @@
-"""Verified, static local market-data snapshots with explicit price contracts.
+"""Validated local diagnostics and source-qualified static market snapshots.
 
 The source declaration is supplied by the importer; it does not establish
 independent source authority. PIT membership and security status are separate
 inputs. A changed bundle has a different provider/cache identity and must use
-a separate cache root or an explicitly rebuilt cache.
+a separate cache root or an explicitly rebuilt cache. Legacy v1 bundles are
+readable diagnostics; research requires replayable v2 qualification regardless
+of the importer-supplied source label.
 """
 
 from copy import deepcopy
@@ -546,9 +548,7 @@ class LocalParquetProvider(MarketDataProvider):
                                   bars: pd.DataFrame) -> None:
         self._ensure_loaded()
         if self._qualification is None:
-            if "tdx" in self._manifest["source"].casefold():
-                raise _fail("TDX-derived v1 data have no research qualification")
-            return  # Existing v1 declaration behavior is not retroactive certification.
+            raise _fail("research requires replayable v2 qualification; schema-v1 bundles are diagnostic only")
         report, inputs, keys, qualified_calendar, _ = self._qualification
         if not report.formal_admission or report.synthetic_only:
             raise _fail("v2 bundle is SOFTWARE_ONLY or lacks formal qualification")

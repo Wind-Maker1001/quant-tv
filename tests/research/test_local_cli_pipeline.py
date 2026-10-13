@@ -1,4 +1,4 @@
-"""Synthetic public-CLI acceptance: local inputs never imply real-market evidence.
+"""Synthetic public-CLI diagnostics cannot become source-qualified research.
 
 No provider, cache, importer, dataset, evaluator, manifest, or report logic is
 mocked. Only networking is prohibited. These fixtures are deliberately two
@@ -165,10 +165,10 @@ def _run_payloads(files):
     ]
 
 
-def test_six_public_cli_commands_are_fully_local_with_versioned_evidence(local_files):
+def test_legacy_cli_imports_and_cache_remain_diagnostic_without_qualification(local_files):
     files = local_files
     commands = _commands(files)
-    assert [cli.main(command) for command in commands] == [0] * 6
+    assert [cli.main(command) for command in commands] == [0, 0, 0, 0, 1, 1]
     config = load_config(files["config_path"])
     bundle = _json(config.paths.market_input_root / "manifest.json")
     assert bundle["source"] == "synthetic-test-fixture-not-market-data"
@@ -194,31 +194,18 @@ def test_six_public_cli_commands_are_fully_local_with_versioned_evidence(local_f
     assert security["source"] == "local-import"
     assert security["universe_sha256"] == universe["sha256"]
     dataset_path = config.paths.processed_dir / "dataset.parquet"
-    dataset = pd.read_parquet(dataset_path)
-    receipt = _json(config.paths.processed_dir / "dataset_manifest.json")
-    assert len(dataset) == 40
-    assert dataset[["date", "symbol"]].duplicated().sum() == 0
-    assert dataset["EXCESS_RET5"].notna().sum() == 28
-    assert dataset.loc[dataset["date"].isin(files["research_dates"][-6:]), "EXCESS_RET5"].isna().all()
+    assert not dataset_path.exists()
+    assert not (config.paths.processed_dir / "dataset_manifest.json").exists()
     assert len(config.factors) == 14
-    assert dataset[list(config.factors)].notna().all().all()
-    assert receipt["schema_version"] == 4
-    assert receipt["dataset_sha256"] == hashlib.sha256(dataset_path.read_bytes()).hexdigest()
-    assert receipt["security_data_version"] == security["security_data_version"]
-    assert receipt["universe_version"] == universe["sha256"]
     for name in ("raw_factors.parquet", "processed_factors.parquet"):
-        assert (config.paths.features_dir / name).is_file()
-    daily_ic = pd.read_csv(config.paths.factor_results_dir / "daily_ic.csv")
-    assert daily_ic["RankIC"].notna().any()
-    summary = pd.read_csv(config.paths.factor_results_dir / "factor_report.csv")
-    assert set(summary["factor"]) == set(config.factors)
-    assert summary["RankIC Valid Dates"].gt(0).all()
+        assert not (config.paths.features_dir / name).exists()
     for filename in ("summary.md", "factor_ic.png", "rank_ic.png", "factor_correlation.png", "quantile_returns.png"):
-        assert (config.paths.factor_results_dir / filename).is_file()
+        assert not (config.paths.factor_results_dir / filename).exists()
     runs = _run_payloads(files)
     assert len(runs) == 6
     assert {run["command"] for run in runs} == {command[0] for command in commands}
-    assert all(run["status"] == "success" for run in runs)
+    assert sum(run["status"] == "success" for run in runs) == 4
+    assert sum(run["status"] == "failed" for run in runs) == 2
     assert all(run["random_seed"] == 42 for run in runs)
     assert all(len(run["git_commit"]) == 40 for run in runs)
     assert all(run["completed_at"] for run in runs)
@@ -227,16 +214,12 @@ def test_six_public_cli_commands_are_fully_local_with_versioned_evidence(local_f
     assert importer["market_data_bundle_manifest"] == bundle
     build = next(run for run in runs if run["command"] == "build-dataset")
     evaluate = next(run for run in runs if run["command"] == "evaluate-factors")
-    assert evaluate["dataset_producer_run_id"] == build["run_id"]
-    assert evaluate["valid_rank_ic_observations"] > 0
-    for run in (build, evaluate):
-        assert run["bar_data_version"] == receipt["bar_data_version"]
-        assert run["bar_data_provenance"] == receipt["bar_data_provenance"]
-        assert run["dataset_sha256"] == receipt["dataset_sha256"]
+    assert "v2 qualification" in build["error"]
+    assert "v2 qualification" in evaluate["error"]
+    assert build["outputs"] == evaluate["outputs"] == {}
 
     # A corrected source snapshot may not silently reuse an old, covered
-    # cache. The previous dataset and every immutable generation survive.
-    original_dataset = dataset_path.read_bytes()
+    # cache. Diagnostic generations survive without producing a dataset.
     original_benchmark_metadata = ParquetBarCache(config.paths.benchmark_dir).read_metadata("000905.SH")
     changed_stocks = files["stocks"].copy()
     row = changed_stocks["symbol"].eq(SYMBOLS[0]) & changed_stocks["date"].eq(files["dates"][-1])
@@ -252,13 +235,13 @@ def test_six_public_cli_commands_are_fully_local_with_versioned_evidence(local_f
     for role in ("stocks", "benchmark"):
         assert (config.paths.market_input_root / bundle[role + "_file"]).is_file()
     assert cli.main(["build-dataset", "--config", str(files["config_path"])]) == 1
-    assert dataset_path.read_bytes() == original_dataset
+    assert not dataset_path.exists()
     assert ParquetBarCache(config.paths.benchmark_dir).read_metadata("000905.SH") == original_benchmark_metadata
     failures = [run for run in _run_payloads(files) if run["status"] == "failed"]
-    assert len(failures) == 1
-    assert "cache source identity mismatch" in failures[0]["error"]
-    assert bundle["bundle_version"] in failures[0]["error"]
-    assert corrected_bundle["bundle_version"] in failures[0]["error"]
+    assert len(failures) == 3
+    cache_failure = next(run for run in failures if "cache source identity mismatch" in run["error"])
+    assert bundle["bundle_version"] in cache_failure["error"]
+    assert corrected_bundle["bundle_version"] in cache_failure["error"]
 
 
 def test_import_market_data_refuses_nonlocal_provider_without_network(local_files):
@@ -297,7 +280,7 @@ def test_relative_import_paths_use_repository_root_from_another_cwd(
     monkeypatch.chdir(unrelated_cwd)
 
     commands = _commands(relative_files)
-    assert [cli.main(command) for command in commands] == [0] * 6
+    assert [cli.main(command) for command in commands] == [0, 0, 0, 0, 1, 1]
 
     bundle = _json(config.paths.market_input_root / "manifest.json")
     assert bundle["input_files"] == {
@@ -314,20 +297,19 @@ def test_relative_import_paths_use_repository_root_from_another_cwd(
         "status": str(files["status_path"].resolve()),
         "listings": str(files["listings_path"].resolve()),
     }
-    dataset = pd.read_parquet(config.paths.processed_dir / "dataset.parquet")
-    assert len(dataset) == 40
-    assert dataset["EXCESS_RET5"].notna().sum() == 28
+    assert not (config.paths.processed_dir / "dataset.parquet").exists()
     runs = _run_payloads(files)
     assert len(runs) == 6
-    assert all(run["status"] == "success" for run in runs)
+    assert sum(run["status"] == "success" for run in runs) == 4
+    assert sum(run["status"] == "failed" for run in runs) == 2
     assert {run["command"] for run in runs} == {command[0] for command in commands}
     assert all(
         Path(output).is_absolute()
         for run in runs
         for output in run["outputs"].values()
     )
-    evaluate = next(run for run in runs if run["command"] == "evaluate-factors")
-    assert evaluate["valid_rank_ic_observations"] > 0
+    build = next(run for run in runs if run["command"] == "build-dataset")
+    assert "v2 qualification" in build["error"]
     assert not (unrelated_cwd / "data").exists()
     assert not (unrelated_cwd / "results").exists()
 
