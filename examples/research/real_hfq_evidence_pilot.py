@@ -11,6 +11,7 @@ import itertools
 import json
 from pathlib import Path
 import re
+from urllib.parse import parse_qs, urlsplit
 
 import numpy as np
 import pandas as pd
@@ -21,13 +22,24 @@ from qbot.research.data.tdx import DAY_DTYPE, FORMAT_VERSION, safe_path
 from qbot.research.data.tdx_staging import frame_source_sha256, write_new
 
 
-VERSION = "600000-hfq-diagnostic-v5-observed-step"
+VERSION = "600000-hfq-diagnostic-v6-origin-contracts"
 FIELDS = ("open", "high", "low", "close")
 DATES = ("2025-07-09", "2025-07-10", "2025-07-11", "2025-07-14",
          "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18")
 ORIGINS = {"TDX": "TDX", "EASTMONEY": "EASTMONEY",
            "AKSHARE_EASTMONEY": "EASTMONEY", "TENCENT": "TENCENT",
            "SOHU": "SOHU", "SINA": "SINA", "LOCAL_GENERATED": None}
+REQUEST_CONTRACTS = {
+    "tencent-raw": ("TENCENT", "web.ifzq.gtimg.cn", "/appstock/app/fqkline/get",
+                    {"param": ["sh600000,day,2025-07-09,2025-07-18,8,"]}),
+    "tencent-hfq": ("TENCENT", "web.ifzq.gtimg.cn", "/appstock/app/fqkline/get",
+                    {"param": ["sh600000,day,2025-07-09,2025-07-18,8,hfq"]}),
+    "sohu-raw": ("SOHU", "q.stock.sohu.com", "/hisHq",
+                 {"code": ["cn_600000"], "start": ["20250709"], "end": ["20250718"],
+                  "stat": ["1"], "order": ["D"], "period": ["d"],
+                  "callback": ["historySearchHandler"], "rt": ["jsonp"]}),
+    "sina-factors": ("SINA", "finance.sina.com.cn", "/realstock/company/sh600000/hfq.js", {}),
+}
 
 
 def distinct_vendor(left, right):
@@ -162,6 +174,26 @@ def read_bound(root, relative, digest):
     return content
 
 
+def validate_acquisition(receipt, synthetic):
+    """Bind the declared request, not external provenance or historical identity."""
+    identity = receipt["id"]
+    if synthetic:
+        if (receipt.get("upstream_origin") != "LOCAL_GENERATED"
+                or receipt.get("locator") != "synthetic://" + identity + "/sh600000"):
+            raise ValueError("synthetic acquisition request must bind sh600000 locally: " + identity)
+        return
+    origin, host, path, query = REQUEST_CONTRACTS[identity]
+    url = receipt.get("url")
+    if not isinstance(url, str):
+        raise ValueError("real acquisition request URL required: " + identity)
+    parsed = urlsplit(url)
+    parameters = parse_qs(parsed.query, keep_blank_values=True, strict_parsing=True) if parsed.query else {}
+    if (receipt.get("upstream_origin") != origin or parsed.scheme != "https"
+            or parsed.netloc != host or parsed.path != path or parsed.fragment
+            or parameters != query):
+        raise ValueError("acquisition request must match vendor, sh600000, dates and mode: " + identity)
+
+
 def replay(root):
     root = safe_path(root)
     audit = strict_json((root / "initial-audit.json").read_bytes())
@@ -185,6 +217,7 @@ def replay(root):
             raise ValueError("unexpected acquisition ID")
         if identity in acquisitions_by_id:
             raise ValueError("duplicate acquisition ID: " + identity)
+        validate_acquisition(entry, synthetic)
         acquisitions_by_id[identity] = entry
     if set(acquisitions_by_id) != expected_ids:
         raise ValueError("missing acquisition ID")
@@ -194,12 +227,6 @@ def replay(root):
         receipt = acquisitions_by_id[name]
         if receipt.get("http_status") != 200:
             raise ValueError("missing successful source: " + name)
-        if name == "sina-factors":
-            field = "locator" if synthetic else "url"
-            expected = ("synthetic://sina-factors/sh600000" if synthetic else
-                        "https://finance.sina.com.cn/realstock/company/sh600000/hfq.js")
-            if receipt.get(field) != expected:
-                raise ValueError("Sina factor acquisition must bind sh600000")
         content = read_bound(root, receipt["path"], receipt["sha256"])
         if name == "sina-factors" and not re.match(
                 r"\s*var\s+sh600000hfq\s*=", content.decode("utf-8-sig")):

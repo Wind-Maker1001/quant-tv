@@ -17,6 +17,12 @@ from qbot.research.data.tdx import DAY_DTYPE
 
 FIXTURE_DATES = ("2025-07-09", "2025-07-10", "2025-07-11", "2025-07-14",
                  "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18")
+REAL_REQUESTS = {
+    "tencent-raw": ("TENCENT", "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh600000,day,2025-07-09,2025-07-18,8,"),
+    "tencent-hfq": ("TENCENT", "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh600000,day,2025-07-09,2025-07-18,8,hfq"),
+    "sohu-raw": ("SOHU", "https://q.stock.sohu.com/hisHq?code=cn_600000&start=20250709&end=20250718&stat=1&order=D&period=d&callback=historySearchHandler&rt=jsonp"),
+    "sina-factors": ("SINA", "https://finance.sina.com.cn/realstock/company/sh600000/hfq.js"),
+}
 
 
 def make_evidence(root):
@@ -32,9 +38,9 @@ def make_evidence(root):
         if source_id is None:
             copied[name] = info
         else:
-            locator = "synthetic://" + source_id + ("/sh600000" if source_id == "sina-factors" else "")
+            locator = "synthetic://" + source_id + "/sh600000"
             acquisitions.append(dict(info, id=source_id, path="sources\\" + name,
-                                     http_status=200, locator=locator))
+                                     http_status=200, locator=locator, upstream_origin="LOCAL_GENERATED"))
         return info["sha256"]
 
     def encoded(value):
@@ -96,3 +102,17 @@ def make_evidence(root):
         "synthetic_only": True, "source_sha256": pdf_hash, "status": "LOCAL_REVIEWED_SINGLE_NOTICE",
         "cash_cny_per_old_share": "0.41", "ex_date": "2025-07-16"}))
     return root
+
+
+def malicious_real_metadata(root, receipts):
+    """Deliberate relabeling for negative identity tests; never a real fixture."""
+    for name in ("initial-audit.json", "official-review.json"):
+        path = root / name
+        payload = json.loads(path.read_bytes())
+        payload["synthetic_only"] = False
+        for source in payload.get("copied_sources", {}).values():
+            source["synthetic_only"] = False
+        path.write_text(json.dumps(payload), encoding="utf-8")
+    for entry in receipts:
+        entry["synthetic_only"] = False
+        entry["upstream_origin"], entry["url"] = REAL_REQUESTS[entry["id"]]

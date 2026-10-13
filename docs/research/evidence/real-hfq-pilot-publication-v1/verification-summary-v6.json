@@ -1,0 +1,35 @@
+{
+  "schema": "origin-contract-verification-v6",
+  "addresses_p1": 4262687169,
+  "financial_status": "BLOCKED",
+  "certified_hfq_dates": 0,
+  "real_request_binding": [
+    "all four upstream_origin values",
+    "HTTPS endpoint host/path",
+    "symbol",
+    "date window",
+    "RAW versus HFQ mode",
+    "query multiplicity"
+  ],
+  "synthetic_request_binding": [
+    "LOCAL_GENERATED origin",
+    "symbol-bound synthetic locator"
+  ],
+  "scope": "declared acquisition request; not cryptographic provenance or historical availability certification",
+  "real_numeric_replay": "UNCHANGED",
+  "original_raw_bytes_and_receipts": "UNCHANGED_PRIVATE",
+  "software_tests": {
+    "original_cases": 27,
+    "previous_regressions": 18,
+    "vendor_request_regressions": 8,
+    "passed": 53,
+    "failed": 0,
+    "skipped": 0,
+    "synthetic_only": true
+  },
+  "source_sha256_git_lf": {
+    "examples/research/real_hfq_evidence_pilot.py": "dd2c1baf6120fb9b6dc9d22212167378157f40d631653152bf38978d81d3de0b",
+    "tests/research/test_real_hfq_evidence_pilot.py": "34bec9ff9c47a041c19c45cbe9881fa1aa20e074a02c18d74ec72f9267cff501",
+    "tests/research/hfq_pilot_fixture.py": "50e874c7673730bba98bae3d8a30ec4a481a8eca2c28260425e02f99288637e8"
+  }
+}

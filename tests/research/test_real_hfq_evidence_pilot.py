@@ -14,7 +14,7 @@ import sys
 import pytest
 
 from examples.research import real_hfq_evidence_pilot as pilot
-from tests.research.hfq_pilot_fixture import make_evidence
+from tests.research.hfq_pilot_fixture import make_evidence, malicious_real_metadata
 
 
 @pytest.fixture(scope="module")
@@ -237,18 +237,7 @@ def test_sina_foreign_symbol_never_enters_pilot_step(tmp_path, evidence, mutatio
         receipt["locator"] = "synthetic://sina-factors/sh600001"
     else:
         # Deliberate malicious relabeling exercises the real-URL identity guard.
-        audit_path = root / "initial-audit.json"
-        audit = json.loads(audit_path.read_bytes())
-        audit["synthetic_only"] = False
-        for source in audit["copied_sources"].values():
-            source["synthetic_only"] = False
-        audit_path.write_text(json.dumps(audit), encoding="utf-8")
-        review_path = root / "official-review.json"
-        review = json.loads(review_path.read_bytes())
-        review["synthetic_only"] = False
-        review_path.write_text(json.dumps(review), encoding="utf-8")
-        for entry in receipts:
-            entry["synthetic_only"] = False
+        malicious_real_metadata(root, receipts)
         receipt["url"] = "https://finance.sina.com.cn/realstock/company/sh600000/hfq.js"
         if mutation == "real_locator":
             receipt["url"] = receipt["url"].replace("sh600000", "sh600001")
@@ -258,7 +247,36 @@ def test_sina_foreign_symbol_never_enters_pilot_step(tmp_path, evidence, mutatio
             content_path.write_bytes(content)
             receipt["sha256"] = sha256(content)
     path.write_text(json.dumps(receipts), encoding="utf-8")
-    with pytest.raises(ValueError, match="Sina factor.*sh600000"):
+    with pytest.raises(ValueError, match="sh600000"):
+        pilot.replay(root)
+
+
+@pytest.mark.parametrize("identity,mutation", [
+    ("tencent-raw", "host"), ("sohu-raw", "host"), ("tencent-hfq", "symbol"),
+    ("sohu-raw", "symbol"), ("tencent-hfq", "mode"), ("sohu-raw", "dates"),
+    ("sohu-raw", "duplicate_query"), ("tencent-raw", "origin"),
+])
+def test_real_origin_request_is_bound_before_vendor_labels(tmp_path, evidence, identity, mutation):
+    root = tmp_path / "evidence"
+    shutil.copytree(evidence, root)
+    path = root / "acquisition.json"
+    receipts = json.loads(path.read_bytes())
+    malicious_real_metadata(root, receipts)
+    receipt = next(r for r in receipts if r["id"] == identity)
+    if mutation == "host":
+        receipt["url"] = receipt["url"].replace("web.ifzq.gtimg.cn", "untrusted.example").replace("q.stock.sohu.com", "untrusted.example")
+    elif mutation == "symbol":
+        receipt["url"] = receipt["url"].replace("600000", "600001")
+    elif mutation == "mode":
+        receipt["url"] = receipt["url"].replace(",8,hfq", ",8,")
+    elif mutation == "dates":
+        receipt["url"] = receipt["url"].replace("20250709", "20250101")
+    elif mutation == "duplicate_query":
+        receipt["url"] += "&code=cn_600001"
+    else:
+        receipt["upstream_origin"] = "EASTMONEY"
+    path.write_text(json.dumps(receipts), encoding="utf-8")
+    with pytest.raises(ValueError, match="acquisition request"):
         pilot.replay(root)
 
 
