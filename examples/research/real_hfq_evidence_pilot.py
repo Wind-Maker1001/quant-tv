@@ -21,7 +21,7 @@ from qbot.research.data.tdx import DAY_DTYPE, FORMAT_VERSION, safe_path
 from qbot.research.data.tdx_staging import frame_source_sha256, write_new
 
 
-VERSION = "600000-hfq-diagnostic-v2-publication"
+VERSION = "600000-hfq-diagnostic-v3-explicit-evidence"
 FIELDS = ("open", "high", "low", "close")
 DATES = ("2025-07-09", "2025-07-10", "2025-07-11", "2025-07-14",
          "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18")
@@ -165,12 +165,18 @@ def read_bound(root, relative, digest):
 def replay(root):
     root = safe_path(root)
     audit = strict_json((root / "initial-audit.json").read_bytes())
-    synthetic = audit.get("synthetic_only", False)
+    synthetic = audit.get("synthetic_only")
     if not isinstance(synthetic, bool):
         raise ValueError("synthetic boundary must be explicit boolean")
     acquired = strict_json((root / "acquisition.json").read_bytes())
     review = strict_json((root / "official-review.json").read_bytes())
     old_sources = audit["copied_sources"]
+    # Metadata classification is explicit at every level. It is not an attestation.
+    for entry in [review] + list(old_sources.values()) + list(acquired):
+        if not isinstance(entry, dict) or not isinstance(entry.get("synthetic_only"), bool):
+            raise ValueError("every evidence record requires an explicit synthetic boolean")
+        if entry["synthetic_only"] is not synthetic:
+            raise ValueError("inconsistent synthetic evidence classification")
     def old(name):
         return read_bound(root, "sources/" + name, old_sources[name]["sha256"])
     def new(name):

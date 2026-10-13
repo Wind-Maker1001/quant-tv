@@ -12,11 +12,12 @@
 未取得原字节再分发授权证明，因此首次推送前将该提交保存在本地私有Git引用、增量bundle及原字节副本中。
 该提交不进入发布分支祖先链；旧收据、缓存、DAY/staging、公告与历史实验未改写。
 
-发布内容是离线诊断示例、27项软件测试、虚构样本生成器和下列派生索引：
+发布内容是离线诊断示例、原27项软件边界及新增10项类型回归测试、虚构样本生成器和下列派生索引：
 
 - [来源索引](evidence/real-hfq-pilot-publication-v1/source-index.json)：来源类型、上游、取得日期、原字节SHA及字节数。
 - [派生结论](evidence/real-hfq-pilot-publication-v1/claims-summary.json)：局部RAW一致性、算法约束和缺口。
-- [验证摘要](evidence/real-hfq-pilot-publication-v1/verification-summary.json)：原测试收据SHA与发布源码SHA。
+- [原验证摘要](evidence/real-hfq-pilot-publication-v1/verification-summary.json)：原测试收据SHA与首次发布源码SHA。
+- [v3复核摘要](evidence/real-hfq-pilot-publication-v1/verification-summary-v3.json)：Codex P1类型标记修复、37项测试及最新源码SHA。
 
 不上传DAY、Parquet、供应商JSON/JSONP/因子原响应、公告全文/图片、个人路径或临时日志。
 公开SHA只索引本地保留字节，不代表授权、历史公开时间或完整覆盖。
@@ -100,12 +101,15 @@ TDX乘新浪因子生成的价格不会成为第三份独立HFQ证据。
 | 原真实字节试点 | 原27 passed，本轮再27 passed | 原收据及SHA保留私有，不改写 |
 | 原Windows完整离线集 | 2732 passed、2 network deselected、88 warnings、1010.60秒 | 原源码版本软件验收，不冒称发布HEAD或远端成功 |
 | 原索引/冻结 | 61份交付SHA、354份冻结文件、源码/报告一致 | 原字节及历史实验保留 |
-| 发布版测试 | 27 passed，无网络、无跳过，全部虚构数据 | 解析、篡改、同上游包装、数学约束、写入/路径的软件验证 |
+| 发布版测试 | 37 passed：原27项加10项类型回归，无网络、无跳过，全部虚构数据 | 解析、篡改、同上游包装、数学约束、写入/路径及类型标记的软件验证 |
 | 新模块重放原真实资料 | 与旧数值结果一致，只改版本/实现SHA及显式synthetic标记 | 金融结论不变，价格未公开 |
 | 远端研究/静态/工作流CI | 以PR当前HEAD的GitHub checks及交付摘要为准 | 不用旧本地结果冒充远端CI |
 
 发布源码SHA按Git文本LF规范化，真实来源原解析版本/取得时间保持原收据值。
 虚构样本输出明确`SYNTHETIC_TEST_ONLY`，不晋升真实参考或金融资格。
+Codex审查提出的P1已修复：根收据、各来源、获取收据、公告复核必须显式提供相同布尔类型标记。
+缺标记、非布尔值或矛盾标记均拒绝。旧包不默认当真实；经逐项复核后只在新本地元数据视图增加标记，
+保留旧元数据和原字节，且不升级历史可知时间。最新交付哈希索引为`delivery-index-v3.json`。
 
 ```powershell
 .venv-py39\python.exe -B -X utf8 -m pytest tests/research/test_real_hfq_evidence_pilot.py -q

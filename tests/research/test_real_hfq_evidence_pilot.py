@@ -172,3 +172,29 @@ def test_source_output_overlap_refused_without_mutation(monkeypatch, evidence):
     with pytest.raises(ValueError, match="overlap"):
         pilot.main()
     assert not (evidence / "new").exists()
+
+
+@pytest.mark.parametrize("target,value", [
+    ("audit", "MISSING"), ("source", "MISSING"), ("acquisition", "MISSING"), ("review", "MISSING"),
+    ("audit", False), ("source", False), ("acquisition", False), ("review", False),
+    ("audit", 1), ("review", "true"),
+])
+def test_missing_or_conflicting_kind_never_becomes_historical(tmp_path, evidence, target, value):
+    root = tmp_path / "evidence"
+    shutil.copytree(evidence, root)
+    filename = {"audit": "initial-audit.json", "source": "initial-audit.json",
+                "acquisition": "acquisition.json", "review": "official-review.json"}[target]
+    path = root / filename
+    payload = json.loads(path.read_bytes())
+    record = payload
+    if target == "source":
+        record = next(iter(payload["copied_sources"].values()))
+    elif target == "acquisition":
+        record = payload[0]
+    if value == "MISSING":
+        record.pop("synthetic_only")
+    else:
+        record["synthetic_only"] = value
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="synthetic"):
+        pilot.replay(root)

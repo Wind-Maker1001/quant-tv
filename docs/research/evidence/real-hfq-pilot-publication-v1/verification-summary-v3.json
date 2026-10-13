@@ -1,0 +1,35 @@
+{
+  "schema": "explicit-kind-verification-v3",
+  "addresses_review_comment": 4262046631,
+  "financial_status": "BLOCKED",
+  "certified_hfq_dates": 0,
+  "requires_kind_at": [
+    "initial-audit",
+    "every copied source",
+    "every acquisition",
+    "notice review"
+  ],
+  "missing_non_boolean_or_inconsistent_kind": "REJECTED_BEFORE_DATA_REPLAY",
+  "original_legacy_metadata": "UNCHANGED_AND_REJECTED_BY_V3_UNLESS_EXPLICITLY_REVIEWED_IN_NEW_METADATA_VIEW",
+  "new_local_metadata_view": {
+    "private_only": true,
+    "synthetic_only": false,
+    "original_raw_byte_hashes_unchanged": true,
+    "numeric_replay_unchanged": true,
+    "historical_availability_upgraded": false,
+    "metadata_sha_updated_for_explicit_classification": true
+  },
+  "software_tests": {
+    "baseline_cases": 27,
+    "new_kind_boundary_cases": 10,
+    "passed": 37,
+    "failed": 0,
+    "skipped": 0,
+    "synthetic_only": true
+  },
+  "source_sha256_git_lf": {
+    "examples/research/real_hfq_evidence_pilot.py": "455d849df54c9c703fcf447e7577a81948150374783319a1afd0cfae8ab79dd4",
+    "tests/research/test_real_hfq_evidence_pilot.py": "be6a54c59fd7cc0ca7e91fad7a9b2ff3fe842d1e942f13d57ead818574d52cb5",
+    "tests/research/hfq_pilot_fixture.py": "e522358fe3ce6efed43c99a80600f7c06b5dbc833ad944245a3100014e5a6a15"
+  }
+}
