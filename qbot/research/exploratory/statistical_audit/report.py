@@ -65,14 +65,14 @@ def plots(destination, tables, panel, regimes):
     figure, axes = plt.subplots(2, 1, figsize=(14, 8))
     spread.plot(ax=axes[0], linewidth=0.9)
     axes[0].set_title("Quintile selection diagnostic: B minus A in Q5-Q1")
-    axes[0].set_ylabel("5-session excess return difference (not portfolio P&L)")
+    axes[0].set_ylabel("B-A excess return spread\n(descriptive; not portfolio P&L)")
     axes[0].legend(ncol=7, fontsize=7)
     mean = spread.mean().reindex(names)
     maximum = spread.abs().max().reindex(names)
     pd.DataFrame({"paired-day mean B-A": mean, "max |B-A|": maximum}).plot.bar(
         ax=axes[1]
     )
-    axes[1].set_ylabel("Return difference; means exclude unavailable pairs")
+    axes[1].set_ylabel("Return difference\n(paired dates only)")
     save(figure, destination / "quintile_sensitivity.png")
     figure, axes = plt.subplots(3, 1, figsize=(14, 9), sharex=True)
     panel.plot(ax=axes[0], linewidth=0.7, legend=False)
@@ -209,6 +209,8 @@ Moving Block Bootstrap：20个实际交易日的重叠、非循环块，2000重�
 
 逐因子方法差异见rankic_method_sensitivity.csv（标准误、p、区间和标准误比）。lag或方法差异是敏感性证据，不据此选择参数。
 
+![RankIC三方法点置信区间](rankic_intervals.png)
+
 ## 冻结市场状态差异
 
 固定规则为BULL：close>MA60且MA20>MA60；BEAR：close<MA60且MA20<MA60；其余SIDEWAYS，复用原函数，不按结果调边界。回归用完整日轴三个状态指示变量且不加截距，系数即状态均值；状态差是两系数contrast，其HAC sandwich含两状态协方差，不把两份不独立样本当独立均值相减。
@@ -223,6 +225,8 @@ Moving Block Bootstrap：20个实际交易日的重叠、非循环块，2000重�
 三方法均通过且两状态至少60有效日的条件性支持：{'；'.join(state_support) if state_support else '无'}。
 涉及SIDEWAYS的差异均为描述性/样本不足，不能根据显著原始p升格；完整三方法结果见regime_comparisons.csv和regime_means.csv。
 
+![冻结状态均值差与区间](regime_intervals.png)
+
 ## 五分位口径敏感性
 
 A复用原探索口径：先取有限未来标签且有限因子，至少20个，再以rank(method=first)+qcut成五组。B在t日全部合格有限因子（至少20个）上分组，再仅于可观察标签上计算实现超额收益。保留原行序处理并列。A逐日数量、可观察数量、收益与冻结原ALL五分位CSV重放一致，正式evaluate_factors与Golden未修改。
@@ -234,6 +238,10 @@ quintile_daily.csv逐因子逐日逐Q1–Q5记录A/B总成员数、可观察成�
 有可观察成员变动的交易日共{len(changed_dates)}日：{', '.join(pd.to_datetime(changed_dates).dt.strftime('%Y-%m-%d')) if len(changed_dates) else '无'}。quintile_spread.csv记录每日Q5-Q1及B-A，quintile_monthly.csv记录每月变化、标签缺失率和有效配对数；平均仅使用两口径均可观察的日，NA与零分别保留。完整中间桶也可变，不能只看Q5-Q1。
 
 这只测量同一冻结样本内未来标签可取得性的分组选择偏差。它不测量停牌、退市、生存者、非PIT样本选择等全部偏差；未估计缺失标签的真实收益，也不能从A/B差推断总体偏差大小。没有真实建仓、再平衡、成交、成本或执行约束，Q5-Q1不是实际交易组合收益。
+
+![五分位选择敏感性](quintile_sensitivity.png)
+
+![原始日度序列、状态和标签覆盖](temporal_coverage.png)
 
 ## 统计限制、结论等级和五年研究
 
