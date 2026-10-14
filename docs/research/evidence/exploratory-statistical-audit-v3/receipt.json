@@ -124,16 +124,16 @@
     }
   },
   "code_and_environment": {
-    "git_revision_at_run": "bc8ee734e28aab2df70deca0b96e867bcaee6603",
+    "git_revision_at_run": "d74afe2d52999185f97d9f129a1315f3f186e621",
     "baseline_commit": "64c72ab0aee49bba59dbf7449f2c8235c61fca2c",
     "source_sha256": {
       "qbot/research/exploratory/statistical_audit/__init__.py": "19c35cd71d94117a6c48cc40cab91fc9c88cae82a2cda9fe6af6968883b7b1c3",
       "qbot/research/exploratory/statistical_audit/__main__.py": "30c7e5f93dab1864042539525eca6d3a8496b74ab83b3a6fe9ba2f51b9ef8f3b",
       "qbot/research/exploratory/statistical_audit/delivery.py": "7d4479a4addffcf5e142ba2b42c98a6910bf07cd0b93e901dc73a615e6a1bb46",
       "qbot/research/exploratory/statistical_audit/inputs.py": "aaba9b9c0a009ff250a8323b33174e0021d8f981350d538b0efa8adc48237868",
-      "qbot/research/exploratory/statistical_audit/quintiles.py": "b88a6aef28b3751c8486cbcb222f999d148c07c9e36b9bc01ecdc8ce50edd295",
-      "qbot/research/exploratory/statistical_audit/report.py": "0c2c6234ab6fe9077f3b506a7ddca97f41245a49fd2fda4b9b7cc937f4ad31eb",
-      "qbot/research/exploratory/statistical_audit/schemas.py": "6dc04361711d4ad1508b7fd737eef342742df408bb0d48bc2fce7b53dbf41a3f",
+      "qbot/research/exploratory/statistical_audit/quintiles.py": "1b6419e8a2cfa708a8d979aa4b784a883fb549aa19f2488bcd5ec94ddab09805",
+      "qbot/research/exploratory/statistical_audit/report.py": "c78f245be753a2242894800c3d7964e4110b6a7e1d2a51eee46368ab27ba5a26",
+      "qbot/research/exploratory/statistical_audit/schemas.py": "1b04036804dccea10e9ca4f15e7236939f4d3548d6035f9538a19cd96afbaa3d",
       "qbot/research/exploratory/statistical_audit/statistics.py": "6f65e52bf9fed5335caef113b36313c8a08fd5f8a3065d0b7806e068b1cbc1b9"
     },
     "source_hash_policy": "EXACT_SOURCE_BYTES_INCLUDING_LINE_ENDINGS",
@@ -168,11 +168,11 @@
     "label": "FROZEN_EXCESS_RET5_T_PLUS_1_TO_6"
   },
   "reasons": [],
-  "private_audit_receipt_sha256": "ce682960944823c5e03103c06005e41836da38d5640dbaaaccff9c85460547ef",
+  "private_audit_receipt_sha256": "005f501c5aadc91d27376e573326aba8cf273c878ef64a3e4c0f421afce84582",
   "artifacts": {
     "daily_input_audit.csv": "b4330d67a4d251c525673d2ae4c25ea1ad4489cdc32f6a85f0345e0da0f23b1f",
     "input_audit.json": "1640fad2702304f1f9d4823ba062aed1aeb2f3e9a091deda3641badbd27a17de",
-    "quintile_daily.csv": "4cb54aeeed2bf4a3bd6a9720c6bb675ab7c9380d5d2e6438a323bb1aa5328c53",
+    "quintile_daily.csv": "64f48059a4366234c27c93d38f7fe26365c47ecb90316559b85795d2e75d41e5",
     "quintile_monthly.csv": "63559d57aa39c194ef59244db6f24b9eb4436c0eec1e72157799ef7037c39820",
     "quintile_sensitivity.png": "e7be203723b10205a0d5cd1d590d5e70c00ff8c9de24affa34dd2e10f38ef9af",
     "quintile_spread.csv": "90eaf68b308f19a03a4510ee939d728a33eed6e9d97964731f3ece3e864a6b7f",
@@ -184,8 +184,8 @@
     "regime_intervals.csv": "279abc52600c5a41bdd28f3b5aced8c51361313b4455b6b81b27448c8d9e2543",
     "regime_intervals.png": "61fd6a49f529239291c6d8619e126d57aa19bc6486173ebc1e8e44cf5fc86446",
     "regime_means.csv": "cb9f982a0c88fc1d85ec46c087d5d88bc2733e9247d4e5405bc3eb7413ba07a2",
-    "report.md": "8645ac03e78036e48c281d504766281b7a4cf8986d9b628a254bb923d86bbe6a",
+    "report.md": "9674d1154770d25560799c29610553afa24332ac14eb2af0d84e50dbc6fbb006",
     "temporal_coverage.png": "357fef6964addf8473d20a0f612a98cffde3bd03e6d34867e9b753864aee4f4a"
   },
-  "receipt_sha256": "4242b626f0538cb4662af719462088d957838616f990fd273ac0c59b6457796c"
+  "receipt_sha256": "b04bf408064da9b6c839f68cf4cde984347e97c5b7ff0bdee056e53e24cd9a50"
 }

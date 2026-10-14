@@ -77,7 +77,7 @@ Moving Block Bootstrap：20个实际交易日的重叠、非循环块，2000重�
 
 A复用原探索口径：先取有限未来标签且有限因子，至少20个，再以rank(method=first)+qcut成五组。B在t日全部合格有限因子（至少20个）上分组，再仅于可观察标签上计算实现超额收益。保留原行序处理并列。A逐日数量、可观察数量、收益与冻结原ALL五分位CSV重放一致，正式evaluate_factors与Golden未修改。
 
-quintile_daily.csv逐因子逐日逐Q1–Q5记录A/B总成员数、可观察成员数、成员集合SHA、可观察成员交集与对称差数、平均收益、B-A差及标签缺失率。A桶内缺失率机械为零，不代表无选择偏差；label_missing_rate的分母是B口径当日全部有限因子证券。尾部A无分组、B仍形成组但无实现收益，保留NA，不能补零。实际证券成员及可观察标记仅在私有private_quintile_membership.csv可复核。
+quintile_daily.csv逐因子逐日逐Q1–Q5记录A/B总成员数、可观察成员数、可观察成员交集与对称差数、平均收益、B-A差及标签缺失率。A桶内缺失率机械为零，不代表无选择偏差；label_missing_rate的分母是B口径当日全部有限因子证券。尾部A无分组、B仍形成组但无实现收益，保留NA，不能补零。实际证券成员及可观察标记仅在私有private_quintile_membership.csv可复核，整份私有表由收据SHA绑定。公开表不提供逐桶成员集合哈希，避免对已知50股小集合的枚举与相等性链接。
 
 | factor | paired_dates | mean_A | mean_B | mean_B_minus_A | max_abs_difference | changed_spread_dates |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -4,7 +4,7 @@
 
 本入口仅复用PR #3封存的50股、2025-09-12至2026-09-11真实数据，原语义版本 `2f145d173f5ddc79d303f580bc4485241023ae3971d3b40a2e8fa6e3de2e3f5f`。main基线 `64c72ab0aee49bba59dbf7449f2c8235c61fca2c` 的[完整研究CI](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38530507226)和[静态CI](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38530507234)通过后，建立 `codex/exploratory-statistical-audit`。
 
-[中文报告](evidence/exploratory-statistical-audit-v2/report.md)、[公开收据](evidence/exploratory-statistical-audit-v2/receipt.json)、[输入核验](evidence/exploratory-statistical-audit-v2/input_audit.json)与同目录10张CSV及4张PNG提供完整复核材料。旧探索v1/v2与其收据原样保留。实际证券分位成员仅保留在忽略的私有审计运行目录，不随PR上传。
+[中文报告](evidence/exploratory-statistical-audit-v3/report.md)、[公开收据](evidence/exploratory-statistical-audit-v3/receipt.json)、[输入核验](evidence/exploratory-statistical-audit-v3/input_audit.json)与同目录10张CSV及4张PNG提供完整复核材料。旧探索v1/v2与其收据原样保留。实际证券分位成员仅保留在忽略的私有审计运行目录，不随PR上传。
 
 ## 计算合同
 
@@ -26,7 +26,7 @@ Windows / Python3.9隔离研究环境。必须持有原经授权的私有输入�
   --output results/exploratory
 
 .\.venv-py39\python.exe -m qbot.research.exploratory.statistical_audit `
-  --verify docs/research/evidence/exploratory-statistical-audit-v2/receipt.json --public
+  --verify docs/research/evidence/exploratory-statistical-audit-v3/receipt.json --public
 ```
 
 公开产物可单独核验其收据，不需要把私有行情下载到CI。真实重算须重新验源哈希、原计算代码、证券级因子/标签/状态、日度IC/覆盖和原A分位；聚合CSV不能用来反推成员。缺输入、版本变化、代码证据失败、统计合同失败返回退出码2，产生独立BLOCKED报告和收据；不伪造实证。

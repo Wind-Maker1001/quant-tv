@@ -326,15 +326,38 @@ def test_public_quintile_diagnostic_omits_enumerable_bucket_commitments():
     assert len(private) > 0
 
 
-def test_old_bucket_hash_column_is_rejected_even_with_valid_artifact_hash(tmp_path):
+@pytest.mark.parametrize("private_column", ["A_member_sha256", "B_member_sha256"])
+def test_old_bucket_hash_column_is_rejected_even_with_valid_artifact_hash(
+    tmp_path, private_column
+):
     from qbot.research.exploratory.statistical_audit.schemas import CSV_COLUMNS
 
     root = private_package(tmp_path)
-    columns = CSV_COLUMNS["quintile_daily.csv"] + ["A_member_sha256"]
+    columns = CSV_COLUMNS["quintile_daily.csv"] + [private_column]
     pd.DataFrame(columns=columns).to_csv(root / "quintile_daily.csv", index=False)
     write_receipt(root, "BLOCKED", {}, {}, ["SOFTWARE_TEST_ONLY"])
     with pytest.raises(ExploratoryContractError, match="CSV columns"):
         publish_audit(root, tmp_path / "public")
+    assert not (tmp_path / "public").exists()
+
+
+def test_public_tables_are_invariant_to_private_symbol_renaming():
+    source = quintile_fixture()
+    renamed = source.copy()
+    renamed["symbol"] = ["PRIVATE_ALTERNATIVE_%d" % n for n in range(len(source))]
+    before = compare_quintiles(source, ["F"])
+    after = compare_quintiles(renamed, ["F"])
+    for original, observed in zip(before[:3], after[:3]):
+        pd.testing.assert_frame_equal(original, observed, check_exact=True)
+    assert not before[3].symbol.equals(after[3].symbol)
+
+
+def test_private_membership_file_tampering_fails_whole_file_commitment(tmp_path):
+    root = private_package(tmp_path)
+    membership = root / "private_quintile_membership.csv"
+    membership.write_bytes(membership.read_bytes() + b"TAMPERED")
+    with pytest.raises(ExploratoryContractError, match="artifact hash"):
+        verify_audit(root / "receipt.json")
 
 
 def test_code_version_failure_produces_blocked_not_an_unhandled_exception(

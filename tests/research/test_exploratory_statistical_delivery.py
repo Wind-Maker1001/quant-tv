@@ -16,7 +16,7 @@ from qbot.research.exploratory.runner import FACTOR_NAMES
 
 EVIDENCE = (
     Path(__file__).resolve().parents[2]
-    / "docs/research/evidence/exploratory-statistical-audit-v2"
+    / "docs/research/evidence/exploratory-statistical-audit-v3"
 )
 
 
@@ -44,6 +44,7 @@ def test_all_quintile_days_and_unmatured_tail_are_explicit_without_private_ids()
     assert len(q) == 14 * 242 * 5
     assert not q.duplicated(["factor", "date", "quantile"]).any()
     assert "symbol" not in q and "EXCESS_RET5" not in q
+    assert not any("sha256" in column or "hash" in column for column in q)
     tail = q.loc[q.date.ge("2026-09-04")]
     assert len(tail) == 14 * 6 * 5
     assert not tail.A_formed.any() and tail.B_formed.all()
