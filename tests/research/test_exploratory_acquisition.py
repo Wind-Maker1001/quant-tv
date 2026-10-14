@@ -1,6 +1,7 @@
 """SYNTHETIC_TEST_ONLY: offline acquisition provenance regression tests."""
 
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -13,6 +14,33 @@ from qbot.research.exploratory.acquire import (
     utc_now,
 )
 from qbot.research.exploratory.contract import sha256_file
+
+
+@pytest.mark.parametrize(
+    "cache_arguments, expected_cache",
+    [
+        ([], None),
+        (
+            ["--benchmark-cache", "data/research/benchmark"],
+            Path("data/research/benchmark"),
+        ),
+    ],
+)
+def test_cli_fresh_checkout_selects_live_or_explicit_cache(
+    tmp_path, monkeypatch, cache_arguments, expected_cache
+):
+    import qbot.research.exploratory.acquire as acquisition
+
+    calls = []
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        acquisition, "acquire", lambda *args, **kwargs: calls.append((args, kwargs))
+    )
+    acquisition.main(["--output", "private-dataset"] + cache_arguments)
+    assert len(calls) == 1
+    assert calls[0][0][0] == Path("private-dataset")
+    assert calls[0][1]["benchmark_cache_root"] == expected_cache
+    assert not (tmp_path / "private-dataset").exists()
 
 
 def test_stock_list_cannot_be_refrozen_after_acquisition(tmp_path):

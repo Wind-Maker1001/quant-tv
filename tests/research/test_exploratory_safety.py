@@ -672,3 +672,143 @@ def test_receipt_hash_and_exploratory_boundaries_survive_reader_checks(
         receipt_path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ExploratoryContractError):
         verify_receipt(receipt_path)
+
+
+@pytest.mark.parametrize(
+    "role,broken_bytes",
+    [
+        ("bars", b"SYNTHETIC_TEST_ONLY; corrupt parquet bytes\n"),
+        ("benchmark", b"SYNTHETIC_TEST_ONLY; corrupt parquet bytes\n"),
+        ("calendar", b"SYNTHETIC_TEST_ONLY_other_column\n2025-01-02\n"),
+        ("calendar", b""),
+        ("sample", b'{"SYNTHETIC_TEST_ONLY":'),
+        ("sample", b"\xffSYNTHETIC_TEST_ONLY invalid UTF8"),
+        ("sample", b'["SYNTHETIC_TEST_ONLY"]'),
+        ("sample", b"null"),
+    ],
+    ids=[
+        "corrupt-bars-parquet",
+        "corrupt-benchmark-parquet",
+        "calendar-missing-date",
+        "calendar-empty-csv",
+        "sample-malformed-json",
+        "sample-invalid-utf8",
+        "sample-json-array",
+        "sample-json-null",
+    ],
+)
+def test_hash_consistent_unreadable_inputs_are_contract_failures(
+    synthetic_dataset, role, broken_bytes
+):
+    """A matching digest authenticates bytes, never their parseability."""
+    path, _, _, _, original, _ = synthetic_dataset
+    manifest = deepcopy(original)
+    item = manifest["files"][role]
+    artifact = path.parent / item["path"]
+    artifact.write_bytes(broken_bytes)
+    item["sha256"] = sha256_file(artifact)
+    manifest["data_version"] = manifest_version(manifest)
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    assert manifest["data_version"] != original["data_version"]
+    assert item["sha256"] != original["files"][role]["sha256"]
+    validate_manifest(manifest, allow_synthetic=True)
+    with pytest.raises(ExploratoryContractError) as failure:
+        load_dataset(path, allow_synthetic=True)
+    assert str(failure.value)
+
+
+@pytest.mark.parametrize(
+    "manifest_bytes",
+    [
+        b'{"SYNTHETIC_TEST_ONLY":',
+        b"\xffSYNTHETIC_TEST_ONLY invalid UTF8",
+        b'["SYNTHETIC_TEST_ONLY"]',
+        b'{"SYNTHETIC_TEST_ONLY": NaN}',
+    ],
+    ids=["malformed-json", "invalid-utf8", "non-object-json", "nonfinite-json"],
+)
+def test_unreadable_manifest_has_contract_error_and_cli_blocked_report(
+    tmp_path, capsys, manifest_bytes
+):
+    """Broken input produces a failure report with zero empirical results."""
+    from qbot.research.exploratory.__main__ import main
+    from qbot.research.exploratory.runner import verify_receipt
+
+    path = tmp_path / "unreadable-manifest.json"
+    path.write_bytes(manifest_bytes)
+    with pytest.raises(ExploratoryContractError):
+        load_dataset(path)
+    code = main(
+        ["run", "--manifest", str(path), "--output", str(tmp_path / "exploratory")]
+    )
+    assert code == 2
+    result = json.loads(capsys.readouterr().out)
+    assert result["status"] == "BLOCKED"
+    assert result["reasons"]
+    from pathlib import Path
+
+    output = Path(result["output_dir"])
+    receipt = verify_receipt(output / "receipt.json")
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["input_metadata_verified"] is False
+    assert receipt["data_version"] is None
+    assert receipt["forward_allowed"] is False
+    assert receipt["live_allowed"] is False
+    assert not (output / "daily_ic.csv").exists()
+
+
+def test_cli_turns_deserialization_contract_failure_into_blocked(
+    tmp_path, monkeypatch, capsys
+):
+    """Mock only a reader failure; never admit generated data as real prices."""
+    from pathlib import Path
+
+    from qbot.research.exploratory import runner
+    from qbot.research.exploratory.__main__ import main
+
+    reason = "SYNTHETIC_TEST_ONLY mocked input reader failure: unreadable bars parquet"
+
+    def unreadable(*args, **kwargs):
+        raise ExploratoryContractError(reason)
+
+    monkeypatch.setattr(runner, "load_dataset", unreadable)
+    code = main(
+        [
+            "run",
+            "--manifest",
+            str(tmp_path / "missing-authorized-input.json"),
+            "--output",
+            str(tmp_path / "exploratory"),
+        ]
+    )
+    assert code == 2
+    result = json.loads(capsys.readouterr().out)
+    assert result["status"] == "BLOCKED"
+    assert result["reasons"] == [reason]
+    output = Path(result["output_dir"])
+    receipt = runner.verify_receipt(output / "receipt.json")
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["input_metadata_verified"] is False
+    assert receipt["data_version"] is None
+    assert receipt["formal_admission"] is False
+    assert receipt["forward_allowed"] is False
+    assert receipt["live_allowed"] is False
+    quality = json.loads((output / "data_quality.json").read_text(encoding="utf-8"))
+    assert quality["empirical_results_computed"] is False
+    assert not (output / "derived_factor_labels.parquet").exists()
+
+
+def test_hash_consistent_nested_sample_symbols_fail_as_contract_error(
+    synthetic_dataset,
+):
+    path, _, _, _, original, sample = synthetic_dataset
+    manifest = deepcopy(original)
+    sample = deepcopy(sample)
+    sample["symbols"] = [["SYNTHETIC_TEST_ONLY"]]
+    artifact = path.parent / manifest["files"]["sample"]["path"]
+    artifact.write_text(json.dumps(sample), encoding="utf-8")
+    manifest["files"]["sample"]["sha256"] = sha256_file(artifact)
+    manifest["data_version"] = manifest_version(manifest)
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ExploratoryContractError, match="structured dataset"):
+        load_dataset(path, allow_synthetic=True)

@@ -739,9 +739,7 @@ def main(argv=None):
     parser.add_argument("--research-end", default="2026-09-11")
     parser.add_argument("--history-start", default="2025-01-01")
     parser.add_argument("--passes", type=int, default=3)
-    parser.add_argument(
-        "--benchmark-cache", type=Path, default=Path("data/research/benchmark")
-    )
+    parser.add_argument("--benchmark-cache", type=Path, default=None)
     args = parser.parse_args(argv)
     acquire(
         args.output,

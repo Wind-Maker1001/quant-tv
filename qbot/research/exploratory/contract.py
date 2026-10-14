@@ -7,6 +7,7 @@ import re
 
 import numpy as np
 import pandas as pd
+from pyarrow import ArrowException
 
 from qbot.research.data.schema import (
     CANONICAL_BAR_COLUMNS,
@@ -266,20 +267,50 @@ def _artifact(root, item):
     return resolved
 
 
+def _decode_input(path, role, reader):
+    """A valid byte hash does not guarantee a decodable market-data file."""
+    try:
+        return reader(path)
+    except (OSError, ValueError, TypeError, ArrowException) as exc:
+        raise ExploratoryContractError(
+            "cannot decode %s input (%s)" % (role, type(exc).__name__)
+        ) from exc
+
+
+def _read_json(path):
+    def reject_nonfinite(value):
+        raise ValueError("nonfinite JSON constant: %s" % value)
+
+    return json.loads(path.read_text(encoding="utf-8"), parse_constant=reject_nonfinite)
+
+
 def load_dataset(manifest_path, allow_synthetic=False):
     path = Path(manifest_path).resolve()
-    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest = _decode_input(path, "manifest", _read_json)
     validate_manifest(manifest, allow_synthetic=allow_synthetic)
-    paths = {
-        key: _artifact(path.parent, item) for key, item in manifest["files"].items()
-    }
-    for item in manifest["sources"]:
-        _artifact(path.parent, item)
-    bars = pd.read_parquet(paths["bars"])
-    benchmark = pd.read_parquet(paths["benchmark"])
-    calendar = _dates(pd.read_csv(paths["calendar"])["date"], "calendar")
-    sample = json.loads(paths["sample"].read_text(encoding="utf-8"))
-    validate_dataset_frames(bars, benchmark, calendar, manifest, sample)
+    try:
+        paths = {
+            key: _artifact(path.parent, item) for key, item in manifest["files"].items()
+        }
+        for item in manifest["sources"]:
+            _artifact(path.parent, item)
+    except OSError as exc:
+        raise ExploratoryContractError("cannot read hashed dataset artifacts") from exc
+    bars = _decode_input(paths["bars"], "bars Parquet", pd.read_parquet)
+    benchmark = _decode_input(paths["benchmark"], "benchmark Parquet", pd.read_parquet)
+    calendar_frame = _decode_input(paths["calendar"], "calendar CSV", pd.read_csv)
+    if "date" not in calendar_frame.columns:
+        _fail("calendar missing required date column")
+    calendar = _dates(calendar_frame["date"], "calendar")
+    sample = _decode_input(paths["sample"], "frozen sample JSON", _read_json)
+    try:
+        validate_dataset_frames(bars, benchmark, calendar, manifest, sample)
+    except ExploratoryContractError:
+        raise
+    except (SchemaError, ValueError, TypeError, KeyError, OverflowError) as exc:
+        raise ExploratoryContractError(
+            "invalid structured dataset input (%s)" % type(exc).__name__
+        ) from exc
     # These attrs aid inspection only. Existing formal admission continues to
     # require its own replayable qualification and PIT evidence.
     for frame in (bars, benchmark):

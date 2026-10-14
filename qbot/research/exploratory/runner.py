@@ -637,7 +637,7 @@ def run_research(manifest_path, output_root=Path("results/exploratory")):
                 manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
                 if not isinstance(manifest, dict):
                     manifest = {}
-            except (OSError, json.JSONDecodeError):
+            except (OSError, UnicodeError, json.JSONDecodeError):
                 pass
         key = hashlib.sha256(
             json.dumps(
