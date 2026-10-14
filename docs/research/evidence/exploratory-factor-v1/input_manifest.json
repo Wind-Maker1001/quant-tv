@@ -1,0 +1,1752 @@
+{
+  "schema": "EXPLORATORY_PUBLIC_SOURCE_INDEX_V1",
+  "purpose": "EXPLORATORY",
+  "qualification": "UNVERIFIED",
+  "formal_admission": false,
+  "markers": [
+    "EXPLORATORY",
+    "UNVERIFIED",
+    "HISTORICALLY_RECONSTRUCTED",
+    "NO LIVE MONEY",
+    "NOT FORMAL CSI500 EVIDENCE"
+  ],
+  "data_version": "2f145d173f5ddc79d303f580bc4485241023ae3971d3b40a2e8fa6e3de2e3f5f",
+  "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2",
+  "data_files": {
+    "bars": {
+      "path": "bars.parquet",
+      "sha256": "6e6b34bfe6d9e85ef5a5ffe5694cce7fd0a9f03a0f1ed10247877d22f51df1a9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    "benchmark": {
+      "path": "benchmark.parquet",
+      "sha256": "5dc4106ca81665f81f8716ec834e6ef536e8a70be464ddd33a75f979140e06c9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    "calendar": {
+      "path": "calendar.csv",
+      "sha256": "4a65f8c06115661d93c98f2a57ffe08b04f02683a5d4add27b1f0e68eb4cfbf7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    "sample": {
+      "path": "sample.json",
+      "sha256": "0bc4b7c530b2ce2480e9fd64195a398d74c4cc826e3b8f291428e3ecf2d9fa41",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    }
+  },
+  "raw_source_bytes_published": false,
+  "reproduction_requires_authorized_private_input": true,
+  "vendor": "AKSHARE_EASTMONEY",
+  "retrieved_at": "2026-10-14T06:46:00.921515+00:00",
+  "research_start": "2025-09-12",
+  "research_end": "2026-09-11",
+  "warmup_min_sessions": 130,
+  "units": {
+    "price": "CNY",
+    "volume": "SHARES",
+    "amount": "CNY",
+    "turnover": "RATIO"
+  },
+  "price_basis": {
+    "canonical": "RAW",
+    "raw": "RAW",
+    "adj": "HFQ"
+  },
+  "benchmark_basis": "CSI500_PRICE_INDEX_UNADJUSTED",
+  "limitations": [
+    "survivorship bias",
+    "convenience selection bias",
+    "large-cap/known-name bias",
+    "no historical PIT membership",
+    "No verified historic trading/ST/limit status: vendor present price rows only",
+    "OHLC label proxy does not establish executable trades",
+    "Future prices after research_end are not fetched; terminal labels remain missing",
+    "NO LIVE MONEY",
+    "NOT FORMAL CSI500 EVIDENCE"
+  ],
+  "source_contract": {
+    "stocks": "Eastmoney RAW and vendor HFQ from stock_zh_a_hist; no independent HFQ replication",
+    "raw_vendor_units": {
+      "price": "CNY",
+      "volume": "HANDS_100_SHARES",
+      "amount": "CNY",
+      "turnover": "PERCENT"
+    },
+    "benchmark": "CSI official price-index history through AKShare stock_zh_index_hist_csindex",
+    "benchmark_vendor": "CHINA_SECURITIES_INDEX_COMPANY",
+    "stock_vendor": "EASTMONEY",
+    "capture_transports": [
+      "REQUESTS_HTTP_BYTES",
+      "FIRECRAWL_RAWHTML_REPRESENTATION"
+    ],
+    "firecrawl_scope": "Non-LLM retrieval of the same exact Eastmoney URL; rawHtml JSON text and complete tool envelope retained, not independent wire-byte evidence or a second vendor",
+    "replay_selection": "Latest timestamp among exact-URL captures; original representations are retained unchanged",
+    "benchmark_units": {
+      "price": "INDEX_POINTS",
+      "volume": "SHARES",
+      "amount": "CNY",
+      "turnover": "NOT_APPLICABLE"
+    },
+    "benchmark_cache_provenance": {
+      "source": "AKShareProvider",
+      "source_version": "akshare=1.18.88;contract=stock_zh_index_hist_csindex-v1",
+      "retrieved_at": "2026-10-10T13:51:56.902957+00:00",
+      "data_sha256": "9832a898a5bba8b4fbc971d796bc1239075aebfacff35c1a736b86a9b514cd05",
+      "metadata_sha256": "3c5f874cc51631d02168c5e39324dc49c7fc0740cc1c3f1ca982630c2c142dd4",
+      "generation_id": "4f0b56be280e4bff88a4aa45d72cde64",
+      "note": "Previously authorized CSI official price-index cache; exact original bytes retained and hash-validated"
+    },
+    "benchmark_adjustment": "PRICE_INDEX_NOT_EQUITY_HFQ: adj OHLC equal index OHLC; no corporate actions",
+    "calendar": "Observed actual CSI500 benchmark sessions; no synthetic weekday calendar",
+    "adj_factor": "adj_close/raw_close schema ratio only; no certification of vendor algorithm",
+    "upstream_vintage": "UNKNOWN_UNVERIFIED",
+    "historical_revisions": "download-date reconstruction; historically revised vendor HFQ may differ from as-known-at-t prices",
+    "documentation": [
+      "https://akshare.akfamily.xyz/data/stock/stock.html",
+      "https://akshare.akfamily.xyz/data/index/index.html"
+    ]
+  },
+  "source_artifacts": [
+    {
+      "sha256": "49feb0b48af322dff2afa35094bf6404ac1a5d1ddb2cefc93324286541a3b5d6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "39fc652c590d9ca897d102693bc058304bcff6c9206bc7174e9aa53dcbab89aa",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "2bc52b98d4d80b99eb961aa445eec72ff9939c8e8963fe96e14e64f072d3ac1e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f477e4e10777987e9bbab9a32c70021447dc2a02af511b29cf3c8b455508bf0f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c8b59c8c1eccec933b125e190ce8e556b4807f32dfc5241b02702e3d2de5606a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "06cd8730f98ec1ea88fb91fe9c6a5038a32eca8191fdd14031393140ad34d7e3",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f24ed16bddf5f22d475b4e191d8fa95d2ceeb1fd25908fd0b3a3d6b745574aaa",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "de605e63d6b0b00ab2222b2ed5fafd9fcb60696c543e883b08cd48abb9c916d9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b2a7cf43355e97f6d472bb5274e0cad48fa511391e64479e277700028c8125ae",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a485c4a2a25bc1c660ea84f75b6ec7aac2e11497dfe23ce34401ad90b90da461",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4a6aac66f8939cdf1e169a04fa2178cab52d50ff2fd4a0a221a61179ce97b21a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d8dc3060ac41178f06ebfd7b2f2d20349c25703d605e375f183b450a7b6f9e90",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "41b7a17c04ef55866eaa28907fc876f386981b91369481e4313d2395e7f06a2b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c81e0bb961ff5c98255a7e2d884330470a94b0c4b90a009a4569def82fd63822",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "328b9c9a60b0e1d6d67e13fbea286cc516787a4f7ce93a76748c8b59c129b25f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "231682a5e4effa71288c83af59778383dcc9cb278db8b45372087923d2a11e78",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8442983436ad0bee0ae05097b60313f6cd00b2102f21ecd6473e1721d22ec547",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b8ab003ce541d95f2da49e13f2c548fceb6c9161595c40c59b57c69f6fe885b8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "290faa3edfd3bbab426ec4d4ccdf3ffb4072a7946b5be61768f5841e874cb837",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b498c34c90507e336c3801f895adac838156c154ca3e4a7a5def1453117b70f6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ecc94d10bb4dc6801fb18b88e4e13dcbdb992960a24cd03a58c1aa061c1e4718",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d5205a789ca3da52876a57d75b4d5e7a148749c55411fee7f5c5560a6e11a607",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "494073e52e38424f0f982dcb7085820e12d369cecc9c5fb28b9d37ad8c278f44",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "300669047e663b976d84824e0af76b1ea6793448d490656d11c19b5b1e368ab4",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a69d456394c060d10f84cdb4f70192b0947346f79d99dfda17fc15035c3f2221",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c10aa486fd9af40766d458918e7098f3912920657e7adfb8bcf8d90f7013c230",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8a5ca558e94915d9af2059e0993d1fb5c7ea30b60e4b3d5f5c6227690f778fdf",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ac4e4159fd27eab25529a50138390fab7a6f70f9d779f6414ff2417d2dc5cdc9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d43ac039f26953d79784c9d56af69d7d734ed656c6e6162fe9cf0658ac98ef41",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b404685f966344c5e39fbd8235acd94bf23d70fb25942b29af217fcb7845f88c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f67851c239542f6f9fda34139b83e77ba4298a462f1e56fe6bafe9fa63feb125",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "07b437c1a3abfc2e18789de835b41c93fc9275c0af2273fa58ac0295aa4ac388",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d7b21d63ad635856980e342fc559eb94f7dba8fc851a670894a2492e5a7efa91",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "05628e25c5ff16c3139c06c114e5612d8cb119544b53e605be448536e52bdd61",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9b6e37b13d469d2fcd80e8284f33d1a6533e3fc5e22fe87cf8e9fcbcbba971bd",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c55b345e001fb55afb68f3038a25602471294f3b3d0e7dfcc760df6f6dcfb17d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "2c1511c141a8f16bcd087133c911b8434804515662f4c12f9ad9a1386d099e60",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e1247e8f03b05fbc06201881c866713297a077a95de3b0997938bd2359b57bad",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e782f73dfdd2e4d389118066f316aa75f0b64b1ca3cc31752341c44ca1ad03b9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "08207b9eb4070bd4a9080074054b8f9ab743b24db2cde9192e9858ae64c98f69",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "09f9963fc4a2986ccaa91388774c41731a28f2b6d0cc676cc3ee0fdcda7e47c6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c511fc043421dc0868885ca0ce58727027dcc83c5e2ae0275693d5bc3c0cb0c8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d4de80a48646dd57247b7c1f1725264884a9418f37a814511b14f98c892232eb",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "25427bc3ea02a1189840294120b3210eee428fe7ed07abf7d1709a925d1c7dfc",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5cada2ce17aa7501d749e0d7be4b8dfa0d6d5bbbd21ad7e6706bec1ff4a5d6f4",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ac034ddf0314698e05e882db4e26da68ec6cb77a34b7404378c58f44b3300eb7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "30c605f4662b7110b6d036db456150fb61298be777bc676eba9a9798ad82ab94",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9cb33fed04c76c8305d6a6a0906e4bc468ee5e78659c77722987bb8909534572",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6f1271b4eedbf109af2c1dc32b7b0b4e747ae3b67ad6629c745d28fe20854293",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "2548f28ceeb3fb93b63bd39d813e32c250fe4b4b55854534e1700569eb6c6f0e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a7ec28d58f8cda40008f07227e6f65d762d64e47dbbdad3fcd9dfd62d046d6e4",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0169d8747a39b4c3a3e009f0e1e6deb4cb2a833b0d67ef0534c754ffe0670b54",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4db74936359e87311eb8c0b381a8599995b1bf50b5adc311687b5d98cbc9e4c2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ff291182e4f3cb54567ac17f5887f84c24b9cee72c4dad6f1caebe76cf06d68a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "51d96a859c7fa6a935a8f46fb36a1a214eda17e54eef0eded51104b849a188b6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8322de9d9913263fbd4bd17ea1e1cf56bab02c28c5465c4a82285916f6db4a35",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "97e93dcbcc45047286da76a77c95cdaea6bd4a97397b8b323043a1093db4a105",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3169411c82ed1db0da08c47218005d464548fb5ef61bda168c51cde8a5d39188",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "14f698560c26c581bc1e809324a13ecbba21e4b93f57b8549fa9521a437aa22e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "886ed59fd983c1f68efce8c17f8122121232b4940dde602352168de394950c6e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "282b5bd0b4d7474853e7988a65cfe91845b43c875419cd3f672368e1e6dcb9e5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e9f2901bbe06c935f6417aedc69500375fc31727eae66099c655901038039525",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e1b18d87c82ebc2720fc58b81554d4fe4c887404fca29f2a81475b31b639cf07",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8dc3715908225ad2692f23dfdf318e5aee11b7307f49ea1e03ef6afb82727bc9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9d3971ffea4e614a38a40b48786b0dd3a7d3a2656ef0c2a2333010db2d3479d9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9dbe9e4731fac453c8e4aada02a11b8a6503e9a8a6e437a3b0db084cf3075381",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3c5f874cc51631d02168c5e39324dc49c7fc0740cc1c3f1ca982630c2c142dd4",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9832a898a5bba8b4fbc971d796bc1239075aebfacff35c1a736b86a9b514cd05",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "920e70f570ad398531e801e5eeb75cbc0c0314c19c4669e87f88df5b720b81af",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7d4711fe9258728cbeeb90df3f3d38f1f6ea4e5c14b4fa91f1a54472f4f7e8c5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "26877834f803b85a5e5faf315afb63189a9fcb448d40b1ee18953e04223c86a2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8bf79fa4c48585851d24fe9657097105d154655ee9ac5f6f9c14d2a25ade366a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5d9b6354bbe405a736adc9acb6b88a9cfa14b3851a97f6977df10f8abfe25219",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "41b7a17c04ef55866eaa28907fc876f386981b91369481e4313d2395e7f06a2b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a485c4a2a25bc1c660ea84f75b6ec7aac2e11497dfe23ce34401ad90b90da461",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "adafacb5d14eae46787a065e923c8d20cb45da731bc6bdb94f9063a735c0a26a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7983d893e1c7c16e92032d8d4cc2e09fb0776960404fe4a4f01d2f39e3bc9bee",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c4406a41171c9e0792f9c9b9630bb705228ae8aeae1cca78ed2db6037c923f4d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3969be2e312fd2b30f818e62c56558d5f931b3dc7289778a143f0ddff2a78ef8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c4c31f1dcf24d55d9d0e4c54c5e31ce95b026ee8e4727c0d2370fc3ddfbf76c5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9100ae5755a9242be79c5e7b1c434cfb919570e11389a9055ef041969807aaa2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "1319734069db003a5ab519334cc5e4abb498176868b84de1c2381f361c41f142",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "40f6e2c185597130ed3a336d27da9186c513d02801b2cc601c0ab40821648e9d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "66e365d0c5aeacb6850af354226360a01c7a411472391e7cbe1ca672f8889f31",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7db29b83f4bfdc4993daf0de453e9aaf9cd48b635f1e3187b7433199235bd103",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ef425e52a2b933ce32325f134a83dcdcfe12dee520cb4d15cc3e940928fa0cad",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "dfb731cb91e769910d1f430004fac482b3f5c369996f41322864b8c1f19618e9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f2e86ad39717ad9ff8a3b060e32bf893be99f3d52a8fdc5dd623c8484c8d307c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5b4eb66748c3ac9e5c16500cad9625de0f5f5b8ff59587c36ecc2d57417cd513",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ee2505ba41029090366ea2aed1e6bf7c52dfe5afc36687e87d2bd49a803308a8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "250984a34cf5f7b3b316f6983dce7f08390a25af1f78e4721422305d0651779f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f477e4e10777987e9bbab9a32c70021447dc2a02af511b29cf3c8b455508bf0f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "49feb0b48af322dff2afa35094bf6404ac1a5d1ddb2cefc93324286541a3b5d6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "de54379545bdc0ca9fb55b1eb6727af80511e4fcc467e465981f3050e9063714",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "67d6754581d31254d3d85afc640a67099df145f72d5598ea2afd4ffc31391ed7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "665b14d7fa07e70a638564d638eb5137bbd87083fd29692b4c127e5308104f6f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "2e1967fc347dafdb06d5f0237c2d2b8c1a7daab3873058ea4376e4e437b6c0bf",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "2b6baaa928fac3c4cceef6513dc7dae3782832e6d5a73142f4b06eb7f1ec0e82",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "340cda34a456394bcbbcf0cbe7cedef3e74cd282ad1c9d517573aa19f63c44fe",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c539a78babe072dbca6e130c969e7251cf760e2e50f89962ed30f49f2d90e3ba",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "028bad67437bcff7aa4e7862c726fe699e2ececaaaf536bf9d6fb2af52f6aa8f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d05cea74d7ccc2e1a342a7b68c48b273dca547480b76e30efa5e92cf11dd0bae",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "2a3d95b4180b878b34bd5a3959d25268b477e1b93d8801d5022dba9a3d5f7cca",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "557312f6b5a20ec945d100578030686533d3256e327064c495b562b94d63d16f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "134cf5adf8024f274ce09bf1cf05be0309abe77fc5b08e1db89061e9eb9e8bdf",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b6e2ec1fc1bab86b1d0b4906de73a528ddf87cc945ddcc658bbab04b5445f9ce",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5b2580e395d6b119c9dc8a017ecec9e567fd4602e11e85e248355f02b33572a3",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ae1456533d8b624e0a87e39b355dea3636b915f71244a575841f4ab2afbcdeac",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "55e3603ba5c9e6e81dd1b72cce07a2484c8d5a0630eef6f05dc253cb30ac56c2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "036d92c49b9d73a50d7e403475e711aa50dae0701009ffaf080e04de339044e9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ba2d74249dec32ba5dee94c35e0bec7ba1a04d0520a1fb6e36da27d0ae32c3bf",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "1f5c9cf85c056b2c37bd9e867408c6fa7c2fb5f3c13c7af3612a1c24a7401e68",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a67de91c1538a688187d84014db92afa2f6572da70c11d33cce5ffd57b3b3396",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3f850e67d3b2e323644fa6e8a0811567ebf2fef5b092ce8b4d0c5a6db6fc21b2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6b599ca2a827abcd3bfe8475aaf037c07a085e3d159f8a7c660288f2b65dc2fe",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d13eb3fa70a34d9e2141c3aa74436347633715365d761470dbd783fba0de00f1",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c54681228fd2784b9de9f1943dbdd4f475070bddbcee63110f1014eaee73f72b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a7ae2c6fb3ff6c8478d43e0fec4bc978d69aeb9e866aefbcc321d77be437209a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f5277a5de2f3063392846768f2a7425f64b62e35dd812ca147dcf8c08bba7690",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "86096c0db4d40217c8653c3c393b13f3d27c70e7ce8ef680359047a60af55cf4",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a8d987b8a830938d9160225ddebc4616da07620c9bead5087488eecbcb6154b2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9f2b09262d32d9640b3b4b76332cd7480da757154f75de8a83e33880dac2a1d6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b47f58f7c0c970be71eb03e6e8d5fa87fa43bb9013f3024aff0002f92bdf32ff",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9f949859002ca8f0d6f0fefc1a1858b5cd8ee5e469f6bd37244a07efb177e75e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "fde973b0554f389a95af3d52ab475b827bbd490717cfa879799192450c29fe2a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e019792369cad5e083bc778a2be41b4bb2638cda577f333c996e4bc26a270e3d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f307033378acfc945cc4a9a48b94f7f0fbbc8ef3075f180f3ca6c7f3b3daf662",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "aa1efa59035a095750d8977ec7dc0516347968cf22d080f73e885fc04ab37f34",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "44369c0d7222ad34941a5fbc9973fb4d80d71f77933656656a535d486c44eef4",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "bd72b0afdaa9f62233cb3cca22874a27d4fb0aa1e3a22c9f6c53501e7e095b07",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f5a311e31601e151bad43b5595c799d3226e50eb76aca97ae3398680595a33dc",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f2f9646e950d40d9190f6acaf73039a854860a49b4fe3c5c97e3ab3f70d04fb8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4ffba14197a61f21d29c8aa1062f8adea9433da5f077f8dec89a01115334d40a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5f4c5741e9613cd10d1937089db2c4cdecf6c4f2584293ea02987f677b7da995",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "de82021cd0be4efc2771b1847f0928e70752538e2661b3ab931cdd72d4a196b2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "dee9f802593b6ea05f0b614cefa729bd9f6e4a6bbf73b05cce9333bcd2838125",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c0c30a6b9847b72f2f67a89c8a44b557c82d3bb2e97b7e7e0941dcae85cf95db",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4e86251be24c3c917afb412ad78a3021d2eedf95513a6703b096150441118533",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ddbae4bdc165bcc9fb3adc38a0ebf6d2281b6414abafdc28ffe7dbcb0e4a6278",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f92cd688681066b7d6e38057557455736447de694c16321489c5bfef99426164",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a23c4fa89b7ced7f249b1c4d1a2e9e539d5574730eb1e9bd721170cd35cf53c3",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "55e88e31c48b04a01a4a3bf7f5e31d86c557b3d4ee41c0d1908a57425396b2d6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "1e9e2b71af9961eb7f187a5fb05a8ac173e4049cf7479ff08e88ef0246daacac",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c2446f54837112d256b6e6faf8ad8a84969367f2bca3c4d7f40c92369f72a2c9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5a66b0b3926e3a5b984545f3cc83986cdef3603b1be83f23a993c214115c3755",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0a3a46a6b6692ce9fff2310b938a41b3a2181a16c49372ff99cd08d5e8a73d0c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "917f4976e27dbba86f95f54eafe3b1bbfbe4f6bd4edf59103b1dd6c7a2ef0482",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "cac749fdb32968caf5852330aeaf424c047d4463246a902050c5d15d1dfa4623",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3531b7dc267085435a558494de50052c5354829ec49c8f300662e2bd80d2cb50",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e39a6473bb04aa95ccb4b88f89249b03bfaba0b8d70d72e2ddf2bb08b9e22b34",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9488a89e1125c6517a1425d3e09e24be659e3b45e69210e8bee63b5483424d8d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "cafa17289e8188f969159adac9139a1925a3f3368e67675fe96690428bc9cf9f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d3aaf799fd206f10d715d9fdc582f0f03336e2aedc2947788e399d21f93ad106",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "826165052dc2f493c752eeade04fccffe079f9baf5c102922ccf62bd521e94ad",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b35820c6dce145d3d1d660f8e9276fac6c8854fe08b62194a5f6ad62354e61fd",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f8b58a463f1acb11c347ddc27c7c7d1086f29efe9e01a5ae10ee6f4fb78a431e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e1cc3b417f79f331d380b26ee20563555012ed0ddb0add6027abb1a251663116",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "71fd213b3d6d3c9928b97a67bd3cddaa298ca0ea0a83ccb371c84076d445d350",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9f8c17a0f1a93f7a11263205a4be1411aef53de4ed65ec330cb750ad50c0ffb5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "673522771a340623b4fc9dfd5bcde1a88e89e1fe4c4d356e531598caa3b616d3",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0aa30f2c1121ee8d1900e55d9f640e95eee58beb4c34ae02cf120e7d004be5cc",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f931b448c48599a8100598c9fbbe4318a3efe83d6e5052a1e85385c926f36132",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "875731db38804e8f03b1fb343313e1d987f611b53b66ab78b250b7f6741c0502",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "85f5bc3f31f0f250aada867c4ed4e7e39c833ad9463280caf7bec2e3704553ad",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "422f09a54f72e407ed1e1bb6b31b30c467c2cd98c4b500702bbd185ccaa38cb7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "997021b3efe4cb3f5840ebbbd782ba691aea7149fdc68d8ada2b2bdb6c305239",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8e84508424e8c310e7a5b5d1ff673fc4aee0c4541296457a23aa2862b8c10d5a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "37931eb62cdc5d88709c26dcc3d4c07b9c515101fd6751e1d41694eb6ca2c9a6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0ee3807f8d12d382669d7936c4a49a454c88e2ac79c254fa83e1d6e32d958806",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4078ae7e1eb3d37df77fb0cd6cbe6dce194efe6bc2415108d1c5acc6948b0df7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9201ee54443e833695ba2a3f1668b98262a72314e22fe8ca7c435942f288368e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a8cbe2a75a637e5fd4686afa4dce3451f59fb45ed56520c8efa6e039eaad0046",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4754f2373cdedf22986427a7518bfd0763606b4b536c0dda4d1cd2fbbc2cfde5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9df4b9a1a1ab4e4e737b6b9e7e81e9383952c33bbe7d0783aca4020ddab493e2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8dec40bc4cc999ccaae9d1a883cea5b3c01f1d15dc04bd7e83e6283bec0ef40d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9c294832e20e7adfd7f459860893751b1f12b1fdac8e5388a4a505d33c59bfae",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "de99bbffdd09df3d4a632c4d9742b1a44e0129749103ad8b282b4eb2397aa203",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a86f0a4fa96cbda0db678c658e5bd5ea7e4b1aef29c0587cd06328c4579271e3",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c6a609e45dee30f5cb03525d2958a0bbcb49a69f6f60dc088c19ff9253ced5f3",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "116ce4a5ece4ac2b3ab464dcde893af04e40dbd8a304fac2d7f9ecbb02e9b6fc",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "af6facd528b7a654cd4e96a7313bae7c5bc9ed1fee59fe6e0f47af81d4a19d6e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "279f0d808714b8bc72bdbe95a9fb2dbdc12b1e57719f4c69e8e803fb4b1bf72d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "33f6e1926085e29ddea2c2b7fed381b9f2217d0611b4ea2a1c77fd83d091af0d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7b27fa5e803a1ef3730e191a76b6377cafe5a4fda8bf00157db7dbc271225bf5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9c1a26d71106ecaf622f728ac92739ba456b6ea249fa6f0a4a9a91f17f53a1c7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0940eb01da1ed17a6f0dde49e2012ce4a2bf90cadb0abc672bfe087990b803ee",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8a5f66ea775be9c92df2a83dd877bc56a4e2ab806267f8ad863a11c864019398",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "53f28011beca7aeb1560c49633adbde7d7752d36ddbc34911f4348e36f704923",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a999097fae2b287a8f1bc926f788afbbd6dc2bde6f84ce6b30f29e04a773ebee",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "1c91e71d769957fc1418eec367cedb167c48241e8ebd671b60d361d9d8381637",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5e51d4729ac3f6e7eca12aeb951abdb02f902b0be72e70dffdfebbab95b6c7f6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a5b41c3f7b04023b5219add455b05c53a79030a3bbe3c1129e98ea5a6fafa686",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "97806ae405701929095b37a588ed4f28ed4762de919ab39df6eac93eeb78e97b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8ae09160f3a332105ffb3c6bdde16bf2370237915b03e9765b9fec35d4fb4e36",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7a17b7d79fb820b0f300d8c62ddd1e39b1ae6c8c8b68c2e7dddec3da49a598ae",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ea0ed9401f18fde8f408f0cdc3848a24e5211296948df13e8ddb336b34d50263",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5f5a984c355434b7942af4ee6760c126e7119d63915247c151aa93c6d2628fb0",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7ba8e9f470f05865310c3e8e6321b542a0d83277da1014596668ff5490c95270",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "599aa10cde21c9fac1a012a8679b8be11297b6683c41abebab61dbf47fede0ff",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "15f0d9a47c214e3a9cd79c0dc4d55b9932e6ea775d6bb907df625fe9fa3c679e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "77d95cd2483bf33ab306270896548f4ef486117a12f3f81f6169de0db963ba5d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6d177bd0452f2a28cba037a608670b38e50fccd2e8338a0c6fa158d835951f0b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0a9ebfa1b769b1d4b6646bae21c20f41d6ab0d1c738b96580bd1cbce479517c7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6f909f23ab06e3a1071a6413b016e6711fdb6400d118ad2a3876e3a00a1393f3",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ff82b866209ec83d629922876ba8b7e77327c60f4a9263902b34f71e82267721",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6fbd56f538a6fb138f5c59e16fc618d6f20d5245663c43666871bd2293edef60",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c50a641308281e00389b54b295434a4321ae6ad72d73dfe72496cdae56c5b8bb",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5afc151a7e4e6fa8445566f1d6b1dac14968f31f0dfaccdbb5b28829794129fb",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "fec21169806065246fede3575aa549ce86419e5bcd163dbd60a3003eeb71427d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "dba7acac7e0ead125ae7d03d150ef9b7d5c8730470c58a62bbbcf7005f393d4f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "08441e5c2984892c2811f0f6dc1aeb1cc869659627778213f054725d5d73d01e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5bd49136e06e374d60e66b53857eba53bd915408eb6a1a8bc122b827a68111ae",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "218f6563dab1ceee3ea8f80d8bdb923e23bb9dd19d15ea97ddcbb09399d26c1f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "2edac122dc03a9d84006ddc62f245eb3b5d9d7abb1046f4e4108fa540dc287b8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "37d506ab4a30060639f7b006202c8b96a39f86af409925c6f11b0f473673d0fb",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c84eede568fb2b158b6a35f26a2e90fbe239d1ce935e973de3e042e3e5686040",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "35052879d8d9669117108b946a3896f146d1a4b03673853d63e95b0801ffc892",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "1cab233da226a36812c7c5e9eab07394def3b48e4769b6880cf6cf9178e44cc7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "05991dcef70caf7db2843384efa9666185b5422a95199147bb6ef10b385d6fe1",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8d4746218ae73812a555ff730b7c6da93a1bd6b987f40facc8d31474c419774a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "088035752e0ff5853c5f30153736fce0d7f3083b8879d92f9b5163d599e13fe2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a6b42c35175de7f622798595011051387b55ec610799c934ad1b06c6c6305ea0",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7fa5292bad78f8eafeda64c383259ccb9a4834335ed7f347ecb16f2c19003ab7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "612118b536ee290a218a257d5346d0adab17d833fb589a275d278b52ebd5e305",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "01cbe98c767ea255843774f932e7a5ea7fc75acf7d5f666e64a98d4d467033a8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "004d3d8fb6ae861f8b03e5516a0f602c1f800d91c7ab78e97797c3eb0d6cb6a1",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b301dcdde49d4c5cc730288aeb6612a0c336a3a41d05f3b341195af28bdf3710",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4d5791af3634601f3be7b84095a5bf1ab5a097356c6e67e4da87afd380da7f36",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "cebf7d5478ef302a2e5daf71c3f9602f31ee5d5c1a9c24c930e589ba8fea20f5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "98a2d9abe205d2632635ed73f23623ebf6afa5db2e4a20317e82343147cbc21a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e99cc5ca93d0f3ce4e30cea142daa91300e77c63038fb08773f4d5c404d1ea51",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a4c4d259cd0bea8369cb9b3e1313e1bb773cdd762bc02c2090aaa350b0b27230",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4f806e6c17b2b56deebf92dc3fc4a344cfab395702be1e6a0c9f0f0973d12205",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b035c94e6a943081191d0802a690fedc99672aeea5510412bb35403b7c10dc5a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c8a5a02d92db1fd2fdcbee2b7fe7c93422043d89fb09c201c7bb8ea2a021b623",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4741932872a6e31781c4382ba70d45b05e8303e6ad33cdf0b9407872897b99bd",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0ff918eebbfc17ff8ca7ca6dc8599ca48981dde0bfbe1304b8a80eccd1c8459b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "219a3ac87e07000a94c8b7de8bc85c4296544542f493a50dacc4f3931e2046c0",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9b94dad351dd39e086983d4872bd3905f8c890d0f4a9bd86d24717452f14ae0a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "22f91bda54547732f12273c7b8617d13d04a55eded879c317707a7e26bca8f7d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d6cc9e3d385440b8cd6196bf93c90cba16a28b0f4ab31e447463f545749b3daf",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "982d44fcda13d9f98df80ee81818b8500130b3de5c094f9c2108714b5548e0ff",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f47cd8cf66ecf3f5dbc49305d0f9a7812caf988c4f47dcbe13bc95a65a7a4cb8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "142b3e864b39142305a45e5bc752e8e8c0c361c6c5fe4bb63d7cce2034d2c3bf",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3da28026215c84c45eba20910b89868bc75a57af8ffff17baac32bb47b1cb072",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "772ae4bd17968383b45b595d1b7178ef275990355def6b6e55c36bfdba8e02c8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "faf1d6cd01a7ad73e200d063c5fff173b19bce81266f06ecbca09e89a69f7d41",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ca2336d25828afe5dfe080c276f0bddddb92cff9a838f6578fb09d53f18b8c0b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "cc6eccaf90249dc489ec64d96317fb8546f2557b4b661f069730ef34aa8c3227",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "785e76d1d580c62591fa240f2d1b6076bb6960c58fd8e33dde5d319412d0ad48",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "dc53a69e0015db6ab7233f934ade2c1ef0d3137c54ae0b2aebfd46522809e32f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "364b898b694127c9a4877d1c4a82433f9cbddbadb73b18f7fa9092bbb6285ec4",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7cb861fc98a012f35d7f371372ad00fe45d0cb86ea0abd8fcabdb20007516cbe",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "948e515a9bd4d0c3125b6f0f2c9d771b81237f5d64ec8c2050472fba61bdb04e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b921eb34d72bfd33ff5efca7fcbd8c0fa252ee693fb51fc352d41029bd47cde1",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "90f4c6c9db53283ce8cf842c3196fd3f97f983fdcc3e7948b7a65033465c2f1b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "df669106cd897c896fcd8a25e105a1009c824759e2c11a003ecf28eefb5fea64",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8087c9d9d8b560473864c3e65d53e3b5649afe240ec06ff732ba4421b3b79cbd",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6687b4c67e0054dcb105057e55e5b6973f6f04490f414a410f15a5ad8a120f69",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9640a952ec541a0ea0ea8cf73262a25d934a2f8b8b3ec9cf9f7ab5f1cdaf322c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d6bbbaf15c488250da9671d277573bdf6f44b4b11ea6df39f3964ef97ab259cd",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3792d73c360c72b0ef9f11e703b5388d50cb786fb4739689b61b82102222c807",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "88cc548a7dab3406b3184e9647c2b602f639bf0e20e0b5cae39162532e566c94",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d4e9622d9d1296a8bd8e0bcfae3ebd4f5c8aa416e6e030660269e6fe462b4be0",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f559dff3991dbee3fe579e10549126dfdae70dda20daeed61c36a6cb8aa3189e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4e2fd63f99746a64808067eac47c5c26ade57490991a99400236eca4f07d9ca5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b097e54ed7beb69b98d08a522ea3f9d159a24a0a8b1d9c17f239a2afa535e837",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "92f757c842f86168406612b00e594979e2c380e3f898d470f4cffd55680bbc49",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ff07b85b27db9ff4462879970f493fe18d25e56350822eba5f33fe038909037e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "deff3b610d13e25aa3d533f57b6b3ec07521aa37fdeba0d3c668817d50c73750",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "bdac6a8de2167cd3a6ef7aebdf952f7f6219dadbde7e6479b25111985c9b80d8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4e51577cc9f754758e566240d45fe0effc66f5f2f307e03ffe96b63946f4bacf",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "55df64641c6b7ac66562daf911719f3330cbcc9bbda9b6afac1e2f670e8d33b9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c6472d702cc04a2c6ea2370ae656de0aad7196413bdc8065b7d0c597f6cd73ba",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c5fade4f93e783f4524841ae173153896c3068081d9fdb0a3e4092b9b5eabd32",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7882f8213badad93e0eb85d509d8aceda84b7dce312e36223a8a7c62b9b69a1c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "07a07d004f953f1825ad6579d880c06cad9c1fbe52dd6c3f83391b7dd96c3ab0",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "037cf6f48d539e39f2f9afefea1f6f7a29c79b872356e70c952d2b70aa8bb28e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d42aef10acb67c340b07ba67c14b04903e9fd4aaf5776897961db3aa98fdec8f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0946f80f8cf6290fb0fe66d2782bb4db3f8bda9d0616f557d3a9061ebe711758",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "39347fb29e733c1b57100d0b5876081346643b975db3b7d2cf480292dc900614",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "157e76bca89002acf83ab1401bd0a207fe65032e2c97cb422a6c564c17f2ce28",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9a17c1845b7160d9133897dcca9affc0bf70ff979ff5cbe69e4fddf9ae87225f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "11e41ccf0f3aee5091780d3a830aa667ed38e9b55c841203459642781441d976",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "520d09a2afe0ced924b60c169a943c95c1eb59d143d1e4b24b00285af6c71e50",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7053fa79935f178448cc65e2b87cee433f571af7e235a5f77172f1e069d5a8fd",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9149f46e164cd7a516bf7f8b89593793d68418481293aeb89400b108c36fb913",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a5e2db5e70042d0ce18a58e3ca444d3de11e363dc155fa8a39fbf9341fc0367e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "cfff4b52b81deb2e8dea7b3a5bffa1915fd639a2fbbcfea9904f1092838b5b6c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "53b25253d8ded51c1af94bbc1b621709b22c8a2263ae50c5e1afa237b7c7e47b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c3903c45a52f72657dfdaac0454d47ae5e98834cad0b9363d965ffe50e2bd0f7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "94fd1be4ea40caa61d3f5b2bf374601ef9d57ece301fb77da8d9fec26980d909",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "081320b407ecf6abadd2ec50672eacd2ee645e6f0846190fd700fe8c104992c5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e9f48b8057191095d8f73e226243775ee56f9acc668c979aa8b1789f27b13d9e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "fea150975fbddc124abe33df46f9d19c4d05eec2182b54cff8af6348956faa4a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b34353e5db49955642f543d6d8b4c03290b3870e04fbeb223df1eb8dcdbcbf3b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "248949165ca03ab6e09cb37bd9b445266853f8ea8ce0bc6e2f53967eb9e6707c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "bdad91cdeb2751c3cb269e26aa17c208704650e323a31b0d98a7961f571e34f4",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4e4dd5ffa988d5ec40a103a67717d9ccc6761626154575bed937670817e9f40b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "1d54e0fa778dc38812f457b9a2dcbf452caf76e4217b770a0260689712abf33b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "fa7b13b4fc62f68153319d65a675f00a22a457d3e14455c4ae2706f79396468e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8e5f587f9008e4695abbd0b0909a8b96d4b3e847d44f390eb1cf10fdb1509435",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "cf3c49a9ba1f50b4748d8c85e011b7904e0840bfc27837ff9a254a954cbd2193",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "495f4af0ccfe7101f754b856cb0c3591674bc3ff951a0acb0354c124c9ea9be9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ebacd311a640c90c9f7e9a2acbd853394a49c7e5b87290620f360bbb35d4f11b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "ed1085959dde81774ce6c8a071d4376f3d177c1b3c664e74f3dedae16ff22c62",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "cc4cf83df2a3834c16b15c2a32435e6afc0530b9df664f4f1fc3148bfaaa80f0",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "56691d4f0be9049d1e07cba16111b915cf753ffe3b2ab1639e4c3b3639aab2a4",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b2e8a5300aa1d773d350f7020fe996720d1f0ca8aa3460ddb5e1c1a3eedf3b08",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b313ef1307c0f5aa25a657c8eb00a30cb7dbee4972e976b9be3664b4a0a06d24",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "65d025b178094c6a488556c8c11f66166b6340f0d2dad5d9638e234672e40859",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4e92c95834f0d3b65ad226b1e720e1780fa0d63b4b61cadd70e2a5abed2fe10b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9ed6681efccddc808c934419e59b0ebf5db7adc2c590055a01ca606dbfb5e345",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "779f442887d39ba1fbe8d8e4551a7a36c263964af2a1a9e802f3fb3f42a4c8b1",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3ca02aee2f488f565839726a6808dad33e5ef63988c3994cfd8ace3b5d8f8249",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "28bc37c562d80f2e02237dd8479df38f5dd3baa602c010a8ecfedd5720111692",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d5401486cc376aaf653bc4a1184cf11aecc473c2cf77b5a8a78d5cfa7c32ceb8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "390886e4f0dd787d247f650a80ba5b9b6b8f4bb269c20e93b7d725d69ef144bc",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "2ec700aeab5e24890011d1680cf95cbb802b8a531bff7245559b83da80cd377c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c6a64a6178407f7e3de79757ac978219228f803b38878e8a755db52c5b9a8019",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "78c72d09f111c5c1bc09ae8f2dcac0499311df994a11f59713bd8342e38b3d46",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e96bac1136c5aeab69fd6f399bc3110ba70c0bc85c311a3084e2d2521d9cc22f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e12325ecd83119fe1b50733abfc3bf18aac3ad746183575b6cc8df8e5613e6f7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "02e49654473e4bc120c70b748361bba627017686e174ab00579fd71d3ca636a8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f3db7ef9af9f0ca31e0161f084c2272bf61c711213bde526836ed02987ca698f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "5648241578c9508bb47f50bcf59784a543af55510c0194ab8d798366b4324543",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "b2b0a35aafc2cce2fb4997e57bcb665d8fd40b245d59ca0ab3eebcfcfc5f7b82",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "1c7804df83359cf37fcf54daf9dcb9649604a7365cc044a5ea83a93233ffd5d6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "1fdab209718ab48259533e6f0f9fcc45c5edfc3377d35731c90babc9993d5aaa",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "31a8f417ba6323eeb34a152d3d38a57b1f27521a9a9e1a690ae6bb53668d1ddd",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "90a283adae49c202947e6231c8b97919f5a60ab103e1b848e053d48cfe32c3d1",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8ac3fdee5cd672f6ad71cf69abd4d10cb546221054f4aa65a9c30af08f652844",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3f9a273b3d7e03a0362d61eba397bf0fd40b2c79179a9788f91ed09bf19f3dfc",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c8fb47159e716dd58cd161079a965aeeff418a547113bcf7414a57e53112cd79",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e09e4f0a4a293de973e2548f2fae2eca68b6f259457fb1e9070fdbd70428d8a0",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "8ba2335de7f610adb9827238c5b77f4e4d8ccd6aa15c023c0213119ec6a67daf",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "de0bdb9d81d3957ca147790c1749e715fc5f7bd2f4ddd226a867a95f255c211a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "02800ab0afeb5baa13e4c68a297e67757d5ec05dab041931bab71c3b77c8eee7",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d7f219b8ad6c46deae3ce1f31b6d2bf29bcec7e487cacd89b187d35ac9dcfdf3",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4a44fc8df1b4e7e594cea4e4e727fbccdcb9a3831e7b47d4deb027be652af368",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e9f182b10b737c76aa50826965db33384399f09993fe5e73bc0625c036bcde76",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "892c2630443241045ce158b06527f91968f183bf001eedbb0d1c76f03111b17e",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6796d96cd05dc0c2de5002b7f31a1bab99013d42ea77b16deb0278ad0599d93c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "f2cc1487ce157bd86d214d3559ad3ce546ec03cdf8aafde66f9945e3ec5557be",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "39f20594e55e2e515e0555572c8657ac9087c8c35cfd76954a30877c618366d2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "dfcedd36f64e81cd1d508f4e6e76a8c51c2bf8fc670c0fbbf889f81ee2c366dd",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "625c19edf29480a8f311d728d67eaaefc02fa53555f1eebf95f34e6bfcffb2f8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7bca35356a5947fdd4d187715dc1b84bca18fef9f738ed9272d76fe58822ec9d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "76abd88a8ea3d1fbb4dab84b78c223f27587628871a7ab1de061ed4ea9e98f0a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6ee4283bbaae7e4f73f594b9aa02ad29bb9ed4ff84f1ff722111a240222dbb13",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "1fa734da23ffc0d63576fbb5be347ae2b57dd19c6250a9eb57668a6425cb645d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "eb3f575db7001fe73482418561046479024f8a3476bf0e200182b89a76c3eb35",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3221e955f7c39379a96ce3c7b4f2e4336e63ee1c763fa1d1993b494a5913cdaf",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a8e854d2e0ba798f16faba4ff8523f6e12b2cb1de21f49b1eb2ae308975e1f41",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "830671afeb02d4144cafa025dc03d039fe383192a048af9eddfb0fdbd6a1f051",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "33b0a5f54884b8a2531d0861220cea07835b44a4067f2579e071ca561e32ef27",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d0fcb5531357504240a4d0105afc15a472ea1a1eb886ea73e774adf912783f74",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6f831c157f05178a959d0852bc50e77933abdd6e52ac02722700ec89499a761a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d9d6a73942436f061a97c5ea634876404e0548297fb2a0efe8d3be736877770f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "a99e18f044968d141d5b83ad6fe10ec3d1c5660515486bee08158bb17f298f97",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "65d51f5f8fc3c8b6bc152e46ffa9cace1a1a6440dd1093a451d9e83f3519c2d2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e9b02e374a58da9ea28ce3c147bd2ae99debb5e2a58054e726826474bbe532bc",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d60bcfc7c14c063c0f0e4a67061f55b06965c19276a093fa7655d2700b1628ff",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "1ecd1073a2db862e08f00f58e815bdee49c90be18b783b191baab55d30287076",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "bbdf53736f45b61264b4adf33cd365be4acb2a26bba3176ede72a62c8d4064b4",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "afe57c339afc6124eed31b691b5c2eac3906c43928eb52ac4ff4ac1b974caa11",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "dffcad5db7c59ac5fcb2af03661d6a57e70d05a03d17e0abb4a3b25f134c07b3",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "af2557d6b4677c97af50a540dc9b70663d23987f7e3af87c5fe137d4524d0b39",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "378239269854155509e3527e58471e7855572d55e9ba2d65cb7ff4e986179357",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "36cceefe1e443ad2a6c0979c51d5eb00c9cf05448a8a57e6b5a94a03db8edfb6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0f05868bc9c1393e81fe31d17cf328135cbdde72e2dd1ed30bc841a093532ac3",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9cf9ed9d3c6984046b217f52e409c5788ddbe34eb1bc1a3accf6ca3c8f547160",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "df7dc79af17b94d6390871620751c6758b2d7ad7f8c917a52e72c9de6da7e4b6",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "950893f767ac9370138a782c9693d465059d431f5d923ab62316095fed8dd26b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c5e1e82b63b05f5224d5b2390ff6dbce6ad7cb355c13d4e7e5d5a8b24751d630",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "887146aeb05e769abf41644c468f9f94aea940ee718126fc5e609d6d423330da",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "df9748e121495d16130c007f4b4c006593a104805b23e0c641c0e34c87ad9ff5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e042bbcc86698005ba7fe0207fb860ee1d874733c8b03b3bb8ff5c7746017f58",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "7d942a1cd08a905942aa97ea6f7d7d9c9731818dc81d16bc3507eb963ca4a356",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "9586c5a1a81b3d14320940732a65959cbc5a118e1bf1deaed6725aeaaf05a565",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "01975cff8701fa342402419d4e5c27295fbf820f44aa59504ee219e5d6c2a93c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6d0be00f515513945d9e6bd18948e6d036aa406abcd8dee50542037e6e1ca849",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c0b0b62d11d82644c5ff7d43b18dedce98f46167bd44e0b2dfb5cf83f3cbbd45",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0f282614fdb35b74cc8c55ee0271229baff07ed21caf9e015daaecbc7dd9c214",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "790354af5adf3a8186ca9dc88d6a90acff208137885ff34bc53f99779e49f6ef",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "3a8c9d5e5bf1b9af927c0290765209d72991b4abb1b24768a290b9ffd00cea70",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "4d03169b0bf42db8834ef15c781398349a5b82a0f6ef5862ad15e220c189629c",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "576cab6d8a9d0831f6d1234f9f350dea15ba9b7759c41a4926e7d56b6323f748",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "65a78125d3e53529b3afe66f860075803c008836dea9db886877c172309c90fb",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "6094bba205072d8c4b5ca6e4c32a5f912604182cea0c30b4bb8e5e7d6f3d1bb5",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "887e4cf611a84317ba481a0db78556ff4a3f0edec77104275c83ffbf6395bdb2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "cbf5ac9dded9cb8bebc8f496405ed61ed5b425b16a650d4357826494516d103d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "226baf92c63949763cd5c58371ef1893334f79540e0a73cafbc46d86cf84a84a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "28823cca78f93050adc6a883a05f6ca4a0875d56acfde847258d50a0e5828eb2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "fa365f8de880d7c96a5a46ed58889efc3756bd6fb7d93d12373aca70661ae78d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "807351e287d4cb0aaf8d9fcb0bf9a7e9385f8aefcfa2e7cc63a4cc52c9e5d117",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "81105d521e8a47bbab0cc987326b04010c65e6cea89637bb17b2adae151ddcc9",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "cb8bd0df9c6e7cdb2703537c8ebb9da0c83ae4a86d679148e66fbe5eccf64168",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "c4152eb867240e4a6fd36310262c6c5d0baf577d3abb40549a1bd425b18e251b",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "94d56cf4d0b15f4d6aef893dc59b3aa15312286bad4145daf7c79bbf7eaf4c76",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "38427930c7d0fd3e64e394040291a11c97243b08571553d5391b4694243f654a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "0b6c2675b1f2edfa6d51420bc1bd4973cdc82dcb24937154d9733f022bb3b1e2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "141544f14cc9080cf4301a95ee1f06ea7ac5a159eeed36a44e955a7987aabf4a",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "e29c556eae3bf5ec7f6a584b54b42cea55ab1906a33ccce180540f0ef87f2300",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "fe507d6e93e2a71cf192e37cb7a2b6023ca3fcde8115ac839ab21a89cea565c8",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "52de18a048c2b579fec7f22239395404b3026191fb758d4b7091d98ad73b3eb2",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "96332ae8113270e4aaf9fcd57adee11ddd162ca2edc0adda44f64b3552812001",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "89a4dc866b70d7b25ff3b41933a3ab8e96adfc51e9a4db35d0bc464fda44c2ef",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "d5d067a9d9467d552c9b8db41268143c460d8562a6f0713e1d5d58a3fbc6de9f",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    },
+    {
+      "sha256": "961dc38d8c57a8d9ed1de4988d4aed519179651e8422f0d471571789960d3e2d",
+      "source_version": "akshare=1.18.88;stocks=EASTMONEY-stock_zh_a_hist-RAW+HFQ;benchmark=CSI-stock_zh_index_hist_csindex-PRICE_INDEX;transport=REQUESTS_HTTP_BYTES-or-FIRECRAWL_RAWHTML_REPRESENTATION;adapter=EXPLORATORY_ACQUISITION_V2"
+    }
+  ],
+  "excluded_securities": []
+}
