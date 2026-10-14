@@ -155,6 +155,8 @@ pytrader/user_config.sh
 /results/report/
 /results/examples/
 /results/diagnostics/
+/results/exploratory/
+/research_exploratory/
 /.conda-pkgs/
 /.venv-py39/
 /.venv-research/
