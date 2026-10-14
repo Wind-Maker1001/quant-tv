@@ -7,4 +7,6 @@ dev/wxPython-4.2.1-cp38-cp38-linux_x86_64.whl filter=lfs diff=lfs merge=lfs -tex
 # Freeze derivative publication bytes so receipt hashes survive Windows/Linux checkout.
 docs/research/evidence/exploratory-factor-v1/** -text
 docs/research/evidence/exploratory-factor-v2/** -text
+docs/research/evidence/exploratory-statistical-audit-v2/** -text
+docs/research/evidence/exploratory-statistical-audit-v3/** -text
 
