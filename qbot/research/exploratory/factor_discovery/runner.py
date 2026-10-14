@@ -71,6 +71,11 @@ def run_frames(
         evidence["classification"] == "SYNTHETIC_TEST_ONLY"
     ) or real_data_status not in ("SUCCESS", "NOT_RUN", "BLOCKED"):
         raise DiscoveryError(ErrorCode.INVALID_INPUT, "source/real status contract")
+    if evidence["synthetic_only"] and real_data_status == "SUCCESS":
+        raise DiscoveryError(
+            ErrorCode.INVALID_INPUT,
+            "synthetic inputs cannot assert real evaluation success",
+        )
     generated = generate_candidates(config)
     code = code_evidence()
     sessions = pd.DatetimeIndex(calendar)
@@ -219,6 +224,9 @@ def run_frames(
         and not redundancy.empty
         and elapsed < config.max_total_seconds
     )
+    if real_data_status == "SUCCESS" and not success:
+        real_data_status = "BLOCKED"
+        real_data_reason = diagnostic_failure or "real evaluation acceptance not met"
     expression_hashes = [row["expression_sha256"] for row in rows]
     identity = {
         "input": evidence,
@@ -296,6 +304,14 @@ def run_frames(
         payload.update(
             status="FAILED",
             completion_reason="total runtime budget exceeded while writing artifacts",
+        )
+        if payload["real_data_status"] == "SUCCESS":
+            payload.update(
+                real_data_status="BLOCKED",
+                real_data_reason=payload["completion_reason"],
+            )
+        write_report(
+            destination / "summary.md", payload, candidates, evaluation, redundancy
         )
     receipt = write_receipt(destination, payload)
     verify_receipt(destination / "receipt.json")

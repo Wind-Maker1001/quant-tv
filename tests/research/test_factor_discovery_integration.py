@@ -424,3 +424,48 @@ def test_publication_rejects_private_columns_even_with_valid_rehashed_receipt(
     verify_receipt(forged / "receipt.json")
     with pytest.raises(DiscoveryError, match="security-level"):
         publish_aggregates(forged / "receipt.json", tmp_path / "public")
+
+
+def test_synthetic_cannot_be_relabelled_as_successful_real_evaluation(tmp_path):
+    bars, benchmark, dates = make_synthetic_data(stock_count=2, sessions=20)
+    with pytest.raises(DiscoveryError, match="cannot assert real"):
+        run_frames(
+            bars,
+            benchmark,
+            dates,
+            evidence={"classification": "SYNTHETIC_TEST_ONLY", "synthetic_only": True},
+            real_data_status="SUCCESS",
+            output_root=tmp_path,
+        )
+
+
+def test_failed_calculation_cannot_retain_successful_private_input_status(tmp_path):
+    # A trusted-adapter metadata stub exercises failure-state disclosure only.
+    # It is not an input qualification or an empirical evidence fixture.
+    bars, benchmark, dates = make_synthetic_data(stock_count=2, sessions=20)
+    labels = build_forward_excess_return_labels(bars, benchmark, calendar=dates)
+    config = replace(
+        DiscoveryConfig(),
+        development_start=str(dates[0].date()),
+        development_end=str(dates[-1].date()),
+        max_diagnostic_records=1,
+    )
+    run = run_frames(
+        bars,
+        benchmark,
+        dates,
+        config,
+        labels=labels,
+        evidence={
+            "classification": "EXPLORATORY / UNVERIFIED / NON_PIT_CONVENIENCE",
+            "synthetic_only": False,
+            "negative_test_only": True,
+        },
+        real_data_status="SUCCESS",
+        real_data_reason="adapter stub only",
+        output_root=tmp_path,
+    )
+    assert run.receipt["status"] == "FAILED"
+    assert run.receipt["real_data_status"] == "BLOCKED"
+    assert "BUDGET_EXCEEDED" in run.receipt["real_data_reason"]
+    assert "FAILED" in (run.destination / "summary.md").read_text(encoding="utf-8")
