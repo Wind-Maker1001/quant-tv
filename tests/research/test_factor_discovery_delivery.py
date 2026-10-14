@@ -16,7 +16,7 @@ from qbot.research.exploratory.factor_discovery.receipts import verify_receipt
 @pytest.mark.parametrize("mode", ["synthetic", "private"])
 def test_committed_public_package_receipt_expressions_and_aggregate_schema(mode):
     root = Path(__file__).resolve().parents[2]
-    directory = root / "docs/research/evidence" / ("factor-discovery-%s-v1" % mode)
+    directory = root / "docs/research/evidence" / ("factor-discovery-%s-v2" % mode)
     receipt = verify_receipt(directory / "receipt.json")
     assert set(path.name for path in directory.iterdir()) == PUBLIC_FILES | {
         "receipt.json"

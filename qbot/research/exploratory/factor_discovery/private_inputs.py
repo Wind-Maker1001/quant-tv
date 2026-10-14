@@ -7,7 +7,9 @@ import pandas as pd
 from qbot.research.exploratory.contract import ExploratoryContractError, load_dataset
 from qbot.research.exploratory.runner import verify_receipt as verify_previous_receipt
 
+from .contracts import DiscoveryError, ErrorCode
 from .receipts import file_sha256
+from .synthetic import frame_sha256
 
 DATA_VERSION = "2f145d173f5ddc79d303f580bc4485241023ae3971d3b40a2e8fa6e3de2e3f5f"
 MANIFEST_SHA256 = "c1aef73620bb34f43e1553aa196dcd35fd11eb2abfb34c842b7ff59c5a9b8ced"
@@ -17,6 +19,51 @@ APPROVED_RECEIPT_SHA256 = (
 FROZEN_LABELS_SHA256 = (
     "7544e77456b0cec20615a84a1eb1af0a8e69c8288d6204f27d44881b62f4a0ca"
 )
+
+
+def verify_private_frames(
+    bars, benchmark, calendar, labels, universe, evidence, paths=None
+):
+    """Recheck anchored local files and bind every supplied value to their result."""
+    if paths is None:
+        root = Path(__file__).resolve().parents[4]
+        paths = (
+            root / "data/research/exploratory/a-share-50-20261014-v1/manifest.json",
+            root / "results/exploratory/2f145d173f5ddc79/89e5d6e2ac7858a8/receipt.json",
+        )
+    status, approved, reason = load_private_inputs(*paths)
+    if status != "SUCCESS":
+        raise DiscoveryError(
+            ErrorCode.INVALID_INPUT, "private input binding: " + reason
+        )
+    (
+        frozen_bars,
+        frozen_benchmark,
+        frozen_calendar,
+        frozen_labels,
+        trusted,
+        frozen_universe,
+    ) = approved
+    try:
+        pairs = (
+            (bars, frozen_bars),
+            (benchmark, frozen_benchmark),
+            (pd.DataFrame({"date": calendar}), pd.DataFrame({"date": frozen_calendar})),
+            (labels, frozen_labels),
+        )
+        bound = (
+            all(
+                frame_sha256(actual) == frame_sha256(expected)
+                for actual, expected in pairs
+            )
+            and list(universe) == list(frozen_universe)
+            and evidence == trusted
+        )
+    except (TypeError, ValueError, AttributeError):
+        bound = False
+    if not bound:
+        raise DiscoveryError(ErrorCode.INVALID_INPUT, "private input binding mismatch")
+    return approved, reason
 
 
 def load_private_inputs(manifest_path=None, frozen_receipt_path=None):

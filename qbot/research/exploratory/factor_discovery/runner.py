@@ -15,6 +15,8 @@ from .contracts import DiscoveryConfig, DiscoveryError, ErrorCode
 from .engine import ExpressionEngine
 from .evaluation import evaluate_discovery
 from .generator import TEMPLATE_MANIFEST, generate_candidates
+from .private_inputs import verify_private_frames
+from .publication import _register_completed_run
 from .receipts import code_evidence, digest, verify_receipt, write_receipt
 from .redundancy import diagnose_redundancy, original_structure_hashes
 from .report import write_report
@@ -55,7 +57,8 @@ def run_frames(
     universe=None,
     output_root="results/exploratory/factor-discovery",
     real_data_status="NOT_RUN",
-    real_data_reason="private real input not requested"
+    real_data_reason="private real input not requested",
+    private_input_paths=None,
 ):
     """Only prices <= development end enter the engine; labels stay external."""
     started = time.perf_counter()
@@ -76,6 +79,35 @@ def run_frames(
             ErrorCode.INVALID_INPUT,
             "synthetic inputs cannot assert real evaluation success",
         )
+    if not evidence["synthetic_only"]:
+        approved, real_data_reason = verify_private_frames(
+            bars, benchmark, calendar, labels, universe, evidence, private_input_paths
+        )
+        # Execute the newly loaded anchored snapshots, so callers cannot mutate
+        # their frames after the binding check and before label evaluation.
+        bars, benchmark, calendar, labels, evidence, universe = approved
+        if real_data_status != "SUCCESS":
+            raise DiscoveryError(
+                ErrorCode.INVALID_INPUT, "verified private run status required"
+            )
+    else:
+        # Caller metadata is not a channel for identifiers or arbitrary report text.
+        evidence = {
+            "classification": "SYNTHETIC_TEST_ONLY",
+            "synthetic_only": True,
+            "generator": (
+                "make_synthetic_data-v1"
+                if evidence.get("generator") == "make_synthetic_data-v1"
+                else "EXPLICIT_SYNTHETIC_FRAMES"
+            ),
+            "input_sha256": {
+                "bars": frame_sha256(bars),
+                "benchmark": frame_sha256(benchmark),
+                "calendar": frame_sha256(pd.DataFrame({"date": calendar})),
+            },
+            "calendar": "SYNTHETIC_BUSINESS_DAYS_NOT_EXCHANGE_SESSIONS",
+        }
+        real_data_reason = "private real input not requested"
     generated = generate_candidates(config)
     code = code_evidence()
     sessions = pd.DatetimeIndex(calendar)
@@ -315,6 +347,8 @@ def run_frames(
         )
     receipt = write_receipt(destination, payload)
     verify_receipt(destination / "receipt.json")
+    if receipt["status"] == "SOFTWARE_MVP_SUCCESS":
+        _register_completed_run(receipt)
     factors.attrs.update(
         schema=receipt["schema"],
         purpose="EXPLORATORY",

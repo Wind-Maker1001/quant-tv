@@ -61,6 +61,7 @@ def main():
                 output_root=args.output_root / "private",
                 real_data_status=status,
                 real_data_reason=reason,
+                private_input_paths=(args.manifest, args.frozen_receipt),
             )
             receipt, destination = result.receipt, result.destination
         else:

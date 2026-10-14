@@ -1,7 +1,8 @@
 """Publish a small independent receipt-bound allowlist of aggregate artifacts."""
 
+from collections import OrderedDict
+import hashlib
 from pathlib import Path
-import shutil
 
 import pandas as pd
 
@@ -127,6 +128,18 @@ PUBLIC_COLUMNS = {
     },
 }
 
+# In-process producer provenance, separate from caller-writable integrity hashes.
+# Cold receipts can be verified, but publication requires a freshly completed run.
+# Arbitrary Python execution/module monkeypatching is outside the internal AST API.
+_COMPLETED_RUNS = OrderedDict()
+
+
+def _register_completed_run(receipt):
+    _COMPLETED_RUNS[receipt["receipt_sha256"]] = dict(receipt["artifacts"])
+    _COMPLETED_RUNS.move_to_end(receipt["receipt_sha256"])
+    while len(_COMPLETED_RUNS) > 256:
+        _COMPLETED_RUNS.popitem(last=False)
+
 
 def publish_aggregates(receipt_path, destination):
     source = Path(receipt_path)
@@ -148,10 +161,24 @@ def publish_aggregates(receipt_path, destination):
                     ErrorCode.INVALID_INPUT,
                     "security-level columns cannot be published",
                 )
+    trusted = _COMPLETED_RUNS.get(receipt["receipt_sha256"])
+    if trusted is None or trusted != receipt["artifacts"]:
+        raise DiscoveryError(
+            ErrorCode.INVALID_INPUT,
+            "trusted in-process completed runner provenance required for publication",
+        )
+    # Freeze bytes before copying and check each against the producer record,
+    # so a concurrent source change cannot acquire a fresh publication hash.
+    contents = {name: (source.parent / name).read_bytes() for name in PUBLIC_FILES}
+    if any(
+        hashlib.sha256(value).hexdigest() != trusted[name]
+        for name, value in contents.items()
+    ):
+        raise DiscoveryError(ErrorCode.INVALID_INPUT, "producer artifact bytes changed")
     destination = Path(destination)
     destination.mkdir(parents=True, exist_ok=False)
     for name in sorted(PUBLIC_FILES):
-        shutil.copyfile(source.parent / name, destination / name)
+        (destination / name).write_bytes(contents[name])
     payload = {
         key: value
         for key, value in receipt.items()

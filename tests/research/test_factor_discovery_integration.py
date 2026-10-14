@@ -1,6 +1,7 @@
 """Integrated acceptance, generic-math replay, leakage and financial isolation."""
 
 from dataclasses import replace
+from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
@@ -439,11 +440,30 @@ def test_synthetic_cannot_be_relabelled_as_successful_real_evaluation(tmp_path):
         )
 
 
-def test_failed_calculation_cannot_retain_successful_private_input_status(tmp_path):
+def test_failed_calculation_cannot_retain_successful_private_input_status(
+    tmp_path, monkeypatch
+):
     # A trusted-adapter metadata stub exercises failure-state disclosure only.
     # It is not an input qualification or an empirical evidence fixture.
     bars, benchmark, dates = make_synthetic_data(stock_count=2, sessions=20)
     labels = build_forward_excess_return_labels(bars, benchmark, calendar=dates)
+    from qbot.research.exploratory.factor_discovery import private_inputs
+
+    evidence = {
+        "classification": "EXPLORATORY / UNVERIFIED / NON_PIT_CONVENIENCE",
+        "synthetic_only": False,
+        "negative_test_only": True,
+    }
+    universe = sorted(bars.symbol.unique())
+    monkeypatch.setattr(
+        private_inputs,
+        "load_private_inputs",
+        lambda *args: (
+            "SUCCESS",
+            (bars, benchmark, dates, labels, evidence, universe),
+            "adapter stub only",
+        ),
+    )
     config = replace(
         DiscoveryConfig(),
         development_start=str(dates[0].date()),
@@ -456,11 +476,8 @@ def test_failed_calculation_cannot_retain_successful_private_input_status(tmp_pa
         dates,
         config,
         labels=labels,
-        evidence={
-            "classification": "EXPLORATORY / UNVERIFIED / NON_PIT_CONVENIENCE",
-            "synthetic_only": False,
-            "negative_test_only": True,
-        },
+        evidence=evidence,
+        universe=universe,
         real_data_status="SUCCESS",
         real_data_reason="adapter stub only",
         output_root=tmp_path,
@@ -525,3 +542,99 @@ def test_redundancy_preserves_near_constant_variation_and_ignores_unpaired_extre
     assert observed.iloc[0]["mean_pearson"] == pytest.approx(expected, abs=1e-8)
     assert observed.iloc[0]["status"] == "NON_REDUNDANT"
     assert observed.iloc[0]["valid_dates"] == 61
+
+
+@pytest.mark.parametrize(
+    "changed", ["bars", "benchmark", "calendar", "labels", "universe", "evidence"]
+)
+def test_private_claim_must_bind_actual_values_to_independently_loaded_input(
+    tmp_path, monkeypatch, changed
+):
+    from qbot.research.exploratory.factor_discovery import private_inputs
+
+    bars, benchmark, calendar = make_synthetic_data(stock_count=2, sessions=20)
+    labels = build_forward_excess_return_labels(bars, benchmark, calendar=calendar)
+    evidence = {
+        "classification": "EXPLORATORY / UNVERIFIED / NON_PIT_CONVENIENCE",
+        "synthetic_only": False,
+    }
+    universe = sorted(bars.symbol.unique())
+    # Only this isolated negative test replaces the independently anchored disk
+    # loader; it never presents the fixture as financial evidence.
+    monkeypatch.setattr(
+        private_inputs,
+        "load_private_inputs",
+        lambda *args: (
+            "SUCCESS",
+            (bars, benchmark, calendar, labels, evidence, universe),
+            "SYNTHETIC_NEGATIVE_TEST_ONLY",
+        ),
+    )
+    actual = {
+        "bars": bars.copy(),
+        "benchmark": benchmark.copy(),
+        "calendar": calendar.copy(),
+        "labels": labels.copy(),
+        "universe": list(universe),
+        "evidence": dict(evidence),
+    }
+    if changed == "bars":
+        actual[changed].loc[0, "adj_close"] += 1
+    elif changed == "benchmark":
+        column = next(c for c in benchmark if c != "date")
+        actual[changed].loc[0, column] += 1
+    elif changed == "calendar":
+        actual[changed] = calendar[:-1]
+    elif changed == "labels":
+        actual[changed].loc[0, "EXCESS_RET5"] = 123
+    elif changed == "universe":
+        actual[changed][0] = "000003.SZ"
+    else:
+        actual[changed]["caller_supplied_private_identifier"] = "NEGATIVE_TEST_ONLY"
+    with pytest.raises(DiscoveryError, match="private input binding mismatch"):
+        run_frames(
+            actual.pop("bars"),
+            actual.pop("benchmark"),
+            actual.pop("calendar"),
+            **actual,
+            real_data_status="SUCCESS",
+            output_root=tmp_path / "untrusted"
+        )
+    assert not (tmp_path / "untrusted").exists()
+
+
+@pytest.mark.parametrize(
+    "changed",
+    ["summary.md", "config.json", "factor", "scope", "date", "meaning", "receipt"],
+)
+def test_self_rehashed_contents_cannot_acquire_producer_publication_trust(
+    integrated, tmp_path, changed
+):
+    _, run = integrated
+    forged = tmp_path / "self-rehashed"
+    shutil.copytree(run.destination, forged)
+    payload = deepcopy(
+        {
+            key: value
+            for key, value in run.receipt.items()
+            if key not in ("receipt_sha256", "artifacts")
+        }
+    )
+    if changed == "summary.md":
+        (forged / changed).write_text("PRIVATE_SYNTHETIC_ATTACK_ONLY", encoding="utf-8")
+    elif changed == "config.json":
+        value = json.loads((forged / changed).read_text(encoding="utf-8"))
+        value["private_identifier"] = "PRIVATE_SYNTHETIC_ATTACK_ONLY"
+        (forged / changed).write_text(json.dumps(value), encoding="utf-8")
+    elif changed == "receipt":
+        payload["input"]["private_identifier"] = "PRIVATE_SYNTHETIC_ATTACK_ONLY"
+    else:
+        name = "candidates.csv" if changed == "meaning" else "daily_ic.csv"
+        table = pd.read_csv(forged / name)
+        table.loc[0, changed] = "PRIVATE_SYNTHETIC_ATTACK_ONLY"
+        table.to_csv(forged / name, index=False)
+    write_receipt(forged, payload)
+    verify_receipt(forged / "receipt.json")
+    with pytest.raises(DiscoveryError, match="runner provenance"):
+        publish_aggregates(forged / "receipt.json", tmp_path / "published")
+    assert not (tmp_path / "published").exists()

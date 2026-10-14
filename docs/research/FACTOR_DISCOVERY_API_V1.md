@@ -14,3 +14,5 @@
 新输出 Schema 为 FACTOR_DISCOVERY_EXPLORATORY_V1；purpose=EXPLORATORY，qualification=UNVERIFIED，formal_admission=false，forward_allowed=false，live_allowed=false。完成状态 SOFTWARE_MVP_SUCCESS 与真实数据 SUCCESS / NOT_RUN / BLOCKED 分开，合成来源 SYNTHETIC_TEST_ONLY。报告、CSV、规范表达式及收据进入新版本目录；耗时与运行身份不参与确定性数值哈希。
 
 集成审计补充的资源字段由主代理单独加入：max_cache_bytes=134217728、max_diagnostic_records=500000。缓存字节和潜在诊断记录在分配前检查，评价及冗余还按整次运行 deadline 检查；避免只有 AST 上限却生成巨量逐日配对记录。失败保留明确 BUDGET_EXCEEDED / FAILED 收据。
+
+PR Codex 审查补充：`run_frames` 私有模式重新加载独立固定的 manifest/v2收据/标签文件，核验实际 bars、benchmark、calendar、labels、universe 和元数据绑定，执行新加载的快照而非调用者可变对象。可选 `private_input_paths=(manifest, receipt)` 仅指定查找位置，不能放宽任何固定哈希。合成调用元数据归一化为实际输入哈希，不接收任意报告文本。`publish_aggregates` 仅接受当前受控 runner 在同一进程中登记的完成收据和产物字节；持久化收据仍可独立 verify，但哈希完整性不是生产者证明，冷启动后须重新运行再公开。受信任的本地 Python 控制代码与不受信任的内部 AST/收据文件是不同边界；不把防任意 Python 执行或模块 monkeypatch 当作 AST 的保证。
