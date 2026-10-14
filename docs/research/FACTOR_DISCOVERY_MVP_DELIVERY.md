@@ -2,7 +2,7 @@
 
 **软件状态：SOFTWARE_MVP_SUCCESS。NO LIVE MONEY。这不是可交易 Alpha 的发现或正式金融验证。**
 
-从核验的 main `48ea4dd8c1876c1515f3172c9bb2e812f20ebe82` 创建独立分支 `codex/automated-factor-discovery-mvp`。最终实际运行的源码提交为 `49e7901269495c43ece227e11a7deebbd9bd63b5`；随后仅提交这些公开报告和验证摘要。PR 最新 HEAD、研究/静态 CI 和 Codex 审查状态以 PR 正文最终记录为准，本地报告不预先宣称远程检查通过。
+从核验的 main `48ea4dd8c1876c1515f3172c9bb2e812f20ebe82` 创建独立分支 `codex/automated-factor-discovery-mvp`。最终实际运行的源码提交为 `4d1b83989d1809aa4e99a4de40d5d7459cfa9baf`；随后仅提交这些公开报告和验证摘要。PR 最新 HEAD、研究/静态 CI 和 Codex 审查状态以 PR 正文最终记录为准，本地报告不预先宣称远程检查通过。
 
 ## 实际交付与运行
 
@@ -20,16 +20,16 @@
 |候选与旧14规范AST重复|0|0|
 |候选之间数值冗余|{"NON_REDUNDANT": 716, "HIGHLY_REDUNDANT": 25}|{"NON_REDUNDANT": 717, "HIGHLY_REDUNDANT": 24}|
 |候选与旧14数值冗余|{"NON_REDUNDANT": 541, "HIGHLY_REDUNDANT": 5}|{"NON_REDUNDANT": 542, "HIGHLY_REDUNDANT": 4}|
-|两次完整运行耗时（秒）|12.616 / 19.655|34.203 / 27.159|
+|两次完整运行耗时（秒）|20.662 / 18.537|35.976 / 37.600|
 |表达式缓存峰值（字节）|7040000|12636800|
 
-四次完整运行所在单个 Windows Python 进程的操作系统工作集峰值为 `409423872` 字节（包含导入、旧14计算、评价和诊断）。缓存峰值不是进程总内存。收据的 total_elapsed_seconds 包括最终写入；生成报告中的时间测量较早，不能混作同一测量点。
+四次完整运行所在单个 Windows Python 进程的操作系统工作集峰值为 `427757568` 字节（包含导入、旧14计算、评价和诊断）。缓存峰值不是进程总内存。收据的 total_elapsed_seconds 包括最终写入；生成报告中的时间测量较早，不能混作同一测量点。
 
 两次同模式运行的规范表达式集合、开发因子数值、逐日IC、五分位和评价摘要哈希全部相同。两模式表达式集合 SHA-256 均为 `56ec334218a0b5b81e6763caa78ebdf231434fd180f7e9aacbe67c2709a2df91`；合成开发因子哈希 `6fd87de90853cd095b6518be1903deec2036251d6f17abaf924d54f54c582d47`，私有开发因子哈希 `9d4458ac6fe6547fb71af560030866dcab9d45aca50860cb1fca6658ffef4621`。计时、运行身份与资源观测不参与数值确定性哈希。
 
 ## 全部表达式与描述性结果
 
-[合成完整中文报告](evidence/factor-discovery-synthetic-v1/summary.md)及[私有完整中文报告](evidence/factor-discovery-private-v1/summary.md)分别列出40条记录（39个实际可执行表达式）的经济语义、原表达式、量纲、RAW/HFQ来源、完整规范AST、SHA、深度/节点/滚动复杂度、回看长度、计算状态，以及每候选有效率、缺失率、MAD异常率、处理后覆盖、IC和RankIC。每候选的耗时、静态操作量、缺失/除零原因计数在各 `candidates.csv` 中。
+[合成完整中文报告](evidence/factor-discovery-synthetic-v2/summary.md)及[私有完整中文报告](evidence/factor-discovery-private-v2/summary.md)分别列出40条记录（39个实际可执行表达式）的经济语义、原表达式、量纲、RAW/HFQ来源、完整规范AST、SHA、深度/节点/滚动复杂度、回看长度、计算状态，以及每候选有效率、缺失率、MAD异常率、处理后覆盖、IC和RankIC。每候选的耗时、静态操作量、缺失/除零原因计数在各 `candidates.csv` 中。
 
 各目录另有 `daily_ic.csv`、`evaluation_summary.csv`、`factor_quality.csv`、`quantile_returns.csv`、`label_sensitivity.csv`、`redundancy_summary.csv`、冻结配置和独立 `receipt.json`。五分位按信号日因子可用性形成；未来标签仅在准确的t+1进入、t+6退出且全在开发期内成熟后聚合。完整标签子样本重分组只作为单独的选择敏感性诊断。
 
@@ -37,13 +37,13 @@
 
 ## 验证范围与快照
 
-[机器可检查的验证摘要](evidence/factor-discovery-validation-v1/validation.json)保存各实际JUnit/coverage哈希、范围、快照与重复运行资源数据。原日志留在本地忽略目录，不发布可能含路径或输入诊断的完整日志。
+[机器可检查的验证摘要](evidence/factor-discovery-validation-v2/validation.json)保存各实际JUnit/coverage哈希、范围、快照与重复运行资源数据。原日志留在本地忽略目录，不发布可能含路径或输入诊断的完整日志。
 
 |本次实际执行|结果|范围与限制|
 |---|---|---|
-|最终新模块pytest|85通过、0失败|最终源码 `49e7901269495c43ece227e11a7deebbd9bd63b5`；engine、generator、integration、公开包校验|
+|最终新模块pytest|98通过、0失败|最终源码 `4d1b83989d1809aa4e99a4de40d5d7459cfa9baf`；engine、generator、integration、公开包校验|
 |原14与通用评价Golden|350通过、0失败|本次重新执行；旧公式与Golden后续无修改|
-|完整离线tests/research|2975通过、0失败、2网络用例排除|源码快照065fabd；历史2895 + 当时新模块80；后续5个回归已纳入最终85项定向测试，最新PR全量CI再次覆盖最终源码|
+|完整离线tests/research|2975通过、0失败、2网络用例排除|源码快照065fabd；历史2895 + 当时新模块80；后续18个回归已纳入最终98项定向测试，最新PR全量CI再次覆盖最终源码|
 |完整研究覆盖|85.37%，15189/17791行|上述完整离线实际报告；没有虚构门槛或最终HEAD覆盖率|
 |静态与CI合同|PASS|264 Python文件；flake8 E9/F63/F7/F82；维护的3个CI脚本black检查；19个CI合同unittest|
 |产物和公开边界|PASS|两份独立收据及每项字节SHA；严格文件/CSV列白名单；自重算收据也无法公开证券或分组成员列|
@@ -69,7 +69,7 @@
 14. 原14、Golden、历史产物和资格/交易文件保持原字节及Git身份。
 15. Windows/Python3.9.25四次真实闭环与最终定向测试。
 
-独立审查已修复三项P1：推导RAW价格丢失来源、冻结标签缺少独立可信哈希锚点、近常数Pearson消减误差造成伪高相关；反例回归通过。源码与最终公开证据按独立提交封存，远程审查若新增P0/P1须修复并补受影响检查。
+独立审查已修复三项P1：推导RAW价格丢失来源、冻结标签缺少独立可信哈希锚点、近常数Pearson消减误差造成伪高相关；反例回归通过。PR Codex又发现并修复两项P1：直接API必须将实际输入绑定重新核验的冻结文件，公开器必须有独立于自报哈希的生产者来源。新增六种输入篡改与七种自重算内容攻击共13项回归；执行重新加载的私有快照，公开仅接受同进程受控runner登记的收据和固定字节。v1为早先真实运行记录，保留原字节；最新修复证据另存v2。源码与最终公开证据按独立提交封存，远程审查若新增P0/P1须修复并补受影响检查。
 
 ## 复现
 
@@ -77,8 +77,8 @@
 
 ```powershell
 .venv-py39/python.exe -m qbot.research.exploratory.factor_discovery --mode synthetic
-.venv-py39/python.exe -m qbot.research.exploratory.factor_discovery --verify docs/research/evidence/factor-discovery-synthetic-v1/receipt.json
-.venv-py39/python.exe -m qbot.research.exploratory.factor_discovery --verify docs/research/evidence/factor-discovery-private-v1/receipt.json
+.venv-py39/python.exe -m qbot.research.exploratory.factor_discovery --verify docs/research/evidence/factor-discovery-synthetic-v2/receipt.json
+.venv-py39/python.exe -m qbot.research.exploratory.factor_discovery --verify docs/research/evidence/factor-discovery-private-v2/receipt.json
 .venv-py39/python.exe -m pytest tests/research/test_factor_discovery_engine.py tests/research/test_factor_discovery_generator.py tests/research/test_factor_discovery_integration.py tests/research/test_factor_discovery_delivery.py -q
 ```
 
@@ -86,7 +86,7 @@
 
 ## 尚存限制与后续判断
 
-P2工程限制：预算用静态操作/内存上限及有界算子间的Windows单调时钟检查，不能抢占单个底层NumPy/Pandas调用；精确浮点哈希保证限于同一源码字节、Python和依赖环境；合成业务日日历不是交易所日历。没有以跨平台逐位相同或硬实时中断作保证。
+P2工程限制：公开器需要同进程刚完成的受控runner登记；冷启动后的收据可校验完整性，但重新公开前须重新运行。信任本地Python控制代码，不声称防御任意Python执行或模块monkeypatch。预算用静态操作/内存上限及有界算子间的Windows单调时钟检查，不能抢占单个底层NumPy/Pandas调用；精确浮点哈希保证限于同一源码字节、Python和依赖环境；合成业务日日历不是交易所日历。没有以跨平台逐位相同或硬实时中断作保证。
 
 真实50股一年样本已被先前研究观察，是EXPLORATORY / UNVERIFIED / NON_PIT_CONVENIENCE；非PIT成分、幸存偏差、短样本、供应商HFQ未正式资格及事后多候选选择使本结果不能证明可靠Alpha。不存在独立未观察测试集或正式金融准入结论。
 
