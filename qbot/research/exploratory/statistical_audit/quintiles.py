@@ -1,8 +1,5 @@
 """Independent label-availability selection diagnostic; no portfolio claim."""
 
-import hashlib
-import json
-
 import numpy as np
 import pandas as pd
 
@@ -10,16 +7,10 @@ from ..contract import ExploratoryContractError
 from ..runner import MINIMUM_CROSS_SECTION, TARGET
 
 
-def member_hash(symbols):
-    return hashlib.sha256(
-        json.dumps(sorted(symbols), separators=(",", ":")).encode()
-    ).hexdigest()
-
-
 def compare_quintiles(frame, factors):
     """Retain source row order for rank(method='first') ties, as Golden does.
 
-    Public result contains counts/hashes only. Actual security memberships
+    Public result contains aggregate counts and returns. Security memberships
     stay in the separate private table. A's minimum is 20 labeled factors;
     B's minimum is 20 contemporaneous factors, even with no future labels.
     """
@@ -93,7 +84,6 @@ def compare_quintiles(frame, factors):
                                 if len(group)
                                 else np.nan
                             ),
-                            method + "_member_sha256": member_hash(members[method]),
                         }
                     )
                 row["observable_members_changed"] = len(

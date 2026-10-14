@@ -319,6 +319,24 @@ def test_public_allowlist_has_no_raw_security_factor_or_label_files():
     assert not any(name.endswith(".parquet") for name in PUBLIC_FILES)
 
 
+def test_public_quintile_diagnostic_omits_enumerable_bucket_commitments():
+    daily, _, _, private = compare_quintiles(quintile_fixture(), ["F"])
+    assert not any("hash" in name or "sha256" in name for name in daily)
+    assert "symbol" not in daily and "symbol" in private
+    assert len(private) > 0
+
+
+def test_old_bucket_hash_column_is_rejected_even_with_valid_artifact_hash(tmp_path):
+    from qbot.research.exploratory.statistical_audit.schemas import CSV_COLUMNS
+
+    root = private_package(tmp_path)
+    columns = CSV_COLUMNS["quintile_daily.csv"] + ["A_member_sha256"]
+    pd.DataFrame(columns=columns).to_csv(root / "quintile_daily.csv", index=False)
+    write_receipt(root, "BLOCKED", {}, {}, ["SOFTWARE_TEST_ONLY"])
+    with pytest.raises(ExploratoryContractError, match="CSV columns"):
+        publish_audit(root, tmp_path / "public")
+
+
 def test_code_version_failure_produces_blocked_not_an_unhandled_exception(
     tmp_path, monkeypatch
 ):
