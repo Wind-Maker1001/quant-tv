@@ -4,7 +4,7 @@
 
 2026-10-14，Windows / Python 3.9.25。三个子代理分别完成供应商数据采集、复用运行器与报告、安全测试及独立只读审查。已完成真实研究闭环，正式金融资格仍为 UNVERIFIED，不训练四个模型，不启用 Forward 或实盘。
 
-完整数值、每日统计、状态表、相关、自相关、换手与九张 PNG 见 [中文实证报告](evidence/exploratory-factor-v1/summary.md)。[公开收据](evidence/exploratory-factor-v1/receipt.json) 只绑定派生产物；[来源索引](evidence/exploratory-factor-v1/input_manifest.json) 不含供应商行情字节。
+完整数值、每日统计、状态表、相关、自相关、换手与九张 PNG 见 [中文实证报告](evidence/exploratory-factor-v2/summary.md)。[公开收据](evidence/exploratory-factor-v2/receipt.json) 只绑定派生产物；[来源索引](evidence/exploratory-factor-v2/input_manifest.json) 不含供应商行情字节。v2 按审查修复后的代码重跑，同一真实数据版本不变；初版 v1 产物和收据原样保留。
 
 ## 来源、实际规模和缺失
 
@@ -53,6 +53,12 @@ ALL平均RankIC：13个因子为负，仅AMIHU20略为正（0.005022，日度标
 - 真实行情、供应商响应、原缓存Parquet和逐证券因子标签Parquet不入发布白名单；不使用其他供应商HFQ拼接历史。
 
 本地完整回归后又完成了源读取绑定、质量披露和产物冻结的定向复核。远端完整研究CI和Codex审查以此独立分支PR的当前HEAD为权威，不能用本地结果冒称远端已通过。分支推送并创建PR后等待两者，不自行合并main。
+
+## PR审查修复
+
+[PR #3](https://github.com/Wind-Maker1001/quant-tv/pull/3) 首次Codex审查提出的P1已修复：采集CLI基准缓存默认None，fresh checkout可走现有真实指数接口；显式指定缓存仍严格验版本和SHA，不因空缓存/错误缓存回退。[P2](https://github.com/Wind-Maker1001/quant-tv/pull/3#discussion_r4267744980) 也已修复：损坏Parquet、CSV缺列或空表、JSON/UTF8和结构错误转合同失败，CLI产生BLOCKED收据；不伪造解析后的数据。
+
+修复后定向98项通过；新v2发布另保留两代产物/九张图披露测试，最终探索定向覆盖100项。相同已封存真实输入重算，全部10张CSV、逐证券因子标签Parquet和数据质量与初版数值一致；两代公开收据分别绑定各自实现SHA，旧收据没有改写。
 
 ## 下一阶段
 

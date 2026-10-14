@@ -2,7 +2,7 @@
 
 **EXPLORATORY · UNVERIFIED · HISTORICALLY_RECONSTRUCTED · NO LIVE MONEY · NOT FORMAL CSI500 EVIDENCE**
 
-本入口接受已声明供应商提供的真实未复权和后复权日线，进行描述性因子评价；不签发正式金融数据资格。真实数据不足时输出 BLOCKED，不能使用合成行情替代实证。此次交付的实际状态、规模、结果与缺口以 [研究报告](evidence/exploratory-factor-v1/summary.md) 为准。
+本入口接受已声明供应商提供的真实未复权和后复权日线，进行描述性因子评价；不签发正式金融数据资格。真实数据不足时输出 BLOCKED，不能使用合成行情替代实证。此次交付的实际状态、规模、结果与缺口以 [研究报告](evidence/exploratory-factor-v2/summary.md) 为准。初版 v1 产物和收据原样保留。
 
 ## 基线和复用审计
 
@@ -33,8 +33,12 @@ Windows / Python 3.9，使用隔离研究环境和 `dev/requirements-research.tx
 .\.venv-py39\python.exe -m qbot.research.exploratory.acquire --output data/research/exploratory/a-share-50-20261014-v1
 .\.venv-py39\python.exe -m qbot.research.exploratory run --manifest data/research/exploratory/a-share-50-20261014-v1/manifest.json --output results/exploratory
 .\.venv-py39\python.exe -m qbot.research.exploratory verify --receipt <private-run-directory>/receipt.json
-.\.venv-py39\python.exe -m qbot.research.exploratory.publication --verify docs/research/evidence/exploratory-factor-v1/receipt.json
+.\.venv-py39\python.exe -m qbot.research.exploratory.publication --verify docs/research/evidence/exploratory-factor-v2/receipt.json
 ```
+
+新 checkout 不要求私有基准缓存，默认从原供应商接口取得指数；如复用已授权的现有缓存，显式增加 `--benchmark-cache data/research/benchmark`，其版本、空值和哈希错误仍拒绝，不能静默回退。已有封存 manifest 不得重取覆盖；复现本轮从 `run` 开始，新下载另选目录。
+
+损坏 Parquet、CSV 缺少 date 列、无效 JSON/UTF8 或错误结构统一转为探索合同失败，研究 CLI 返回 BLOCKED 和失败收据，不以 traceback 替代退出结论。哈希一致并不意味着内容可解析。
 
 股票名单必须在获取研究窗口行情前冻结，选择日期和方法写入 sample.json。当前固定名单是 `NON_PIT_CONVENIENCE`，`pit=False`；它不是中证500历史成员名单。只按研究起点之前完整预热数据判断资格，不根据未来收益、未来状态或评价表现换股。完整日历×合格冻结证券构造因子面板，滚动窗口遇缺失不跨停牌日期偷位。
 

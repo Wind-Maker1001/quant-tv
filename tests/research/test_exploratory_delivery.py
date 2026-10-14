@@ -7,18 +7,20 @@ qualification, historic PIT membership, or the vendor HFQ algorithm.
 from pathlib import Path
 
 from PIL import Image
+import pytest
 
 from qbot.research.exploratory.contract import REQUIRED_MARKERS
 from qbot.research.exploratory.publication import verify_publication
 
 
-PUBLICATION = (
-    Path(__file__).resolve().parents[2] / "docs/research/evidence/exploratory-factor-v1"
+EVIDENCE = Path(__file__).resolve().parents[2] / "docs/research/evidence"
+
+
+@pytest.mark.parametrize(
+    "generation", ["exploratory-factor-v1", "exploratory-factor-v2"]
 )
-
-
-def test_shipped_publication_survives_checkout_with_verified_derived_hashes():
-    receipt = verify_publication(PUBLICATION / "receipt.json")
+def test_shipped_publication_survives_checkout_with_verified_derived_hashes(generation):
+    receipt = verify_publication(EVIDENCE / generation / "receipt.json")
     assert receipt["status"] == "SUCCESS"
     assert receipt["formal_admission"] is False
     assert receipt["synthetic_only"] is False
@@ -27,9 +29,13 @@ def test_shipped_publication_survives_checkout_with_verified_derived_hashes():
     assert receipt["raw_source_bytes_published"] is False
 
 
-def test_shipped_report_and_all_pngs_keep_exploratory_disclosures():
-    text = (PUBLICATION / "summary.md").read_text(encoding="utf-8")
-    figures = sorted(PUBLICATION.glob("*.png"))
+@pytest.mark.parametrize(
+    "generation", ["exploratory-factor-v1", "exploratory-factor-v2"]
+)
+def test_shipped_report_and_all_pngs_keep_exploratory_disclosures(generation):
+    publication = EVIDENCE / generation
+    text = (publication / "summary.md").read_text(encoding="utf-8")
+    figures = sorted(publication.glob("*.png"))
     assert len(figures) == 9
     assert all(marker in text for marker in REQUIRED_MARKERS)
     for path in figures:
