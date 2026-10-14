@@ -1,0 +1,130 @@
+{
+  "schema": "FACTOR_DISCOVERY_DELIVERY_VALIDATION_V1",
+  "purpose": "SOFTWARE_VALIDATION_ONLY",
+  "formal_admission": false,
+  "forward_allowed": false,
+  "live_allowed": false,
+  "source_commit": "4d1b83989d1809aa4e99a4de40d5d7459cfa9baf",
+  "main_base": "48ea4dd8c1876c1515f3172c9bb2e812f20ebe82",
+  "test_runs": [
+    {
+      "scope": "FINAL_NEW_MODULE_ENGINE_GENERATOR_INTEGRATION_PUBLIC_DELIVERY",
+      "snapshot": "4d1b83989d1809aa4e99a4de40d5d7459cfa9baf",
+      "tests": 98,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 80.568,
+      "junit_sha256": "374ebc7a2d93daadce8b33a2bab3135f5cc8963b08241fe6c62b5cce7d9fa654",
+      "local_filename": "final-targeted-4d1b839.xml"
+    },
+    {
+      "scope": "OLD14_AND_GENERIC_FACTOR_MATH_GOLDEN_ACTUALLY_RERUN",
+      "snapshot": "pre-final-hardening; old source and Golden unchanged",
+      "tests": 350,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 16.619,
+      "junit_sha256": "f89a0a7976512dd2802f05596b0f4adf10ae03084bd4c44733b6597db20e4a47",
+      "local_filename": "golden.xml"
+    },
+    {
+      "scope": "COMPLETE_OFFLINE_RESEARCH_ACTUALLY_RERUN",
+      "snapshot": "065fabd653d3a7d86428e46df927ac569db727df; before final eighteen new regressions",
+      "tests": 2975,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1087.73,
+      "junit_sha256": "00c26c0816a5eb9c3548adf3f715fc5750fd9b488065b66434d0701b6c0fc569",
+      "local_filename": "research-final.xml"
+    }
+  ],
+  "full_offline_network_tests_deselected": 2,
+  "full_offline_historical_tests": 2895,
+  "full_offline_new_tests_at_that_snapshot": 80,
+  "full_offline_coverage": {
+    "line-rate": "0.8537",
+    "lines-covered": "15189",
+    "lines-valid": "17791"
+  },
+  "coverage_xml_sha256": "7a4127030ccedf8bad0922990d41cf1330ef596006c5ac1702a1a70368db84c5",
+  "static": {
+    "result": "PASS",
+    "compiled_python_files": 264,
+    "flake8_rules": "E9,F63,F7,F82",
+    "black_maintained_ci_files": 3,
+    "ci_contract_unittests": 19,
+    "no_full_pylint_claim": true
+  },
+  "runs": {
+    "runs": [
+      {
+        "mode": "synthetic",
+        "public_destination": "docs/research/evidence/factor-discovery-synthetic-v2",
+        "repeated_numerical_hashes_equal": true,
+        "counts": {
+          "total_records": 40,
+          "generated": 39,
+          "structurally_unique": 39,
+          "exact_duplicates": 1,
+          "rejected": 0,
+          "enumerated": 49,
+          "truncated": 9,
+          "family_count": 4,
+          "generated_count": 39,
+          "unique_count": 39,
+          "duplicate_count": 1,
+          "rejected_count": 0,
+          "successful": 39,
+          "failed": 0
+        },
+        "seconds": [
+          20.6624662,
+          18.537311199999998
+        ],
+        "cache_bytes": 7040000,
+        "expression_sha256": "56ec334218a0b5b81e6763caa78ebdf231434fd180f7e9aacbe67c2709a2df91",
+        "factor_sha256": "6fd87de90853cd095b6518be1903deec2036251d6f17abaf924d54f54c582d47",
+        "source_commit": "4d1b83989d1809aa4e99a4de40d5d7459cfa9baf"
+      },
+      {
+        "mode": "private",
+        "public_destination": "docs/research/evidence/factor-discovery-private-v2",
+        "repeated_numerical_hashes_equal": true,
+        "counts": {
+          "total_records": 40,
+          "generated": 39,
+          "structurally_unique": 39,
+          "exact_duplicates": 1,
+          "rejected": 0,
+          "enumerated": 49,
+          "truncated": 9,
+          "family_count": 4,
+          "generated_count": 39,
+          "unique_count": 39,
+          "duplicate_count": 1,
+          "rejected_count": 0,
+          "successful": 39,
+          "failed": 0
+        },
+        "seconds": [
+          35.9760988,
+          37.600054799999995
+        ],
+        "cache_bytes": 12636800,
+        "expression_sha256": "56ec334218a0b5b81e6763caa78ebdf231434fd180f7e9aacbe67c2709a2df91",
+        "factor_sha256": "9d4458ac6fe6547fb71af560030866dcab9d45aca50860cb1fca6658ffef4621",
+        "source_commit": "4d1b83989d1809aa4e99a4de40d5d7459cfa9baf"
+      }
+    ],
+    "private_manifest_and_previous_receipt_unchanged": true,
+    "windows_process_peak_working_set_bytes": 427757568,
+    "resource_scope": "SINGLE WINDOWS PYTHON PROCESS; FOUR FULL RUNS INCLUDING IMPORTS; OS WORKING SET PEAK"
+  },
+  "git_scope_check": "ONLY_NEW_DISCOVERY_MODULE_TESTS_DOCS_AND_FOUR_NEW_GITATTRIBUTES_RULES",
+  "privacy_check": "STRICT_FILE_AND_CSV_COLUMN_ALLOWLIST; NO_REAL_SECURITY_ROWS_OR_MEMBERSHIP_DIGESTS",
+  "latest_pr_head_ci_and_codex_review": "REPORTED_IN_PR_BODY_AFTER_PUSH; NOT_CLAIMED_BY_LOCAL_REPORT",
+  "warning": "NO LIVE MONEY; NO CLAIM OF TRADABLE ALPHA"
+}

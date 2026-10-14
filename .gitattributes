@@ -9,4 +9,8 @@ docs/research/evidence/exploratory-factor-v1/** -text
 docs/research/evidence/exploratory-factor-v2/** -text
 docs/research/evidence/exploratory-statistical-audit-v2/** -text
 docs/research/evidence/exploratory-statistical-audit-v3/** -text
+docs/research/evidence/factor-discovery-synthetic-v1/** -text whitespace=cr-at-eol
+docs/research/evidence/factor-discovery-private-v1/** -text whitespace=cr-at-eol
+docs/research/evidence/factor-discovery-synthetic-v2/** -text whitespace=cr-at-eol
+docs/research/evidence/factor-discovery-private-v2/** -text whitespace=cr-at-eol
 

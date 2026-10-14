@@ -1,0 +1,259 @@
+{
+  "status": "SOFTWARE_MVP_SUCCESS",
+  "completion_reason": "bounded actual compute and descriptive evaluation completed",
+  "real_data_status": "NOT_RUN",
+  "real_data_reason": "private real input not requested",
+  "input": {
+    "classification": "SYNTHETIC_TEST_ONLY",
+    "synthetic_only": true,
+    "generator": "make_synthetic_data-v1",
+    "input_sha256": {
+      "bars": "549f9b405227587264788a1d972883ea22cbeedcd3791162144fdc0d56ac4425",
+      "benchmark": "f1cec78422ba988d623eee280b34347031d1d969717fc8b948bccd0268045467",
+      "calendar": "f38495817832f7b7655a0d1532ed6b1252fe8f10918007a07aaab8d498e39cc6"
+    },
+    "calendar": "SYNTHETIC_BUSINESS_DAYS_NOT_EXCHANGE_SESSIONS"
+  },
+  "config": {
+    "development_start": "2023-07-03",
+    "development_end": "2023-12-15",
+    "generator_version": "finite-economic-templates-v1",
+    "seed": 20261014,
+    "operators": [
+      "Field",
+      "Const",
+      "Lag",
+      "Delta",
+      "RollingMean",
+      "RollingStd",
+      "Add",
+      "Sub",
+      "Mul",
+      "SafeDiv"
+    ],
+    "fields": [
+      "adj_open",
+      "adj_high",
+      "adj_low",
+      "adj_close",
+      "raw_open",
+      "raw_high",
+      "raw_low",
+      "raw_close",
+      "volume",
+      "amount",
+      "turnover",
+      "RET1"
+    ],
+    "windows": [
+      5,
+      10,
+      20,
+      60
+    ],
+    "lags": [
+      1,
+      5,
+      10,
+      20,
+      60
+    ],
+    "max_depth": 5,
+    "max_nodes": 15,
+    "max_rolling_operators": 2,
+    "max_lookback": 130,
+    "max_candidates": 40,
+    "max_panel_rows": 250000,
+    "max_cell_operations": 50000000,
+    "max_cached_subexpressions": 2000,
+    "max_cache_bytes": 134217728,
+    "max_diagnostic_records": 500000,
+    "max_expression_seconds": 10.0,
+    "max_total_seconds": 120.0,
+    "minimum_cross_section": 20,
+    "minimum_evaluation_dates": 60,
+    "minimum_pair_coverage": 0.8,
+    "redundancy_threshold": 0.98,
+    "minimum_candidate_coverage": 0.8,
+    "mad_multiplier": 5.0,
+    "holding_days": 5,
+    "quantiles": 5,
+    "ordering": "TEMPLATE_ORDER_THEN_ASCENDING_PARAMETERS_FIRST_UNIQUE"
+  },
+  "generator_rules": [
+    {
+      "name": "close_relative_mean",
+      "family": "TREND_MOMENTUM",
+      "meaning": "复权收盘价相对过去{n}个交易日均价，描述价格趋势位置。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "mean_return_to_volatility",
+      "family": "RETURN_VOLATILITY",
+      "meaning": "过去{n}个交易日平均单日收益除以同期收益标准差，描述收益与风险的关系。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "volume_relative_mean",
+      "family": "ACTIVITY_DYNAMICS",
+      "meaning": "当日成交股数相对过去{n}个交易日均值，描述成交活跃程度。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "amount_relative_mean",
+      "family": "ACTIVITY_DYNAMICS",
+      "meaning": "当日成交金额相对过去{n}个交易日均值，描述资金成交活跃程度。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "turnover_relative_mean",
+      "family": "ACTIVITY_DYNAMICS",
+      "meaning": "当日比例换手率相对过去{n}个交易日均值，描述换手活跃程度。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "price_volume_relative_levels",
+      "family": "PRICE_VOLUME_INTERACTION",
+      "meaning": "价格相对{n}日均价与成交量相对{n}日均量的乘积，描述价量共同偏离。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "price_volume_commutative_audit",
+      "family": "PRICE_VOLUME_INTERACTION",
+      "meaning": "同一{n}日价量共同偏离表达式交换乘法操作数，仅用于结构重复审计。",
+      "parameters": "SMALLEST_CONFIGURED_WINDOW"
+    },
+    {
+      "name": "close_lagged_return",
+      "family": "TREND_MOMENTUM",
+      "meaning": "复权收盘价过去{n}个交易日的变化除以当时价格，描述区间价格动量。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "return_volatility_change",
+      "family": "RETURN_VOLATILITY",
+      "meaning": "{n}日收益波动率相对上一交易日同窗口波动率，描述风险扩张或收缩。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "volume_lagged_change",
+      "family": "ACTIVITY_DYNAMICS",
+      "meaning": "成交股数相对{n}个交易日前的比例变化，描述交易活动变化。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "momentum_volume_interaction",
+      "family": "PRICE_VOLUME_INTERACTION",
+      "meaning": "{n}日价格动量与成交量相对{n}日均量的乘积，描述成交活动下的动量。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "amount_mean_change",
+      "family": "ACTIVITY_DYNAMICS",
+      "meaning": "{n}日平均成交金额相对上一交易日同窗口均值，描述成交金额趋势变化。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    },
+    {
+      "name": "mean_range_relative_close",
+      "family": "TREND_MOMENTUM",
+      "meaning": "{n}日复权最高价与最低价均值之差相对当日复权收盘价，描述相对价格区间。",
+      "parameters": "ASCENDING_CONFIGURED_WINDOWS"
+    }
+  ],
+  "counts": {
+    "total_records": 40,
+    "generated": 39,
+    "structurally_unique": 39,
+    "exact_duplicates": 1,
+    "rejected": 0,
+    "enumerated": 49,
+    "truncated": 9,
+    "family_count": 4,
+    "generated_count": 39,
+    "unique_count": 39,
+    "duplicate_count": 1,
+    "rejected_count": 0,
+    "successful": 39,
+    "failed": 0
+  },
+  "run_version": "92c0681c37069994f3464399d610b216bbf8defda32827844f84a36ac5172af2",
+  "normalized_expression_set_sha256": "56ec334218a0b5b81e6763caa78ebdf231434fd180f7e9aacbe67c2709a2df91",
+  "development_factor_values_sha256": "6fd87de90853cd095b6518be1903deec2036251d6f17abaf924d54f54c582d47",
+  "panel_rows": 10000,
+  "compute_elapsed_seconds": 0.0463453000000007,
+  "total_elapsed_seconds": 12.6158836,
+  "peak_cache_bytes": 7040000,
+  "cache_hits": 73,
+  "code_and_environment": {
+    "source_sha256": {
+      "qbot/research/data/calendar.py": "ab9a17d85b3d1a0b696fbd9919dd01d7082d2cac7653fed1e591fef78f1f06b0",
+      "qbot/research/data/schema.py": "b057be8f70029402dd5b56b0535b31a272d4f1659c66f46f0aa6c8efbc7d6819",
+      "qbot/research/exploratory/contract.py": "367014f662372d0782b6edca1739cdf88050a3d9aa640743d695b61878e70371",
+      "qbot/research/exploratory/factor_discovery/__init__.py": "4d5b161e22a338214dad3e5275d9473bc9772aa0e547958f31443f84fbe7971a",
+      "qbot/research/exploratory/factor_discovery/__main__.py": "44694664871a09b58dabc494380ec3152e8164829834c858174136eaa991b166",
+      "qbot/research/exploratory/factor_discovery/contracts.py": "0e9014c6dbddae14a10625f08d55afc78c8a659d99c06e03f3a29d74fe79edcc",
+      "qbot/research/exploratory/factor_discovery/engine.py": "93bde7112bbc58ded23738f6baa0c23ac7e11a9590bed31fedbd997a4d2cb58b",
+      "qbot/research/exploratory/factor_discovery/evaluation.py": "70388c46dd82372f0ec510e5f0ba5661ecd39bcbb80b8aea5ff1def6abee3683",
+      "qbot/research/exploratory/factor_discovery/generator.py": "b414078cc3d4fec803009430a163f6ecb6107427a1dea3c7c1456dac18c00278",
+      "qbot/research/exploratory/factor_discovery/private_inputs.py": "af81b26b44fda4c08173c07a5c050c03b2392b115516b133121ce830f0279ed7",
+      "qbot/research/exploratory/factor_discovery/publication.py": "abd20627e923705e9bba7ff017af07b4e35f5ccfc25eb45240de7329e5c2388e",
+      "qbot/research/exploratory/factor_discovery/receipts.py": "fbaab6d59df0226598cf766265db7c4d2bd732ac26dc039e9e6d0e88196b0f1c",
+      "qbot/research/exploratory/factor_discovery/redundancy.py": "0690e3c84ec9f658e51964dcbdf5541b6259b447d2f6225cc1fd7206534e3aea",
+      "qbot/research/exploratory/factor_discovery/report.py": "ec7ef0581e80888e001dfe646dccc06d616ebc0d56825b1653a16604270d2635",
+      "qbot/research/exploratory/factor_discovery/runner.py": "f7fbf6958de366b4b8aa2bb2ae6ea8208c6cb4411e9e5d668f534ced62f1b92e",
+      "qbot/research/exploratory/factor_discovery/synthetic.py": "6792506be8dcdb0f50f0a9c9a3b024f12088361ec27efbf2e0f8105e38ac39b8",
+      "qbot/research/exploratory/runner.py": "e5c1ce8c7d1122a53fccadc5cb8ffa85653b5b9a973ef6eb7db02f335aaa40a5",
+      "qbot/research/factors/__init__.py": "64abd8e958661e46fbdab702a095c0d1b78edfe22c8a58bca2c89b7ef2f33774",
+      "qbot/research/factors/base.py": "303b39a76aadb21df67cf00346eb0f3b13e08ce1758683c99996b1c8f4ce20e0",
+      "qbot/research/factors/liquidity.py": "61b0e7904075ac6330e447db6f5258c62f35450902f628bd26edbca49578f78e",
+      "qbot/research/factors/momentum.py": "671fe8c64e8807f7a07dab8b54808209d0ff141206d834ddb4c7a7ff7f0b96bd",
+      "qbot/research/factors/preprocess.py": "22e11ef944293aaf1a75a4382e952c2ca20713d4ff5b88ca77b8df04911a3142",
+      "qbot/research/factors/registry.py": "2fb411a638d3e5becfe05c7afa83eff3973e4ce6199631425d64b44e5df8e029",
+      "qbot/research/factors/reversal.py": "780fc3485e2281b4bd2d730014cdfd0032a21a5bc1b0d8ee7f9b031bd38f2e3f",
+      "qbot/research/factors/trend.py": "ac8e207819b50196211c0d15c3a5f0a279eefa7c01baea1f6472c4c0aabdda8d",
+      "qbot/research/factors/volatility.py": "a530cffa1e8d3213be63660fad6fea67158c449ca30eb043c2a56bf474f5338b",
+      "qbot/research/labels/forward_return.py": "e0c5975aa93da9e2f7b807926a85dceeb85963ead8956bd49de61c26c97c15a0",
+      "qbot/research/metrics/_factor_arrays.py": "076a6f076ebac8a1a776a1e24d793de88cb9aec04182fb47bcb9c310eb059ee8",
+      "qbot/research/metrics/factor.py": "b9130144bc48ef3745a4a57aa2fbf549422dd99ac488b660fad721e27b91d35d"
+    },
+    "source_digest": "39bd09563776bde62eadbca0001ea83496cb57fca2e9bb5494f5c2a4c147edec",
+    "git_head": "49e7901269495c43ece227e11a7deebbd9bd63b5",
+    "git_branch": "codex/automated-factor-discovery-mvp",
+    "source_tree_dirty": false,
+    "python": "3.9.25 (main, Nov  3 2025, 22:44:01) [MSC v.1929 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26340-SP0",
+    "dependencies": {
+      "numpy": "1.26.4",
+      "pandas": "2.2.3",
+      "scipy": "1.13.1",
+      "pyarrow": "17.0.0",
+      "pytest": "8.3.5"
+    },
+    "hash_policy": "EXACT_SOURCE_BYTES_INCLUDING_LINE_ENDINGS"
+  },
+  "evaluation_summary_sha256": "e213b5260f58f5e074f4ee36bfe3077fcab7cd6a908398d05db8c51c4d8864af",
+  "daily_ic_sha256": "8a7b8b9fc26952861e9903c57e1b89e1f4dfc27b810ed7bffae04c769d12edcf",
+  "quantile_returns_sha256": "8e3b9c70213f97cd75458f4248e65bdbfa9a7869fc4586125a5f68b528fab0a6",
+  "public_boundary": "EXPRESSIONS_AND_AGGREGATES_ONLY_NO_SECURITY_ROWS_OR_MEMBERSHIP_COMMITMENTS",
+  "schema": "FACTOR_DISCOVERY_EXPLORATORY_V1",
+  "purpose": "EXPLORATORY",
+  "qualification": "UNVERIFIED",
+  "formal_admission": false,
+  "forward_allowed": false,
+  "live_allowed": false,
+  "warning": "NO LIVE MONEY; SOFTWARE SUCCESS IS NOT TRADABLE ALPHA",
+  "publication_source_receipt_sha256": "dc7aa4007673cff4418c7dc2c0bd5a26f9c81bcce70bd909f11e194e09cdeb57",
+  "publication_policy": "AGGREGATE_ALLOWLIST_V1_NO_RAW_OR_SECURITY_LEVEL_ARTIFACTS",
+  "artifacts": {
+    "candidates.csv": "b690560e26e1bddac65d1653366126e8ba7d04e386da7f658536f582d386e5dc",
+    "config.json": "afa2a57c96e4a08bf023f11aae652ff7929b7653dc32bbf7503afa2ccbe1164f",
+    "daily_ic.csv": "d5a226174219a3db5b17947a48fb64fce5b97ae9d4e91a52b61fb992e8b2fc25",
+    "evaluation_summary.csv": "89e624331787000e676870fe2a7334c2b5fb0802a4a5b7a8b49b135d0ab1c886",
+    "factor_quality.csv": "16e6bfb44f54b66514ac6bb7b9b6a2ffbdf9d225771a8a56d630915f9486242c",
+    "label_sensitivity.csv": "8ee265ad6931514bd514fb8e72249b136bf3b72d842a30e428922ed19dcbfc88",
+    "quantile_returns.csv": "59232a60c51928671c36f94b564615c2b63fa3f2f3bac052888cf2b3f4c75c65",
+    "redundancy_summary.csv": "298e4848e6049d2cf7f03bd87d8661682e9e18c1813db72e4550ecfa1ecb4410",
+    "summary.md": "519bdc86577a794a9900b27a9100c4a7a6363c6dfac224a09e8b75617bbfcc38"
+  },
+  "receipt_sha256": "e766880b59575a2fc00da087c91c3bf134bc6f8eb312f7f9dacd8c66b02465a0"
+}
