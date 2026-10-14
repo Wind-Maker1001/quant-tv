@@ -469,3 +469,59 @@ def test_failed_calculation_cannot_retain_successful_private_input_status(tmp_pa
     assert run.receipt["real_data_status"] == "BLOCKED"
     assert "BUDGET_EXCEEDED" in run.receipt["real_data_reason"]
     assert "FAILED" in (run.destination / "summary.md").read_text(encoding="utf-8")
+
+
+def test_self_rehashed_receipt_cannot_redefine_approved_historical_labels(
+    tmp_path, monkeypatch
+):
+    from qbot.research.exploratory.factor_discovery import private_inputs
+
+    manifest, previous = tmp_path / "manifest.json", tmp_path / "receipt.json"
+    manifest.write_text("SYNTHETIC_NEGATIVE_TEST_ONLY")
+    # A caller may recompute its own receipt hashes, but cannot change the
+    # separate, immutable approved receipt byte anchor.
+    previous.write_text(
+        json.dumps(
+            {
+                "schema": "EXPLORATORY_RUN_V1",
+                "artifacts": {"derived_factor_labels.parquet": "0" * 64},
+            }
+        )
+    )
+    actual_hash = private_inputs.file_sha256
+    monkeypatch.setattr(
+        private_inputs,
+        "file_sha256",
+        lambda path: (
+            private_inputs.MANIFEST_SHA256
+            if Path(path) == manifest
+            else actual_hash(path)
+        ),
+    )
+
+    def forbidden_load(*args, **kwargs):
+        pytest.fail("unanchored private receipt should fail before any dataset read")
+
+    monkeypatch.setattr(private_inputs, "load_dataset", forbidden_load)
+    status, loaded, reason = private_inputs.load_private_inputs(manifest, previous)
+    assert status == "BLOCKED" and loaded is None
+    assert "approved v2 receipt byte hash" in reason
+
+
+def test_redundancy_preserves_near_constant_variation_and_ignores_unpaired_extreme():
+    random = np.random.RandomState(11)
+    x, y = random.normal(size=20), random.normal(size=20)
+    dates = pd.bdate_range("2023-07-03", periods=61)
+    frame = pd.DataFrame(
+        {
+            "date": np.repeat(dates, 21),
+            "symbol": np.tile(np.arange(21), 61),
+            "A": np.tile(np.r_[1 + 1e-10 * x, 1e300], 61),
+            "B": np.tile(np.r_[1 + 1e-10 * y, np.nan], 61),
+        }
+    )
+    observed, _ = diagnose_redundancy(frame, ["A"], ["B"])
+    expected = np.corrcoef(1 + 1e-10 * x, 1 + 1e-10 * y)[0, 1]
+    assert observed.iloc[0]["mean_pearson"] == pytest.approx(expected, abs=1e-8)
+    assert observed.iloc[0]["status"] == "NON_REDUNDANT"
+    assert observed.iloc[0]["valid_dates"] == 61

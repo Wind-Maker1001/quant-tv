@@ -11,6 +11,12 @@ from .receipts import file_sha256
 
 DATA_VERSION = "2f145d173f5ddc79d303f580bc4485241023ae3971d3b40a2e8fa6e3de2e3f5f"
 MANIFEST_SHA256 = "c1aef73620bb34f43e1553aa196dcd35fd11eb2abfb34c842b7ff59c5a9b8ced"
+APPROVED_RECEIPT_SHA256 = (
+    "67b7d1fa82f234565f084b71f795112487e7e7d975693ec3447e8cde191896cc"
+)
+FROZEN_LABELS_SHA256 = (
+    "7544e77456b0cec20615a84a1eb1af0a8e69c8288d6204f27d44881b62f4a0ca"
+)
 
 
 def load_private_inputs(manifest_path=None, frozen_receipt_path=None):
@@ -22,6 +28,8 @@ def load_private_inputs(manifest_path=None, frozen_receipt_path=None):
     try:
         if file_sha256(manifest_path) != MANIFEST_SHA256:
             raise ExploratoryContractError("frozen manifest byte hash mismatch")
+        if file_sha256(frozen_receipt_path) != APPROVED_RECEIPT_SHA256:
+            raise ExploratoryContractError("approved v2 receipt byte hash mismatch")
         bars, benchmark, calendar, manifest = load_dataset(
             manifest_path, allow_synthetic=False
         )
@@ -38,7 +46,10 @@ def load_private_inputs(manifest_path=None, frozen_receipt_path=None):
         ):
             raise ExploratoryContractError("frozen receipt input binding mismatch")
         derived = Path(frozen_receipt_path).parent / "derived_factor_labels.parquet"
-        if previous["artifacts"].get(derived.name) != file_sha256(derived):
+        if (
+            previous["artifacts"].get(derived.name) != FROZEN_LABELS_SHA256
+            or file_sha256(derived) != FROZEN_LABELS_SHA256
+        ):
             raise ExploratoryContractError("frozen historical labels hash mismatch")
         frozen = pd.read_parquet(derived)
         required = ["date", "symbol", "entry_date", "exit_date", "EXCESS_RET5"]
@@ -56,6 +67,7 @@ def load_private_inputs(manifest_path=None, frozen_receipt_path=None):
                 key: item["sha256"] for key, item in manifest["files"].items()
             },
             "frozen_label_file_sha256": file_sha256(derived),
+            "previous_receipt_sha256": APPROVED_RECEIPT_SHA256,
             "previously_observed_sample": True,
             "formal_admission": False,
         }

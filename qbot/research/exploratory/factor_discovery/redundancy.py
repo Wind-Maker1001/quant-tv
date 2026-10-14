@@ -9,6 +9,37 @@ import pandas as pd
 from .contracts import DiscoveryConfig, DiscoveryError, ErrorCode
 
 
+def _shift_scale(values, finite):
+    """Subtract a finite anchor before scaling to retain tiny variations."""
+    first = finite.argmax(axis=0)
+    anchor = values[first, np.arange(values.shape[1])]
+    anchor = np.where(finite.any(axis=0), anchor, 0)
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        shifted = values - anchor
+        overflow = ((~np.isfinite(shifted)) & finite).any(axis=0)
+        if overflow.any():
+            original_scale = np.max(np.where(finite, np.abs(values), 0), axis=0)
+            original_scale[original_scale == 0] = 1
+            shifted[:, overflow] = (
+                values[:, overflow] / original_scale[overflow]
+                - anchor[overflow] / original_scale[overflow]
+            )
+        scale = np.max(np.where(finite, np.abs(shifted), 0), axis=0)
+        scale[scale == 0] = 1
+        return np.where(finite, shifted / scale, 0)
+
+
+def _paired_pearson(left, right):
+    pair = np.column_stack((left, right))
+    scaled = _shift_scale(pair, np.ones(pair.shape, dtype=bool))
+    centered = scaled - scaled.mean(axis=0)
+    x, y = centered[:, 0], centered[:, 1]
+    denominator = np.sqrt(np.dot(x, x)) * np.sqrt(np.dot(y, y))
+    return (
+        float(np.clip(np.dot(x, y) / denominator, -1, 1)) if denominator > 0 else np.nan
+    )
+
+
 def original_structure_hashes(config=DiscoveryConfig()):
     """Read-only documented translations; AMIHU needs unavailable Abs/scale."""
     from .contracts import Node
@@ -98,11 +129,11 @@ def diagnose_redundancy(
             raise DiscoveryError(ErrorCode.BUDGET_EXCEEDED, "redundancy runtime budget")
         values = cross[names].to_numpy(dtype=float)
         finite = np.isfinite(values)
-        # Scale by column max before covariance to contain legitimate extremes.
-        scale = np.max(np.where(finite, np.abs(values), 0), axis=0)
-        scale[scale == 0] = 1
-        scaled = np.where(finite, values / scale, 0)
+        scaled = _shift_scale(values, finite)
         mask = finite.astype(float)
+        counts = mask.sum(axis=0)
+        means = scaled.sum(axis=0) / np.where(counts > 0, counts, 1)
+        scaled = np.where(finite, scaled - means, 0)
         n = mask.T @ mask
         sums = scaled.T @ mask
         squares = (scaled * scaled).T @ mask
@@ -122,6 +153,15 @@ def diagnose_redundancy(
             )
             identical[index] &= same
             value = corr[i, j] if paired >= config.minimum_cross_section else np.nan
+            # Missing counterpart rows may contain the column's huge extreme,
+            # making the paired scaled variation underflow or cancel. Recompute
+            # that pair from its own observations rather than invent a verdict.
+            if paired >= config.minimum_cross_section and (
+                not np.isfinite(value)
+                or variance[i, j] < 1e-12
+                or variance[j, i] < 1e-12
+            ):
+                value = _paired_pearson(values[pair_mask, i], values[pair_mask, j])
             if np.isfinite(value):
                 valid_dates[index] += 1
                 signed[index] += value

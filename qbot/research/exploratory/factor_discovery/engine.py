@@ -268,6 +268,24 @@ def _infer(node):
         value_type = first.value_type
     elif node.op == "Mul" and node.args[0].op == "Const":
         value_type = second.value_type
+    # A cash/share quotient is a RAW traded price even without a raw_* leaf.
+    # Preserve its basis after later ratios cancel the physical dimensions.
+    if units[0] and units[1]:
+        raise DiscoveryError(
+            ErrorCode.PRICE_BASIS_MISMATCH,
+            "raw and adjusted monetary dimensions cannot mix",
+        )
+    raw_price_power = units[0] != 0 and units[1] == 0 and units[2] == -units[0]
+    adj_price_power = units[1] != 0 and units[0] == 0 and units[2] == -units[1]
+    if raw_price_power or adj_price_power:
+        basis = "RAW" if raw_price_power else "HFQ"
+        bases = tuple(sorted(set(bases + (basis,))))
+        if len(bases) > 1:
+            raise DiscoveryError(
+                ErrorCode.PRICE_BASIS_MISMATCH, "inferred RAW and HFQ prices cannot mix"
+            )
+        if units in ((1, 0, -1), (0, 1, -1)):
+            value_type = "raw_price" if basis == "RAW" else "adjusted_price"
     return Dimension(units, value_type, bases), lookback, has_field
 
 

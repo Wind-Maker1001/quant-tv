@@ -356,3 +356,33 @@ def test_canonical_new_code_cannot_silently_replace_frozen_security(bars):
     frame.loc[0, "symbol"] = "000003.SZ"
     with pytest.raises(DiscoveryError, match="universe mismatch"):
         ExpressionEngine(frame, dates, universe=universe)
+
+
+def test_derived_cash_per_share_price_cannot_hide_raw_basis_after_normalization():
+    price = op("SafeDiv", f("amount"), f("volume"))
+    typed = compile_expression(price, require_dimensionless=False)
+    assert typed.dimension.as_dict()["price_basis"] == "RAW"
+    assert typed.dimension.value_type == "raw_price"
+    relative = op("SafeDiv", price, op("RollingMean", price, n=5))
+    assert compile_expression(relative).dimension.as_dict()["price_basis"] == "RAW"
+    mixed = op("Mul", relative, op("SafeDiv", f("adj_close"), f("adj_open")))
+    with pytest.raises(DiscoveryError) as raised:
+        compile_expression(mixed)
+    assert raised.value.code == ErrorCode.PRICE_BASIS_MISMATCH
+    # Delaying the share division until the root cannot conceal the price.
+    hidden = op(
+        "SafeDiv",
+        op("Mul", f("amount"), op("SafeDiv", f("adj_close"), f("adj_open"))),
+        f("volume"),
+    )
+    with pytest.raises(DiscoveryError, match="PRICE_BASIS_MISMATCH"):
+        compile_expression(hidden, require_dimensionless=False)
+    inverse = op("SafeDiv", f("volume"), f("amount"))
+    inverse_relative = op("SafeDiv", inverse, op("RollingMean", inverse, n=5))
+    assert (
+        compile_expression(inverse_relative).dimension.as_dict()["price_basis"] == "RAW"
+    )
+    with pytest.raises(DiscoveryError, match="PRICE_BASIS_MISMATCH"):
+        compile_expression(
+            op("Mul", inverse_relative, op("SafeDiv", f("adj_close"), f("adj_open")))
+        )
