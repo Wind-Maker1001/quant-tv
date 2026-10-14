@@ -1,0 +1,5 @@
+scope,signal_dates,dates_with_any_valid_rank_ic,factor_date_observations,minimum_factor_valid_dates,sample_insufficient
+ALL,242,236,164609,236,False
+BULL,128,128,89162,128,False
+BEAR,69,63,44066,63,False
+SIDEWAYS,45,45,31381,45,True
