@@ -549,7 +549,7 @@ def native_transport(synthetic_transport, monkeypatch):
         calls.append((url, dict(params)))
         if url == "https://www.csindex.com.cn/csindex-home/perf/index-perf":
             rows = [dict(zip(pilot.CSI_NATIVE_FIELDS, (day.replace("-", ""), "000905", "fixture", "fixture", "fixture", "fixture",
-                                                      10., 12., 9., 11., 0., 0., 10., 0.0011, 500., 10.))) for day in DATES]
+                                                      10., 12., 9., 11., 0., 0., 10., 0.0011, 500., 10.))) for day in mode.get("index_dates", DATES)]
             payload = {"code": "200", "msg": "Success", "data": rows, "success": True}
         else:
             assert url == "https://push2his.eastmoney.com/api/qt/stock/kline/get"
@@ -775,3 +775,32 @@ def test_legacy_schema_cannot_self_assert_native_benchmark_qualification(native_
     receipt_path.write_text(json.dumps(receipt))
     with pytest.raises(ValueError, match="legacy benchmark provenance is cache-only"):
         pilot.verify_pilot(result["manifest_path"], with_verification=True)
+
+
+def test_warmup_only_native_benchmark_failure_clears_calendar_after_assignment(tmp_path, native_transport):
+    """Valid CSI bytes can reconstruct a calendar that has no research sessions."""
+    native_transport[1]["index_dates"] = DATES[:2]
+    result = pilot.acquire_pilot(tmp_path / "warmup-only", research_end="2021-09-20",
+                                  akshare_module=NativeLayoutSDK(), progress=lambda value: None)
+    root = Path(result["manifest_path"]).parent
+    report = pilot.verify_pilot(result["manifest_path"], with_verification=True)
+    manifest = report["manifest"]
+    attempts = json.loads((root / "attempts.json").read_text())
+    benchmark_attempt = next(item for item in attempts if item["symbol"] == "000905.SH")
+    # This reason occurs after TradingCalendar assignment, not source decoding.
+    assert benchmark_attempt["status"] == "BENCHMARK_FAILED"
+    assert "benchmark has no actual research sessions" in benchmark_attempt["reason"]
+    assert manifest["calendar_status"] == "CALENDAR_UNAVAILABLE"
+    assert manifest["benchmark_provenance"]["status"] == "UNAVAILABLE"
+    assert report["verification"]["calendar_origin"] == "UNAVAILABLE"
+    assert result["statuses"]["software"] == "SOFTWARE_SUCCESS"
+    assert result["statuses"]["data"] == "EXPLORATORY_DATA_UNAVAILABLE"
+    assert result["statuses"]["formal"] == "FORMAL_ADMISSION_BLOCKED"
+    assert pd.read_parquet(root / "benchmark.parquet").empty
+    assert pd.read_csv(root / "calendar.csv").empty
+    assert result["coverage"] == []
+    # The valid original pre-window response stays available as evidence.
+    records = pilot._read_archived_benchmark_records(root, manifest)
+    rebuilt = pilot._reconstruct_benchmark(records, pd.Timestamp("2021-03-08"), pd.Timestamp("2021-09-20"),
+                                           manifest["retrieved_at"], False)
+    assert rebuilt["date"].dt.strftime("%Y-%m-%d").tolist() == DATES[:2]
