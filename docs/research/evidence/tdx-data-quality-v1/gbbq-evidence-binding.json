@@ -1,0 +1,25 @@
+{
+  "candidate_records_after_client_audit_date": 6,
+  "candidate_records_after_research_end": 1165,
+  "client_audit_date": "2026-10-16",
+  "duplicate_key_groups": 1,
+  "duplicate_key_is_correction_evidence": false,
+  "event": {
+    "cash_cny_per_old_share": "0.41",
+    "ex_date": "2025-07-16",
+    "symbol": "600000.SH"
+  },
+  "event_chain_complete": "UNKNOWN",
+  "hfq": "HFQ_UNVERIFIED",
+  "map_ascii_fixed_numeric_layout": true,
+  "map_field_semantics": "UNKNOWN; not asserted to be record offsets, dates or identity authority",
+  "map_line_lengths": [
+    12
+  ],
+  "map_nonempty_lines": 6441,
+  "official_notice_sha256": "f2e8e0e2be70848a65debac6b4858c13cfd8da10031129ec9dc72d80bf8f8b5d",
+  "official_review_sha256": "780d55ed201e295c6cabe74d0894abdd68e1860fa8493f1bea31074dd7e02c3c",
+  "old_gbbq_archives_still_match": true,
+  "revision_metadata_fields_in_candidate_layout": 0,
+  "schema": "GBBQ_SINGLE_EVENT_EVIDENCE_BINDING_V1"
+}

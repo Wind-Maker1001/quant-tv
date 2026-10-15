@@ -1,0 +1,111 @@
+{
+  "audit_network_requests": 0,
+  "automatic_merge": false,
+  "baseline_commit": "3d7d2a20e5ee2f5a4be55cf55f912ef14448e52b",
+  "branch": "codex/tdx-data-quality-audit",
+  "coverage_png_visually_inspected": true,
+  "environment": {
+    "packages": {
+      "coverage": "7.10.7",
+      "matplotlib": "3.8.4",
+      "numpy": "1.26.4",
+      "pandas": "2.2.3",
+      "pyarrow": "17.0.0",
+      "pytest": "8.3.5",
+      "pytest-cov": "5.0.0"
+    },
+    "python": "3.9.25"
+  },
+  "finalizer_script_sha256": "45fb0a893b69070bd3dbfe567469924943940272c596d639a0ef5580c0bc7e33",
+  "financial_admission": false,
+  "hfq": "HFQ_UNVERIFIED",
+  "human_review_required": true,
+  "independent_implementation_review": {
+    "human_pr_review": "PENDING",
+    "operator_independence": false,
+    "sha256": "1015fad5063c3228a3040b7e246719b96da97ac51a1b6f29abf979e7437ee053",
+    "status": "PASS"
+  },
+  "market_data_downloads_this_task": 0,
+  "no_live_money": true,
+  "notebook": {
+    "errors": 0,
+    "executed_cells": 6,
+    "kernel": "existing Anaconda Python 3.12",
+    "mode": "public aggregate checks only; private replay disabled"
+  },
+  "pip_check": "PASS; no broken requirements",
+  "pit": "PIT_UNVERIFIED",
+  "pr6_actual_state": "MERGED",
+  "pr7_actual_state": "MERGED",
+  "preservation": {
+    "all_original_private_data_and_historical_receipts_retained": true,
+    "changed": [],
+    "existing_tracked_files_reverified": 4995,
+    "original_14_factors_39_candidates_golden_formal_gates_modified": false
+  },
+  "publication": "allowlisted aggregates only; no native market or private security rows",
+  "schema": "TDX_AUDIT_FINAL_DELIVERY_V1",
+  "software_reference_download": "one SHA-pinned pytdx source file; private archival only",
+  "static": {
+    "base": "3d7d2a20e5ee2f5a4be55cf55f912ef14448e52b",
+    "compiled_python_files": 277,
+    "full_pylint_analysis": false,
+    "modifies_source": false,
+    "scopes": [
+      "qbot/research",
+      "tests/research",
+      "examples/research",
+      ".github/scripts/ci"
+    ],
+    "static_rules": "flake8 E9,F63,F7,F82"
+  },
+  "supplement_independent_review_sha256": "1d1420adcce9ff155eeaccff5ce1f07beeef1cb3d77c1aa3f91f6e9eeccdbf4e",
+  "tests": {
+    "corrected_same_drive_outside_repo_path_tests": {
+      "errors": 0,
+      "failures": 0,
+      "seconds": 6.606,
+      "sha256": "e682dee44682a74c59944594dd66454056e6f6c82872bf0f7dbd58e686aa77fd",
+      "skipped": 0,
+      "tests": 2
+    },
+    "coverage": {
+      "line_rate": 0.8554,
+      "lines_covered": 16022,
+      "lines_valid": 18730,
+      "sha256": "6ebf5353951723b0befa8511521d8dbc1187565dd8784ae2cdd1e9652d00abfb"
+    },
+    "final_temp_scope": "new same-drive sibling outside repository",
+    "full_offline_final": {
+      "errors": 0,
+      "failures": 0,
+      "seconds": 1638.033,
+      "sha256": "e7f70fd16c3a81d5e64f57d9ae35d2d3918190afa6ff029f3635bb048156772b",
+      "skipped": 0,
+      "tests": 3124
+    },
+    "full_offline_final_log_sha256": "e59ef43dd35fd683b620c9a140e39c0ee6baa5cdba14b103d80a20692a9b08eb",
+    "initial_failure_cause": "two Windows cross-drive os.path.relpath fixture setup failures; assertions and application unchanged",
+    "initial_full_default_temp": {
+      "errors": 0,
+      "failures": 2,
+      "seconds": 1923.199,
+      "sha256": "d3bdf6fde73ab78e8246215e233415ebc27fc1ce0823b86d221a1e2f48ae7e0c",
+      "skipped": 0,
+      "tests": 3124
+    },
+    "initial_full_log_sha256": "3d066bb170b4f56f90ce8bd26a22234c1c14f905ea329c2f694ee526d1e90941",
+    "network_tests_deselected": 2,
+    "same_drive_inside_repo_preflight": "failed existing parent-traversal assertion; early full-r2 interrupted, logs preserved",
+    "synthetic_tests_are_financial_certification": false,
+    "targeted": {
+      "errors": 0,
+      "failures": 0,
+      "seconds": 611.519,
+      "sha256": "b47eb580282a449cc664f99bec0da664983ef77164fb45dcc1645af8cf3abcd2",
+      "skipped": 0,
+      "tests": 207
+    }
+  }
+}

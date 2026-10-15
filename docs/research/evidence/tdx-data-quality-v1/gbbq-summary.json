@@ -1,0 +1,66 @@
+{
+  "anchor": null,
+  "anchor_status": "UNVERIFIED",
+  "category_bytes": {
+    "1": 65872,
+    "10": 274,
+    "11": 408,
+    "12": 8,
+    "13": 9,
+    "14": 15,
+    "15": 91,
+    "2": 4298,
+    "3": 5447,
+    "4": 2,
+    "5": 115412,
+    "6": 69,
+    "7": 19,
+    "8": 1118,
+    "9": 7836
+  },
+  "certified_hfq_sessions": 0,
+  "computed_hfq": null,
+  "corrections_and_vintages": "UNKNOWN",
+  "date_max": "2026-10-19",
+  "date_min": "1990-03-01",
+  "decoder_reference": "https://github.com/rainx/pytdx/blob/2857fdad08534533610bd2aeca387f760c4baa42/pytdx/reader/gbbq_reader.py",
+  "decoder_reference_commit": "2857fdad08534533610bd2aeca387f760c4baa42",
+  "decoder_reference_sha256": "e28fae76760b1247a960cab285aa357c2d263b3212e7cabfb3f1ebfcc127d6ba",
+  "duplicate_market_code_date_category": 1,
+  "event_semantics": "CANDIDATE_ONLY",
+  "finite_four_values": true,
+  "historical_event_completeness": "UNKNOWN",
+  "historical_float_shares": "UNVERIFIED",
+  "inputs": {
+    "gbbq": {
+      "bytes": 5825466,
+      "sha256": "29463567716a68c5c00fe5eb0398a78bedd0e955d54389b7d496f19ceea41c47"
+    },
+    "gbbq.map": {
+      "bytes": 96615,
+      "sha256": "bda8c41f9fc51335c6a6bcb9b6b69212a508b004520ff783cd30704dbdc49984"
+    }
+  },
+  "invalid_codes": 0,
+  "invalid_dates": 0,
+  "layout": "4 + count * 29; first 24 candidate decrypted, last 5 retained",
+  "market_bytes": {
+    "0": 117137,
+    "1": 69785,
+    "2": 13956
+  },
+  "market_identity": "UNVERIFIED_ENUMERATION",
+  "pilot": {
+    "candidate_cash_minus_official_exact": "-9.5367431640625E-9",
+    "candidate_events": 20,
+    "float32_rounding_contract": "UNVERIFIED",
+    "hfq": "HFQ_UNVERIFIED",
+    "matching_category1_records": 1,
+    "official_cash_per_share": "0.41",
+    "official_event_date": "2025-07-16",
+    "selection": "pre-existing single issuer event; 2024-2026 diagnostic candidates",
+    "symbol": "600000.SH"
+  },
+  "records": 200878,
+  "status": "CANDIDATE_LAYOUT_ONLY_HFQ_UNVERIFIED"
+}

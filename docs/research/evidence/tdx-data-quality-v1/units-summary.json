@@ -1,0 +1,100 @@
+{
+  "candidate_amount_unit": "CNY",
+  "candidate_volume_units": [
+    "shares",
+    "lots of 100 shares"
+  ],
+  "float32_comparison": "storage-representation diagnostic only; not tolerance widening",
+  "raw_types": {
+    "amount": "little-endian float32",
+    "price": "little-endian uint32",
+    "volume": "little-endian uint32"
+  },
+  "samples": [
+    {
+      "pairs": 1341,
+      "status": "SOURCE_UNIT_UNVERIFIED",
+      "symbol": "600000.SH",
+      "tdx_amount_equals_em_cny": 133,
+      "tdx_amount_equals_float32_em_cny": 1293,
+      "tdx_volume_equals_em_shares": 14,
+      "tdx_volume_times100_equals_em_shares": 0
+    },
+    {
+      "pairs": 1341,
+      "status": "SOURCE_UNIT_UNVERIFIED",
+      "symbol": "000001.SZ",
+      "tdx_amount_equals_em_cny": 43,
+      "tdx_amount_equals_float32_em_cny": 1321,
+      "tdx_volume_equals_em_shares": 8,
+      "tdx_volume_times100_equals_em_shares": 0
+    },
+    {
+      "pairs": 1341,
+      "status": "SOURCE_UNIT_UNVERIFIED",
+      "symbol": "600519.SH",
+      "tdx_amount_equals_em_cny": 133,
+      "tdx_amount_equals_float32_em_cny": 1269,
+      "tdx_volume_equals_em_shares": 13,
+      "tdx_volume_times100_equals_em_shares": 0
+    },
+    {
+      "pairs": 1341,
+      "status": "SOURCE_UNIT_UNVERIFIED",
+      "symbol": "000002.SZ",
+      "tdx_amount_equals_em_cny": 51,
+      "tdx_amount_equals_float32_em_cny": 1324,
+      "tdx_volume_equals_em_shares": 13,
+      "tdx_volume_times100_equals_em_shares": 0
+    },
+    {
+      "pairs": 1341,
+      "status": "SOURCE_UNIT_UNVERIFIED",
+      "symbol": "300750.SZ",
+      "tdx_amount_equals_em_cny": 122,
+      "tdx_amount_equals_float32_em_cny": 1267,
+      "tdx_volume_equals_em_shares": 11,
+      "tdx_volume_times100_equals_em_shares": 0
+    },
+    {
+      "pairs": 1335,
+      "status": "SOURCE_UNIT_UNVERIFIED",
+      "symbol": "688981.SH",
+      "tdx_amount_equals_em_cny": 89,
+      "tdx_amount_equals_float32_em_cny": 1298,
+      "tdx_volume_equals_em_shares": 13,
+      "tdx_volume_times100_equals_em_shares": 0
+    },
+    {
+      "pairs": 860,
+      "status": "SOURCE_UNIT_UNVERIFIED",
+      "symbol": "601059.SH",
+      "tdx_amount_equals_em_cny": 37,
+      "tdx_amount_equals_float32_em_cny": 860,
+      "tdx_volume_equals_em_shares": 98,
+      "tdx_volume_times100_equals_em_shares": 0
+    },
+    {
+      "pairs": 1124,
+      "status": "SOURCE_UNIT_UNVERIFIED",
+      "symbol": "001289.SZ",
+      "tdx_amount_equals_em_cny": 19,
+      "tdx_amount_equals_float32_em_cny": 1113,
+      "tdx_volume_equals_em_shares": 13,
+      "tdx_volume_times100_equals_em_shares": 0
+    },
+    {
+      "pairs": 0,
+      "status": "NO_VALID_REFERENCE",
+      "symbol": "600112.SH"
+    },
+    {
+      "pairs": 0,
+      "status": "NO_VALID_REFERENCE",
+      "symbol": "000961.SZ"
+    }
+  ],
+  "schema": "TDX_UNIT_CANDIDATES_V1",
+  "unit_certification": "UNKNOWN",
+  "zero_tolerance": true
+}

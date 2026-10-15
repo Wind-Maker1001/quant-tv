@@ -1,0 +1,33 @@
+{
+  "audit_script_sha256": "9273617a17bfd3661edeb1f78c1171d3d3d14bd45c5c4548957063ee0db3f2f6",
+  "files": {
+    "anomalies.csv": {
+      "bytes": 2542,
+      "sha256": "879e5f75748b23757b345a2649b040ffb15632a48f8bdd327186ed39ac472a33"
+    },
+    "coverage-monthly.csv": {
+      "bytes": 46964,
+      "sha256": "e42dd2b954c3073f96d981a45e511dea81cea2c0ee3bc766fe5444e5fc33fee3"
+    },
+    "coverage.svg": {
+      "bytes": 24042,
+      "sha256": "ad3eff16bd8fedb7aebd1702523755514a8125c63183cc9d6900f7ec573df55d"
+    },
+    "frozen-comparison.csv": {
+      "bytes": 4188,
+      "sha256": "6473ef6c4f1492004b5883f649ac061ad0ede19b9004f5879e83e10b9df42e81"
+    },
+    "gbbq-summary.json": {
+      "bytes": 1958,
+      "sha256": "660ecbf4d8430b0b55e5ae2f0601cc584fea7d435c4b04620e48aa7233b14f6b"
+    },
+    "summary.json": {
+      "bytes": 3152,
+      "sha256": "f6f1693d67a4034df943e80a9f66bebe5e8602f9cd406be468173aefefa9d345"
+    }
+  },
+  "financial_admission": false,
+  "private_security_rows_published": false,
+  "raw_prices_published": false,
+  "schema": "TDX_AUDIT_PUBLICATION_V1"
+}
