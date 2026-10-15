@@ -1,0 +1,213 @@
+{
+  "archive_root": "D:\\Code\\量化TV",
+  "branch": "codex/pit-effective-membership-evidence",
+  "certified_daily_pit_published": false,
+  "certified_events": 0,
+  "checker_sha256": "767685940e411a6fb7fe53a4531a4d2fb6d8f667c3850feb9a95b8ecab60bfb6",
+  "code_head": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+  "created_at_utc": "2026-10-15T14:37:51.652480+00:00",
+  "entrypoint_sha256": "c6177cf2d8aa81086a45bc40a3db9cef2c0e67b7f61bb3eda7327d1cfe325dd1",
+  "inputs": [
+    {
+      "bytes": 38098,
+      "path": "D:\\Code\\quant-tv-pit-effective-membership-evidence\\docs\\research\\evidence\\five-year-data-feasibility-v1\\pit-events.json",
+      "sha256": "df3ad985e5e73465f0837f9bb97ace3ed7a80d5777ad212d7cceb278548d9c4d"
+    },
+    {
+      "bytes": 75245,
+      "path": "D:\\Code\\quant-tv-pit-effective-membership-evidence\\docs\\research\\evidence\\pit-effective-membership-evidence-v1\\regular-review.json",
+      "sha256": "505c5b217db779dda3ffa40004d54661e1382574a27ec68d0d257cd445bf312c"
+    },
+    {
+      "bytes": 22771,
+      "path": "D:\\Code\\quant-tv-pit-effective-membership-evidence\\docs\\research\\evidence\\pit-effective-membership-evidence-v1\\conditional-review.json",
+      "sha256": "e7eb0d36695c0c276217754d38e401b4c12bae618c29855d41c6b72eb862e604"
+    },
+    {
+      "bytes": 22771,
+      "path": "D:\\Code\\quant-tv-pit-effective-membership-evidence\\docs\\research\\evidence\\pit-effective-membership-evidence-v1\\conditional-review.json",
+      "sha256": "e7eb0d36695c0c276217754d38e401b4c12bae618c29855d41c6b72eb862e604"
+    }
+  ],
+  "live_money": false,
+  "network_requests": 0,
+  "outcome": "PARTIAL",
+  "outputs": [
+    {
+      "bytes": 12094,
+      "name": "event-matrix.json",
+      "sha256": "6215b2edf13f40d3368c0f66c927809bb0e075011d8658b93e6d757c1b4cbb5f"
+    },
+    {
+      "bytes": 517,
+      "name": "local-replay.json",
+      "sha256": "1365ce764d81adaa597402b03e3d971e350a67259746aa667bd792abbcc3eece"
+    }
+  ],
+  "python": "3.9.25",
+  "software_check_completed": true,
+  "source_checks": [
+    {
+      "bytes": 276153,
+      "expected_sha256": "8ee0abb43dd4489d9e85a0b05f676fef1192c8a8f25df62a2fd590e8f80e716b",
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/inspection/hkex-issuer-2022-annual-report-p9.png",
+      "observed_sha256": "8ee0abb43dd4489d9e85a0b05f676fef1192c8a8f25df62a2fd590e8f80e716b",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 11702,
+      "expected_sha256": "083624e70bcfb6aac1663910612918983e75c586d82d0070dfe5a6fae1aabbef",
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/inspection/inspection.json",
+      "observed_sha256": "083624e70bcfb6aac1663910612918983e75c586d82d0070dfe5a6fae1aabbef",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 112345,
+      "expected_sha256": "c1b684bc6fe4dc823462e53067d4ecc1cca94762ad160d426d1e565f8bf97c86",
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/inspection/sse-trustee-20211008-p11.png",
+      "observed_sha256": "c1b684bc6fe4dc823462e53067d4ecc1cca94762ad160d426d1e565f8bf97c86",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 261285,
+      "expected_sha256": "5326689a0cce4db5d0405aaeb9f88a50cada71c0530f3a28ad15f43a33e0b00c",
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/inspection/sse-trustee-20211008-p7.png",
+      "observed_sha256": "5326689a0cce4db5d0405aaeb9f88a50cada71c0530f3a28ad15f43a33e0b00c",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 114826,
+      "expected_sha256": "d4e5e4d26a49784a2de51719acac962395578bbb6c9dbc58cba9957526f84095",
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/public-observations.json",
+      "observed_sha256": "d4e5e4d26a49784a2de51719acac962395578bbb6c9dbc58cba9957526f84095",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 1906,
+      "expected_sha256": "3dee2efce75af0bf5edc9c3a80d4a7913cca39157b2a2ece9b95a136b402e7bb",
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/raw/download-receipts.json",
+      "observed_sha256": "3dee2efce75af0bf5edc9c3a80d4a7913cca39157b2a2ece9b95a136b402e7bb",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 4292675,
+      "expected_sha256": "9d0a5985ba06a7824723fb2af6ddef590238dd68ab1870022930c40f07d34e7a",
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/raw/hkex-issuer-2022-annual-report.pdf",
+      "observed_sha256": "9d0a5985ba06a7824723fb2af6ddef590238dd68ab1870022930c40f07d34e7a",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 287975,
+      "expected_sha256": "6df6947875701c0bb416da0c8b42baaf061f1b55754bbb1ba50911defc434e9e",
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/raw/sse-trustee-20211008.pdf",
+      "observed_sha256": "6df6947875701c0bb416da0c8b42baaf061f1b55754bbb1ba50911defc434e9e",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 2347,
+      "expected_sha256": "cd7c27bf62103c05bd289d494638818dbb695bc109c85e8f557003628b03dca7",
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/visual-review.json",
+      "observed_sha256": "cd7c27bf62103c05bd289d494638818dbb695bc109c85e8f557003628b03dca7",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 976,
+      "expected_sha256": "cec3c9678566dd91edb646040813265b6f5ee4b2f987259bd4173456f16c04ea",
+      "local_relative_path": "data/research/diagnostics/official-browser-attachments/20261010-regular-workbooks/f54b84822768003fdba087b3f260f6ccaac53b3085eb6a47c15e0a573f1f3e74.receipt.json",
+      "observed_sha256": "cec3c9678566dd91edb646040813265b6f5ee4b2f987259bd4173456f16c04ea",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 872904,
+      "expected_sha256": "f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909",
+      "local_relative_path": "data/research/diagnostics/official-browser-attachments/20261010-regular-workbooks/f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909.xlsx",
+      "observed_sha256": "f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 12000,
+      "expected_sha256": "1a8f0c4d1e172eb3ec503b636d64ef06f237ce085604fb02ad97a78217b4b306",
+      "local_relative_path": "data/research/diagnostics/official-browser-attachments/20261010-starting-boundaries/1a8f0c4d1e172eb3ec503b636d64ef06f237ce085604fb02ad97a78217b4b306.xlsx",
+      "observed_sha256": "1a8f0c4d1e172eb3ec503b636d64ef06f237ce085604fb02ad97a78217b4b306",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 981,
+      "expected_sha256": "21462810f8f324b167c7f1e0d46c3b7cb2e6227facf16791c989f6681bd83f5c",
+      "local_relative_path": "data/research/diagnostics/official-browser-attachments/20261010-starting-boundaries/f3f13dc1a038f0e8fb7943fa0be02fb8bc1afb22b22c8dd887121ccf23613b01.receipt.json",
+      "observed_sha256": "21462810f8f324b167c7f1e0d46c3b7cb2e6227facf16791c989f6681bd83f5c",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 1773,
+      "expected_sha256": "2eea814003fa5034a3bc836bea1abb8ef2fbdf7309bfd3a9661838b9a12724bf",
+      "local_relative_path": "data/research/diagnostics/official-browser-notices/20261010/13420.observation.json",
+      "observed_sha256": "2eea814003fa5034a3bc836bea1abb8ef2fbdf7309bfd3a9661838b9a12724bf",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 45320,
+      "expected_sha256": "e29c45ecfc4fabef97091031a20f52963dbb048cc611707355afa84ed99b66f0",
+      "local_relative_path": "data/research/diagnostics/official-browser-notices/20261010/13888.observation.json",
+      "observed_sha256": "e29c45ecfc4fabef97091031a20f52963dbb048cc611707355afa84ed99b66f0",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 4959844,
+      "expected_sha256": "58f9062879329ae21f482ac9f514f9032973880e26600e2e359dd9a897a519f1",
+      "local_relative_path": "data/research/diagnostics/official-workbook-inspection/20261010-regular-workbooks/13888.inspection.json",
+      "observed_sha256": "58f9062879329ae21f482ac9f514f9032973880e26600e2e359dd9a897a519f1",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 13800,
+      "expected_sha256": "1e9e6ed598177016378b2a7425dad491281e6f28f4aa4248f783f51cf8c28890",
+      "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/conditional-20261015T122346Z/bounded-search-responses.json",
+      "observed_sha256": "1e9e6ed598177016378b2a7425dad491281e6f28f4aa4248f783f51cf8c28890",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 5250,
+      "expected_sha256": "519dfbf95c2ed83cf764bd4202064148f2af25ac5022fa651b7d9608943f7824",
+      "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/conditional-20261015T122346Z/offline-recheck-receipt.json",
+      "observed_sha256": "519dfbf95c2ed83cf764bd4202064148f2af25ac5022fa651b7d9608943f7824",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 4463,
+      "expected_sha256": "38376683291e2bc6fb7dae7f849d19799caccd6d863a47e44beadaf4b1dca9c3",
+      "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/conditional-20261015T122346Z/transition-pdf-inspection.json",
+      "observed_sha256": "38376683291e2bc6fb7dae7f849d19799caccd6d863a47e44beadaf4b1dca9c3",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 1570,
+      "expected_sha256": "5ef29c59534597cd5f25ab7efa965dbf4900e61dd5972ea529e906f7505fb08f",
+      "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/conditional-20261015T122346Z/transition-visual-review.json",
+      "observed_sha256": "5ef29c59534597cd5f25ab7efa965dbf4900e61dd5972ea529e906f7505fb08f",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 37858,
+      "expected_sha256": "fbc4481030a9f0c3de54fcb5ba6c96b1872c9330074b2ff5d2370d10d24b7dc4",
+      "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/regular-20261015-bounded-search/tool-responses.json",
+      "observed_sha256": "fbc4481030a9f0c3de54fcb5ba6c96b1872c9330074b2ff5d2370d10d24b7dc4",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 16547,
+      "expected_sha256": "0d406bf95d50ea7e22d29b418883e78dde6dc2bc4cdcf6d775fc6ddcc815a4cd",
+      "local_relative_path": "data/research/diagnostics/workbook-inspector/20261010-starting-boundaries/1a8f0c4d1e172eb3ec503b636d64ef06f237ce085604fb02ad97a78217b4b306.inspection.json",
+      "observed_sha256": "0d406bf95d50ea7e22d29b418883e78dde6dc2bc4cdcf6d775fc6ddcc815a4cd",
+      "status": "MATCH"
+    },
+    {
+      "bytes": 38098,
+      "expected_sha256": "df3ad985e5e73465f0837f9bb97ace3ed7a80d5777ad212d7cceb278548d9c4d",
+      "local_relative_path": "docs/research/evidence/five-year-data-feasibility-v1/pit-events.json",
+      "observed_sha256": "df3ad985e5e73465f0837f9bb97ace3ed7a80d5777ad212d7cceb278548d9c4d",
+      "status": "MATCH"
+    }
+  ],
+  "working_tree_changes_present": true
+}

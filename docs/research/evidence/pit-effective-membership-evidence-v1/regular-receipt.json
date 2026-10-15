@@ -1,0 +1,93 @@
+{
+  "created_at_utc": "2026-10-15T12:38:49.215788+00:00",
+  "subagent_scope": "regular event 13888 targeted effective membership evidence review",
+  "research_status": "PARTIAL",
+  "software_parser_status": "PARSED_SOURCE_CANDIDATE_NOT_PIT",
+  "actual_effective_member_date": null,
+  "certified_daily_universe_published": false,
+  "archive_provenance": {
+    "source_archive_root_at_review": "D:\\Code\\量化TV",
+    "source_paths_relative_to": "ORIGINAL_REPOSITORY_ROOT_NOT_PUBLIC_WORKTREE",
+    "source_root_head_observed_at_publication": "d9f42d6524055db029a34ccab888d1c93460d5ae",
+    "source_root_head_observed_at_publication_utc": "2026-10-15T12:38:49.215788+00:00",
+    "source_root_head_at_initial_review": null,
+    "source_root_head_at_initial_review_status": "NOT_INDEPENDENTLY_CAPTURED",
+    "target_worktree_root": "D:\\Code\\quant-tv-pit-effective-membership-evidence",
+    "target_base_git_commit": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+    "source_file_git_tracking_status": "IGNORED_LOCAL_ARCHIVE_NOT_CLAIMED_AS_GIT_BASELINE_CONTENT",
+    "original_materials_copied_into_target_worktree": false
+  },
+  "source_files": [
+    {
+      "local_relative_path": "data/research/diagnostics/official-browser-notices/20261010/13888.observation.json",
+      "sha256": "e29c45ecfc4fabef97091031a20f52963dbb048cc611707355afa84ed99b66f0",
+      "bytes": 45320,
+      "representation": "browser response.text UTF-8; container bytes separately bound; not publisher HTTP wire bytes",
+      "url": "https://www.csindex.com.cn/csindex-home/announcement/queryAnnouncementById?id=13888"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/official-browser-attachments/20261010-regular-workbooks/f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909.xlsx",
+      "sha256": "f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909",
+      "bytes": 872904,
+      "representation": "publisher XLSX bytes acquired previously",
+      "url": "https://oss-ch.csindex.com.cn/notice/20211130195824-中证指数调入调出名单.xlsx"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/official-browser-attachments/20261010-regular-workbooks/f54b84822768003fdba087b3f260f6ccaac53b3085eb6a47c15e0a573f1f3e74.receipt.json",
+      "sha256": "cec3c9678566dd91edb646040813265b6f5ee4b2f987259bd4173456f16c04ea",
+      "bytes": 976,
+      "representation": "previous acquisition receipt container",
+      "url": null
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/official-workbook-inspection/20261010-regular-workbooks/13888.inspection.json",
+      "sha256": "58f9062879329ae21f482ac9f514f9032973880e26600e2e359dd9a897a519f1",
+      "bytes": 4959844,
+      "representation": "previous typed worksheet extraction; not publisher JSON",
+      "url": null
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/regular-20261015-bounded-search/tool-responses.json",
+      "sha256": "fbc4481030a9f0c3de54fcb5ba6c96b1872c9330074b2ff5d2370d10d24b7dc4",
+      "bytes": 37858,
+      "representation": "Firecrawl search and parsed PDF tool result container; not publisher bytes",
+      "url": null
+    }
+  ],
+  "public_files": [
+    {
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/regular-review.json",
+      "sha256": "505c5b217db779dda3ffa40004d54661e1382574a27ec68d0d257cd445bf312c",
+      "bytes": 75245
+    },
+    {
+      "local_relative_path": "docs/research/PIT_REGULAR_EVIDENCE_REVIEW.md",
+      "sha256": "4a75e206b07c7f8a23856c47f6ec04c60066d7374229849dd79ab8b94fcf0f80",
+      "bytes": 5558
+    }
+  ],
+  "private_input_receipt": {
+    "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/regular-20261015-bounded-search/regular-review.receipt.json",
+    "sha256": "07e3d78ff1f853174b014a60460f93f443659b95ad652c596297c5fe2d79390c",
+    "representation": "independent subagent receipt; private tool transcript excluded"
+  },
+  "checks": {
+    "100_changes": true,
+    "50_each_direction": true,
+    "notice_and_typed_worksheet_all_code_name_matches": true,
+    "25_reserves_excluded": true,
+    "actual_effective_date_remains_unknown": true,
+    "member_chain_not_certified": true
+  },
+  "bounded_network_counts": {
+    "new_search_requests": 6,
+    "new_targeted_parse_requests": 1,
+    "failed_search_requests": 1,
+    "failure": "Firecrawl request 6 returned HTTP 429; no retry",
+    "stop_state": "STOPPED_NO_FURTHER_NETWORK",
+    "parse_dispatch_before_parent_stop_message": true,
+    "coverage_claim": "TARGETED_DISCOVERY_ONLY_NOT_EXHAUSTIVE"
+  },
+  "public_material_policy": "Only source indexes, evidence summaries and necessary event audit fields; publisher documents and complete tool results remain ignored at source root",
+  "receipt_scope": "source integrity and candidate qualification summary, not actual implementation or historical availability certification"
+}

@@ -1,0 +1,15 @@
+{
+  "authoritative_baseline_member_count": null,
+  "baseline_date": "2021-09-13",
+  "blockers": [
+    "AUTHORITATIVE_COMPLETE_500_BASELINE_MISSING",
+    "INDEPENDENT_ACTUAL_EVENT_BOUNDARIES_MISSING",
+    "COMPLETE_TEMPORARY_CONDITIONAL_CORRECTION_CHAIN_UNPROVED"
+  ],
+  "certified_daily_pit_published": false,
+  "certified_events_applied": 0,
+  "daily_member_count_independently_checked": false,
+  "daily_member_counts": null,
+  "membership_rows_generated": 0,
+  "status": "NOT_ATTEMPTED_AUTHORITY_BASELINE_ABSENT"
+}

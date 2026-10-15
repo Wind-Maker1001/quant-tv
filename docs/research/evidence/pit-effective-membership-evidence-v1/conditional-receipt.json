@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "diagnostic_only": true,
+  "recorded_at_utc": "2026-10-15T12:41:47.480887+00:00",
+  "source_repository_root": "D:\\Code\\量化TV",
+  "delivery_repository_root": "D:\\Code\\quant-tv-pit-effective-membership-evidence",
+  "prepared_source_git_head": "d9f42d6524055db029a34ccab888d1c93460d5ae",
+  "delivery_base_git_head": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+  "event_id": 13420,
+  "evidence_exit_status": "PARTIAL",
+  "actual_effective_member_date": null,
+  "source_files_rehashed": 18,
+  "checks": {
+    "json_parsed": true,
+    "actual_member_date_is_null": true,
+    "no_actual_evidence": true,
+    "trigger_confirmed_separately": true,
+    "candidate_original_placeholder_preserved": true,
+    "correction_chain_unverified": true,
+    "historical_identity_incomplete": true,
+    "original_pdf_sources_rehashed": true,
+    "source_file_hashes_rechecked": true,
+    "member_replay_blocked": true,
+    "no_pit_universe": true
+  },
+  "files": [
+    {
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/conditional-review.json",
+      "sha256": "e7eb0d36695c0c276217754d38e401b4c12bae618c29855d41c6b72eb862e604",
+      "bytes": 22771
+    },
+    {
+      "local_relative_path": "docs/research/PIT_CONDITIONAL_EVIDENCE_REVIEW.md",
+      "sha256": "1ebad6a4545029e9a267106ff65673d126c0e06261b7a610bed1f186209d492f",
+      "bytes": 7655
+    }
+  ],
+  "private_recheck_receipt": {
+    "source_root_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/conditional-20261015T122346Z/offline-recheck-receipt.json",
+    "sha256": "519dfbf95c2ed83cf764bd4202064148f2af25ac5022fa651b7d9608943f7824"
+  },
+  "original_pdf_materials_copied_to_public_repository": false,
+  "network_search_calls_this_discovery": 5,
+  "new_publisher_document_reads": 0,
+  "point_in_time_universe_verified": false
+}

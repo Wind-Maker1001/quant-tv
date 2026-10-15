@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "kind": "PUBLIC_BASELINE_REVIEW_RECEIPT_SUMMARY",
+  "created_at_utc": "2026-10-15T12:40:12.974720+00:00",
+  "baseline_commit": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+  "publication_head": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+  "evidence_archive_head": "d9f42d6524055db029a34ccab888d1c93460d5ae",
+  "archive_paths_relative_to_repository_but_files_remain_in_original_worktree": true,
+  "public_outputs": [
+    {
+      "path": "docs/research/evidence/pit-effective-membership-evidence-v1/baseline-review.json",
+      "sha256": "675019d96259912f2e904cd632d641a2b089ae892c91dac5e4dc8400c28e201f",
+      "bytes": 9497
+    },
+    {
+      "path": "docs/research/PIT_BASELINE_EVIDENCE_REVIEW.md",
+      "sha256": "e77861b5a4e013c50708c243a54bde25dc38a0c69668a3bfa563c3026fc8d62a",
+      "bytes": 8970
+    }
+  ],
+  "independent_local_receipts": [
+    {
+      "path": "data/research/diagnostics/pit-effective-membership-evidence/baseline-20261015-ciis-bounded/review-receipt.json",
+      "sha256": "fb4cabcc182b8f3db85d4931c93f72a46b115b34a349dea636d2111da1161fa9",
+      "bytes": 2787
+    },
+    {
+      "path": "data/research/diagnostics/pit-effective-membership-evidence/baseline-20261015-ciis-bounded/baseline-byte-equivalence-receipt.json",
+      "sha256": "72f71ee2755996ffeb5be92d57d9705785a9eb3bbdab73a7ba2006a37bccfbe1",
+      "bytes": 1439
+    }
+  ],
+  "input_byte_index": [
+    {
+      "path": "docs/research/FIVE_YEAR_PIT_EVIDENCE.md",
+      "sha256": "5211808d1dc6187b66ce2d29539ced570602c351afd9407557188231bda2f984",
+      "bytes": 13489
+    },
+    {
+      "path": "docs/research/PIT_SOURCE_AUDIT.md",
+      "sha256": "fc9ffc048ebfba0021560e6e4f665c1fd4e7c341d280148aad8f11dc23bb7eb0",
+      "bytes": 8493
+    },
+    {
+      "path": "docs/research/CONDITIONAL_EVENT_EVIDENCE.md",
+      "sha256": "1ea0eb775b82efb11a252e24bda00441eb621350da58edee0dc0b5b956cd278e",
+      "bytes": 6349
+    },
+    {
+      "path": "docs/research/evidence/five-year-data-feasibility-v1/pit-gaps.json",
+      "sha256": "8c80fcd040c18734f6f0bfa61f8e594c03d1b418c83da91c93b0f8de1de8a4e7",
+      "bytes": 8682
+    },
+    {
+      "path": "docs/research/evidence/five-year-data-feasibility-v1/pit-events.json",
+      "sha256": "df3ad985e5e73465f0837f9bb97ace3ed7a80d5777ad212d7cceb278548d9c4d",
+      "bytes": 38098
+    },
+    {
+      "path": "data/research/diagnostics/pit-baseline-discovery/20261010-bounded-search/search-responses.json",
+      "sha256": "ba735859eb9f3d007c715ea3018ce2b1742bae15b2883f0de7b25decf02fb4f4",
+      "bytes": 46951
+    },
+    {
+      "path": "data/research/diagnostics/pit-baseline-discovery/20261011-bounded-search/search-responses.json",
+      "sha256": "c19df963b532f3d09784e5905ad30cb9333f698fd62b5a32b649e24b16864b51",
+      "bytes": 51221
+    },
+    {
+      "path": "data/research/diagnostics/pit-baseline-discovery/20261011-listing-and-pcf/search-and-read-responses.json",
+      "sha256": "7d39514faea86075d26ff2f90177bc91544285f56f02f48a09eca25c30b9de22",
+      "bytes": 888268
+    },
+    {
+      "path": "data/research/diagnostics/pit-baseline-discovery/20261011-annex-discovery/search-responses.json",
+      "sha256": "e7f918314dab950354b8658d4dd586f289d32e0160e29a954c16e95a682e9916",
+      "bytes": 55943
+    },
+    {
+      "path": "data/research/diagnostics/pit-effective-membership-evidence/baseline-20261015-ciis-bounded/public-observations.json",
+      "sha256": "9e2b2104372a0fb0f63e35da4a7cfd03230ccd8bc3c300a0d22007be367c8584",
+      "bytes": 49748
+    }
+  ],
+  "tracked_baseline_equivalence": [
+    {
+      "path": "docs/research/FIVE_YEAR_PIT_EVIDENCE.md",
+      "same_bytes": true,
+      "baseline_sha256": "5211808d1dc6187b66ce2d29539ced570602c351afd9407557188231bda2f984"
+    },
+    {
+      "path": "docs/research/PIT_SOURCE_AUDIT.md",
+      "same_bytes": true,
+      "baseline_sha256": "fc9ffc048ebfba0021560e6e4f665c1fd4e7c341d280148aad8f11dc23bb7eb0"
+    },
+    {
+      "path": "docs/research/CONDITIONAL_EVENT_EVIDENCE.md",
+      "same_bytes": true,
+      "baseline_sha256": "1ea0eb775b82efb11a252e24bda00441eb621350da58edee0dc0b5b956cd278e"
+    },
+    {
+      "path": "docs/research/evidence/five-year-data-feasibility-v1/pit-gaps.json",
+      "same_bytes": true,
+      "baseline_sha256": "8c80fcd040c18734f6f0bfa61f8e594c03d1b418c83da91c93b0f8de1de8a4e7"
+    },
+    {
+      "path": "docs/research/evidence/five-year-data-feasibility-v1/pit-events.json",
+      "same_bytes": true,
+      "baseline_sha256": "df3ad985e5e73465f0837f9bb97ace3ed7a80d5777ad212d7cceb278548d9c4d"
+    }
+  ],
+  "network_counts": {
+    "firecrawl_search_calls": 3,
+    "firecrawl_scrape_calls": 1,
+    "direct_http_calls": 0,
+    "csi_notice_body_requests": 0,
+    "retry_calls": 0,
+    "operation_failures": 0,
+    "underlying_provider_requests": null
+  },
+  "byte_index_rechecked_on_publication": true,
+  "rights": "Only hashes, paths, counts and audit facts are published; raw source material and third-party representations remain local ignored files.",
+  "limit": "Current byte integrity is not historical-vintage or actual member-effectiveness certification."
+}
