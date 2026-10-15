@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "review_id": "csi500-start-baseline-20210913-20261015",
+  "client_review_date": "2026-10-15",
+  "timezone": "Asia/Shanghai",
+  "scope": "2021-09-13 CSI 500 authoritative complete starting membership",
+  "baseline_commit": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+  "baseline_status": "BLOCKED",
+  "authoritative_starting_member_set": null,
+  "authoritative_starting_member_count": null,
+  "actual_effective_boundary": null,
+  "actual_effective_boundary_status": "UNKNOWN",
+  "certified_complete_500_baselines": 0,
+  "daily_pit_publication_allowed": false,
+  "member_chain_reconstruction_attempted": false,
+  "member_chain_reconstruction_block_reason": "No authoritative complete baseline and transition semantics unresolved; do not fill from current constituents or 499 snapshot.",
+  "inherited_observations": [
+    {
+      "source": "docs/research/evidence/five-year-data-feasibility-v1/pit-gaps.json",
+      "finding": "Earlier BaoStock probe at research start returned 499 rows.",
+      "requeried_this_review": false,
+      "admissible_as_authoritative_baseline": false,
+      "missing_security_identity": null
+    },
+    {
+      "source_url": "https://www.csindex.com.cn/#/about/newsDetail?id=13716",
+      "finding": "One CSI 500 replacement pair declared after 2021-09-10 close; does not identify remaining 499 or actual opening membership on 2021-09-13.",
+      "admissible_as_authoritative_baseline": false
+    },
+    {
+      "source_url": "https://www.csindex.com.cn/#/about/newsDetail?id=13420",
+      "finding": "China Energy Engineering listing condition and old code '-' remain separate from full starting baseline and merger transition semantics.",
+      "admissible_as_authoritative_baseline": false
+    }
+  ],
+  "source_discovery": {
+    "legacy_search_archives_reviewed": 4,
+    "fresh_search_calls": 3,
+    "fresh_page_reads": 1,
+    "direct_http_calls": 0,
+    "csi_notice_body_calls": 0,
+    "retries": 0,
+    "failures": 0,
+    "underlying_provider_requests": null,
+    "stop_reason": "No baseline candidate discovered; root stopped all network after other branches received HTTP 429.",
+    "new_queries": [
+      {
+        "query": "中证指数 数据服务 历史样本 2021 权重 数据授权",
+        "firecrawl_id": "01a13f83-2543-7385-ab51-c2e9d0be111a",
+        "result": "Current primary licensing product found; not historical baseline."
+      },
+      {
+        "query": "\"中证500\" \"20210913\" \"样本\"",
+        "firecrawl_id": "01a13f83-2359-748c-9174-3273306d6094",
+        "result": "Returned statistical/fund material, no complete authoritative baseline candidate."
+      },
+      {
+        "query": "\"中证500\" \"2021-09-13\" \"成分\"",
+        "firecrawl_id": "01a13f83-233a-76aa-b504-07e23e63c6a5",
+        "result": "Returned commentary and fund material, no complete authoritative baseline candidate."
+      }
+    ],
+    "network_scope": "Top-level calls only; no total of provider redirects or infrastructure requests is known.",
+    "repeated_legacy_annex_or_issuer_keyword_searches": 0
+  },
+  "procurement_source": {
+    "source_url": "https://www.ciis.com.hk/hongkong/sc/idata/csifundamentaldata/index.shtml",
+    "publisher": "China Investment Information Services Limited (CIIS)",
+    "publisher_role": "Page describes CIIS as overseas agent for CSI fundamental data",
+    "source_type": "CURRENT_PUBLIC_PRODUCT_DESCRIPTION_NOT_CONSTITUENTS",
+    "publisher_raw_bytes_sha256": null,
+    "historical_2021_coverage_verified": false,
+    "historical_vintage_verified": false,
+    "current_date_interpretation": [
+      {
+        "product": "closing constituent weights",
+        "time_basis": "same-day close reference prices",
+        "baseline_implication": "Requires dated complete membership file and explicit constituent validity; no historical membership supplied by this page."
+      },
+      {
+        "product": "next-day opening constituent weights",
+        "time_basis": "next trading day's opening reference prices with dividend adjustment",
+        "baseline_implication": "Potential source for boundary validation after licensing; does not itself prove a dated realized index membership."
+      },
+      {
+        "product": "pending inclusion securities",
+        "time_basis": "planned additions from periodic or temporary adjustments",
+        "baseline_implication": "Candidate/pending data cannot replace confirmation of actual inclusion."
+      }
+    ],
+    "access_route": "After obtaining the CSI fundamental data licence, CIIS SFTP, CSI or an authorized information vendor.",
+    "application_contact": "idata@ciis.com.hk",
+    "general_contact": "marketing@ciis.com.hk",
+    "contact_action_taken": false,
+    "paid_data_purchased": false,
+    "authorization_obtained": false,
+    "firecrawl_scrape_id": "01a13f83-48e3-7473-9454-c481fda88fd9",
+    "tool_reported_status_code": 200,
+    "contact_action_note": "Contacts are for the user to obtain authorization; no message was sent."
+  },
+  "required_external_materials": [
+    {
+      "priority": 1,
+      "deliverable": "Authoritative complete CSI 500 membership effective at 2021-09-13 open",
+      "required_fields": [
+        "stable_index_id",
+        "exchange_qualified_historical_security_id",
+        "valid_from",
+        "valid_to_or_boundary",
+        "session_basis_open_or_close",
+        "publisher_file_date",
+        "publication_timestamp_and_timezone",
+        "revision_or_vintage_id",
+        "complete_member_count",
+        "publisher_original_sha256"
+      ],
+      "admission": "Independently check 500 unique historically valid securities. A count mismatch remains blocked; no inferred fill."
+    },
+    {
+      "priority": 1,
+      "deliverable": "Merger-transition evidence around Gezhouba and China Energy Engineering",
+      "required_dates": [
+        "2021-09-10 close",
+        "2021-09-13 open",
+        "2021-09-27 close",
+        "2021-09-28 open"
+      ],
+      "required_fields": [
+        "issuer_confirmed_transition_treatment",
+        "index_membership_of_each_affected_security",
+        "actual_effective_index_boundary",
+        "listing_delisting_and_historical_code_evidence"
+      ],
+      "admission": "Do not insert 601868 before its listing or infer index removal solely from delisting."
+    },
+    {
+      "priority": 2,
+      "deliverable": "Complete official change and correction chain for 2021-09-13 to 2026-09-11",
+      "required_fields": [
+        "event_id",
+        "periodic_temporary_conditional_correction_type",
+        "announcement_timestamp",
+        "planned_effective_boundary",
+        "trigger_definition",
+        "trigger_confirmation",
+        "independent_actual_effective_evidence",
+        "in_out_security_ids",
+        "supersedes_or_cancels",
+        "daily_500_count_evidence"
+      ],
+      "admission": "Incomplete mandatory events prevent a certified daily PIT chain."
+    },
+    {
+      "priority": 1,
+      "deliverable": "Licence and historical-vintage statement",
+      "required_fields": [
+        "2021_historical_coverage",
+        "initial_vs_revised_vintage",
+        "internal_research_use",
+        "local_archive_and_offline_regression_rights",
+        "reviewer_and_CI_access",
+        "public_source_index_hash_summary_permission",
+        "raw_material_redistribution_limits",
+        "territorial_eligibility"
+      ],
+      "admission": "Obtain written rights and coverage before purchase/use; do not publish raw materials absent permission."
+    }
+  ],
+  "artifacts": {
+    "local_response_archive": {
+      "path": "data/research/diagnostics/pit-effective-membership-evidence/baseline-20261015-ciis-bounded/public-observations.json",
+      "sha256": "9e2b2104372a0fb0f63e35da4a7cfd03230ccd8bc3c300a0d22007be367c8584",
+      "kind": "TOOL_REPRESENTATION_NOT_PUBLISHER_BYTES"
+    },
+    "local_review_receipt": {
+      "path": "data/research/diagnostics/pit-effective-membership-evidence/baseline-20261015-ciis-bounded/review-receipt.json",
+      "sha256": "fb4cabcc182b8f3db85d4931c93f72a46b115b34a349dea636d2111da1161fa9"
+    },
+    "local_baseline_equivalence_receipt": {
+      "path": "data/research/diagnostics/pit-effective-membership-evidence/baseline-20261015-ciis-bounded/baseline-byte-equivalence-receipt.json",
+      "sha256": "72f71ee2755996ffeb5be92d57d9705785a9eb3bbdab73a7ba2006a37bccfbe1"
+    }
+  },
+  "scope_limit": "Baseline component only. This record does not evaluate the overall event-pilot success and does not certify a full five-year pool.",
+  "publication": "Only summaries, source URLs, hashes and necessary audit fields; raw third-party responses remain ignored local diagnostics.",
+  "baseline_ci": {
+    "run_id": "38733446316",
+    "status": "success",
+    "source": "Parent verified PR 6 merge baseline main full research CI before worktree creation"
+  },
+  "execution": {
+    "evidence_archive_worktree": "D:/Code/量化TV",
+    "evidence_archive_head": "d9f42d6524055db029a34ccab888d1c93460d5ae",
+    "publication_worktree": "D:/Code/quant-tv-pit-effective-membership-evidence",
+    "publication_base_commit": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+    "archive_paths_are_repository_relative": true,
+    "archive_location_note": "Ignored source archives were read and created in the original worktree; they are not copied into the new publication worktree and are not committed."
+  },
+  "public_receipt": "docs/research/evidence/pit-effective-membership-evidence-v1/baseline-receipt.json"
+}

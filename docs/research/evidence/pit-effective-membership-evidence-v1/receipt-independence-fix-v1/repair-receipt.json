@@ -1,0 +1,461 @@
+{
+  "certified_daily_pit_published": false,
+  "certified_events": 0,
+  "ci_contract_tests": {
+    "black_check": "PASSED",
+    "errors": 0,
+    "failures": 0,
+    "tests": 19
+  },
+  "client_timezone": "Asia/Shanghai",
+  "code_and_tests": [
+    {
+      "bytes": 11555,
+      "local_relative_path": "qbot/research/universe/event_evidence.py",
+      "sha256": "583dcc9c667f37c292552ef765533cb03d7670ebe0b5092d2459c1087d2bb435"
+    },
+    {
+      "bytes": 12425,
+      "local_relative_path": "tests/research/test_pit_event_evidence.py",
+      "sha256": "612e84b752046a5ccec08cc1b7226d254a131e66ae676fb72488536274797a21"
+    }
+  ],
+  "commands": {
+    "architecture": "python -X utf8 -m qbot.research.cli audit --config configs/research/csi500_smoke.yaml",
+    "full": "python -X utf8 -m pytest tests/research -q -m 'not network' --basetemp=D:/Code/.quant-tv-pit-receipt-fix-full-20261016 --junitxml=<local>/research-final.xml",
+    "initial_full": "python -X utf8 -m pytest tests/research -q -m 'not network' --junitxml=<local>/research.xml --cov=qbot.research --cov-report=term --cov-report=xml:<local>/coverage.xml",
+    "pipeline_recheck": "python -X utf8 -m pytest tests/research/test_local_cli_pipeline.py -q --basetemp=D:/Code/.quant-tv-pit-receipt-fix-pytest-20261016 --junitxml=<local>/external-same-drive-pipeline.xml",
+    "red": "python -X utf8 -m pytest tests/research/test_pit_event_evidence.py -q -k notice_material --junitxml=<local>/red.xml",
+    "static": "python -X utf8 .github/scripts/ci/research_checks.py",
+    "targeted": "python -X utf8 -m pytest tests/research/test_pit_event_evidence.py tests/research/test_five_year_frozen_baseline.py -q --junitxml=<local>/targeted.xml"
+  },
+  "coverage_report_validation": {
+    "coverage_line_rate": 0.8558,
+    "coverage_source": "Initial full local run, not final passing run",
+    "final_local_full_suite_coverage_enabled": false,
+    "reason": "JUnit must contain actual successful test execution",
+    "status": "REJECTED_INITIAL_FAILED_JUNIT_NOT_RELABELLED_SUCCESS"
+  },
+  "created_at_utc": "2026-10-15T17:07:19.535043+00:00",
+  "fresh_original_archive_recheck": {
+    "event_matrix_equal_to_historical": true,
+    "events": [
+      {
+        "actual_date_status": "UNKNOWN",
+        "actual_effective_member_date": null,
+        "announcement_publish_date": "2021-11-26",
+        "announcement_publish_time": null,
+        "candidate_add_count": 50,
+        "candidate_remove_count": 50,
+        "certified_event": false,
+        "claimed_actual_effective_member_date": null,
+        "condition_trigger_date": null,
+        "condition_trigger_status": "UNKNOWN",
+        "conditional_effective_clause": null,
+        "daily_pit_publication_allowed": false,
+        "event_status": "CANDIDATE_ONLY",
+        "formal_admission": "UNCHANGED_BLOCKED",
+        "historical_availability_status": "UNKNOWN",
+        "missing_requirements": [
+          "INDEPENDENT_ACTUAL_MEMBERSHIP_EVIDENCE_MISSING",
+          "HISTORICAL_IDENTITY_LIFECYCLE_REVIEW_INCOMPLETE",
+          "CORRECTION_AND_TEMPORARY_EVENT_COVERAGE_UNKNOWN"
+        ],
+        "notice_id": 13888,
+        "planned_effective_after_close_date": "2021-12-10",
+        "planned_explicit_start_date": null,
+        "point_in_time_universe_verified": false
+      },
+      {
+        "actual_date_status": "UNKNOWN",
+        "actual_effective_member_date": null,
+        "announcement_publish_date": "2021-08-30",
+        "announcement_publish_time": null,
+        "candidate_add_count": 1,
+        "candidate_remove_count": 1,
+        "certified_event": false,
+        "claimed_actual_effective_member_date": null,
+        "condition_trigger_date": "2021-09-28",
+        "condition_trigger_status": "INDEPENDENTLY_CONFIRMED",
+        "conditional_effective_clause": "自中国能建上市日起",
+        "daily_pit_publication_allowed": false,
+        "event_status": "CANDIDATE_ONLY",
+        "formal_admission": "UNCHANGED_BLOCKED",
+        "historical_availability_status": "UNKNOWN",
+        "missing_requirements": [
+          "COMPLETE_EXPLICIT_EVENT_DELTA_NOT_BOUND",
+          "HISTORICAL_ADD_SYMBOL_UNRESOLVED",
+          "INDEPENDENT_ACTUAL_MEMBERSHIP_EVIDENCE_MISSING",
+          "HISTORICAL_IDENTITY_LIFECYCLE_REVIEW_INCOMPLETE",
+          "CORRECTION_AND_TEMPORARY_EVENT_COVERAGE_UNKNOWN"
+        ],
+        "notice_id": 13420,
+        "planned_effective_after_close_date": null,
+        "planned_explicit_start_date": null,
+        "point_in_time_universe_verified": false
+      }
+    ],
+    "local_replay": {
+      "authoritative_baseline_member_count": null,
+      "baseline_date": "2021-09-13",
+      "blockers": [
+        "AUTHORITATIVE_COMPLETE_500_BASELINE_MISSING",
+        "INDEPENDENT_ACTUAL_EVENT_BOUNDARIES_MISSING",
+        "COMPLETE_TEMPORARY_CONDITIONAL_CORRECTION_CHAIN_UNPROVED"
+      ],
+      "certified_daily_pit_published": false,
+      "certified_events_applied": 0,
+      "daily_member_count_independently_checked": false,
+      "daily_member_counts": null,
+      "membership_rows_generated": 0,
+      "status": "NOT_ATTEMPTED_AUTHORITY_BASELINE_ABSENT"
+    },
+    "source_files_matched": 23
+  },
+  "full_offline_research_suite": {
+    "errors": 0,
+    "failures": 0,
+    "passed": 3095,
+    "skipped": 0,
+    "tests": 3095
+  },
+  "historical_reports_and_receipts_unchanged": [
+    {
+      "bytes": 8969,
+      "local_relative_path": "docs/research/PIT_BASELINE_EVIDENCE_REVIEW.md",
+      "sha256": "1cc817e6e83f10faa3aeff3cbe002f63a68a7fa28eac831415b7d3d1b20e1d22"
+    },
+    {
+      "bytes": 7655,
+      "local_relative_path": "docs/research/PIT_CONDITIONAL_EVIDENCE_REVIEW.md",
+      "sha256": "1ebad6a4545029e9a267106ff65673d126c0e06261b7a610bed1f186209d492f"
+    },
+    {
+      "bytes": 10242,
+      "local_relative_path": "docs/research/PIT_EFFECTIVE_MEMBERSHIP_EVIDENCE.md",
+      "sha256": "e6be0ef3f75f1db1c8ceb3224111fbac4f7232ba086be5f889fcb8d8c45a6bac"
+    },
+    {
+      "bytes": 5558,
+      "local_relative_path": "docs/research/PIT_REGULAR_EVIDENCE_REVIEW.md",
+      "sha256": "4a75e206b07c7f8a23856c47f6ec04c60066d7374229849dd79ab8b94fcf0f80"
+    },
+    {
+      "bytes": 5842,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/baseline-receipt.json",
+      "sha256": "d6cb73d304801b22b04b1c3c6241d2b61d491645c8fc607c4cf6669bbea63ea5"
+    },
+    {
+      "bytes": 9497,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/baseline-review.json",
+      "sha256": "675019d96259912f2e904cd632d641a2b089ae892c91dac5e4dc8400c28e201f"
+    },
+    {
+      "bytes": 1874,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/conditional-receipt.json",
+      "sha256": "bd4c08523f5775527133fac506dab7225ee9ce3b09d3d051c3910494cbc2c44a"
+    },
+    {
+      "bytes": 22771,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/conditional-review.json",
+      "sha256": "e7eb0d36695c0c276217754d38e401b4c12bae618c29855d41c6b72eb862e604"
+    },
+    {
+      "bytes": 8397,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/delivery-receipt.json",
+      "sha256": "e49b55fe8d21607edf5cf625502dcfbae01997b79c5f9062282ed9b962c65431"
+    },
+    {
+      "bytes": 12094,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/event-audit-v1/event-matrix.json",
+      "sha256": "6215b2edf13f40d3368c0f66c927809bb0e075011d8658b93e6d757c1b4cbb5f"
+    },
+    {
+      "bytes": 517,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/event-audit-v1/local-replay.json",
+      "sha256": "1365ce764d81adaa597402b03e3d971e350a67259746aa667bd792abbcc3eece"
+    },
+    {
+      "bytes": 11116,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/event-audit-v1/receipt.json",
+      "sha256": "5a3f21cfefb56f9592cfe60d4dac1f92ac721ac6fabf404077b8a5cf784d9c5f"
+    },
+    {
+      "bytes": 10449,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/independent-review.json",
+      "sha256": "bce42eea625061fc61cce4067069b96e6668f012e3c7a402204196a7e6291ae6"
+    },
+    {
+      "bytes": 5058,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/regular-receipt.json",
+      "sha256": "37304dcf1408ef553dfbe7d0e7672ad4b3563c3df769796b47100c2969fef874"
+    },
+    {
+      "bytes": 75245,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/regular-review.json",
+      "sha256": "505c5b217db779dda3ffa40004d54661e1382574a27ec68d0d257cd445bf312c"
+    }
+  ],
+  "implementation": "Include both attachment raw_content_sha256 and receipt_sha256 in the existing notice_hashes exclusion set used by actual membership and condition-trigger checks.",
+  "initial_full_suite_environment_failure": {
+    "counts": {
+      "errors": 0,
+      "failures": 2,
+      "passed": 3093,
+      "skipped": 0,
+      "tests": 3095
+    },
+    "diagnostic_note": "An intermediate basetemp inside the repo failed the fixture's explicit '..' requirement; an external same-volume basetemp satisfied the unchanged fixture.",
+    "diagnostic_runs_preserved": [
+      "path-failure.xml",
+      "same-drive-pipeline.xml"
+    ],
+    "failed_tests": [
+      "test_relative_import_paths_use_repository_root_from_another_cwd",
+      "test_read_only_relative_root_resolves_against_repository_not_cwd"
+    ],
+    "final_full_rerun_basetemp": "D:/Code/.quant-tv-pit-receipt-fix-full-20261016",
+    "product_code_and_test_assertion_changes_to_resolve_environment": [],
+    "reason": "Default temporary files were on C: while repo_root was on D:; existing os.path.relpath fixture requires the same volume and a temporary directory outside the repository.",
+    "superseded_not_relabelled_success": true,
+    "unchanged_pipeline_recheck": {
+      "errors": 0,
+      "failures": 0,
+      "passed": 7,
+      "skipped": 0,
+      "tests": 7
+    }
+  },
+  "live_money": false,
+  "market_data_network_requests": 0,
+  "merge_policy": "WAIT_FOR_HUMAN_MERGE",
+  "network_tests_deselected": 2,
+  "new_offline_counterexamples": {
+    "actual_date_status": "UNKNOWN",
+    "actual_effective_member_date": null,
+    "all_source_bytes_match_asserted_sha": true,
+    "certified_events": 0,
+    "condition_trigger_status_when_reused": "UNKNOWN",
+    "count": 18,
+    "daily_member_counts": null,
+    "event_status": "CANDIDATE_ONLY",
+    "formal_admission": "UNCHANGED_BLOCKED",
+    "input_metadata_unchanged_by_checker": true,
+    "materials": [
+      "notice_body",
+      "attachment_content",
+      "attachment_download_receipt"
+    ],
+    "membership_rows_generated": 0,
+    "reuse_modes": [
+      "same_path",
+      "same_bytes_other_path",
+      "changed_bytes_and_recomputed_matching_sha"
+    ],
+    "roles": [
+      "actual_membership",
+      "actual_membership_and_condition_trigger"
+    ],
+    "test_names": [
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual-same_path-body]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual-same_path-attachment]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual-same_path-receipt]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual-same_bytes_other_path-body]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual-same_bytes_other_path-attachment]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual-same_bytes_other_path-receipt]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual-recomputed_sha-body]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual-recomputed_sha-attachment]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual-recomputed_sha-receipt]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual_and_trigger-same_path-body]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual_and_trigger-same_path-attachment]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual_and_trigger-same_path-receipt]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual_and_trigger-same_bytes_other_path-body]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual_and_trigger-same_bytes_other_path-attachment]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual_and_trigger-same_bytes_other_path-receipt]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual_and_trigger-recomputed_sha-body]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual_and_trigger-recomputed_sha-attachment]",
+      "test_notice_material_cannot_be_reused_as_independent_evidence[actual_and_trigger-recomputed_sha-receipt]"
+    ]
+  },
+  "new_public_audit_outputs": [
+    {
+      "bytes": 12094,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/receipt-independence-fix-v1/event-audit/event-matrix.json",
+      "sha256": "6215b2edf13f40d3368c0f66c927809bb0e075011d8658b93e6d757c1b4cbb5f"
+    },
+    {
+      "bytes": 517,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/receipt-independence-fix-v1/event-audit/local-replay.json",
+      "sha256": "1365ce764d81adaa597402b03e3d971e350a67259746aa667bd792abbcc3eece"
+    },
+    {
+      "bytes": 11116,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/receipt-independence-fix-v1/event-audit/receipt.json",
+      "sha256": "f8e0e34d2f64ec5389d83098d15037dde92111e7ce303c9523b03a6c3bdc0bec"
+    }
+  ],
+  "platform": "Windows-10-10.0.26340-SP0",
+  "pr_url": "https://github.com/Wind-Maker1001/quant-tv/pull/7",
+  "preserved_pre_fix_failure": {
+    "counts": {
+      "errors": 0,
+      "failures": 6,
+      "passed": 12,
+      "skipped": 0,
+      "tests": 18
+    },
+    "receipt_reuse_failures": 6,
+    "superseded_not_relabelled_success": true
+  },
+  "prior_path_attributes": {
+    "all_prior_path_attributes_unchanged": true,
+    "attributes_sha256": "038e9c009d5fce5f16e1bbf944453ade40568d0301c78cdafe7be1f5503670f0",
+    "changed_existing_paths": [
+      "qbot/research/universe/event_evidence.py",
+      "tests/research/test_pit_event_evidence.py"
+    ],
+    "parent_head": "c0f5dfc7b44311b904fe373650511b774be8722b",
+    "prior_tracked_path_count": 4992
+  },
+  "python": "3.9.25",
+  "qualification_limit": "Software success does not certify actual index membership or qualify data for live trading.",
+  "remote_ci_status_at_receipt_creation": "NOT_YET_PUSHED_CHECK_LATEST_PR_HEAD_AFTER_PUSH",
+  "repair_note": {
+    "bytes": 1858,
+    "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/receipt-independence-fix-v1/README.md",
+    "sha256": "ab96aa045fbebb65e965a8ae7d4dc2438b397dbfa170f0b15976f5f33b88eaa4"
+  },
+  "research_conclusion": "PARTIAL_UNCHANGED",
+  "review_comment_url": "https://github.com/Wind-Maker1001/quant-tv/pull/7#discussion_r4285078608",
+  "reviewed_parent_head": "c0f5dfc7b44311b904fe373650511b774be8722b",
+  "schema_version": 1,
+  "scope": "P2_ATTACHMENT_RECEIPT_INDEPENDENCE_REPAIR_ONLY",
+  "scope_validation": {
+    "candidate_expressions_unchanged": 39,
+    "changed_existing_tracked_paths": [
+      "qbot/research/universe/event_evidence.py",
+      "tests/research/test_pit_event_evidence.py"
+    ],
+    "factors_unchanged": 14,
+    "formal_pit_golden_forward_trading_changes": [],
+    "frozen_paths_changed": [],
+    "frozen_paths_checked": 470,
+    "other_tracked_paths_changed": []
+  },
+  "software_evidence": [
+    {
+      "bytes": 21162,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/red.xml",
+      "sha256": "c183b73df43bbb733816aa087328a319f62fd49c05d85d1c89d76bb85a76dfd0"
+    },
+    {
+      "bytes": 19150,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/red.log",
+      "sha256": "e371273cbfc7b2dc304eccca182a2ffef274bf99a19ec5b5b7b4de744c3dc48d"
+    },
+    {
+      "bytes": 6682,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/targeted.xml",
+      "sha256": "cd1bd6266576cf3919616bcfec40b94a3e3f7e913e89e427037cd931d91f60e9"
+    },
+    {
+      "bytes": 272,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/targeted.log",
+      "sha256": "0025827ba0c530d868121b298a190a1d92609747de706394d773143b76e321c6"
+    },
+    {
+      "bytes": 490753,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/research.xml",
+      "sha256": "131895faec850642cf4aed84d7c81e9ad88bdb7fc522d6809d8be0d008c5a30a"
+    },
+    {
+      "bytes": 718051,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/coverage.xml",
+      "sha256": "85b8d46739acf17bbe1ecb706f58a727bc102b7c1b1e8e48788ec6156220c6e7"
+    },
+    {
+      "bytes": 24719,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/full-suite.log",
+      "sha256": "dcab013ccd7dc2793a3aaa6d9630737751975ef0541388a86f222455b3f036cb"
+    },
+    {
+      "bytes": 2852,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/path-failure.xml",
+      "sha256": "39032c75259f1730cdd4fd011f996999e70fc597d31cf0bdfe96425a7e0d9de9"
+    },
+    {
+      "bytes": 4783,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/path-failure.log",
+      "sha256": "9072d7ac358fcfad6e147961635f232f23bebf38667315ef80176dc846798554"
+    },
+    {
+      "bytes": 4274,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/same-drive-pipeline.xml",
+      "sha256": "3ba17810a3d2dbac48cf6530647367f3770a824947eda2df5bc677bcef865b2e"
+    },
+    {
+      "bytes": 4545,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/same-drive-pipeline.log",
+      "sha256": "46fa7fb3c7fb8a8ed96ecd02ae46934a00912227a5a7750f0919d660fc3e7d22"
+    },
+    {
+      "bytes": 1285,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/external-same-drive-pipeline.xml",
+      "sha256": "a46d6d010a692a19452e86402d7857a3e96dd4489d32b0d3a2f0da9952acdd0e"
+    },
+    {
+      "bytes": 2061,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/external-same-drive-pipeline.log",
+      "sha256": "44af6face03b8b74616d5dd543efab77bdfb0994e3baba22eb0f1fbf9aa7b240"
+    },
+    {
+      "bytes": 485798,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/research-final.xml",
+      "sha256": "f6600c5b0637cc3119f8437bb1ddc590ca18fdb57b78041e7119b3590cc8f8d4"
+    },
+    {
+      "bytes": 7086,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/full-suite-final.log",
+      "sha256": "f134b667855ae5d2fc67717ba81ea01f473aafee4440516f4b70c9a8de89c844"
+    },
+    {
+      "bytes": 292,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/report-validation.json",
+      "sha256": "899a49dce45b9c5c90bed69252977b1153ff2049acf60a986c0c26e113c0418c"
+    },
+    {
+      "bytes": 271,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/static.log",
+      "sha256": "f98ed0f32960989d545e05e1660e67fb5a2aa85489d2539541ac0f12900175eb"
+    },
+    {
+      "bytes": 428,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/architecture-audit.log",
+      "sha256": "d1fc3698033b95788610cef5579475aadf00e8a732d24500741143f7ad8bd366"
+    },
+    {
+      "bytes": 1855,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/ci-contract-tests.log",
+      "sha256": "f22918c173c9ad6df07e3e439e44b8bece570d2b19c6231cb41ce9f82e9f8447"
+    },
+    {
+      "bytes": 369,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/scope-validation.json",
+      "sha256": "f8a3c7909533a1ecc48b903d2cb0f31cf2dbfc38910462c490ba8749d8768b90"
+    },
+    {
+      "bytes": 11857,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/receipt-independence-fix-v1/build_repair_receipt.py",
+      "sha256": "e9ee07487001f1d3cc8d6178d4d73097c6c2bc3a55213e06e86a8492f2ef5db2"
+    }
+  ],
+  "targeted_and_frozen_suite": {
+    "errors": 0,
+    "failures": 0,
+    "passed": 39,
+    "skipped": 0,
+    "tests": 39
+  },
+  "validation_method": "Local single-agent verification; fresh receipt, not an independent third-party review. GitHub Codex re-review will be requested after this repair commit is pushed.",
+  "working_tree_changes_present": true
+}

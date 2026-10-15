@@ -1,0 +1,487 @@
+{
+  "schema_version": 1,
+  "diagnostic_only": true,
+  "recorded_at_utc": "2026-10-15T12:37:59.471477+00:00",
+  "evidence_exit_status": "PARTIAL",
+  "event_scope": "one conditional CSI500 event only; no complete chain or daily universe",
+  "notice_id": 13420,
+  "official_notice_url": "https://www.csindex.com.cn/#/about/newsDetail?id=13420",
+  "event_kind": "CONDITIONAL_ACQUISITION_MERGER",
+  "index_code": "000905",
+  "index_name": "中证500",
+  "announcement_publish_date": "2021-08-30",
+  "announcement_public_time_of_day": null,
+  "announcement_publish_date_evidence": "current official notice publishDate and signed date; historical byte-vintage not authenticated",
+  "planned_effective_after_close_date": null,
+  "planned_explicit_start_date": null,
+  "conditional_effective_clause": "自中国能建上市日起",
+  "actual_effective_member_date": null,
+  "actual_effective_member_date_status": "UNKNOWN_NO_INDEPENDENT_INDEX_IMPLEMENTATION_OR_BOUNDARY_MEMBERSHIP_EVIDENCE",
+  "actual_effective_member_evidence": [],
+  "candidate_changes": [
+    {
+      "action": "REMOVE",
+      "raw_code": "600068",
+      "symbol": "600068.SH",
+      "name": "葛洲坝",
+      "source_sheet": "Sheet1",
+      "source_row": 11,
+      "source_range": "C11:D11",
+      "event_source_sha256": "1a8f0c4d1e172eb3ec503b636d64ef06f237ce085604fb02ad97a78217b4b306"
+    },
+    {
+      "action": "ADD",
+      "raw_code": "-",
+      "symbol": null,
+      "name": "中国能建",
+      "source_sheet": "Sheet1",
+      "source_row": 11,
+      "source_range": "E11:F11",
+      "event_source_sha256": "1a8f0c4d1e172eb3ec503b636d64ef06f237ce085604fb02ad97a78217b4b306"
+    }
+  ],
+  "trigger": {
+    "kind": "CHINA_ENERGY_A_SHARE_LISTING",
+    "condition_confirmed": true,
+    "condition_occurrence_date": "2021-09-28",
+    "confirmation_status": "RETROSPECTIVE_LISTING_FACT_CORROBORATED; NOT_INDEX_IMPLEMENTATION",
+    "supports_actual_index_implementation": false,
+    "independence_limit": "two documents with different authors; complete independence of upstream factual lineage is not proved",
+    "evidence": [
+      {
+        "source_sha256": "6df6947875701c0bb416da0c8b42baaf061f1b55754bbb1ba50911defc434e9e",
+        "author": "广发证券股份有限公司",
+        "publisher_host": "static.sse.com.cn",
+        "physical_pages": [
+          7
+        ],
+        "claim_summary": "Retrospectively reports ordinary shares trading on SSE from 2021-09-28, citing SSE [2021]400.",
+        "signing_date": "2021-09-30",
+        "signing_date_basis": "prior visual review of physical page11",
+        "url_directory_date": "2021-10-08",
+        "authenticated_historical_first_publication_at": null
+      },
+      {
+        "source_sha256": "9d0a5985ba06a7824723fb2af6ddef590238dd68ab1870022930c40f07d34e7a",
+        "author": "中国能源建设股份有限公司",
+        "publisher_host": "hkexnews.hk",
+        "physical_pages": [
+          9,
+          11
+        ],
+        "printed_page_for_listing_claim": "08",
+        "claim_summary": "Issuer 2022 annual report links the 2021-09-28 SSE listing to 601868.SH; stock profile separately identifies the A-share ticker.",
+        "url_directory_date": "2023-04-06",
+        "authenticated_historical_first_publication_at": null
+      }
+    ]
+  },
+  "independent_identity_mapping": [
+    {
+      "name": "中国能建",
+      "symbol": "601868.SH",
+      "reported_listing_date": "2021-09-28",
+      "source_sha256": "9d0a5985ba06a7824723fb2af6ddef590238dd68ab1870022930c40f07d34e7a",
+      "physical_pages": [
+        9,
+        11
+      ],
+      "status": "RETROSPECTIVE_SEPARATE_IDENTITY_EVIDENCE",
+      "source_placeholder_overwritten": false,
+      "known_at_on_2021_08_30_verified": false,
+      "mapping_first_known_at": null
+    }
+  ],
+  "security_status_evidence": [
+    {
+      "symbol": "600068.SH",
+      "name": "葛洲坝",
+      "reported_termination_decision_date": "2021-09-09",
+      "reported_actual_security_delisting_date": "2021-09-13",
+      "source_sha256": "6df6947875701c0bb416da0c8b42baaf061f1b55754bbb1ba50911defc434e9e",
+      "physical_pages": [
+        6,
+        7
+      ],
+      "evidence_type": "SSE-hosted trustee retrospective statement with complete split-sentence context",
+      "original_cited_decision": "SSE [2021]384",
+      "original_cited_decision_read": false,
+      "actual_index_exit_date": null
+    }
+  ],
+  "known_at": {
+    "current_notice_claims_publication_date": "2021-08-30",
+    "current_attachment_historical_availability_verified": false,
+    "trigger_date_first_publicly_known_at": null,
+    "identity_mapping_first_publicly_known_at": null,
+    "retrieval_time_is_historical_availability": false,
+    "retrospective_sources_can_be_used_as_2021_predictive_inputs": false
+  },
+  "pdf_review_scope": {
+    "prior_text_pages": {
+      "sse_trustee": [
+        1,
+        7,
+        11
+      ],
+      "hkex_issuer_annual": [
+        1,
+        9,
+        11
+      ]
+    },
+    "prior_visual_pages": {
+      "sse_trustee": [
+        7,
+        11
+      ],
+      "hkex_issuer_annual": [
+        9
+      ]
+    },
+    "this_run_text_pages": {
+      "sse_trustee": [
+        6,
+        7
+      ]
+    },
+    "this_run_visual_pages": {
+      "sse_trustee": [
+        6,
+        7
+      ]
+    },
+    "entire_442_page_annual_report_reviewed": false,
+    "original_sse_listing_decision_400_read": false,
+    "original_sse_termination_decision_384_read": false
+  },
+  "conflicts_and_limits": [
+    {
+      "id": "SOURCE_PLACEHOLDER_IDENTITY",
+      "sources": [
+        "CSI13420 Sheet1!E11:F11",
+        "issuer 2022 annual physical pages9/11"
+      ],
+      "observation": "The original addition code is '-' while a later issuer report identifies 601868.SH.",
+      "resolution": "Keep the original code and symbol=null; retain later identity mapping separately with unknown historical known-at time."
+    },
+    {
+      "id": "SECURITY_VS_INDEX_TRANSITION",
+      "sources": [
+        "CSI13420 conditional clause",
+        "trustee physical pages6/7"
+      ],
+      "observation": "The reported former security delisting date is 2021-09-13; the new security listing condition occurs 2021-09-28. The source set does not describe CSI500 membership during the interval.",
+      "resolution": "Do not infer either stock's index exit/entry date, a 499-member index, or a missing constituent. Request official dated membership and corporate-action treatment."
+    },
+    {
+      "id": "HISTORICAL_BYTE_VINTAGE",
+      "sources": [
+        "CSI13420 attachment HTTP Last-Modified2024-11-30",
+        "trustee PDF HTTP Last-Modified2025-07-19",
+        "current notice publishDate2021-08-30"
+      ],
+      "observation": "Current bytes and later server metadata do not authenticate what was available on the historical announcement date.",
+      "resolution": "Keep current-byte hashes, acquisition times and claimed publication dates separately; historical first-availability timestamps remain null."
+    },
+    {
+      "id": "CORRECTION_COMPLETENESS",
+      "sources": [
+        "existing partial official notice archive"
+      ],
+      "observation": "No complete authorized correction/supersession chain or independent post-event implementation statement has been obtained.",
+      "resolution": "Do not claim no corrections occurred. Keep correction_chain_complete=false and actual_effective_member_date=null."
+    }
+  ],
+  "observed_direct_date_contradiction": false,
+  "correction_chain_complete": false,
+  "certified_event": false,
+  "watch_only_candidate": true,
+  "starting_baseline_verified": false,
+  "local_membership_replay_performed": false,
+  "local_replay_status": "SOURCE_AND_PARSER_REPLAY_ONLY; MEMBERSHIP_REPLAY_BLOCKED",
+  "local_source_parser_replay": {
+    "python_version": "3.9.25",
+    "prepared_source_git_head": "d9f42d6524055db029a34ccab888d1c93460d5ae",
+    "body_conditional_clause_preserved": true,
+    "workbook_parser_accepted": false,
+    "workbook_parser_error": "invalid or unresolved CSI500 security slot at Sheet1!E11:F11",
+    "unresolved_placeholder_is_not_repaired": true,
+    "network_requests": 0
+  },
+  "validated_date_boundaries": [
+    {
+      "date": "2021-08-30",
+      "scope": "notice claimed publication date",
+      "index_actual_member_boundary_verified": false
+    },
+    {
+      "date": "2021-09-13",
+      "scope": "former security delisting corroborated retrospectively",
+      "index_actual_member_boundary_verified": false
+    },
+    {
+      "date": "2021-09-28",
+      "scope": "new security listing condition corroborated retrospectively",
+      "index_actual_member_boundary_verified": false
+    }
+  ],
+  "unverified_index_member_boundaries": [
+    "2021-09-10 close",
+    "2021-09-13 open",
+    "2021-09-27 close",
+    "2021-09-28 open"
+  ],
+  "next_external_requirements": [
+    {
+      "priority": 1,
+      "request": "CSI/CIIS authoritative 000905 membership at 2021-09-10 close,2021-09-13 open,2021-09-27 close,2021-09-28 open, including every security and explicit close/open session semantics.",
+      "acceptance": "Full set, independently checked count500, raw-file hash, date field definitions, vintage/revision and permitted publication/audit use; no current-membership backfill."
+    },
+    {
+      "priority": 1,
+      "request": "Official implementation confirmation for notice13420 and any corrections, including actual entry/exit sessions and treatment between Gezhouba delisting and China Energy listing.",
+      "acceptance": "A dated executed-event record or authoritative membership transition evidence with security identity; trigger confirmation alone does not qualify."
+    },
+    {
+      "priority": 2,
+      "request": "Original SSE [2021]384 and [2021]400, original 2021 issuer listing/termination disclosures and authenticated first-publication timestamps.",
+      "acceptance": "Strengthens security status/known-at; insufficient by itself for index implementation."
+    }
+  ],
+  "new_discovery": {
+    "top_level_firecrawl_search_calls": 5,
+    "successful_searches": 2,
+    "failed_searches": 3,
+    "failure_observed_text": "Request failed with status code429",
+    "new_publisher_document_reads": 0,
+    "network_stopped_after_failure": true,
+    "restricted_csi_body_retried": false,
+    "proxy_or_identity_changed": false,
+    "underlying_http_request_count": null,
+    "new_independent_index_effective_evidence_found": false
+  },
+  "source_files": [
+    {
+      "local_relative_path": "docs/research/evidence/five-year-data-feasibility-v1/pit-events.json",
+      "sha256": "df3ad985e5e73465f0837f9bb97ace3ed7a80d5777ad212d7cceb278548d9c4d",
+      "bytes": 38098,
+      "url": null,
+      "representation": "prior published derived audit metadata; not publisher bytes"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/official-browser-notices/20261010/13420.observation.json",
+      "sha256": "2eea814003fa5034a3bc836bea1abb8ef2fbdf7309bfd3a9661838b9a12724bf",
+      "bytes": 1773,
+      "url": "https://www.csindex.com.cn/csindex-home/announcement/queryAnnouncementById?id=13420",
+      "representation": "local browser observation container containing exact publisher response.text UTF-8; not publisher HTTP wire bytes",
+      "response_text_utf8_sha256": "131873fb20fcc206703c7ebd8fbbf14cbe50f66259756304cea9887a2ff88f1d"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/official-browser-attachments/20261010-starting-boundaries/1a8f0c4d1e172eb3ec503b636d64ef06f237ce085604fb02ad97a78217b4b306.xlsx",
+      "sha256": "1a8f0c4d1e172eb3ec503b636d64ef06f237ce085604fb02ad97a78217b4b306",
+      "bytes": 12000,
+      "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/20210830/1630328886593411.xlsx",
+      "representation": "cached original publisher XLSX bytes",
+      "retrieved_at_utc": "2026-10-10T10:40:41.425866+00:00",
+      "http_last_modified": "Sat, 30 Nov 2024 12:45:01 GMT"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/official-browser-attachments/20261010-starting-boundaries/f3f13dc1a038f0e8fb7943fa0be02fb8bc1afb22b22c8dd887121ccf23613b01.receipt.json",
+      "sha256": "21462810f8f324b167c7f1e0d46c3b7cb2e6227facf16791c989f6681bd83f5c",
+      "bytes": 981,
+      "url": null,
+      "representation": "local acquisition/recheck receipt; not historical timestamp authentication"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/workbook-inspector/20261010-starting-boundaries/1a8f0c4d1e172eb3ec503b636d64ef06f237ce085604fb02ad97a78217b4b306.inspection.json",
+      "sha256": "0d406bf95d50ea7e22d29b418883e78dde6dc2bc4cdcf6d775fc6ddcc815a4cd",
+      "bytes": 16547,
+      "url": null,
+      "representation": "local read-only extraction/inspection output; not publisher bytes"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/raw/sse-trustee-20211008.pdf",
+      "sha256": "6df6947875701c0bb416da0c8b42baaf061f1b55754bbb1ba50911defc434e9e",
+      "bytes": 287975,
+      "url": "http://static.sse.com.cn/disclosure/bond/announcement/company/c/2021-10-08/4311095258734222721782516.pdf",
+      "representation": "cached original PDF bytes; SSE-hosted trustee publication, author GF Securities; original URL used HTTP",
+      "retrieved_at_utc": "2026-10-10T14:57:27.6501700Z",
+      "http_last_modified": "Sat, 19 Jul 2025 00:36:27 GMT"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/raw/hkex-issuer-2022-annual-report.pdf",
+      "sha256": "9d0a5985ba06a7824723fb2af6ddef590238dd68ab1870022930c40f07d34e7a",
+      "bytes": 4292675,
+      "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2023/0406/2023040601567_c.pdf",
+      "representation": "cached original issuer annual-report PDF bytes hosted by HKEXnews",
+      "retrieved_at_utc": "2026-10-10T14:57:39.8113280Z",
+      "http_last_modified": "Thu, 06 Apr 2023 11:43:53 GMT"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/raw/download-receipts.json",
+      "sha256": "3dee2efce75af0bf5edc9c3a80d4a7913cca39157b2a2ece9b95a136b402e7bb",
+      "bytes": 1906,
+      "url": null,
+      "representation": "local acquisition/recheck receipt; not historical timestamp authentication"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/inspection/inspection.json",
+      "sha256": "083624e70bcfb6aac1663910612918983e75c586d82d0070dfe5a6fae1aabbef",
+      "bytes": 11702,
+      "url": null,
+      "representation": "local read-only extraction/inspection output; not publisher bytes"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/visual-review.json",
+      "sha256": "cd7c27bf62103c05bd289d494638818dbb695bc109c85e8f557003628b03dca7",
+      "bytes": 2347,
+      "url": null,
+      "representation": "prior model visual-review record binding page renders to PDF hashes"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/public-observations.json",
+      "sha256": "d4e5e4d26a49784a2de51719acac962395578bbb6c9dbc58cba9957526f84095",
+      "bytes": 114826,
+      "url": null,
+      "representation": "locally serialized third-party Firecrawl tool responses; not publisher source bytes"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/inspection/sse-trustee-20211008-p7.png",
+      "sha256": "5326689a0cce4db5d0405aaeb9f88a50cada71c0530f3a28ad15f43a33e0b00c",
+      "bytes": 261285,
+      "url": null,
+      "representation": "local render derived from identified original PDF; not an additional publisher"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/inspection/sse-trustee-20211008-p11.png",
+      "sha256": "c1b684bc6fe4dc823462e53067d4ecc1cca94762ad160d426d1e565f8bf97c86",
+      "bytes": 112345,
+      "url": null,
+      "representation": "local render derived from identified original PDF; not an additional publisher"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/inspection/hkex-issuer-2022-annual-report-p9.png",
+      "sha256": "8ee0abb43dd4489d9e85a0b05f676fef1192c8a8f25df62a2fd590e8f80e716b",
+      "bytes": 276153,
+      "url": null,
+      "representation": "local render derived from identified original PDF; not an additional publisher"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/conditional-20261015T122346Z/bounded-search-responses.json",
+      "sha256": "1e9e6ed598177016378b2a7425dad491281e6f28f4aa4248f783f51cf8c28890",
+      "bytes": 13800,
+      "url": null,
+      "representation": "locally serialized third-party Firecrawl tool responses; not publisher source bytes"
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/conditional-20261015T122346Z/offline-recheck-receipt.json",
+      "sha256": "519dfbf95c2ed83cf764bd4202064148f2af25ac5022fa651b7d9608943f7824",
+      "bytes": 5250,
+      "representation": "this-run local Python3.9 hash/parser replay receipt",
+      "url": null
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/conditional-20261015T122346Z/transition-pdf-inspection.json",
+      "sha256": "38376683291e2bc6fb7dae7f849d19799caccd6d863a47e44beadaf4b1dca9c3",
+      "bytes": 4463,
+      "representation": "this-run local extraction/render record for archived PDF physical pages6/7; separate bundled analysis runtime",
+      "url": null
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/pit-effective-membership-evidence/conditional-20261015T122346Z/transition-visual-review.json",
+      "sha256": "5ef29c59534597cd5f25ab7efa965dbf4900e61dd5972ea529e906f7505fb08f",
+      "bytes": 1570,
+      "representation": "this-run model visual review of archived PDF physical pages6/7",
+      "url": null
+    }
+  ],
+  "point_in_time_universe_verified": false,
+  "historical_constituents_generated": false,
+  "raw_materials_published": false,
+  "source_repository_root": "D:\\Code\\量化TV",
+  "delivery_repository_root": "D:\\Code\\quant-tv-pit-effective-membership-evidence",
+  "delivery_base_head": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+  "public_receipt_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/conditional-receipt.json",
+  "prepared_source_head_comparison": {
+    "compared_to_delivery_base": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+    "tracked_files_compared": [
+      "qbot/research/universe/notice_review.py",
+      "qbot/research/universe/notice_workbook.py",
+      "docs/research/evidence/five-year-data-feasibility-v1/pit-events.json"
+    ],
+    "difference_names": [],
+    "prepared_receipt_rewritten": false
+  },
+  "condition_trigger_evidence": [
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/raw/sse-trustee-20211008.pdf",
+      "sha256": "6df6947875701c0bb416da0c8b42baaf061f1b55754bbb1ba50911defc434e9e",
+      "bytes": 287975,
+      "url": "http://static.sse.com.cn/disclosure/bond/announcement/company/c/2021-10-08/4311095258734222721782516.pdf",
+      "representation": "cached original PDF bytes; SSE-hosted trustee publication, author GF Securities; original URL used HTTP",
+      "retrieved_at_utc": "2026-10-10T14:57:27.6501700Z",
+      "http_last_modified": "Sat, 19 Jul 2025 00:36:27 GMT",
+      "physical_pages": [
+        7
+      ],
+      "evidence_role": "retrospective independent trustee listing-condition occurrence corroboration",
+      "supports_actual_index_implementation": false
+    },
+    {
+      "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/raw/hkex-issuer-2022-annual-report.pdf",
+      "sha256": "9d0a5985ba06a7824723fb2af6ddef590238dd68ab1870022930c40f07d34e7a",
+      "bytes": 4292675,
+      "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2023/0406/2023040601567_c.pdf",
+      "representation": "cached original issuer annual-report PDF bytes hosted by HKEXnews",
+      "retrieved_at_utc": "2026-10-10T14:57:39.8113280Z",
+      "http_last_modified": "Thu, 06 Apr 2023 11:43:53 GMT",
+      "physical_pages": [
+        9,
+        11
+      ],
+      "evidence_role": "retrospective issuer listing-date and security-identity corroboration",
+      "supports_actual_index_implementation": false
+    }
+  ],
+  "event_annotations": {
+    "13420": {
+      "condition_trigger_status": "INDEPENDENTLY_CONFIRMED",
+      "condition_trigger_date": "2021-09-28",
+      "historical_identity_status": "INCOMPLETE",
+      "correction_review_status": "UNKNOWN",
+      "independent_actual_membership_evidence": [],
+      "condition_trigger_evidence": [
+        {
+          "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/raw/sse-trustee-20211008.pdf",
+          "sha256": "6df6947875701c0bb416da0c8b42baaf061f1b55754bbb1ba50911defc434e9e",
+          "bytes": 287975,
+          "url": "http://static.sse.com.cn/disclosure/bond/announcement/company/c/2021-10-08/4311095258734222721782516.pdf",
+          "representation": "cached original PDF bytes; SSE-hosted trustee publication, author GF Securities; original URL used HTTP",
+          "retrieved_at_utc": "2026-10-10T14:57:27.6501700Z",
+          "http_last_modified": "Sat, 19 Jul 2025 00:36:27 GMT",
+          "physical_pages": [
+            7
+          ],
+          "evidence_role": "retrospective independent trustee listing-condition occurrence corroboration",
+          "supports_actual_index_implementation": false
+        },
+        {
+          "local_relative_path": "data/research/diagnostics/conditional-event-review/20261010-china-energy/raw/hkex-issuer-2022-annual-report.pdf",
+          "sha256": "9d0a5985ba06a7824723fb2af6ddef590238dd68ab1870022930c40f07d34e7a",
+          "bytes": 4292675,
+          "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2023/0406/2023040601567_c.pdf",
+          "representation": "cached original issuer annual-report PDF bytes hosted by HKEXnews",
+          "retrieved_at_utc": "2026-10-10T14:57:39.8113280Z",
+          "http_last_modified": "Thu, 06 Apr 2023 11:43:53 GMT",
+          "physical_pages": [
+            9,
+            11
+          ],
+          "evidence_role": "retrospective issuer listing-date and security-identity corroboration",
+          "supports_actual_index_implementation": false
+        }
+      ]
+    }
+  }
+}

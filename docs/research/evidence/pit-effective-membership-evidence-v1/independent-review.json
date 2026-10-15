@@ -1,0 +1,205 @@
+{
+  "schema_version": 1,
+  "kind": "INDEPENDENT_CODEX_RESEARCH_PR_REVIEW",
+  "recorded_at_utc": "2026-10-15T15:32:10.346627+00:00",
+  "reviewer": "/root/independent_codex_review",
+  "status": "PASS_FOR_RESEARCH_PR_NOT_DATA_CERTIFICATION",
+  "review_scope_complete_for_bound_snapshot": true,
+  "baseline_commit": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+  "tested_source_commit": "13b66f562033e321a40aa8e2201f930c66e92cdd",
+  "publication_snapshot_basis": "Green source commit plus the explicitly hashed final summary and delivery receipt. The final documentation-only commit identifier was not yet available when this receipt was written; it requires a read-only byte snapshot check.",
+  "scope": [
+    "New offline event evidence checker, CLI, synthetic attacks and source binding; formal PIT providers and admission rules remain unchanged.",
+    "CSI500 2021-09-13 complete baseline requirement, regular notice13888 and conditional notice13420 evidence summaries, candidate identities and date semantics.",
+    "Public receipts, original local archive hashes, current publication bytes, frozen baseline, path attributes and final local/remote software reports."
+  ],
+  "independence": {
+    "implementation_files_edited": false,
+    "implementation_commits_created": false,
+    "other_reviewed_artifacts_edited": false,
+    "review_outputs_authored": [
+      "results/diagnostics/pit-effective-membership-evidence/independent-review-draft.json",
+      "docs/research/evidence/pit-effective-membership-evidence-v1/independent-review.json"
+    ],
+    "reviewer_network_requests": 0,
+    "full_offline_suite_run_by_reviewer": false,
+    "ci_metadata_method": "Locally downloaded GitHub run JSON and original XML were inspected and revalidated; reviewer did not independently query the GitHub service."
+  },
+  "bound_publication": {
+    "delivery_receipt": {
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/delivery-receipt.json",
+      "sha256": "e49b55fe8d21607edf5cf625502dcfbae01997b79c5f9062282ed9b962c65431",
+      "bytes": 8397
+    },
+    "summary_report": {
+      "local_relative_path": "docs/research/PIT_EFFECTIVE_MEMBERSHIP_EVIDENCE.md",
+      "sha256": "e6be0ef3f75f1db1c8ceb3224111fbac4f7232ba086be5f889fcb8d8c45a6bac",
+      "bytes": 10242
+    },
+    "implementation_and_tests": [
+      {
+        "bytes": 11341,
+        "local_relative_path": "qbot/research/universe/event_evidence.py",
+        "sha256": "767685940e411a6fb7fe53a4531a4d2fb6d8f667c3850feb9a95b8ecab60bfb6"
+      },
+      {
+        "bytes": 7360,
+        "local_relative_path": "examples/research/audit_pit_event_evidence.py",
+        "sha256": "c6177cf2d8aa81086a45bc40a3db9cef2c0e67b7f61bb3eda7327d1cfe325dd1"
+      },
+      {
+        "bytes": 9085,
+        "local_relative_path": "tests/research/test_pit_event_evidence.py",
+        "sha256": "9fa84076f3b0f1621340aea7f6ce28ee9e35f4781efb99bbd5a8d044ecbdb5fc"
+      }
+    ],
+    "delivery_artifact_code_and_local_evidence_records_rehashed": 20,
+    "delivery_record_hash_or_size_mismatches": [],
+    "current_public_git_blob_reference_checks_previously_passed": 14,
+    "checker_and_cli_receipt_hashes_match_green_source_git_blobs": true,
+    "self_hash_in_delivery_receipt": false
+  },
+  "independent_local_tests": {
+    "command": "D:/Code/量化TV/.venv-py39/python.exe -X utf8 -m pytest tests/research/test_pit_event_evidence.py tests/research/test_five_year_frozen_baseline.py -q -p no:cacheprovider",
+    "passed": 21,
+    "failed": 0,
+    "focused_evidence_tests": 20,
+    "unchanged_frozen_baseline_test": 1,
+    "meaning": "Synthetic rejection behavior, receipt integrity and frozen scope; no market-data qualification."
+  },
+  "validated_full_software_reports": {
+    "windows": {
+      "execution_by": "Parent agent; reviewer inspected raw JUnit and log, not a second complete-suite execution.",
+      "junit_counts": {
+        "tests": 3077,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "passed": 3077,
+      "deselected": 2,
+      "warnings": 88,
+      "duration_seconds_from_log": 1298.52,
+      "junit_sha256": "453af005d2904d230fa3df2cd82e725dd960f276933612cb764990ba1b2fff6f",
+      "log_sha256": "68940689237f4acb84737092f69509119fb4147f99a5b48b68bb614185cbad25",
+      "native_empty_file_byte_range_lock_test_observed_passed": true,
+      "coverage_enabled": false
+    },
+    "linux_research_ci": {
+      "run_id": 38756478550,
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38756478550",
+      "head_sha": "13b66f562033e321a40aa8e2201f930c66e92cdd",
+      "status": "completed",
+      "conclusion": "success",
+      "junit_counts": {
+        "tests": 3077,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "passed_derived": 3076,
+      "skipped_test": "tests.research.test_cache_generation_publication.test_windows_native_lock_covers_empty_file_before_initialization",
+      "skip_reason": "Windows EOF byte-range lock contract",
+      "new_focused_testcases_observed_passed": 20,
+      "original_frozen_baseline_testcase_observed_passed": 1,
+      "junit_sha256": "9b057003dca3a4dd43c3ef4e4700bd964f45a244ae8e597eac126832a7f0d887",
+      "coverage_sha256": "c9fff3f43cf2a870d8187712b6170d7f7d9504a1261d97e1c94ab721f5643bc2",
+      "coverage_lines_covered": 15988,
+      "coverage_lines_valid": 18730,
+      "coverage_line_rate": 0.8536,
+      "coverage_threshold": null,
+      "unchanged_repository_report_validator_independently_rerun": true,
+      "financial_or_pit_certification": false
+    },
+    "static_ci": {
+      "run_id": 38756478023,
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38756478023",
+      "head_sha": "13b66f562033e321a40aa8e2201f930c66e92cdd",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  },
+  "scope_preservation": {
+    "frozen_baseline_file_count": 470,
+    "changed_frozen_files": [],
+    "baseline_existing_tracked_paths_attribute_compared": 4970,
+    "changed_existing_path_attributes": [],
+    "existing_files_modified_deleted_or_renamed_relative_to_base": [],
+    "root_gitattributes_matches_base_exactly": true,
+    "new_directory_attribute_rules_only_affect_new_pilot_files": true,
+    "factors": 14,
+    "candidate_expressions": 39,
+    "formal_admission_golden_forward_or_trading_changes": false
+  },
+  "closed_findings": [
+    {
+      "id": "P2-PATH-HASH-BINDING",
+      "priority": 2,
+      "status": "CLOSED",
+      "problem": "A matching SHA from another path could rescue a missing actual or trigger source.",
+      "resolution": "Body, attachment, receipt, actual and trigger roles bind the exact relative path and SHA256.",
+      "verification": "Same-SHA different-path missing actual and trigger regression passed; actual remains null and trigger status UNKNOWN."
+    },
+    {
+      "id": "P2-PRIOR-RECEIPT-REPRESENTATION",
+      "priority": 2,
+      "status": "CLOSED",
+      "problem": "The old working-tree CRLF receipt hash was not distinguished from the named old commit LF Git blob.",
+      "resolution": "Original worktree hash retained with explicit representation and separate Git blob hash.",
+      "verification": "Old LF Git blob hashes to 558c54aae66be7211dde170cc6e23774f9a5bbf667ec6b4cf611d9b6f42bd69a; CRLF representation reproduces a4e59f3bc95fd0d87ca968bb55f3af3e219d41d12dec4d68cd1b1fc6345137d4."
+    }
+  ],
+  "scope_correction_history": {
+    "detected_by": "Parent full offline suite frozen-baseline test",
+    "earlier_review_limit": "First review checked implementation scope but missed that root .gitattributes was one of the 470 frozen paths.",
+    "retained_initial_failure": "3075 passed,1 failed; initial failure not relabelled success.",
+    "resolution": "Root attributes restored in 13b66f5; narrow new directory rules preserve publication bytes without changing existing path attributes.",
+    "independent_verification": "Original frozen test passes; all 470 frozen paths and 4970 prior tracked path attributes checked."
+  },
+  "unresolved_priority_1_or_2_findings": [],
+  "evidence_review": {
+    "local_archive_source_references_rehashed": 23,
+    "all_source_hashes_matched": true,
+    "source_integrity_limit": "Hashes bind current local bytes and representations; they do not authenticate publisher assertions, historical first availability or actual index implementation.",
+    "regular_notice13888": {
+      "candidate_actions_matched_to_body": 100,
+      "candidate_actions_matched_to_worksheet_coordinates": 100,
+      "add_count": 50,
+      "remove_count": 50,
+      "reserve_rows_excluded": 25,
+      "actual_effective_member_date": null,
+      "actual_date_status": "UNKNOWN"
+    },
+    "conditional_notice13420": {
+      "original_add_code": "-",
+      "original_add_symbol": null,
+      "retrospective_identity_mapping_separate": true,
+      "existing_workbook_parser_rejected_unresolved_E11_F11": true,
+      "listing_condition_date": "2021-09-28",
+      "listing_condition_proves_actual_index_implementation": false,
+      "actual_effective_member_date": null,
+      "actual_date_status": "UNKNOWN"
+    }
+  },
+  "data_qualification": {
+    "research_result": "PARTIAL",
+    "2021_09_13_baseline_status": "BLOCKED",
+    "authoritative_complete_baselines": 0,
+    "certified_actual_effective_events": 0,
+    "membership_replay_performed": false,
+    "membership_rows_generated": 0,
+    "daily_member_counts": null,
+    "daily500_independently_checked": false,
+    "formal_admission": "UNCHANGED_BLOCKED",
+    "certified_daily_pit_published": false,
+    "actual_membership_evidence_success": false,
+    "live_money": false
+  },
+  "limitations": [
+    "This is approval for the bounded research PR and its documented software/audit behavior; no real PIT data certification is granted.",
+    "No complete authoritative starting set or independent actual-index event evidence was obtained; no daily membership chain was reconstructed.",
+    "Historical identity, temporary/correction-event completeness, publisher authenticity and historical byte availability remain unresolved research requirements.",
+    "Reviewer independently ran 21 focused/frozen tests and validated full-suite raw reports; reviewer did not rerun the full offline suite or directly query GitHub.",
+    "Final publication commit byte consistency is to be checked read-only after the parent commits the bound summary, delivery receipt and this review."
+  ]
+}
