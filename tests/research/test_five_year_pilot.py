@@ -305,7 +305,12 @@ def test_recomputed_hashes_cannot_change_native_request_or_response_binding(sema
     request = next((root / "evidence/sources").glob("*-stock_zh_a_hist.request.json"))
     entry = json.loads(request.read_text())
     if case == "request-role":
-        entry["interface_arguments"]["adjust"] = "hfq"
+        # Directory enumeration order differs across filesystems: always
+        # mutate the actual role, including when the first entry is HFQ.
+        previous_role = entry["interface_arguments"]["adjust"]
+        assert previous_role in {"", "hfq"}
+        entry["interface_arguments"]["adjust"] = "hfq" if previous_role == "" else ""
+        assert entry["interface_arguments"]["adjust"] != previous_role
     elif case == "response-hash":
         entry["response_sha256"] = "0" * 64
     elif case == "http-status":
