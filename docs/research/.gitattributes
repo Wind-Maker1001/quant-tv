@@ -1,0 +1,6 @@
+# Preserve only this pilot's newly published audit bytes.
+evidence/pit-effective-membership-evidence-v1/** -text whitespace=cr-at-eol
+PIT_BASELINE_EVIDENCE_REVIEW.md -text whitespace=cr-at-eol
+PIT_CONDITIONAL_EVIDENCE_REVIEW.md -text whitespace=cr-at-eol
+PIT_REGULAR_EVIDENCE_REVIEW.md -text whitespace=cr-at-eol
+PIT_EFFECTIVE_MEMBERSHIP_EVIDENCE.md -text whitespace=cr-at-eol

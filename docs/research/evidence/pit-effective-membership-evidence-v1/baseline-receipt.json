@@ -126,6 +126,8 @@
     "reason": "Remove extra blank EOF line only; no evidence statement changed.",
     "previous_receipt_sha256": "a4e59f3bc95fd0d87ca968bb55f3af3e219d41d12dec4d68cd1b1fc6345137d4",
     "previous_report_sha256": "e77861b5a4e013c50708c243a54bde25dc38a0c69668a3bfa563c3026fc8d62a",
-    "previous_publication_commit": "21315795e8e165d56914e0462187804a15f2ea9e"
+    "previous_publication_commit": "21315795e8e165d56914e0462187804a15f2ea9e",
+    "previous_receipt_sha256_representation": "Working-tree bytes before amendment; the initial commit normalized line endings. This hash is not the Git blob hash.",
+    "previous_receipt_git_blob_sha256": "558c54aae66be7211dde170cc6e23774f9a5bbf667ec6b4cf611d9b6f42bd69a"
   }
 }

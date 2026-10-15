@@ -14,12 +14,3 @@ docs/research/evidence/factor-discovery-private-v1/** -text whitespace=cr-at-eol
 docs/research/evidence/factor-discovery-synthetic-v2/** -text whitespace=cr-at-eol
 docs/research/evidence/factor-discovery-private-v2/** -text whitespace=cr-at-eol
 
-# Preserve PIT audit receipt bytes and the exact newly hashed checker sources.
-docs/research/evidence/pit-effective-membership-evidence-v1/** -text whitespace=cr-at-eol
-docs/research/PIT_BASELINE_EVIDENCE_REVIEW.md -text whitespace=cr-at-eol
-docs/research/PIT_CONDITIONAL_EVIDENCE_REVIEW.md -text whitespace=cr-at-eol
-docs/research/PIT_REGULAR_EVIDENCE_REVIEW.md -text whitespace=cr-at-eol
-qbot/research/universe/event_evidence.py text eol=lf
-examples/research/audit_pit_event_evidence.py text eol=lf
-tests/research/test_pit_event_evidence.py text eol=lf
-
