@@ -1,0 +1,437 @@
+"""SYNTHETIC_TEST_ONLY: offline five-year ingestion and evidence regressions."""
+
+import json
+from pathlib import Path
+
+import pandas as pd
+import pytest
+import requests
+
+from qbot.research.data.providers.akshare import AKShareProvider
+from qbot.research.exploratory import five_year as pilot
+from qbot.research.exploratory.contract import manifest_version, sha256_file
+
+
+DATES = ["2021-03-08", "2021-03-09", "2021-09-13", "2021-09-14",
+         "2021-09-15", "2021-09-16", "2021-09-17", "2021-09-20"]
+
+
+class SyntheticSDK:
+    __version__ = "SYNTHETIC_TEST_ONLY"
+
+    def stock_zh_a_hist(self, **kwargs):
+        result = requests.get("https://example.invalid/pilot-stock", params=kwargs).json()
+        return pd.DataFrame(result["rows"])
+
+    def stock_zh_index_hist_csindex(self, **kwargs):
+        result = requests.get("https://example.invalid/pilot-index", params=kwargs).json()
+        return pd.DataFrame(result["rows"])
+
+
+@pytest.fixture
+def synthetic_transport(monkeypatch):
+    calls, mode = [], {"value": "default"}
+
+    def fake_request(session, method, url, **options):
+        kwargs = options.get("params", {})
+        calls.append((url, dict(kwargs)))
+        code, adjustment = kwargs["symbol"], kwargs.get("adjust", "")
+        if code == "600112" and mode["value"] != "all-valid":
+            raise requests.Timeout("SYNTHETIC_TEST_ONLY historical-exit endpoint unavailable")
+        dates = list(DATES)
+        if code == "000002":
+            dates.remove("2021-09-14")
+        if code == "601059":
+            dates = dates[-2:]
+        if code == "000961" and mode["value"] != "all-valid":
+            dates = []
+        if code == "600000" and mode["value"] == "duplicate":
+            dates.append(dates[-1])
+        if code == "600000" and mode["value"] == "date-mismatch" and adjustment == "hfq":
+            dates = dates[:-1]
+        if code == "600000" and mode["value"] == "weekend":
+            dates.append("2021-09-18")
+        multiplier = 2 if adjustment == "hfq" else 1
+        rows = [{"日期": day, "开盘": 10 * multiplier, "最高": 12 * multiplier,
+                 "最低": 9 * multiplier, "收盘": 11 * multiplier,
+                 "成交量": 10, "成交额": 11000, "换手率": 2}
+                for day in dates]
+        if code == "000905":
+            for row in rows:
+                row["成交额"] = 0.0011  # CSI endpoint units: CNY 100m.
+        if code == "600000" and mode["value"] == "bad-units":
+            for row in rows:
+                row["成交额"] *= 100
+        response = requests.Response()
+        response.status_code = mode.get("deny_status", 200) if code == mode.get("deny_code") else 200
+        response.url = requests.Request(method, url, params=kwargs).prepare().url
+        response._content = json.dumps({"synthetic_only": True, "rows": rows}).encode("utf-8")
+        response.headers["Content-Type"] = "application/json"
+        return response
+
+    def no_throttle(**kwargs):
+        kwargs["request_interval"] = 0
+        return AKShareProvider(**kwargs)
+
+    monkeypatch.setattr(requests.sessions.Session, "request", fake_request)
+    monkeypatch.setattr(pilot, "AKShareProvider", no_throttle)
+    return calls, mode
+
+
+def acquire(root):
+    return pilot.acquire_pilot(root, research_end="2021-09-20", akshare_module=SyntheticSDK(),
+                               synthetic_only=True, progress=lambda value: None)
+
+
+def test_frozen_sample_cannot_replace_unavailable_names(tmp_path):
+    frozen = pilot.freeze_pilot(tmp_path, synthetic_only=True)
+    content = (tmp_path / "sample.json").read_bytes()
+    assert frozen["symbols"] == list(pilot.DEFAULT_SYMBOLS)
+    assert {value["identity_status"] for value in frozen["securities"]} == {"UNVERIFIED"}
+    assert pilot.freeze_pilot(tmp_path, synthetic_only=True) == frozen
+    with pytest.raises(ValueError, match="pre-frozen"):
+        pilot.freeze_pilot(tmp_path, pilot.DEFAULT_SYMBOLS[:-1], synthetic_only=True)
+    with pytest.raises(ValueError, match="pre-frozen"):
+        pilot.freeze_pilot(tmp_path, synthetic_only=False)
+    assert (tmp_path / "sample.json").read_bytes() == content
+
+
+def test_partial_pilot_preserves_missing_failed_and_short_history(tmp_path, synthetic_transport):
+    result = acquire(tmp_path)
+    manifest = pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
+    assert result["statuses"] == {"software": "SOFTWARE_SUCCESS", "data": "EXPLORATORY_DATA_AVAILABLE",
+                                  "pit": "PIT_UNVERIFIED", "hfq": "HFQ_UNVERIFIED",
+                                  "formal": "FORMAL_ADMISSION_BLOCKED"}
+    root = Path(result["manifest_path"]).parent
+    bars = pd.read_parquet(root / "bars.parquet")
+    assert len(bars) == len(DATES) * len(pilot.DEFAULT_SYMBOLS)
+    assert set(bars["symbol"]) == set(pilot.DEFAULT_SYMBOLS)
+    missing = bars.loc[bars["symbol"].eq("000002.SZ") & bars["date"].eq("2021-09-14")].iloc[0]
+    assert pd.isna(missing.raw_close) and pd.isna(missing.adj_close)
+    assert missing.observation_status == "MISSING_REASON_UNKNOWN"
+    assert missing.historical_security_state == "UNVERIFIED"
+    row = bars.loc[bars["symbol"].eq("600000.SH")].iloc[0]
+    assert row.open == row.raw_open == 10
+    assert row.adj_open == 20 and row.volume == 1000 and row.amount == 11000
+    assert row.turnover == pytest.approx(0.02)
+    cover = {value["symbol"]: value for value in result["coverage"]}
+    assert cover["601059.SH"]["warmup_observed_sessions"] == 0
+    assert cover["601059.SH"]["paired_observed_research_sessions"] == 2
+    assert cover["600112.SH"]["missing_research_sessions"] == 6
+    assert cover["000961.SZ"]["missing_research_sessions"] == 6
+    attempts = json.loads((root / "attempts.json").read_text())
+    assert any(value["symbol"] == "600112.SH" and value["status"] == "DOWNLOAD_OR_VALIDATION_FAILED" for value in attempts)
+    assert any(value["symbol"] == "000961.SZ" and value["status"] == "EMPTY_VENDOR_RESPONSE" for value in attempts)
+    assert manifest["warmup"]["calendar_sufficient"] is False
+    assert manifest["terminal_labels"]["unmatured_calendar_dates"] == DATES[-6:]
+    assert manifest["verification_design"]["factor_search_performed"] is False
+    assert manifest["verification_design"]["existing_2025_2026_independent_test"] is False
+    assert manifest["verification_design"]["added_earlier_dates_are_forward_test"] is False
+    assert all("evidence/" in item["path"] for name, item in manifest["files"].items() if ".bin" in name)
+    with pytest.raises(ValueError, match="SYNTHETIC_TEST_ONLY"):
+        pilot.verify_pilot(result["manifest_path"])
+
+
+def test_repeated_execution_retains_receipts_and_resumes_cache(tmp_path, synthetic_transport):
+    calls, mode = synthetic_transport
+    mode["value"] = "all-valid"
+    first = acquire(tmp_path)
+    original = {path.name: path.read_bytes() for path in Path(first["manifest_path"]).parent.iterdir() if path.is_file()}
+    count = len(calls)
+    second = acquire(tmp_path)
+    assert len(calls) == count
+    assert first["manifest_path"] != second["manifest_path"]
+    assert first["receipt_path"] != second["receipt_path"]
+    assert {path.name: path.read_bytes() for path in Path(first["manifest_path"]).parent.iterdir() if path.is_file()} == original
+    assert second["metrics"]["native_http_responses_this_run"] == 0
+    pilot.verify_pilot(first["manifest_path"], allow_synthetic=True)
+    pilot.verify_pilot(second["manifest_path"], allow_synthetic=True)
+
+
+@pytest.mark.parametrize("mode", ["duplicate", "date-mismatch"])
+def test_vendor_date_failures_are_receipted_without_replacement(tmp_path, synthetic_transport, mode):
+    synthetic_transport[1]["value"] = mode
+    result = acquire(tmp_path)
+    attempts = json.loads((Path(result["manifest_path"]).parent / "attempts.json").read_text())
+    item = next(value for value in attempts if value["symbol"] == "600000.SH")
+    assert item["status"] == "DOWNLOAD_OR_VALIDATION_FAILED"
+    assert item["retained_in_frozen_sample"] is True
+    assert len(result["coverage"]) == 10
+    assert next(value for value in result["coverage"] if value["symbol"] == "600000.SH")["missing_research_sessions"] == 6
+
+
+@pytest.mark.parametrize("mode", ["bad-units", "weekend"])
+def test_unit_or_calendar_failure_does_not_grant_analysis_ready_data(tmp_path, synthetic_transport, mode):
+    synthetic_transport[1]["value"] = mode
+    result = acquire(tmp_path)
+    assert result["statuses"]["software"] == "SOFTWARE_FAILED"
+    assert result["statuses"]["data"] == "EXPLORATORY_DATA_UNAVAILABLE"
+    assert result["statuses"]["formal"] == "FORMAL_ADMISSION_BLOCKED"
+    pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
+
+
+def test_cache_source_identity_mismatch_is_auditable_not_relabelled(tmp_path, synthetic_transport):
+    first = acquire(tmp_path)
+    path = tmp_path / "cache" / "600000.SH.metadata.json"
+    metadata = json.loads(path.read_text())
+    metadata["source_version"] = "SYNTHETIC_TEST_ONLY-different-source-contract"
+    path.write_text(json.dumps(metadata))
+    second = acquire(tmp_path)
+    attempts = json.loads((Path(second["manifest_path"]).parent / "attempts.json").read_text())
+    item = next(value for value in attempts if value["symbol"] == "600000.SH")
+    assert item["status"] == "DOWNLOAD_OR_VALIDATION_FAILED"
+    assert "source identity mismatch" in item["reason"]
+    assert json.loads(path.read_text())["source_version"] == metadata["source_version"]
+    pilot.verify_pilot(first["manifest_path"], allow_synthetic=True)
+
+
+def test_receipt_and_native_bytes_tampering_are_rejected(tmp_path, synthetic_transport):
+    result = acquire(tmp_path)
+    root = Path(result["manifest_path"]).parent
+    native = next((root / "evidence" / "sources").glob("*.bin"))
+    native.write_bytes(b"SYNTHETIC_TEST_ONLY corrupted bytes")
+    with pytest.raises(ValueError, match="artifact hash"):
+        pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
+
+
+def test_qualification_upgrade_rejected_even_with_recomputed_local_hashes(tmp_path, synthetic_transport):
+    result = acquire(tmp_path)
+    path = Path(result["manifest_path"])
+    manifest = json.loads(path.read_text())
+    manifest["statuses"]["hfq"] = "CERTIFIED"
+    manifest["data_version"] = manifest_version(manifest)
+    path.write_text(json.dumps(manifest))
+    receipt_path = Path(result["receipt_path"])
+    receipt = json.loads(receipt_path.read_text())
+    receipt.update(manifest_sha256=sha256_file(path), data_version=manifest["data_version"], statuses=manifest["statuses"])
+    receipt_path.write_text(json.dumps(receipt))
+    with pytest.raises(ValueError, match="upgrade financial qualification"):
+        pilot.verify_pilot(path, allow_synthetic=True)
+
+
+def test_cli_freeze_and_invalid_range_do_not_access_network(tmp_path, monkeypatch, capsys):
+    def no_network(*args, **kwargs):
+        raise AssertionError("network not authorized in freeze or invalid configuration")
+
+    monkeypatch.setattr(requests.sessions.Session, "request", no_network)
+    assert pilot.main(["freeze", "--root", str(tmp_path)]) == 0
+    assert json.loads(capsys.readouterr().out)["pit"] is False
+    with pytest.raises(ValueError, match="date range"):
+        pilot.acquire_pilot(tmp_path, research_start="2021-09-20", research_end="2021-09-13")
+    with pytest.raises(ValueError, match="zero or one retry"):
+        pilot.acquire_pilot(tmp_path, retry_count=5)
+
+
+def rebind_local_hashes(result, mutate_manifest=None):
+    """An attacker can recompute local hashes; semantic evidence must still bind."""
+    path = Path(result["manifest_path"])
+    root = path.parent
+    manifest = json.loads(path.read_text())
+    for name in manifest["files"]:
+        manifest["files"][name] = pilot._item(root, root / name)
+    manifest["sample_sha256"] = sha256_file(root / "sample.json")
+    if mutate_manifest is not None:
+        mutate_manifest(manifest)
+    manifest["data_version"] = manifest_version(manifest)
+    path.write_text(json.dumps(manifest))
+    receipt_path = Path(result["receipt_path"])
+    receipt = json.loads(receipt_path.read_text())
+    receipt.update(manifest_sha256=sha256_file(path), data_version=manifest["data_version"],
+                   artifact_hashes={name: item["sha256"] for name, item in manifest["files"].items()},
+                   statuses=manifest["statuses"])
+    receipt_path.write_text(json.dumps(receipt))
+
+
+@pytest.fixture
+def semantic_snapshot(tmp_path, synthetic_transport):
+    return acquire(tmp_path)
+
+
+def test_v2_cache_metadata_is_exact_original_snapshot_bytes(semantic_snapshot):
+    result = semantic_snapshot
+    root = Path(result["manifest_path"]).parent
+    original = root.parent.parent / "cache" / "600000.SH.metadata.json"
+    copied = root / "evidence/cache/600000.SH.metadata.json"
+    assert original.read_bytes() == copied.read_bytes()
+    manifest = pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
+    assert manifest["schema"] == "FIVE_YEAR_PILOT_MANIFEST_V2"
+    assert "authorized_use" not in manifest["source_contract"]
+    assert "no commercial/redistribution grant established" in manifest["source_contract"]["authorization_evidence"]
+
+
+@pytest.mark.parametrize("case", ["coverage", "calendar", "bar-price", "metadata-bytes", "freeze-time", "security-state"])
+def test_recomputed_local_hashes_do_not_replace_structural_evidence(semantic_snapshot, case):
+    result = semantic_snapshot
+    root = Path(result["manifest_path"]).parent
+    if case == "coverage":
+        path = root / "coverage.json"
+        value = json.loads(path.read_text())
+        value[0]["missing_research_sessions"] += 1
+        path.write_text(json.dumps(value))
+    elif case == "calendar":
+        path = root / "calendar.csv"
+        pd.read_csv(path).iloc[:-1].to_csv(path, index=False)
+    elif case == "bar-price":
+        path = root / "bars.parquet"
+        frame = pd.read_parquet(path)
+        selected = frame["symbol"].eq("600000.SH")
+        frame.loc[selected, "close"] = frame.loc[selected, "raw_close"] = 11.1
+        frame.loc[selected, "adj_close"] = 22.2
+        frame.to_parquet(path, index=False)
+    elif case == "metadata-bytes":
+        path = root / "evidence/cache/600000.SH.metadata.json"
+        path.write_bytes(path.read_bytes() + b"\n")
+    else:
+        path = root / "sample.json"
+        value = json.loads(path.read_text())
+        if case == "freeze-time":
+            value["frozen_at"] = "2099-01-01T00:00:00+00:00"
+        else:
+            value["securities"][0]["historical_membership"] = "CERTIFIED"
+        path.write_text(json.dumps(value))
+    rebind_local_hashes(result)
+    with pytest.raises(ValueError):
+        pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
+
+
+@pytest.mark.parametrize("case", ["request-role", "response-hash", "body-price", "http-status"])
+def test_recomputed_hashes_cannot_change_native_request_or_response_binding(semantic_snapshot, case):
+    result = semantic_snapshot
+    root = Path(result["manifest_path"]).parent
+    request = next((root / "evidence/sources").glob("*-stock_zh_a_hist.request.json"))
+    entry = json.loads(request.read_text())
+    if case == "request-role":
+        entry["interface_arguments"]["adjust"] = "hfq"
+    elif case == "response-hash":
+        entry["response_sha256"] = "0" * 64
+    elif case == "http-status":
+        entry["status_code"] = 500
+    else:
+        response = root / "evidence" / entry["response_file"]
+        payload = json.loads(response.read_text())
+        payload["rows"][0]["收盘"] += 0.1
+        response.write_text(json.dumps(payload))
+        entry["response_sha256"] = sha256_file(response)
+    request.write_text(json.dumps(entry))
+    rebind_local_hashes(result)
+    with pytest.raises(ValueError):
+        pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
+
+
+@pytest.mark.parametrize("case", ["terminal-labels", "independent-test", "remove-required-artifact"])
+def test_recomputed_manifest_cannot_upgrade_validation_design(semantic_snapshot, case):
+    def mutate(value):
+        if case == "terminal-labels":
+            value["terminal_labels"]["prices_after_research_end_fetched"] = True
+        elif case == "independent-test":
+            value["verification_design"]["existing_2025_2026_independent_test"] = True
+        else:
+            del value["files"]["bars.parquet"]
+
+    rebind_local_hashes(semantic_snapshot, mutate)
+    with pytest.raises(ValueError):
+        pilot.verify_pilot(semantic_snapshot["manifest_path"], allow_synthetic=True)
+
+
+def test_stdlib_memory_reports_bytes_or_explicit_unavailability():
+    memory = pilot._stdlib_memory()
+    for key in ("process_rss_bytes", "process_peak_rss_bytes"):
+        assert memory[key] is None or isinstance(memory[key], int) and memory[key] > 0
+    assert memory["memory_method"]
+
+
+def test_intraday_calendar_cannot_be_silently_normalized(semantic_snapshot):
+    root = Path(semantic_snapshot["manifest_path"]).parent
+    path = root / "calendar.csv"
+    frame = pd.read_csv(path)
+    frame["date"] = frame["date"] + "T10:00:00"
+    frame.to_csv(path, index=False)
+    rebind_local_hashes(semantic_snapshot)
+    with pytest.raises(ValueError, match="midnight"):
+        pilot.verify_pilot(semantic_snapshot["manifest_path"], allow_synthetic=True)
+
+
+def test_initial_evidence_corruption_creates_a_blocked_failure_receipt(tmp_path, synthetic_transport):
+    pilot.freeze_pilot(tmp_path, synthetic_only=True)
+    sources = tmp_path / "sources"
+    sources.mkdir()
+    (sources / "0001-broken.bin").write_bytes(b"SYNTHETIC_TEST_ONLY corrupted source")
+    (sources / "0001-broken.request.json").write_text(json.dumps({
+        "response_file": "sources/0001-broken.bin", "response_sha256": "0" * 64,
+        "url": "https://example.invalid/broken"}))
+    result = acquire(tmp_path)
+    assert result["statuses"]["software"] == "SOFTWARE_FAILED"
+    assert result["statuses"]["data"] == "EXPLORATORY_DATA_UNAVAILABLE"
+    manifest = pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
+    assert "source hash mismatch" in manifest["fatal_error"]
+    attempts = json.loads((Path(result["manifest_path"]).parent / "attempts.json").read_text())
+    assert len(attempts) == 10 and all(value["retained_in_frozen_sample"] for value in attempts)
+
+
+def test_legacy_v1_receipts_remain_replayable_without_rewriting_evidence(semantic_snapshot):
+    result = semantic_snapshot
+    root = Path(result["manifest_path"]).parent
+    path = root / "bars.parquet"
+    frame = pd.read_parquet(path)
+    frame["calculation_version"] = "five-year-minimal-ingestion-v1"
+    frame.to_parquet(path, index=False)
+    for path in (root / "evidence/cache").glob("*.metadata.json"):
+        path.write_text(json.dumps(json.loads(path.read_text()), indent=4))
+
+    def legacy(value):
+        value["schema"] = "FIVE_YEAR_PILOT_MANIFEST_V1"
+        value["version"] = "five-year-minimal-ingestion-v1"
+
+    rebind_local_hashes(result, legacy)
+    receipt_path = Path(result["receipt_path"])
+    receipt = json.loads(receipt_path.read_text())
+    receipt["schema"] = "FIVE_YEAR_PILOT_RECEIPT_V1"
+    receipt_path.write_text(json.dumps(receipt))
+    original = {path.name: path.read_bytes() for path in root.iterdir() if path.is_file()}
+    assert pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)["schema"] == "FIVE_YEAR_PILOT_MANIFEST_V1"
+    assert {path.name: path.read_bytes() for path in root.iterdir() if path.is_file()} == original
+
+
+@pytest.mark.parametrize("http_status", [401, 403, 429])
+def test_explicit_supplier_denial_stops_http_even_with_provider_retry_one(tmp_path, synthetic_transport, http_status):
+    calls, mode = synthetic_transport
+    mode.update(deny_code="600000", deny_status=http_status)
+    result = pilot.acquire_pilot(tmp_path, research_end="2021-09-20", akshare_module=SyntheticSDK(),
+                                  synthetic_only=True, retry_count=1, progress=lambda value: None)
+    assert len(calls) == 1  # No immediate retry, other security URL, benchmark URL or proxy.
+    manifest = pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
+    assert manifest["supplier_access_limit"]["status_code"] == http_status
+    root = Path(result["manifest_path"]).parent
+    attempts = json.loads((root / "attempts.json").read_text())
+    securities = [value for value in attempts if value["symbol"] != "000905.SH"]
+    assert [value["symbol"] for value in securities] == list(pilot.DEFAULT_SYMBOLS)
+    assert securities[0]["status"] == "DOWNLOAD_OR_VALIDATION_FAILED"
+    assert all(value["status"] == "NOT_ATTEMPTED_ACCESS_LIMIT" for value in securities[1:])
+    assert all(value["native_http_responses"] == 0 for value in securities[1:])
+    assert manifest["metrics"]["not_attempted_access_limit"] == 9
+    receipts = list((root / "evidence/sources").glob("*.request.json"))
+    assert len(receipts) == 1
+    entry = json.loads(receipts[0].read_text())
+    assert entry["status_code"] == http_status
+    assert sha256_file(root / "evidence" / entry["response_file"]) == entry["response_sha256"]
+
+
+def test_later_supplier_denial_keeps_prior_data_and_reads_local_benchmark_cache(tmp_path, synthetic_transport):
+    calls, mode = synthetic_transport
+    benchmark_cache = tmp_path / "prior-authorized-benchmark"
+    provider = AKShareProvider(akshare_module=SyntheticSDK(), request_interval=0, retry_count=0)
+    pilot.ParquetBarCache(benchmark_cache).update_from_provider(
+        provider, "000905.SH", "2021-03-08", "2021-09-20", is_index=True)
+    calls.clear()
+    mode.update(deny_code="300750", deny_status=429)
+    result = pilot.acquire_pilot(tmp_path / "pilot", research_end="2021-09-20", akshare_module=SyntheticSDK(),
+                                  synthetic_only=True, retry_count=1, benchmark_cache_root=benchmark_cache,
+                                  progress=lambda value: None)
+    assert len(calls) == 9  # Four paired successes, then one preserved denial.
+    assert result["statuses"]["data"] == "EXPLORATORY_DATA_AVAILABLE"
+    assert result["metrics"]["successful_research_securities"] == 4
+    assert len(result["coverage"]) == 10
+    assert result["metrics"]["not_attempted_access_limit"] == 5
+    root = Path(result["manifest_path"]).parent
+    assert len(pd.read_parquet(root / "bars.parquet")) == 80
+    pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
