@@ -7,7 +7,7 @@ import pytest
 import requests
 
 from examples.research.five_year_supplier_probe import response_rows
-from examples.research.summarize_five_year_pilot import coverage_table
+from examples.research.summarize_five_year_pilot import coverage_table, verified_benchmark_provenance
 from examples.research import five_year_supplier_probe as probe_module
 from qbot.research.exploratory.five_year import freeze_pilot
 
@@ -64,6 +64,18 @@ def test_monthly_coverage_uses_actual_sessions_retains_absent_security():
     assert first.coverage_ratio == 0.5
     assert result.loc[result.symbol.eq("000961.SZ"), "paired_observed_sessions"].sum() == 0
     assert set(result.missing_cause) == {"UNKNOWN_UNVERIFIED"}
+
+
+@pytest.mark.parametrize("version", ["V1", "V2"])
+def test_legacy_publication_cannot_promote_self_asserted_native_calendar(version):
+    claimed = {"status": "NATIVE_RESPONSE_RECONSTRUCTED", "native_response_sha256": ["untrusted"]}
+    checked = {"manifest": {"schema": "FIVE_YEAR_PILOT_MANIFEST_" + version,
+                            "benchmark_provenance": claimed},
+               "verification": {"calendar_origin": "CACHE_ONLY_NOT_NATIVE_VERIFIED"}}
+    result = verified_benchmark_provenance(checked)
+    assert result["status"] == "CACHE_ONLY_NOT_NATIVE_VERIFIED"
+    assert "native_response_sha256" not in result
+    assert checked["manifest"]["benchmark_provenance"] == claimed
 
 
 def test_supplier_denials_stop_all_remaining_requests_and_keep_bytes(tmp_path, monkeypatch):

@@ -137,9 +137,19 @@ def replay_supplier_coverage(supplier, supplier_root, calendar):
     return output
 
 
+def verified_benchmark_provenance(checked):
+    """Publish the verifier's classification, never a legacy self-assertion."""
+    manifest = checked["manifest"]
+    if manifest["schema"] == "FIVE_YEAR_PILOT_MANIFEST_V3":
+        return manifest["benchmark_provenance"]
+    return {"status": checked["verification"]["calendar_origin"],
+            "qualification": "Legacy cache dates are not independently bound to native index bytes"}
+
+
 def summarize(manifest_path, supplier_receipt_path, output):
     manifest_path, supplier_receipt_path = Path(manifest_path), Path(supplier_receipt_path)
-    manifest = verify_pilot(manifest_path)
+    checked = verify_pilot(manifest_path, with_verification=True)
+    manifest = checked["manifest"]
     run = manifest_path.parent
     supplier = json.loads(supplier_receipt_path.read_text(encoding="utf-8"))
     if supplier.get("schema") != "FIVE_YEAR_SUPPLIER_PROBE_V1" or supplier.get("formal_admission") is not False:
@@ -167,7 +177,7 @@ def summarize(manifest_path, supplier_receipt_path, output):
             "interface", "interface_arguments", "url", "status_code", "requested_at", "retrieved_at",
             "response_sha256", "content_type", "upstream_vintage")})
     coverage = json.loads((run / "coverage.json").read_text(encoding="utf-8"))
-    summary = {"schema": "FIVE_YEAR_PUBLIC_DERIVED_AUDIT_V1", "purpose": "EXPLORATORY",
+    summary = {"schema": "FIVE_YEAR_PUBLIC_DERIVED_AUDIT_V2", "purpose": "EXPLORATORY",
                "formal_admission": False, "synthetic_only": False, "no_live_money": True,
                "created_at": datetime.now(timezone.utc).isoformat(), "data_version": manifest["data_version"],
                "manifest_sha256": sha256_file(manifest_path), "receipt_sha256": sha256_file(run / "receipt.json"),
@@ -177,7 +187,8 @@ def summarize(manifest_path, supplier_receipt_path, output):
                "statuses": manifest["statuses"], "metrics": manifest["metrics"],
                "research_start": manifest["research_start"], "research_end": manifest["research_end"],
                "warmup": manifest["warmup"], "terminal_labels": manifest["terminal_labels"], "coverage": coverage,
-               "stock_native_response_index": native_index,
+               "native_response_index": native_index,
+               "benchmark_provenance": verified_benchmark_provenance(checked),
                "supplier_coverage_replay": replay_supplier_coverage(supplier, supplier_receipt_path.parent, calendar),
                "supplier_original_attempts": len(supplier["attempts"]), "supplier_http_attempts": supplier["http_attempts"],
                "privacy": "Derived coverage, request contracts and SHA only; no prices, quantities, returns, factor values or vendor response bodies",

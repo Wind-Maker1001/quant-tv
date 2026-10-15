@@ -1,0 +1,138 @@
+{
+  "actual_native_requests": {
+    "index": 1,
+    "latest_run_new_http": 0,
+    "stock": 20,
+    "supplier_http_probe": 9
+  },
+  "baseline": {
+    "frozen_files_unchanged": 470,
+    "research_ci": {
+      "conclusion": "success",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38594242501"
+    },
+    "sha": "6864315bc8eeaf96356d6822d12f431ec485a94e",
+    "static_ci": {
+      "conclusion": "success",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38594242366"
+    }
+  },
+  "captured_at": "2026-10-15T06:57:28.977621+00:00",
+  "completed_targeted_offline_tests": [
+    {
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 47
+      },
+      "path": "results/diagnostics/five-year-data-feasibility-v1/tests-pilot-v3-native-calendar.xml",
+      "sha256": "0f0401e8e893f1b6bc8857926952ac09261786b76cadc3cd199eadd26d05e4d7"
+    },
+    {
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 12
+      },
+      "path": "results/diagnostics/five-year-data-feasibility-v1/root-regressions-native-calendar.xml",
+      "sha256": "de3d029bbfa375c44c0fbaa9240a2028e5a5aae178f91e655df5e1ebaa48b6b6"
+    }
+  ],
+  "data_run": {
+    "benchmark_provenance": {
+      "calendar_scope": "Observed native benchmark sessions; independent exchange-calendar completeness remains UNVERIFIED",
+      "evidence_index": "benchmark_sources.json",
+      "interface": "stock_zh_index_hist_csindex",
+      "native_response_sha256": [
+        "e0e94b565c1781fabd097363f9910de6838a5364d41f75f1ae4f15725f97d312"
+      ],
+      "source_contract": "CSI_INDEX_PERF_16_FIELDS_V1",
+      "status": "NATIVE_RESPONSE_RECONSTRUCTED",
+      "supplier": "CHINA_SECURITIES_INDEX_COMPANY",
+      "units_status": "PINNED_PROVIDER_CONVERSION_NOT_INDEPENDENT_FINANCIAL_CERTIFICATION"
+    },
+    "data_version": "477b285aa23f90eb5fc3705a849b641c68d6e5e674d0e105636ee751abd1def4",
+    "implementation_sha256": "c16bc620963a55b75b8605e6d502d46ff6725815280cdc4593c5e4503195362f",
+    "manifest_sha256": "af6504958cd1b94552cb1d455f8c0d14816de1e72e8b16de501dcf52e333d081",
+    "metrics": {
+      "elapsed_seconds": 2.7117799,
+      "estimate_scope": "Numeric base only; excludes strings, copies, candidate matrices, sources, old generations and Python overhead",
+      "estimated_500x1200_numeric_18_columns_bytes": 86400000,
+      "failed_security_requests": 0,
+      "frame_deep_memory_bytes": 8199137,
+      "memory_method": "Windows GetProcessMemoryInfo WorkingSet/PeakWorkingSet in bytes",
+      "native_http_responses_this_run": 0,
+      "not_attempted_access_limit": 0,
+      "observed_rows": 11577,
+      "panel_rows": 13410,
+      "process_peak_rss_bytes": 160358400,
+      "process_rss_bytes": 160358400,
+      "requested_securities": 10,
+      "snapshot_bytes": 7324075,
+      "successful_research_securities": 10
+    },
+    "producer_git_commit": "2a4e86811a7d8bfd97879da16608c4cdf7fd3d5e",
+    "receipt_sha256": "5e8e83c219f17327272de33598add8666a81d50b5f64720d88fcb24d2c4d70dc",
+    "run_id": "20261015T065248712015Z-6c8a10d4",
+    "source_version": "akshare=1.18.88;contract=stock_zh_a_hist-raw+hfq-v1",
+    "verification": {
+      "calendar_origin": "NATIVE_RESPONSE_RECONSTRUCTED",
+      "formal_admission": false,
+      "independent_exchange_calendar_completeness": "UNVERIFIED"
+    }
+  },
+  "final_complete_research_ci": {
+    "authority": "https://github.com/Wind-Maker1001/quant-tv/pull/6/checks",
+    "policy": "Delivery requires completed successful full offline research CI, report validation, architecture audit and static checks on final PR HEAD; final XML/SHA retained locally and final outcomes posted to PR",
+    "status_at_receipt_creation": "PENDING_FINAL_HEAD_CHECKS",
+    "windows_basetemp": "Fresh D-drive directory outside checkout; default C-drive TEMP causes two existing relative-path fixtures to fail; tests unchanged"
+  },
+  "financial_qualification_policy": "Software success, native/calendar consistency and hashes never upgrade PIT, HFQ, identity/status, vintage or formal financial admission",
+  "formal_admission": false,
+  "no_live_money": true,
+  "previous_complete_research_ci": {
+    "coverage_sha256": "0bcd5b1d702eb623fd47330995f0b99fd2979ba172209d9bd5d9600b54700792",
+    "junit": {
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 1,
+        "tests": 3039
+      },
+      "path": "results/diagnostics/five-year-data-feasibility-v1/ci-2a4e868-pr/research.xml",
+      "sha256": "25d6cbeed82af655d4ab7ba896c0ff9f27e35be8f6d818194f488313179eb50b"
+    },
+    "scope": "Pre-V3 source at 2a4e86811a7d8bfd97879da16608c4cdf7fd3d5e; does not replace final-head CI",
+    "status": "success",
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38692016468"
+  },
+  "prior_receipt": {
+    "path": "validation.json",
+    "policy": "Preserved unchanged; superseded preflight claims are not retrospectively rewritten",
+    "sha256": "caaab1b14b221230ef004ee684cceb194ce7064b412142a876d42550c161dd9d"
+  },
+  "producer_source_policy": "Actual working-tree implementation SHA is sealed by this PR; original run git HEAD is preserved, never relabelled as a later clean commit",
+  "publication": {
+    "all_derived_file_hashes_rechecked": true,
+    "raw_prices_quantities_or_vendor_response_bodies_published": false,
+    "receipt_sha256": "66290efa865fa774a3f5e9fa1aae6ff2e2233b6def165aa3e7975d0072cef816"
+  },
+  "review": {
+    "external_finding": "https://github.com/Wind-Maker1001/quant-tv/pull/6#discussion_r4279785515",
+    "final_external_review": "Request again at final HEAD; outcome recorded on PR",
+    "fix": "V3 rebuilds canonical benchmark from bound native CSI receipts/body, then compares cache and calendar; cache-only legacy cannot assert native provenance",
+    "independent_agent_review": "No unresolved P1/P2 data-chain/privacy finding after fixes",
+    "merge_authorized": false,
+    "pr": "https://github.com/Wind-Maker1001/quant-tv/pull/6"
+  },
+  "schema": "FIVE_YEAR_DELIVERY_VALIDATION_V2",
+  "statuses": {
+    "data": "EXPLORATORY_DATA_AVAILABLE",
+    "formal": "FORMAL_ADMISSION_BLOCKED",
+    "hfq": "HFQ_UNVERIFIED",
+    "pit": "PIT_UNVERIFIED",
+    "software": "SOFTWARE_SUCCESS"
+  }
+}

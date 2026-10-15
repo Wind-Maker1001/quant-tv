@@ -15,7 +15,7 @@ import pandas as pd
 
 from qbot.research.data.cache import ParquetBarCache
 from qbot.research.data.calendar import TradingCalendar, reindex_bars_to_calendar
-from qbot.research.data.evidence import implementation_sha256
+from qbot.research.data.evidence import implementation_sha256, sha256
 from qbot.research.data.providers.akshare import AKShareProvider
 from qbot.research.data.schema import (CANONICAL_BAR_COLUMNS, canonicalize_bars,
                                       empty_bars, normalize_symbol, validate_bars)
@@ -106,11 +106,16 @@ def freeze_pilot(root, symbols=DEFAULT_SYMBOLS, synthetic_only=False):
     return value
 
 
-VERSION = "five-year-minimal-ingestion-v2"
+VERSION = "five-year-minimal-ingestion-v3"
 UNITS = {"price": "CNY", "volume": "SHARES", "amount": "CNY", "turnover": "RATIO"}
 # Lock namespace only: no bars or metadata are published for this reserved key.
 # It is distinct from every frozen pilot security and the CSI500 benchmark.
 PILOT_LOCK_SYMBOL = "999999.SZ"
+CSI_NATIVE_FIELDS = ("tradeDate", "indexCode", "indexNameCnAll", "indexNameCn", "indexNameEnAll", "indexNameEn",
+                     "open", "high", "low", "close", "change", "changePct", "tradingVol", "tradingValue", "consNumber", "peg")
+CSI_VENDOR_COLUMNS = ("日期", "指数代码", "指数中文全称", "指数中文简称", "指数英文全称", "指数英文简称",
+                      "开盘", "最高", "最低", "收盘", "涨跌", "涨跌幅", "成交量", "成交金额", "样本数量", "滚动市盈率")
+CALENDAR_SCOPE = "Observed native benchmark sessions; independent exchange-calendar completeness remains UNVERIFIED"
 
 
 class _SupplierAccessLimit(ProviderError):
@@ -292,10 +297,136 @@ def _stdlib_memory():
                 "memory_method": "UNAVAILABLE"}
 
 
+def _benchmark_records(source_roots):
+    """Read byte snapshots of CSI captures, retaining the latest exact URL."""
+    latest = {}
+    for root in source_roots:
+        root = safe_path(Path(root))
+        for path in sorted((root / "sources").rglob("*.request.json")):
+            receipt_bytes = safe_path(path, root).read_bytes()
+            entry = json.loads(receipt_bytes)
+            if entry.get("interface") != "stock_zh_index_hist_csindex":
+                continue
+            relative = Path(entry["response_file"])
+            if relative.is_absolute() or ".." in relative.parts:
+                raise ValueError("benchmark native response escapes source root")
+            body = safe_path(root / relative, root).read_bytes()
+            if sha256(body) != entry["response_sha256"]:
+                raise ValueError("benchmark native receipt/response SHA mismatch")
+            record = {"entry": entry, "receipt_bytes": receipt_bytes, "body": body}
+            prior = latest.get(entry["url"])
+            if prior is None or _instant(entry["retrieved_at"]) > _instant(prior["entry"]["retrieved_at"]):
+                latest[entry["url"]] = record
+    return list(latest.values())
+
+
+def _reconstruct_benchmark(records, start, end, retrieved_at, synthetic_only):
+    """Replay an exact CSI response through the existing provider, without HTTP."""
+    from urllib.parse import parse_qs, urlsplit
+    from qbot.research.data.providers.akshare import AKShareProvider as CanonicalAKShareProvider
+
+    pieces = []
+    for record in records:
+        entry = record["entry"]
+        if sha256(record["body"]) != entry.get("response_sha256"):
+            raise ValueError("benchmark native receipt/response SHA mismatch")
+        arguments = entry.get("interface_arguments", {})
+        begin, finish = arguments.get("start_date"), arguments.get("end_date")
+        if (entry.get("interface") != "stock_zh_index_hist_csindex" or arguments.get("symbol") != "000905"
+                or set(arguments) != {"symbol", "start_date", "end_date"}
+                or any(not isinstance(value, str) or len(value) != 8 or not value.isdigit() for value in (begin, finish))):
+            raise ValueError("benchmark source must bind CSI500 and exact daily-history dates")
+        begin_date, end_date = (pd.to_datetime(value, format="%Y%m%d", errors="raise") for value in (begin, finish))
+        requested, acquired = _instant(entry.get("requested_at", entry["retrieved_at"])), _instant(entry["retrieved_at"])
+        if (begin_date > end_date or not requested <= acquired <= _instant(retrieved_at)
+                or end_date > acquired.tz_convert("Asia/Shanghai").normalize().tz_localize(None)):
+            raise ValueError("benchmark source dates/acquisition timestamp inconsistent")
+        parsed = urlsplit(entry["url"])
+        query = parse_qs(parsed.query, keep_blank_values=True)
+        if synthetic_only:
+            expected = {key: [str(value)] for key, value in arguments.items()}
+            valid_url = parsed.scheme == "https" and parsed.netloc == "example.invalid" and parsed.path == "/pilot-index" and query == expected
+        else:
+            expected = {"indexCode": ["000905"], "startDate": [begin], "endDate": [finish]}
+            valid_url = (parsed.scheme == "https" and parsed.netloc == "www.csindex.com.cn"
+                         and parsed.path == "/csindex-home/perf/index-perf" and query == expected)
+        if (not valid_url or parsed.fragment or str(entry.get("method")).upper() != "GET"
+                or entry.get("status_code") != 200 or isinstance(entry.get("status_code"), bool)
+                or not entry.get("content_type", "").lower().startswith("application/json")
+                or entry.get("upstream_vintage") != "UNKNOWN_UNVERIFIED"):
+            raise ValueError("benchmark native supplier URL/parameters/status/content-type contract mismatch")
+        payload = json.loads(record["body"])
+        if synthetic_only:
+            if payload.get("synthetic_only") is not True:
+                raise ValueError("synthetic benchmark must remain explicitly classified")
+            vendor = pd.DataFrame(payload["rows"])
+        else:
+            if payload.get("code") != "200" or payload.get("success") is not True or not isinstance(payload.get("data"), list) or not payload["data"]:
+                raise ValueError("benchmark native supplier payload status or data unavailable")
+            if any(not isinstance(row, dict) or tuple(row) != CSI_NATIVE_FIELDS or row["indexCode"] != "000905"
+                   for row in payload["data"]):
+                raise ValueError("benchmark native sixteen-field layout/index identity mismatch")
+            vendor = pd.DataFrame(payload["data"], columns=CSI_NATIVE_FIELDS)
+            vendor.columns = CSI_VENDOR_COLUMNS
+        dates = pd.DatetimeIndex(pd.to_datetime(vendor["日期"], format="mixed", errors="raise"))
+        if (dates.tz is not None or dates.hasnans or dates.has_duplicates or not dates.equals(dates.normalize())
+                or not ((dates >= begin_date) & (dates <= end_date)).all()):
+            raise ValueError("benchmark native dates must be unique daily sessions inside the declared request")
+
+        class ArchivedCSI:
+            __version__ = "ARCHIVED_NATIVE_RESPONSE_REPLAY"
+
+            def stock_zh_index_hist_csindex(self, **kwargs):
+                return vendor.copy()
+
+        provider = CanonicalAKShareProvider(akshare_module=ArchivedCSI(), request_interval=0, retry_count=0)
+        normalized = provider.get_index_bars("000905.SH", begin_date, end_date)
+        pieces.append((acquired, normalized))
+    if not pieces:
+        raise ValueError("benchmark cache has no matching native CSI response evidence")
+    rebuilt = pd.concat([frame for _, frame in sorted(pieces, key=lambda value: value[0])], ignore_index=True)
+    rebuilt = rebuilt.drop_duplicates(["date", "symbol"], keep="last")
+    rebuilt = canonicalize_bars(rebuilt.loc[rebuilt["date"].between(start, end)])
+    TradingCalendar.from_benchmark_bars(rebuilt)
+    return rebuilt
+
+
+def _archive_benchmark_records(run, records):
+    target = run / "evidence" / "benchmark-native"
+    target.mkdir(parents=True, exist_ok=True)
+    index = []
+    for offset, record in enumerate(records, 1):
+        receipt_path, body_path = target / ("%04d.request.json" % offset), target / ("%04d.bin" % offset)
+        write_new(receipt_path, record["receipt_bytes"])
+        write_new(body_path, record["body"])
+        index.append({"receipt": _item(run, receipt_path), "response": _item(run, body_path)})
+    write_new(run / "benchmark_sources.json", _json(index))
+
+
+def _read_archived_benchmark_records(root, manifest):
+    if "benchmark_sources.json" not in manifest["files"]:
+        raise ValueError("V3 benchmark native evidence index is required")
+    index = json.loads((root / "benchmark_sources.json").read_bytes())
+    records = []
+    for item in index:
+        paths = {}
+        for role in ("receipt", "response"):
+            relative = Path(item[role]["path"])
+            if relative.is_absolute() or ".." in relative.parts or relative.as_posix() not in manifest["files"]:
+                raise ValueError("benchmark native evidence path/hash binding missing")
+            paths[role] = safe_path(root / relative, root)
+            if _item(root, paths[role]) != item[role] or manifest["files"][relative.as_posix()] != item[role]:
+                raise ValueError("benchmark native evidence index hash mismatch")
+        receipt_bytes = paths["receipt"].read_bytes()
+        records.append({"entry": json.loads(receipt_bytes), "receipt_bytes": receipt_bytes, "body": paths["response"].read_bytes()})
+    return records
+
+
 def acquire_pilot(root, history_start="2021-03-08", research_start="2021-09-13",
                   research_end="2026-09-11", benchmark_cache_root=None,
                   akshare_module=None, progress=print, synthetic_only=False,
-                  timeout_seconds=10.0, retry_count=0, lock_timeout_seconds=0.0):
+                  timeout_seconds=10.0, retry_count=0, lock_timeout_seconds=0.0,
+                  benchmark_evidence_root=None):
     """Serialize a whole pilot acquisition before allocating evidence names.
 
     The existing ParquetBarCache OS writer lock protects RecordingAKShare's
@@ -311,13 +442,14 @@ def acquire_pilot(root, history_start="2021-03-08", research_start="2021-09-13",
             root, history_start=history_start, research_start=research_start,
             research_end=research_end, benchmark_cache_root=benchmark_cache_root,
             akshare_module=akshare_module, progress=progress, synthetic_only=synthetic_only,
-            timeout_seconds=timeout_seconds, retry_count=retry_count)
+            timeout_seconds=timeout_seconds, retry_count=retry_count,
+            benchmark_evidence_root=benchmark_evidence_root)
 
 
 def _acquire_pilot_locked(root, history_start="2021-03-08", research_start="2021-09-13",
                           research_end="2026-09-11", benchmark_cache_root=None,
                           akshare_module=None, progress=print, synthetic_only=False,
-                          timeout_seconds=10.0, retry_count=0):
+                          timeout_seconds=10.0, retry_count=0, benchmark_evidence_root=None):
     """Bounded single-source RAW/HFQ pilot; failures stay in the frozen sample.
 
     Every invocation publishes a new manifest and independent receipt. Successful
@@ -339,6 +471,7 @@ def _acquire_pilot_locked(root, history_start="2021-03-08", research_start="2021
     attempts, histories, cache_snapshots = [], [], []
     cache = ParquetBarCache(root / "cache")
     benchmark, calendar, recorder, source_version = empty_bars(), None, None, None
+    benchmark_records = []
     fatal = None
     try:
         if akshare_module is None:
@@ -391,6 +524,12 @@ def _acquire_pilot_locked(root, history_start="2021-03-08", research_start="2021
             snapshot = index_cache.load_snapshot("000905.SH", expected_source="AKShareProvider",
                                                  expected_source_version=index_version)
             benchmark = snapshot.frame.loc[snapshot.frame["date"].between(history, end)].copy()
+            roots = [root] + ([] if benchmark_evidence_root is None else [benchmark_evidence_root])
+            benchmark_records = _benchmark_records(roots)
+            rebuilt = _reconstruct_benchmark(benchmark_records, history, end, utc_now(), synthetic_only)
+            pd.testing.assert_frame_equal(benchmark[list(CANONICAL_BAR_COLUMNS)].reset_index(drop=True),
+                                          rebuilt[list(CANONICAL_BAR_COLUMNS)].reset_index(drop=True),
+                                          check_dtype=False, check_exact=True)
             calendar = TradingCalendar.from_benchmark_bars(benchmark)
             if not len(calendar.sessions(start, end)):
                 raise ValueError("benchmark has no actual research sessions")
@@ -400,6 +539,7 @@ def _acquire_pilot_locked(root, history_start="2021-03-08", research_start="2021
                              "upstream_retrieved_at": snapshot.metadata.get("updated_at"),
                              "cache_metadata_sha256": snapshot.metadata_sha256})
         except Exception as exc:
+            benchmark, calendar = empty_bars(), None
             attempts.append({"symbol": "000905.SH", "status": "BENCHMARK_FAILED",
                              "reason": "%s: %s" % (type(exc).__name__, exc)})
     except Exception as exc:
@@ -450,6 +590,7 @@ def _acquire_pilot_locked(root, history_start="2021-03-08", research_start="2021
     _csv(run / "annual_coverage.csv", pd.DataFrame(annual))
     write_new(run / "coverage.json", _json(coverage))
     write_new(run / "attempts.json", _json(attempts))
+    _archive_benchmark_records(run, benchmark_records)
     for symbol, snapshot, snapshot_cache in cache_snapshots:
         _copy_cache(snapshot, snapshot_cache, symbol, run)
     if recorder is not None:
@@ -486,7 +627,7 @@ def _acquire_pilot_locked(root, history_start="2021-03-08", research_start="2021
         metrics["memory_method"] = "psutil.memory_info rss/Windows peak_wset in bytes"
     except ImportError:
         metrics.update(_stdlib_memory())
-    manifest = {"schema": "FIVE_YEAR_PILOT_MANIFEST_V2", "version": VERSION,
+    manifest = {"schema": "FIVE_YEAR_PILOT_MANIFEST_V3", "version": VERSION,
                 "purpose": "EXPLORATORY", "qualification": "UNVERIFIED",
                 "formal_admission": False, "synthetic_only": synthetic_only,
                 "historical_status": "HISTORICALLY_RECONSTRUCTED", "no_live_money": True,
@@ -497,6 +638,12 @@ def _acquire_pilot_locked(root, history_start="2021-03-08", research_start="2021
                 "supplier_access_limit": None if recorder is None else recorder.access_limit,
                 "price_basis": {"canonical": "RAW", "raw": "RAW", "adj": "HFQ"},
                 "calendar_status": calendar_status, "upstream_vintage": "UNKNOWN_UNVERIFIED",
+                "benchmark_provenance": {"status": "NATIVE_RESPONSE_RECONSTRUCTED" if calendar is not None else "UNAVAILABLE",
+                                         "evidence_index": "benchmark_sources.json", "supplier": "CHINA_SECURITIES_INDEX_COMPANY",
+                                         "interface": "stock_zh_index_hist_csindex", "source_contract": "CSI_INDEX_PERF_16_FIELDS_V1",
+                                         "native_response_sha256": [sha256(record["body"]) for record in benchmark_records],
+                                         "units_status": "PINNED_PROVIDER_CONVERSION_NOT_INDEPENDENT_FINANCIAL_CERTIFICATION",
+                                         "calendar_scope": CALENDAR_SCOPE},
                 "source_contract": {"stock_vendor": "EASTMONEY", "capture": "RecordingAKShare native HTTP response bytes",
                                     "vendor_units": {"price": "CNY", "volume": "HANDS_100_SHARES", "amount": "CNY", "turnover": "PERCENT"},
                                     "benchmark_basis": "CSI500_PRICE_INDEX_UNADJUSTED",
@@ -529,7 +676,7 @@ def _acquire_pilot_locked(root, history_start="2021-03-08", research_start="2021
     manifest["data_version"] = manifest_version(manifest)
     manifest_path = run / "manifest.json"
     write_new(manifest_path, _json(manifest))
-    receipt = {"schema": "FIVE_YEAR_PILOT_RECEIPT_V2", "purpose": "EXPLORATORY",
+    receipt = {"schema": "FIVE_YEAR_PILOT_RECEIPT_V3", "purpose": "EXPLORATORY",
                "qualification": "UNVERIFIED", "formal_admission": False,
                "manifest_sha256": sha256_file(manifest_path), "data_version": manifest["data_version"],
                "artifact_hashes": {name: item["sha256"] for name, item in files.items()},
@@ -571,7 +718,8 @@ def _verify_native_sources(root, manifest, sample):
             raise ValueError("native source receipt/response hash mismatch")
         acquired = _instant(entry["retrieved_at"])
         requested = _instant(entry.get("requested_at", entry["retrieved_at"]))
-        if not frozen <= requested <= acquired <= retrieved:
+        stock_interface = entry.get("interface") == "stock_zh_a_hist"
+        if not requested <= acquired <= retrieved or (stock_interface and requested < frozen):
             raise ValueError("native source acquisition timestamp predates freeze or exceeds snapshot")
         if entry.get("upstream_vintage") != "UNKNOWN_UNVERIFIED":
             raise ValueError("native receipt cannot assert an unproved upstream vintage")
@@ -733,6 +881,24 @@ def _verify_structured_snapshot(root, manifest, sample, legacy):
     if actual_dates.tz is not None or not actual_dates.equals(actual_dates.normalize()):
         raise ValueError("actual calendar requires timezone-naive midnight dates")
     calendar = TradingCalendar(actual_dates)
+    if manifest["schema"] == "FIVE_YEAR_PILOT_MANIFEST_V3":
+        native_records = _read_archived_benchmark_records(root, manifest)
+        provenance = manifest.get("benchmark_provenance", {})
+        expected_status = "NATIVE_RESPONSE_RECONSTRUCTED" if len(calendar) else "UNAVAILABLE"
+        if (provenance.get("status") != expected_status or provenance.get("evidence_index") != "benchmark_sources.json"
+                or provenance.get("supplier") != "CHINA_SECURITIES_INDEX_COMPANY"
+                or provenance.get("interface") != "stock_zh_index_hist_csindex"
+                or provenance.get("source_contract") != "CSI_INDEX_PERF_16_FIELDS_V1"
+                or provenance.get("units_status") != "PINNED_PROVIDER_CONVERSION_NOT_INDEPENDENT_FINANCIAL_CERTIFICATION"
+                or provenance.get("calendar_scope") != CALENDAR_SCOPE
+                or manifest.get("calendar_status") != ("ACTUAL_BENCHMARK_CALENDAR_AVAILABLE" if len(calendar) else "CALENDAR_UNAVAILABLE")
+                or provenance.get("native_response_sha256") != [sha256(item["body"]) for item in native_records]):
+            raise ValueError("benchmark native provenance/units/status binding mismatch")
+        if len(calendar):
+            rebuilt = _reconstruct_benchmark(native_records, history, end, manifest["retrieved_at"], manifest["synthetic_only"])
+            pd.testing.assert_frame_equal(benchmark[list(CANONICAL_BAR_COLUMNS)].reset_index(drop=True),
+                                          rebuilt[list(CANONICAL_BAR_COLUMNS)].reset_index(drop=True),
+                                          check_dtype=False, check_exact=True)
     good = manifest["statuses"]["software"] == "SOFTWARE_SUCCESS"
     if manifest["statuses"]["software"] not in {"SOFTWARE_SUCCESS", "SOFTWARE_FAILED"}:
         raise ValueError("unknown software status")
@@ -844,7 +1010,7 @@ def _verify_structured_snapshot(root, manifest, sample, legacy):
         pd.testing.assert_frame_equal(selected, expected[list(CANONICAL_BAR_COLUMNS)].reset_index(drop=True), check_dtype=False, check_exact=True)
 
 
-def verify_pilot(manifest_path, allow_synthetic=False):
+def verify_pilot(manifest_path, allow_synthetic=False, with_verification=False):
     """Replay local hashes and safety classification; never certify market facts."""
     path = safe_path(Path(manifest_path))
     root = path.parent
@@ -852,12 +1018,18 @@ def verify_pilot(manifest_path, allow_synthetic=False):
     receipt = json.loads((root / "receipt.json").read_text(encoding="utf-8"))
     assert_exploratory_only(manifest)
     assert_exploratory_only(receipt)
-    legacy = manifest.get("schema") == "FIVE_YEAR_PILOT_MANIFEST_V1"
-    expected_receipt = "FIVE_YEAR_PILOT_RECEIPT_V1" if legacy else "FIVE_YEAR_PILOT_RECEIPT_V2"
-    if manifest.get("schema") not in {"FIVE_YEAR_PILOT_MANIFEST_V1", "FIVE_YEAR_PILOT_MANIFEST_V2"} or receipt.get("schema") != expected_receipt:
+    versions = {"FIVE_YEAR_PILOT_MANIFEST_V1": "five-year-minimal-ingestion-v1",
+                "FIVE_YEAR_PILOT_MANIFEST_V2": "five-year-minimal-ingestion-v2",
+                "FIVE_YEAR_PILOT_MANIFEST_V3": VERSION}
+    schema = manifest.get("schema")
+    legacy = schema == "FIVE_YEAR_PILOT_MANIFEST_V1"
+    expected_receipt = schema.replace("MANIFEST", "RECEIPT") if schema in versions else None
+    if schema not in versions or receipt.get("schema") != expected_receipt:
         raise ValueError("unsupported pilot manifest or receipt")
-    if manifest.get("version") != ("five-year-minimal-ingestion-v1" if legacy else VERSION):
+    if manifest.get("version") != versions[schema]:
         raise ValueError("pilot schema and calculation version disagree")
+    if schema != "FIVE_YEAR_PILOT_MANIFEST_V3" and "benchmark_provenance" in manifest:
+        raise ValueError("legacy benchmark provenance is cache-only; native assertions require V3 source replay")
     if type(manifest.get("synthetic_only")) is not bool or receipt.get("synthetic_only") is not manifest["synthetic_only"]:
         raise ValueError("explicit consistent synthetic classification required")
     if manifest["synthetic_only"] and not allow_synthetic:
@@ -891,7 +1063,10 @@ def verify_pilot(manifest_path, allow_synthetic=False):
         _verify_structured_snapshot(root, manifest, sample, legacy)
     except (AssertionError, KeyError, TypeError) as exc:
         raise ValueError("structured pilot snapshot mismatch: " + str(exc)) from exc
-    return manifest
+    verification = {"calendar_origin": "NATIVE_RESPONSE_RECONSTRUCTED" if schema == "FIVE_YEAR_PILOT_MANIFEST_V3" and manifest["benchmark_provenance"]["status"] == "NATIVE_RESPONSE_RECONSTRUCTED"
+                    else "UNAVAILABLE" if schema == "FIVE_YEAR_PILOT_MANIFEST_V3" else "CACHE_ONLY_NOT_NATIVE_VERIFIED",
+                    "independent_exchange_calendar_completeness": "UNVERIFIED", "formal_admission": False}
+    return {"manifest": manifest, "verification": verification} if with_verification else manifest
 
 
 def main(argv=None):
@@ -902,6 +1077,7 @@ def main(argv=None):
     acquire = commands.add_parser("acquire", help="fetch bounded RAW/HFQ pilot and immutable receipts")
     acquire.add_argument("--root", required=True, type=Path)
     acquire.add_argument("--benchmark-cache", type=Path)
+    acquire.add_argument("--benchmark-evidence-root", type=Path)
     acquire.add_argument("--history-start", default="2021-03-08")
     acquire.add_argument("--research-start", default="2021-09-13")
     acquire.add_argument("--research-end", default="2026-09-11")
@@ -915,11 +1091,13 @@ def main(argv=None):
         print(json.dumps({"sample": str(args.root / "sample.json"), "symbols": sample["symbols"], "pit": False}))
         return 0
     if args.command == "verify":
-        result = verify_pilot(args.manifest)
-        print(json.dumps({"verified": True, "statuses": result["statuses"], "formal_admission": False}))
+        result = verify_pilot(args.manifest, with_verification=True)
+        print(json.dumps({"verified": True, "statuses": result["manifest"]["statuses"],
+                          "verification": result["verification"], "formal_admission": False}))
         return 0
     result = acquire_pilot(args.root, history_start=args.history_start, research_start=args.research_start,
                            research_end=args.research_end, benchmark_cache_root=args.benchmark_cache,
+                           benchmark_evidence_root=args.benchmark_evidence_root,
                            timeout_seconds=args.timeout_seconds, retry_count=args.retry_count)
     print(json.dumps({key: result[key] for key in ("manifest_path", "receipt_path", "statuses", "metrics")}))
     return 0 if result["statuses"]["software"] == "SOFTWARE_SUCCESS" else 2

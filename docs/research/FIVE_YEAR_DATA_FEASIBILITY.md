@@ -2,7 +2,8 @@
 
 2026-10-15，Windows 11 / Python 3.9.25，**NO LIVE MONEY**。
 研究区间：2021-09-13 至 2026-09-11；观察日历预热区间从2021-03-08开始。
-分支：`codex/five-year-data-feasibility`，独立PR请求审查，不自行合并。
+分支：`codex/five-year-data-feasibility`，[独立PR #6](https://github.com/Wind-Maker1001/quant-tv/pull/6)
+请求审查，不自行合并；最终完整研究与静态CI以[当前HEAD检查](https://github.com/Wind-Maker1001/quant-tv/pull/6/checks)为准。
 
 ## 结论与资格边界
 
@@ -41,6 +42,9 @@
 可复用的是FactorLab既有18列Schema、AKShare Provider、原始响应记录器、
 ParquetBarCache v3不可变generation/原子metadata指针、真实观察日历、来源覆盖/失败收据和官方公告复核工具。
 已有CSI500价格指数缓存1,341行，等于130预热日加1,211研究日；本轮只读它，不写正式基准缓存。
+独立PR审查指出，旧缓存的本地哈希不能替代原生指数响应绑定。
+随后一次公开CSI行情请求实际取得1,341行原始响应，新取数时点逐值重建后与旧缓存日期、四价、量额完全一致。
+这次新证据不追认旧获取时点的原HTTP、不证明历史vintage或完整交易所休市日历。
 TDX旧staging、50股2025—2026探索输入、单股八日HFQ证据均保持其原资格，未重命名晋升。
 
 ## 冻结样本与真实接入
@@ -50,7 +54,7 @@ TDX旧staging、50股2025—2026探索输入、单股八日HFQ证据均保持其
 没有依据未来收益、既有RankIC或当前存活筛选，没有用成功样本替换失败样本。
 这是人工已知名称偏差和工程选择偏差的样本，不代表无偏历史股票池。
 
-冻结中的`601059`上市年份原是未核验的2021年假设；本轮官方证据纠正为2023-02-01。
+冻结中的`601059`上市年份原是未核验的2021年假设；官方上市公告安排为2023-02-01，且取得的行情从该日开始。
 冻结文件和SHA保留原样，用新报告记录差异。001289证实为2022-01-24。
 身份事件事实不等于完整历史证券身份和逐日状态认证。
 
@@ -72,9 +76,9 @@ TDX旧staging、50股2025—2026探索输入、单股八日HFQ证据均保持其
 公告事件解释放在独立证据中，不据此补全价格或状态链。
 所有10只保留在面板，RAW与HFQ不跨源拼接。
 
-![月度覆盖](evidence/five-year-data-feasibility-v1/pilot-v2/coverage-monthly.png)
+![月度覆盖](evidence/five-year-data-feasibility-v1/pilot-v3-final/coverage-monthly.png)
 
-![年度缺失](evidence/five-year-data-feasibility-v1/pilot-v2/missing-annual.png)
+![年度缺失](evidence/five-year-data-feasibility-v1/pilot-v3-final/missing-annual.png)
 
 图的分子是8个RAW/HFQ OHLC字段均存在的实际观察数，分母来自本轮读取的真实基准日历；
 2021及2026为局部年度。CSV给出逐月分子、分母、缺失数；缺失比例不作为证券状态证明。
@@ -87,7 +91,7 @@ TDX旧staging、50股2025—2026探索输入、单股八日HFQ证据均保持其
 | TDX本地DAY | 读取10个冻结代码路径；8份原字节可解码，2份历史退出样本文件缺失；8份研究覆盖与Eastmoney对应行数一致 | 候选RAW，无HFQ/turnover | 原文件设置、价格尺度、单位、历史身份未认证；本地解码不构成独立HFQ参考 | 8/10可读取，2/10本地缺失；不联网，不改原文件，失败也保留收据 |
 | 腾讯公共HTTP | 冻结子集600000/688981/000961，各RAW/HFQ，共6请求；RAW研究观察1,211/1,205/637 | 600000 HFQ只返回640行；000961 HFQ637；688981缺明确hfqday键而拒绝 | 同厂商只作独立上游候选，底层血缘未知；没有把day回退冒充HFQ，也未认证算法 | 6次均HTTP200，5次固定布局可解析；HFQ请求截断不等于五年完整；1秒间隔、10秒timeout、无重试 |
 | 搜狐公共HTTP | 同三只各RAW，共3请求；000961成功637研究日 | RAW参考候选，无本轮HFQ | 600000返回1,341行、688981返回1,335行原记录，但存在10/11字段布局漂移，保持SOURCE_SHAPE_UNVERIFIED | 3次均HTTP200；2次本地布局审计拒绝，不谎称网络不可达或供应商无历史；不猜测额外字段含义 |
-| CSI500价格指数缓存 | 严格读取既有v3原字节/metadata；1,341日 | 价格指数，不是个股HFQ | 实际观察日历可复用；并非完整休市/vintage独立认证 | 本轮0指数HTTP；不修改旧缓存 |
+| CSI500价格指数 | 旧v3缓存1,341日；新增一次原生CSI行情响应1,341行，逐值重建并核对日期/四价/量额 | 价格指数，不是个股HFQ | 新获取时点原生字节→缓存→观察日历绑定；并非完整休市/vintage独立认证 | 本轮1次公开价格接口HTTP200、471,781字节、约0.57秒；不修改旧正式缓存 |
 | BaoStock | 本轮复核官方文档与既有匿名查询原收据，不重新下载五年行情 | 文档有不复权/复权及tradestatus/isST，未在本轮接入 | 周一成分快照不具备实际日级PIT；起点既有观察499，不能补一只冒充500 | 可用旧公共源探针证据；本轮不声称新增匿名日线/状态查询成功 |
 | 官方CSI/交易所/发行人公告 | 10定期附件、4临时或条件事件及定向身份事件；详见PIT报告 | 事件证据，不是行情 | 实际PIT区间仍未认证，当前字节不保证历史vintage | 本轮0新的CSI正文HTTP；不绕过已有403停止；新身份8次GET为7原件成功、1失败 |
 | 新浪因子/TDX GBBQ及商业源 | 仅复核既有资产和合同；未新调用付费接口 | 因子观察/未认证事件候选 | 不提供完整独立公司行为、算法及锚点证明 | 未购买、未借用权限、未绕过访问限制；未取得来源不能列为已接入 |
@@ -142,28 +146,42 @@ HFQ仍缺：适用全历史的实施事件和更正版本、独立历史锚点�
 每次生成新的run目录、manifest和独立receipt；保存原HTTP内容字节、本地SHA、
 获取时间/请求参数、缓存generation和原metadata快照、实际日历、失败/空结果和每段缺失区间。
 V1真实初次采集原收据不改；V2将metadata原字节精确绑定并增强逐字段复读。
+V1/V2的日历来源只能标记为`CACHE_ONLY_NOT_NATIVE_VERIFIED`；新取得的原生指数响应不能回填旧获取证据。
+V3另外绑定原始指数receipt/body，验证公开CSI价格接口、请求代码/日期、响应状态、16字段布局及单位转换，
+重构canonical18列，再逐日核对缓存与日历。缺少匹配原生证据时保持`CALENDAR_UNAVAILABLE`。
+本次指数原始字节SHA为`e0e94b565c1781fabd097363f9910de6838a5364d41f75f1ae4f15725f97d312`。
 复跑只复用成功请求/原响应，独立新run不会覆盖历史证据。
 整个试点根目录复用既有缓存的OS锁串行化，竞争进程在构造响应记录器和发HTTP前明确拒绝，
 避免失败后再次取数的编号碰撞；锁文件保留，由OS释放锁所有权。
 本地哈希证明同一字节，不是供应商签名或历史真实性保证。
 
 ```powershell
-.venv-py39\python.exe -m qbot.research.exploratory.five_year freeze --root data/research/five-year-pilot/20261015-v1
-.venv-py39\python.exe -m qbot.research.exploratory.five_year acquire --root data/research/five-year-pilot/20261015-v1 --benchmark-cache data/research/benchmark --history-start 2021-03-08 --research-start 2021-09-13 --research-end 2026-09-11 --timeout-seconds 10 --retry-count 0
+.venv-py39\python.exe -m qbot.research.exploratory.five_year freeze --root data/research/five-year-pilot/20261015-reproduction-v1
+.venv-py39\python.exe -m qbot.research.exploratory.five_year acquire --root data/research/five-year-pilot/20261015-reproduction-v1 --history-start 2021-03-08 --research-start 2021-09-13 --research-end 2026-09-11 --timeout-seconds 10 --retry-count 0
 .venv-py39\python.exe -m qbot.research.exploratory.five_year verify --manifest <独立run的manifest.json>
 ```
 
-原字节在忽略的`data/research/five-year-pilot/20261015-v1/`及独立supplier-audit目录；
+外部基准缓存必须同时提供匹配原响应的`--benchmark-evidence-root`，否则不能产生V3可用日历。
+本轮原字节在忽略的`data/research/five-year-pilot/20261015-v1/`、
+`20261015-native-calendar-v1/`及独立supplier-audit目录；新根目录逐字节复制冻结样本和已取得的股票证据，
+另存复制收据，不覆盖旧run。
 公开checkout可重放虚构软件回归，不能仅凭公开SHA下载或认证私有原行情。
-[公开派生摘要/原响应SHA索引](evidence/five-year-data-feasibility-v1/pilot-v2/summary.json)、
-[派生文件收据](evidence/five-year-data-feasibility-v1/pilot-v2/publication-receipt.json)
-和[最终验证](evidence/five-year-data-feasibility-v1/validation.json)定位版本和实际验证范围。
+[公开派生摘要/原响应SHA索引](evidence/five-year-data-feasibility-v1/pilot-v3-final/summary.json)、
+[派生文件收据](evidence/five-year-data-feasibility-v1/pilot-v3-final/publication-receipt.json)
+和[验证收据与完整CI入口](evidence/five-year-data-feasibility-v1/validation-v2.json)定位版本和实际验证范围。
+V3最终实测数据版本为`477b285aa23f90eb5fc3705a849b641c68d6e5e674d0e105636ee751abd1def4`，
+独立run为`20261015T065248712015Z-6c8a10d4`；原生指数、股票缓存与面板均成功复核。
+中间V3派生和原V1/V2收据继续保留，不以新源码身份覆盖旧版本。
 
 验证不只检查自报哈希，还重读原响应，复核代码/日期/RAW-HFQ角色、单位转换、缓存及面板逐字段关系、
 真实日历、完整冻结样本、缺失UNKNOWN状态、覆盖率、预热和t+6成熟度。
 离线反例涵盖篡改后重算本地SHA、错误身份、日期、重复键、单位、非法布局、资格升级、下载失败、
 限频停止、样本替换、旧版本兼容与缓存零HTTP复跑。完整研究CI涵盖原Golden和全部研究边界测试，
 软件覆盖率不作为金融准入分数。
+
+Windows完整回归使用与仓库同为D盘、且位于checkout外的新建`--basetemp`目录。
+默认C盘TEMP会让两项既有跨目录相对路径测试在`os.path.relpath`处失败；
+失败记录保留，没有修改这些冻结测试或放宽门禁。完整CI同时验证实际JUnit/coverage和配置审计。
 
 ## 预热、标签和研究验证设计
 
@@ -189,6 +207,8 @@ DataFrame deep memory为8,199,137字节（约7.82 MiB），一次run证据快照
 V2缓存复跑采用Windows原生GetProcessMemoryInfo测得的当前/生命周期Peak Working Set，见最终收据；
 生命周期峰值包括SDK导入，不能解释为接入步骤独占增量。
 已完成的V2复跑约4.18秒、0个新HTTP响应，Working Set及生命周期峰值均为158,412,800字节（约151.07 MiB）。
+最终V3在原生指数响应重建日历后复跑约2.71秒、0个新HTTP，Working Set及生命周期峰值160,358,400字节
+（约152.93 MiB），一次run快照7,324,075字节；新增原生指数及其绑定证据也纳入快照。
 
 | 扩展项目 | 可复核估算及限制 |
 | --- | --- |
@@ -197,7 +217,7 @@ V2缓存复跑采用Windows原生GetProcessMemoryInfo测得的当前/生命周�
 | 当前面板量级 | 13,410格点约8.20 MB线性放大50倍约410 MB deep memory；副本、索引、SDK/Arrow、原响应、39表达式中间量另计 |
 | 既有规模证据 | 旧合成500×1,200研究软件实验约320 MiB数据集、优化评价生命周期峰值约1,100 MiB；是历史合成测量，不是本轮真实500股实验 |
 | 采集时间 | 约1,000次RAW/HFQ请求，0.5秒间隔本身约8.3分钟；本次吞吐线性外推约12分钟，健康网络可按10—30分钟规划；限频、重试/超时可至小时，均非供应商SLA或全任务硬上限 |
-| 磁盘 | 本次run约6.17 MB×50约308 MB，仅一个证据快照；原始sources/live cache/多个不可变run还需额外空间。先按1—3 GiB工作空间规划再实测，不删除旧证据省空间 |
+| 磁盘 | V3单run约7.32 MB，简单放大50倍约366 MB（其中指数证据是共享常量，因此不是精确预测）；原始sources/live cache/多个不可变run还需额外空间。先按1—3 GiB工作空间规划再实测，不删除旧证据省空间 |
 | 因子预算 | 冻结DiscoveryConfig的max_panel_rows=250,000，直接600,000+超界。本轮不放宽；下一轮固定表达式回溯须分块/跨块130日预热/正确横截面合并并验证等价性，无新搜索 |
 | 人工/数据费用 | 无付费接口调用或采购。本次没有可验证的商业数据报价，金额UNKNOWN。人工补全PIT、事件/修订、授权与身份状态预计远高于这次小规模下载；应按证据批次估工，不承诺交期 |
 

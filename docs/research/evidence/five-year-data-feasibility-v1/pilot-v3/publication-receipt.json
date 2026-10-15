@@ -1,0 +1,29 @@
+{
+  "created_at": "2026-10-15T06:47:30.043398+00:00",
+  "data_version": "c529b012d95ce7f16de5a3ee9b260bb1a119baea836e6ddea5385af05eb1e6ba",
+  "files": {
+    "coverage-monthly.csv": {
+      "bytes": 30075,
+      "sha256": "748b46abd3acbeaf1360c4b29fc2632ef591197fd84b460cf7de60ca828f0531"
+    },
+    "coverage-monthly.png": {
+      "bytes": 106277,
+      "sha256": "65aa218d8a67ffb7d79c16226e284e1ce03a12882ee0eed74d422c3fefecf4c8"
+    },
+    "missing-annual.csv": {
+      "bytes": 1946,
+      "sha256": "c9437f3f26f69f90ce61f23027f448a3cebb720ffe3f82e02beff593f9205163"
+    },
+    "missing-annual.png": {
+      "bytes": 116674,
+      "sha256": "44942287d1661eafd8b0a44192352b7a66b4ce7619f77a7aaae345254059fe52"
+    },
+    "summary.json": {
+      "bytes": 53288,
+      "sha256": "ef61d5cfb75f1c7c3107f993d1e448611cdd723f66f057614bda3055fd07d643"
+    }
+  },
+  "formal_admission": false,
+  "native_data_published": false,
+  "schema": "FIVE_YEAR_DERIVED_PUBLICATION_RECEIPT_V1"
+}

@@ -258,7 +258,7 @@ def test_v2_cache_metadata_is_exact_original_snapshot_bytes(semantic_snapshot):
     copied = root / "evidence/cache/600000.SH.metadata.json"
     assert original.read_bytes() == copied.read_bytes()
     manifest = pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
-    assert manifest["schema"] == "FIVE_YEAR_PILOT_MANIFEST_V2"
+    assert manifest["schema"] == "FIVE_YEAR_PILOT_MANIFEST_V3"
     assert "authorized_use" not in manifest["source_contract"]
     assert "no commercial/redistribution grant established" in manifest["source_contract"]["authorization_evidence"]
 
@@ -390,6 +390,7 @@ def test_legacy_v1_receipts_remain_replayable_without_rewriting_evidence(semanti
     def legacy(value):
         value["schema"] = "FIVE_YEAR_PILOT_MANIFEST_V1"
         value["version"] = "five-year-minimal-ingestion-v1"
+        value.pop("benchmark_provenance")
 
     rebind_local_hashes(result, legacy)
     receipt_path = Path(result["receipt_path"])
@@ -397,7 +398,9 @@ def test_legacy_v1_receipts_remain_replayable_without_rewriting_evidence(semanti
     receipt["schema"] = "FIVE_YEAR_PILOT_RECEIPT_V1"
     receipt_path.write_text(json.dumps(receipt))
     original = {path.name: path.read_bytes() for path in root.iterdir() if path.is_file()}
-    assert pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)["schema"] == "FIVE_YEAR_PILOT_MANIFEST_V1"
+    verified = pilot.verify_pilot(result["manifest_path"], allow_synthetic=True, with_verification=True)
+    assert verified["manifest"]["schema"] == "FIVE_YEAR_PILOT_MANIFEST_V1"
+    assert verified["verification"]["calendar_origin"] == "CACHE_ONLY_NOT_NATIVE_VERIFIED"
     assert {path.name: path.read_bytes() for path in root.iterdir() if path.is_file()} == original
 
 
@@ -428,13 +431,17 @@ def test_explicit_supplier_denial_stops_http_even_with_provider_retry_one(tmp_pa
 def test_later_supplier_denial_keeps_prior_data_and_reads_local_benchmark_cache(tmp_path, synthetic_transport):
     calls, mode = synthetic_transport
     benchmark_cache = tmp_path / "prior-authorized-benchmark"
-    provider = AKShareProvider(akshare_module=SyntheticSDK(), request_interval=0, retry_count=0)
+    benchmark_evidence = tmp_path / "prior-benchmark-native-evidence"
+    benchmark_evidence.mkdir()
+    recorder = pilot.RecordingAKShare(SyntheticSDK(), benchmark_evidence)
+    provider = AKShareProvider(akshare_module=recorder, request_interval=0, retry_count=0)
     pilot.ParquetBarCache(benchmark_cache).update_from_provider(
         provider, "000905.SH", "2021-03-08", "2021-09-20", is_index=True)
     calls.clear()
     mode.update(deny_code="300750", deny_status=429)
     result = pilot.acquire_pilot(tmp_path / "pilot", research_end="2021-09-20", akshare_module=SyntheticSDK(),
                                   synthetic_only=True, retry_count=1, benchmark_cache_root=benchmark_cache,
+                                  benchmark_evidence_root=benchmark_evidence,
                                   progress=lambda value: None)
     assert len(calls) == 9  # Four paired successes, then one preserved denial.
     assert result["statuses"]["data"] == "EXPLORATORY_DATA_AVAILABLE"
@@ -509,44 +516,68 @@ pilot.acquire_pilot(Path(sys.argv[1]))
     pilot.verify_pilot(second["manifest_path"], allow_synthetic=True)
 
 
+class NativeLayoutSDK(SyntheticSDK):
+    """Local mock SDK with the production Eastmoney/CSI response layouts."""
+
+    def stock_zh_a_hist(self, **kwargs):
+        code = kwargs["symbol"]
+        params = {"secid": ("1." if code.startswith(("5", "6", "9")) else "0.") + code,
+                  "fqt": "2" if kwargs["adjust"] == "hfq" else "0", "klt": "101",
+                  "beg": kwargs["start_date"], "end": kwargs["end_date"]}
+        payload = requests.get("https://push2his.eastmoney.com/api/qt/stock/kline/get",
+                               params=params, timeout=kwargs["timeout"]).json()
+        if payload["data"] is None:
+            return pd.DataFrame()
+        return pd.DataFrame([row.split(",") for row in payload["data"]["klines"]],
+                            columns=("日期", "开盘", "收盘", "最高", "最低", "成交量", "成交额", "振幅", "涨跌幅", "涨跌额", "换手率"))
+
+    def stock_zh_index_hist_csindex(self, **kwargs):
+        payload = requests.get("https://www.csindex.com.cn/csindex-home/perf/index-perf",
+                               params={"indexCode": kwargs["symbol"], "startDate": kwargs["start_date"], "endDate": kwargs["end_date"]}).json()
+        frame = pd.DataFrame(payload["data"], columns=pilot.CSI_NATIVE_FIELDS)
+        frame.columns = pilot.CSI_VENDOR_COLUMNS
+        return frame
+
+
 @pytest.fixture
-def native_null_snapshot(tmp_path, synthetic_transport, monkeypatch):
-    """SYNTHETIC_TEST_ONLY: mock the exact public URL and {rc:0,data:null} ABI."""
-    benchmark_cache = tmp_path / "fixture-benchmark"
-    provider = AKShareProvider(akshare_module=SyntheticSDK(), request_interval=0, retry_count=0)
-    pilot.ParquetBarCache(benchmark_cache).update_from_provider(
-        provider, "000905.SH", "2021-03-08", "2021-09-20", is_index=True)
-
-    class NativeNullSDK(SyntheticSDK):
-        def stock_zh_a_hist(self, **kwargs):
-            code = kwargs["symbol"]
-            params = {"secid": ("1." if code.startswith(("5", "6", "9")) else "0.") + code,
-                      "fqt": "2" if kwargs["adjust"] == "hfq" else "0", "klt": "101",
-                      "beg": kwargs["start_date"], "end": kwargs["end_date"]}
-            payload = requests.get("https://push2his.eastmoney.com/api/qt/stock/kline/get",
-                                   params=params, timeout=kwargs["timeout"]).json()
-            assert payload == {"rc": 0, "data": None}
-            return pd.DataFrame()  # Actual AKShare stock_zh_a_hist empty-response behavior.
-
-    calls = []
+def native_transport(synthetic_transport, monkeypatch):
+    """No network: reproduce actual supplier JSON layouts with local fake values."""
+    calls, mode = [], {"stock_null": False}
 
     def mocked_native_request(session, method, url, **options):
-        assert url == "https://push2his.eastmoney.com/api/qt/stock/kline/get"
-        calls.append(dict(options["params"]))
+        params = options["params"]
+        calls.append((url, dict(params)))
+        if url == "https://www.csindex.com.cn/csindex-home/perf/index-perf":
+            rows = [dict(zip(pilot.CSI_NATIVE_FIELDS, (day.replace("-", ""), "000905", "fixture", "fixture", "fixture", "fixture",
+                                                      10., 12., 9., 11., 0., 0., 10., 0.0011, 500., 10.))) for day in DATES]
+            payload = {"code": "200", "msg": "Success", "data": rows, "success": True}
+        else:
+            assert url == "https://push2his.eastmoney.com/api/qt/stock/kline/get"
+            if mode["stock_null"]:
+                payload = {"rc": 0, "data": None}
+            else:
+                multiplier = 2 if params["fqt"] == "2" else 1
+                rows = [",".join(str(value) for value in (day, 10 * multiplier, 11 * multiplier, 12 * multiplier, 9 * multiplier,
+                                                           10, 11000, 0, 0, 0, 2)) for day in DATES]
+                payload = {"rc": 0, "data": {"code": params["secid"][2:], "market": int(params["secid"][0]), "klines": rows}}
         response = requests.Response()
         response.status_code = 200
-        response.url = requests.Request(method, url, params=options["params"]).prepare().url
-        response._content = b'{"rc":0,"data":null}'
+        response.url = requests.Request(method, url, params=params).prepare().url
+        response._content = json.dumps(payload).encode("utf-8")
         response.headers["Content-Type"] = "application/json"
         return response
 
     monkeypatch.setattr(requests.sessions.Session, "request", mocked_native_request)
-    # The production contract branch is deliberate; no HTTP leaves this mocked
-    # transport and no stock prices are generated. Fixture benchmark stays local.
+    return calls, mode
+
+
+@pytest.fixture
+def native_null_snapshot(tmp_path, native_transport):
+    """Exercise the real data:null parser; all network/body bytes are mocked."""
+    native_transport[1]["stock_null"] = True
     result = pilot.acquire_pilot(tmp_path / "native-null-pilot", research_end="2021-09-20",
-                                  akshare_module=NativeNullSDK(), benchmark_cache_root=benchmark_cache,
-                                  progress=lambda value: None)
-    assert len(calls) == 20
+                                  akshare_module=NativeLayoutSDK(), progress=lambda value: None)
+    assert len(native_transport[0]) == 21
     return result
 
 
@@ -589,3 +620,158 @@ def test_native_data_null_cannot_prove_a_nonempty_cache_after_local_hash_rebindi
     rebind_local_hashes(result)
     with pytest.raises(ValueError, match="cached dates are absent from native source response"):
         pilot.verify_pilot(result["manifest_path"])
+
+
+@pytest.fixture
+def native_csi_snapshot(tmp_path, native_transport):
+    return pilot.acquire_pilot(tmp_path / "native-csi-layout", research_end="2021-09-20",
+                               akshare_module=NativeLayoutSDK(), progress=lambda value: None)
+
+
+def test_native_csi_layout_binds_dates_prices_units_and_calendar(native_csi_snapshot):
+    result = native_csi_snapshot
+    report = pilot.verify_pilot(result["manifest_path"], with_verification=True)
+    manifest = report["manifest"]
+    assert report["verification"]["calendar_origin"] == "NATIVE_RESPONSE_RECONSTRUCTED"
+    assert report["verification"]["independent_exchange_calendar_completeness"] == "UNVERIFIED"
+    assert manifest["benchmark_provenance"]["status"] == "NATIVE_RESPONSE_RECONSTRUCTED"
+    assert len(manifest["benchmark_provenance"]["native_response_sha256"]) == 1
+    benchmark = pd.read_parquet(Path(result["manifest_path"]).parent / "benchmark.parquet")
+    assert benchmark["date"].dt.strftime("%Y-%m-%d").tolist() == DATES
+    assert benchmark["volume"].eq(10).all() and benchmark["amount"].eq(110000).all()
+    assert benchmark["turnover"].isna().all() and benchmark["adj_factor"].eq(1).all()
+    for field in ("open", "high", "low", "close"):
+        assert benchmark[field].equals(benchmark["raw_" + field])
+        assert benchmark[field].equals(benchmark["adj_" + field])
+
+
+def _replace_benchmark_products(result, benchmark):
+    root = Path(result["manifest_path"]).parent
+    benchmark.to_parquet(root / "benchmark.parquet", index=False)
+    cached = root / "evidence/cache/000905.SH.parquet"
+    benchmark.to_parquet(cached, index=False)
+    metadata_path = root / "evidence/cache/000905.SH.metadata.json"
+    metadata = json.loads(metadata_path.read_text())
+    metadata.update(content_sha256=sha256_file(cached), row_count=len(benchmark),
+                    data_start=benchmark["date"].min().strftime("%Y-%m-%d"), data_end=benchmark["date"].max().strftime("%Y-%m-%d"))
+    metadata_path.write_text(json.dumps(metadata))
+    attempts_path = root / "attempts.json"
+    attempts = json.loads(attempts_path.read_text())
+    index = next(item for item in attempts if item["symbol"] == "000905.SH")
+    index.update(cache_metadata_sha256=sha256_file(metadata_path), observed_rows=len(benchmark))
+    attempts_path.write_text(json.dumps(attempts))
+
+
+@pytest.mark.parametrize("case", ["price", "extra-session"])
+def test_rehashed_benchmark_cache_and_calendar_must_match_fixed_native_response(native_csi_snapshot, case):
+    result = native_csi_snapshot
+    root = Path(result["manifest_path"]).parent
+    benchmark = pd.read_parquet(root / "benchmark.parquet")
+    mutate = None
+    if case == "price":
+        for field in ("close", "raw_close", "adj_close"):
+            benchmark[field] = 11.1
+    else:
+        extra = benchmark.iloc[[0]].copy()
+        extra["date"] = pd.Timestamp("2021-03-10")
+        benchmark = pd.concat([benchmark, extra]).sort_values(["date", "symbol"]).reset_index(drop=True)
+        sessions = pd.DatetimeIndex(benchmark["date"])
+        pd.DataFrame({"date": sessions.strftime("%Y-%m-%d")}).to_csv(root / "calendar.csv", index=False)
+        old = pd.read_parquet(root / "bars.parquet")
+        frame = pilot.reindex_bars_to_calendar(old[list(pilot.CANONICAL_BAR_COLUMNS)], sessions, pilot.DEFAULT_SYMBOLS)
+        frame["observation_status"] = frame["raw_close"].map(lambda value: "MISSING_REASON_UNKNOWN" if pd.isna(value) else "OBSERVED_VENDOR_BAR")
+        frame["historical_security_state"], frame["hfq_qualification"] = "UNVERIFIED", "HFQ_UNVERIFIED"
+        frame["source_version"], frame["calculation_version"] = old["source_version"].iloc[0], pilot.VERSION
+        frame.to_parquet(root / "bars.parquet", index=False)
+        coverage, annual = pilot._coverage(frame, sessions, pilot.DEFAULT_SYMBOLS, pd.Timestamp("2021-09-13"), pd.Timestamp("2021-09-20"))
+        (root / "coverage.json").write_text(json.dumps(coverage))
+        pd.DataFrame(annual).to_csv(root / "annual_coverage.csv", index=False)
+
+        def mutate(value):
+            value["metrics"]["panel_rows"] = len(frame)
+            value["warmup"]["available_calendar_sessions"] = 3
+
+    _replace_benchmark_products(result, benchmark)
+    rebind_local_hashes(result, mutate)
+    with pytest.raises(ValueError, match="structured pilot snapshot mismatch"):
+        pilot.verify_pilot(result["manifest_path"])
+
+
+@pytest.mark.parametrize("case", ["url", "http-status", "period", "index-code", "body-price"])
+def test_benchmark_native_url_status_layout_and_body_cannot_be_rebound_to_cache(native_csi_snapshot, case):
+    result = native_csi_snapshot
+    root = Path(result["manifest_path"]).parent
+    index_path = root / "benchmark_sources.json"
+    index = json.loads(index_path.read_text())
+    receipt_path, response_path = root / index[0]["receipt"]["path"], root / index[0]["response"]["path"]
+    entry = json.loads(receipt_path.read_text())
+    if case == "url":
+        entry["url"] = entry["url"].replace("www.csindex.com.cn", "example.invalid")
+    elif case == "http-status":
+        entry["status_code"] = 403
+    elif case == "period":
+        entry["interface_arguments"]["period"] = "weekly"
+    else:
+        payload = json.loads(response_path.read_text())
+        if case == "index-code":
+            payload["data"][0]["indexCode"] = "000300"
+        else:
+            payload["data"][0]["close"] = 11.1
+        response_path.write_text(json.dumps(payload))
+        entry["response_sha256"] = sha256_file(response_path)
+    receipt_path.write_text(json.dumps(entry))
+    index[0] = {"receipt": pilot._item(root, receipt_path), "response": pilot._item(root, response_path)}
+    index_path.write_text(json.dumps(index))
+
+    def mutate(value):
+        value["benchmark_provenance"]["native_response_sha256"] = [sha256_file(response_path)]
+
+    rebind_local_hashes(result, mutate)
+    with pytest.raises(ValueError):
+        pilot.verify_pilot(result["manifest_path"])
+
+
+def test_benchmark_cache_without_native_evidence_cannot_supply_calendar(tmp_path, native_transport):
+    cache = tmp_path / "unproved-cache"
+    provider = AKShareProvider(akshare_module=NativeLayoutSDK(), request_interval=0, retry_count=0)
+    pilot.ParquetBarCache(cache).update_from_provider(provider, "000905.SH", "2021-03-08", "2021-09-20", is_index=True)
+    result = pilot.acquire_pilot(tmp_path / "pilot", research_end="2021-09-20", benchmark_cache_root=cache,
+                                  akshare_module=NativeLayoutSDK(), progress=lambda value: None)
+    report = pilot.verify_pilot(result["manifest_path"], with_verification=True)
+    assert result["statuses"]["software"] == "SOFTWARE_SUCCESS"
+    assert result["statuses"]["data"] == "EXPLORATORY_DATA_UNAVAILABLE"
+    assert report["verification"]["calendar_origin"] == "UNAVAILABLE"
+    assert report["manifest"]["calendar_status"] == "CALENDAR_UNAVAILABLE"
+    assert report["manifest"]["benchmark_provenance"]["status"] == "UNAVAILABLE"
+    root = Path(result["manifest_path"]).parent
+    assert pd.read_csv(root / "calendar.csv").empty
+    assert json.loads((root / "benchmark_sources.json").read_text()) == []
+
+
+def test_v3_calendar_scope_cannot_claim_independent_completeness(native_csi_snapshot):
+    def mutate(value):
+        value["benchmark_provenance"]["calendar_scope"] = "INDEPENDENT_COMPLETE_CALENDAR_CERTIFIED"
+
+    rebind_local_hashes(native_csi_snapshot, mutate)
+    with pytest.raises(ValueError, match="provenance/units/status"):
+        pilot.verify_pilot(native_csi_snapshot["manifest_path"])
+
+
+def test_legacy_schema_cannot_self_assert_native_benchmark_qualification(native_csi_snapshot):
+    result = native_csi_snapshot
+    root = Path(result["manifest_path"]).parent
+    bars = pd.read_parquet(root / "bars.parquet")
+    bars["calculation_version"] = "five-year-minimal-ingestion-v2"
+    bars.to_parquet(root / "bars.parquet", index=False)
+
+    def mutate(value):
+        value["schema"] = "FIVE_YEAR_PILOT_MANIFEST_V2"
+        value["version"] = "five-year-minimal-ingestion-v2"
+
+    rebind_local_hashes(result, mutate)
+    receipt_path = Path(result["receipt_path"])
+    receipt = json.loads(receipt_path.read_text())
+    receipt["schema"] = "FIVE_YEAR_PILOT_RECEIPT_V2"
+    receipt_path.write_text(json.dumps(receipt))
+    with pytest.raises(ValueError, match="legacy benchmark provenance is cache-only"):
+        pilot.verify_pilot(result["manifest_path"], with_verification=True)
