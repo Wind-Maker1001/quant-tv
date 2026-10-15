@@ -107,7 +107,10 @@ the actual membership field. Historical availability is checked separately.
                               not bound(item.get("receipt_relative_path"), item.get("receipt_sha256"))
                               for item in attachments):
         gaps.append("ATTACHMENT_BYTES_OR_RECEIPTS_NOT_BOUND")
-    notice_hashes.update(item.get("raw_content_sha256") for item in attachments)
+    # Retrieval receipts are notice-derived too, even when copied or rehashed.
+    # Neither actual membership nor condition confirmation may reuse them.
+    notice_hashes.update(item.get(key) for item in attachments
+                         for key in ("raw_content_sha256", "receipt_sha256"))
     additions, removals = event.get("candidate_add_count"), event.get("candidate_remove_count")
     if type(additions) is not int or type(removals) is not int or not 1 <= additions == removals <= 500:
         gaps.append("EXPLICIT_BALANCED_DELTA_MISSING")

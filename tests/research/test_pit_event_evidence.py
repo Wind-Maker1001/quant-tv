@@ -104,6 +104,63 @@ def test_independent_actual_must_bind_this_specific_delta(tmp_path, mutation):
     assert audit([event], tmp_path)["events"][0]["actual_effective_member_date"] is None
 
 
+@pytest.mark.parametrize("material", ["body", "attachment", "receipt"])
+@pytest.mark.parametrize("reuse", ["same_path", "same_bytes_other_path", "recomputed_sha"])
+@pytest.mark.parametrize("conditional", [False, True], ids=["actual", "actual_and_trigger"])
+def test_notice_material_cannot_be_reused_as_independent_evidence(tmp_path, material, reuse, conditional):
+    event = fixture(tmp_path)
+    if material == "body":
+        owner, path_key, hash_key = event["source_evidence"], "local_relative_path", "raw_content_sha256"
+    elif material == "attachment":
+        owner, path_key, hash_key = event["attachments"][0], "local_relative_path", "raw_content_sha256"
+    else:
+        owner, path_key, hash_key = event["attachments"][0], "receipt_relative_path", "receipt_sha256"
+    path = owner[path_key]
+    original_sha = owner[hash_key]
+    if reuse == "recomputed_sha":
+        # Even rebinding changed retrieval bytes cannot change their evidence role.
+        (tmp_path / path).write_bytes((tmp_path / path).read_bytes() + b"\nretrieved again")
+        owner[hash_key] = hashlib.sha256((tmp_path / path).read_bytes()).hexdigest()
+        assert owner[hash_key] != original_sha
+    elif reuse == "same_bytes_other_path":
+        path = "renamed-independent.json"
+        (tmp_path / path).write_bytes((tmp_path / owner[path_key]).read_bytes())
+    # Recompute from disk in every case; a valid hash is not independent evidence.
+    digest = hashlib.sha256((tmp_path / path).read_bytes()).hexdigest()
+    assert digest == owner[hash_key]
+    actual = event["independent_actual_membership_evidence"][0]
+    actual.update({"local_relative_path": path, "sha256": digest})
+    if conditional:
+        event.update({"conditional_effective_clause": "upon listing",
+                      "condition_trigger_status": "INDEPENDENTLY_CONFIRMED",
+                      "condition_trigger_date": "2021-01-05",
+                      "condition_trigger_evidence": [deepcopy(actual)]})
+    before = deepcopy(event)
+    result = audit([event], tmp_path)
+    assert event == before
+    assert result["outcome"] == "PARTIAL"
+    assert all(item["status"] == "MATCH" for item in result["source_checks"])
+    review = result["events"][0]
+    assert review["claimed_actual_effective_member_date"] == "2021-01-05"
+    assert review["actual_effective_member_date"] is None
+    assert review["actual_date_status"] == "UNKNOWN"
+    assert review["event_status"] == "CANDIDATE_ONLY"
+    assert "INDEPENDENT_ACTUAL_MEMBERSHIP_EVIDENCE_MISSING" in review["missing_requirements"]
+    assert "UNSUPPORTED_ACTUAL_DATE_CLAIM" in review["missing_requirements"]
+    if conditional:
+        assert review["condition_trigger_status"] == "UNKNOWN"
+        assert "CONDITION_TRIGGER_CONFIRMATION_MISSING" in review["missing_requirements"]
+    assert review["formal_admission"] == "UNCHANGED_BLOCKED"
+    assert review["point_in_time_universe_verified"] is False
+    assert review["certified_event"] is False
+    assert review["daily_pit_publication_allowed"] is False
+    assert result["certified_events"] == 0
+    assert result["certified_daily_pit_published"] is False
+    assert result["local_replay"]["certified_events_applied"] == 0
+    assert result["local_replay"]["membership_rows_generated"] == 0
+    assert result["local_replay"]["daily_member_counts"] is None
+
+
 @pytest.mark.parametrize("path", ["../outside", "C:/outside", "/outside", "folder\\file"])
 def test_archive_reference_cannot_escape_root(tmp_path, path):
     with pytest.raises(ProviderError):
