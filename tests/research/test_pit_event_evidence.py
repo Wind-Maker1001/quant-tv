@@ -146,3 +146,20 @@ def test_existing_public_metadata_stays_unknown_without_original_bytes():
         review = check_event_evidence(event)
         assert review["actual_effective_member_date"] is None
         assert review["daily_pit_publication_allowed"] is False
+
+
+def test_public_receipts_bind_exact_published_bytes_across_checkouts():
+    root = Path(__file__).resolve().parents[2]
+    evidence = root / "docs/research/evidence/pit-effective-membership-evidence-v1"
+    for receipt_name, field in (("baseline-receipt.json", "public_outputs"),
+                                ("regular-receipt.json", "public_files"),
+                                ("conditional-receipt.json", "files")):
+        receipt = json.loads((evidence / receipt_name).read_text(encoding="utf-8"))
+        for item in receipt[field]:
+            path = item.get("local_relative_path") or item["path"]
+            raw = (root / path).read_bytes()
+            assert len(raw) == item["bytes"]
+            assert hashlib.sha256(raw).hexdigest() == item["sha256"]
+    receipt = json.loads((evidence / "event-audit-v1/receipt.json").read_text(encoding="utf-8"))
+    for item in receipt["outputs"]:
+        assert hashlib.sha256((evidence / "event-audit-v1" / item["name"]).read_bytes()).hexdigest() == item["sha256"]

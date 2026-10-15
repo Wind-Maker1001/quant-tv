@@ -14,8 +14,8 @@
     },
     {
       "path": "docs/research/PIT_BASELINE_EVIDENCE_REVIEW.md",
-      "sha256": "e77861b5a4e013c50708c243a54bde25dc38a0c69668a3bfa563c3026fc8d62a",
-      "bytes": 8970
+      "sha256": "1cc817e6e83f10faa3aeff3cbe002f63a68a7fa28eac831415b7d3d1b20e1d22",
+      "bytes": 8969
     }
   ],
   "independent_local_receipts": [
@@ -120,5 +120,12 @@
   },
   "byte_index_rechecked_on_publication": true,
   "rights": "Only hashes, paths, counts and audit facts are published; raw source material and third-party representations remain local ignored files.",
-  "limit": "Current byte integrity is not historical-vintage or actual member-effectiveness certification."
+  "limit": "Current byte integrity is not historical-vintage or actual member-effectiveness certification.",
+  "publication_amendment": {
+    "recorded_at_utc": "2026-10-15T14:42:33.505134+00:00",
+    "reason": "Remove extra blank EOF line only; no evidence statement changed.",
+    "previous_receipt_sha256": "a4e59f3bc95fd0d87ca968bb55f3af3e219d41d12dec4d68cd1b1fc6345137d4",
+    "previous_report_sha256": "e77861b5a4e013c50708c243a54bde25dc38a0c69668a3bfa563c3026fc8d62a",
+    "previous_publication_commit": "21315795e8e165d56914e0462187804a15f2ea9e"
+  }
 }
