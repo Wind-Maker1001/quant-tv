@@ -1,0 +1,168 @@
+{
+  "actual_native_requests": {
+    "index": 1,
+    "latest_run_new_http": 0,
+    "stock": 20,
+    "supplier_http_probe": 9
+  },
+  "additional_warmup_only_regression": {
+    "counts": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 1
+    },
+    "path": "results/diagnostics/five-year-data-feasibility-v1/tests-pilot-v3-warmup-only.xml",
+    "sha256": "e5a2bbe814c675a675e1b48575a05be12714a307ebf79f6c7fb02825b2334135"
+  },
+  "baseline": {
+    "frozen_files_unchanged": 470,
+    "research_ci": {
+      "conclusion": "success",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38594242501"
+    },
+    "sha": "6864315bc8eeaf96356d6822d12f431ec485a94e",
+    "static_ci": {
+      "conclusion": "success",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38594242366"
+    }
+  },
+  "captured_at": "2026-10-15T11:19:51.161216+00:00",
+  "completed_current_patch_tests": [
+    {
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 4
+      },
+      "path": "results/diagnostics/five-year-data-feasibility-v1/tests-pilot-v3-cross-run-access-recovery.xml",
+      "sha256": "1de78910a534562a81d2af664ef81f0265dccaeecff166a31fdf2ec91eee04e8"
+    }
+  ],
+  "data_run": {
+    "benchmark_provenance": {
+      "calendar_scope": "Observed native benchmark sessions; independent exchange-calendar completeness remains UNVERIFIED",
+      "evidence_index": "benchmark_sources.json",
+      "interface": "stock_zh_index_hist_csindex",
+      "native_response_sha256": [
+        "e0e94b565c1781fabd097363f9910de6838a5364d41f75f1ae4f15725f97d312"
+      ],
+      "source_contract": "CSI_INDEX_PERF_16_FIELDS_V1",
+      "status": "NATIVE_RESPONSE_RECONSTRUCTED",
+      "supplier": "CHINA_SECURITIES_INDEX_COMPANY",
+      "units_status": "PINNED_PROVIDER_CONVERSION_NOT_INDEPENDENT_FINANCIAL_CERTIFICATION"
+    },
+    "data_version": "9070d2bc4d8a8a15696e11b8353b74f6bacdd045e05de300930fbca1dbc3e6e5",
+    "implementation_sha256": "89533f1acd1a331e5274eb8cad55bd2dfe96bef7fd2c8b050a625ad68b07f20f",
+    "manifest_sha256": "3cffa11ae99f6cec3c446b62b8a16e99a023051c5ea98ed1f3d497a9ae15f2d9",
+    "metrics": {
+      "elapsed_seconds": 4.0673152,
+      "estimate_scope": "Numeric base only; excludes strings, copies, candidate matrices, sources, old generations and Python overhead",
+      "estimated_500x1200_numeric_18_columns_bytes": 86400000,
+      "failed_security_requests": 0,
+      "frame_deep_memory_bytes": 8199137,
+      "memory_method": "Windows GetProcessMemoryInfo WorkingSet/PeakWorkingSet in bytes",
+      "native_http_responses_this_run": 0,
+      "not_attempted_access_limit": 0,
+      "observed_rows": 11577,
+      "panel_rows": 13410,
+      "process_peak_rss_bytes": 161030144,
+      "process_rss_bytes": 161030144,
+      "requested_securities": 10,
+      "snapshot_bytes": 7324071,
+      "successful_research_securities": 10
+    },
+    "producer_git_commit": "a80e89a3997bc0310c205013a349da78469cf44c",
+    "receipt_sha256": "73ca4a65f150f4160f98b0319ad00c83a7cae2374d381140d8533c71bd5495dd",
+    "run_id": "20261015T111701027971Z-d51bb4d1",
+    "source_version": "akshare=1.18.88;contract=stock_zh_a_hist-raw+hfq-v1",
+    "verification": {
+      "calendar_origin": "NATIVE_RESPONSE_RECONSTRUCTED",
+      "formal_admission": false,
+      "independent_exchange_calendar_completeness": "UNVERIFIED"
+    }
+  },
+  "final_complete_research_ci": {
+    "authority": "https://github.com/Wind-Maker1001/quant-tv/pull/6/checks",
+    "policy": "Delivery requires completed successful full offline research CI, report validation, architecture audit and static checks on final PR HEAD; final XML/SHA retained locally and final outcomes posted to PR",
+    "status_at_receipt_creation": "PENDING_FINAL_HEAD_CHECKS",
+    "windows_basetemp": "Fresh D-drive directory outside checkout; default C-drive TEMP causes two existing relative-path fixtures to fail; tests unchanged"
+  },
+  "financial_qualification_policy": "Software success, native/calendar consistency and hashes never upgrade PIT, HFQ, identity/status, vintage or formal financial admission",
+  "formal_admission": false,
+  "no_live_money": true,
+  "previous_complete_research_ci": {
+    "coverage_sha256": "5373d2fa3899d8427ad0e221786b0c38a293f4dd2b875ed1807338fc38a56eca",
+    "junit": {
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 1,
+        "tests": 3053
+      },
+      "path": "results/diagnostics/five-year-data-feasibility-v1/ci-a80e89a-pr/research.xml",
+      "sha256": "af987a5a8115e79f4bc32e32c7dd5fa1ded255f4cd82d1ded78c3cbf30713fc8"
+    },
+    "scope": "a80e89a3997bc0310c205013a349da78469cf44c before cross-run denial replay fix; does not replace final-head CI",
+    "status": "success",
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38696559905"
+  },
+  "prior_completed_targeted_offline_tests": [
+    {
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 47
+      },
+      "path": "results/diagnostics/five-year-data-feasibility-v1/tests-pilot-v3-native-calendar.xml",
+      "sha256": "0f0401e8e893f1b6bc8857926952ac09261786b76cadc3cd199eadd26d05e4d7"
+    },
+    {
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 12
+      },
+      "path": "results/diagnostics/five-year-data-feasibility-v1/root-regressions-native-calendar.xml",
+      "sha256": "de3d029bbfa375c44c0fbaa9240a2028e5a5aae178f91e655df5e1ebaa48b6b6"
+    }
+  ],
+  "prior_receipt": {
+    "path": "validation-v2.json",
+    "policy": "Prior preflight and original data receipts preserved unchanged",
+    "sha256": "901cdf0a692ce220a16c3c44d0bd49241ea2d8c9edcd3cc11603d1193244947e"
+  },
+  "producer_source_policy": "Actual working-tree implementation SHA is sealed by this PR; original run git HEAD is preserved, never relabelled as a later clean commit",
+  "publication": {
+    "all_derived_file_hashes_rechecked": true,
+    "raw_prices_quantities_or_vendor_response_bodies_published": false,
+    "receipt_sha256": "47dd147646b877725aaabcb17d5f9352abaf79346268ce9fb11f560045d51a41"
+  },
+  "review": {
+    "external_findings": [
+      "https://github.com/Wind-Maker1001/quant-tv/pull/6#discussion_r4279785515",
+      "https://github.com/Wind-Maker1001/quant-tv/pull/6#discussion_r4279900926",
+      "https://github.com/Wind-Maker1001/quant-tv/pull/6#discussion_r4280102861"
+    ],
+    "final_external_review": "Request on final HEAD; final outcomes recorded on PR",
+    "fixes": [
+      "Native CSI to all benchmark columns and calendar binding; legacy cache-only classification",
+      "Rejected warmup-only benchmark clears calendar and benchmark",
+      "Prior 401/403/429 excluded only from new-run replay; immutable evidence and sequence retained"
+    ],
+    "independent_agent_review": "Read-only inspection found no further issue; final patch independently exercises 4 focused offline cases, final full CI remains pending",
+    "merge_authorized": false,
+    "pr": "https://github.com/Wind-Maker1001/quant-tv/pull/6"
+  },
+  "schema": "FIVE_YEAR_DELIVERY_VALIDATION_V3",
+  "statuses": {
+    "data": "EXPLORATORY_DATA_AVAILABLE",
+    "formal": "FORMAL_ADMISSION_BLOCKED",
+    "hfq": "HFQ_UNVERIFIED",
+    "pit": "PIT_UNVERIFIED",
+    "software": "SOFTWARE_SUCCESS"
+  }
+}

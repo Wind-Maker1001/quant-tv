@@ -1,0 +1,180 @@
+{
+  "baseline": {
+    "frozen_files_unchanged": 470,
+    "research_ci": {
+      "conclusion": "success",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38594242501"
+    },
+    "sha": "6864315bc8eeaf96356d6822d12f431ec485a94e",
+    "static_ci": {
+      "conclusion": "success",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38594242366"
+    }
+  },
+  "captured_at": "2026-10-15T06:18:31.662403+00:00",
+  "ci_contract_unittests": {
+    "errors": 0,
+    "failures": 0,
+    "tests": 19
+  },
+  "ci_script_formatting": "black --check .github/scripts/ci: 3 unchanged",
+  "complete_research_ci_authority": {
+    "local_final_evidence_directory": "results/diagnostics/five-year-data-feasibility-v1/final-ci-v1",
+    "policy": "Use completed GitHub checks on the exact PR HEAD. Running CI is not counted as passed in this preflight receipt.",
+    "superseded_local_session": "Stopped after fixes; never reported as final successful CI",
+    "url": "https://github.com/Wind-Maker1001/quant-tv/pull/6/checks"
+  },
+  "completed_targeted_offline_tests": [
+    {
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 36
+      },
+      "path": "results/diagnostics/five-year-data-feasibility-v1/tests-pilot-final-root-lock-null.xml",
+      "sha256": "c6fa8e640726e44dadcebcbeb7fc54ba8ee65676438c14973f5c19f981b7718b"
+    },
+    {
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 10
+      },
+      "path": "results/diagnostics/five-year-data-feasibility-v1/root-regressions-final.xml",
+      "sha256": "040a78df49a5ff1f74e48c99d5d654196066d3b100a888c33a484d3512fb66f2"
+    }
+  ],
+  "data_runs": [
+    {
+      "artifact_sha256": {
+        "bars.parquet": "6791d8863dca061dfaf073b9b0525872ac6cc7ad4d27e1deea305823765fc669",
+        "benchmark.parquet": "9832a898a5bba8b4fbc971d796bc1239075aebfacff35c1a736b86a9b514cd05",
+        "calendar.csv": "b22b708ff2dabb24f05bef33fba0a5a58f95c3bf52647a8972ba17c651a01bf6",
+        "sample.json": "63414ee64a3469acc369038ff23c2ecc994a931fe5634232aaa3d2354f8995aa"
+      },
+      "data_version": "1bd29b4c38b462e95163f24f3be0a0ba8cb23b75161326651db80ae0df105786",
+      "implementation_sha256": "941ef210dcbbe49b67a9f0196a12e9e61c9178247c0d7565bcd33da37ec79ef8",
+      "manifest_sha256": "d72d4c7592104fce41f56c9f53ed4c5e859aad96ff5c2e47f4e4c38e6ff0b597",
+      "metrics": {
+        "elapsed_seconds": 14.3802401,
+        "estimate_scope": "Numeric base only; excludes strings, copies, candidate matrices, sources, old generations and Python overhead",
+        "estimated_500x1200_numeric_18_columns_bytes": 86400000,
+        "failed_security_requests": 0,
+        "frame_deep_memory_bytes": 8199137,
+        "native_http_responses_this_run": 20,
+        "observed_rows": 11577,
+        "panel_rows": 13410,
+        "process_peak_rss_bytes": null,
+        "process_rss_bytes": null,
+        "requested_securities": 10,
+        "snapshot_bytes": 6165063,
+        "successful_research_securities": 10
+      },
+      "receipt_sha256": "53caaa23c64e6f92b30c0608140ce954688f796a423a9cf759a968651a21e920",
+      "run_id": "20261015T054518970647Z-4d7de074",
+      "source_version": "akshare=1.18.88;contract=stock_zh_a_hist-raw+hfq-v1"
+    },
+    {
+      "artifact_sha256": {
+        "bars.parquet": "31feb9d296aef41bfeb2e71d0aa3f0e1bae817172eba41ff4d222ff5aa888db9",
+        "benchmark.parquet": "9832a898a5bba8b4fbc971d796bc1239075aebfacff35c1a736b86a9b514cd05",
+        "calendar.csv": "b22b708ff2dabb24f05bef33fba0a5a58f95c3bf52647a8972ba17c651a01bf6",
+        "sample.json": "63414ee64a3469acc369038ff23c2ecc994a931fe5634232aaa3d2354f8995aa"
+      },
+      "data_version": "2bae8d24990e0ba7a15fad0d4aa8584dc74d551c29d114b8d1bed12ad116b9f1",
+      "implementation_sha256": "de3d2e44446a507041ef683f52a6c46013a31de63c26ade968e658a4043f251d",
+      "manifest_sha256": "b0aa242b53ffc50bc4bc0f649c82ae9ef18489c8038418ff57ad483666e06b07",
+      "metrics": {
+        "elapsed_seconds": 4.1771546,
+        "estimate_scope": "Numeric base only; excludes strings, copies, candidate matrices, sources, old generations and Python overhead",
+        "estimated_500x1200_numeric_18_columns_bytes": 86400000,
+        "failed_security_requests": 0,
+        "frame_deep_memory_bytes": 8199137,
+        "memory_method": "Windows GetProcessMemoryInfo WorkingSet/PeakWorkingSet in bytes",
+        "native_http_responses_this_run": 0,
+        "not_attempted_access_limit": 0,
+        "observed_rows": 11577,
+        "panel_rows": 13410,
+        "process_peak_rss_bytes": 158412800,
+        "process_rss_bytes": 158412800,
+        "requested_securities": 10,
+        "snapshot_bytes": 6165296,
+        "successful_research_securities": 10
+      },
+      "receipt_sha256": "162e349d2ebebce3f5a440fec160c83dace5e8f2e6f6d23001f835e2454f55d3",
+      "run_id": "20261015T060252720390Z-a4d9a180",
+      "source_version": "akshare=1.18.88;contract=stock_zh_a_hist-raw+hfq-v1"
+    },
+    {
+      "artifact_sha256": {
+        "bars.parquet": "31feb9d296aef41bfeb2e71d0aa3f0e1bae817172eba41ff4d222ff5aa888db9",
+        "benchmark.parquet": "9832a898a5bba8b4fbc971d796bc1239075aebfacff35c1a736b86a9b514cd05",
+        "calendar.csv": "b22b708ff2dabb24f05bef33fba0a5a58f95c3bf52647a8972ba17c651a01bf6",
+        "sample.json": "63414ee64a3469acc369038ff23c2ecc994a931fe5634232aaa3d2354f8995aa"
+      },
+      "data_version": "e1e122ce8314a32c0f73d3636b8ae64cea22692aa13a108b9cdb88261426904c",
+      "implementation_sha256": "94c1fb7d2999d48fef66e4e9d13d241a1c2e83b5046c9b2a591675ffaf3b0109",
+      "manifest_sha256": "eff2e1714a08807dcdee86b219d3bd249908060345a3a0b89d802c2c23590f72",
+      "metrics": {
+        "elapsed_seconds": 2.5363346,
+        "estimate_scope": "Numeric base only; excludes strings, copies, candidate matrices, sources, old generations and Python overhead",
+        "estimated_500x1200_numeric_18_columns_bytes": 86400000,
+        "failed_security_requests": 0,
+        "frame_deep_memory_bytes": 8199137,
+        "memory_method": "Windows GetProcessMemoryInfo WorkingSet/PeakWorkingSet in bytes",
+        "native_http_responses_this_run": 0,
+        "not_attempted_access_limit": 0,
+        "observed_rows": 11577,
+        "panel_rows": 13410,
+        "process_peak_rss_bytes": 157888512,
+        "process_rss_bytes": 157888512,
+        "requested_securities": 10,
+        "snapshot_bytes": 6165280,
+        "successful_research_securities": 10
+      },
+      "receipt_sha256": "bb1a4e6df04c619723e82662c8100f5e9feebc6b525381f9225acfb511cb86d0",
+      "run_id": "20261015T061321189239Z-844a02d0",
+      "source_version": "akshare=1.18.88;contract=stock_zh_a_hist-raw+hfq-v1"
+    }
+  ],
+  "dependency_check": "No broken requirements found; no dependency changes",
+  "formal_admission": false,
+  "no_live_money": true,
+  "producer_source_policy": "Runs retain their original git HEAD and actual working-tree implementation SHA; the replay implementation SHA matches the source sealed by this PR. No old run is relabelled as a clean later commit.",
+  "publication": {
+    "all_generated_files_rehashed": true,
+    "native_prices_quantities_responses_published": false,
+    "receipt_sha256": "811987f7e918f1baee4982d77b3852182b01173c3d36f337a25656067281cd90",
+    "text_bytes_preserved_by_directory_gitattributes": true
+  },
+  "review": {
+    "final_review_authority": "PR reviews/comments at the current HEAD",
+    "first_request": "https://github.com/Wind-Maker1001/quant-tv/pull/6#issuecomment-6185650269",
+    "first_service_result": "failed to resolve git ref; GitHub commit existence independently confirmed; not a successful review",
+    "merge_authorized": false,
+    "pr_url": "https://github.com/Wind-Maker1001/quant-tv/pull/6"
+  },
+  "schema": "FIVE_YEAR_DELIVERY_VALIDATION_V1",
+  "static_checks": {
+    "base": "6864315bc8eeaf96356d6822d12f431ec485a94e",
+    "compiled_python_files": 270,
+    "full_pylint_analysis": false,
+    "modifies_source": false,
+    "scopes": [
+      "qbot/research",
+      "tests/research",
+      "examples/research",
+      ".github/scripts/ci"
+    ],
+    "static_rules": "flake8 E9,F63,F7,F82"
+  },
+  "statuses": {
+    "data": "EXPLORATORY_DATA_AVAILABLE",
+    "formal": "FORMAL_ADMISSION_BLOCKED",
+    "hfq": "HFQ_UNVERIFIED",
+    "pit": "PIT_UNVERIFIED",
+    "software_preflight": "SOFTWARE_SUCCESS"
+  }
+}
