@@ -128,6 +128,10 @@ class _AccessLimitedRecorder(RecordingAKShare):
     def __init__(self, module, root):
         self.access_limit = None
         super().__init__(module, root)
+        # Prior denials remain immutable evidence, but only stop their own run.
+        # A later explicit invocation may issue one ordinary request again.
+        self.replay = {url: pair for url, pair in self.replay.items()
+                       if pair[1].get("status_code") not in {401, 403, 429}}
 
     @contextmanager
     def capture(self, interface, kwargs):

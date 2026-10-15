@@ -804,3 +804,62 @@ def test_warmup_only_native_benchmark_failure_clears_calendar_after_assignment(t
     rebuilt = pilot._reconstruct_benchmark(records, pd.Timestamp("2021-03-08"), pd.Timestamp("2021-09-20"),
                                            manifest["retrieved_at"], False)
     assert rebuilt["date"].dt.strftime("%Y-%m-%d").tolist() == DATES[:2]
+
+
+@pytest.mark.parametrize("http_status", [401, 403, 429])
+def test_later_explicit_run_can_recover_after_stock_access_denial(tmp_path, synthetic_transport, http_status):
+    calls, mode = synthetic_transport
+    mode.update(value="all-valid", deny_code="600000", deny_status=http_status)
+    first = pilot.acquire_pilot(tmp_path, research_end="2021-09-20", akshare_module=SyntheticSDK(),
+                                 synthetic_only=True, retry_count=1, progress=lambda value: None)
+    assert len(calls) == 1
+    old_sources = {path.relative_to(tmp_path).as_posix(): path.read_bytes()
+                   for path in (tmp_path / "sources").rglob("*") if path.is_file()}
+    first_root = Path(first["manifest_path"]).parent
+    old_run = {path.relative_to(first_root).as_posix(): path.read_bytes()
+               for path in first_root.rglob("*") if path.is_file()}
+    old_receipt_path = next((tmp_path / "sources").glob("*.request.json"))
+    old_receipt = json.loads(old_receipt_path.read_text())
+    assert old_receipt["status_code"] == http_status
+    mode.pop("deny_code")  # Explicit caller invocation after supplier recovery.
+    second = acquire(tmp_path)
+    assert len(calls) == 22  # One prior denial; twenty stock requests + one CSI success.
+    assert second["statuses"]["data"] == "EXPLORATORY_DATA_AVAILABLE"
+    assert second["metrics"]["not_attempted_access_limit"] == 0
+    assert second["metrics"]["native_http_responses_this_run"] == 21
+    assert second["metrics"]["successful_research_securities"] == 10
+    assert pilot.verify_pilot(second["manifest_path"], allow_synthetic=True)["supplier_access_limit"] is None
+    receipts = [json.loads(path.read_text()) for path in (tmp_path / "sources").glob("*.request.json")]
+    same_url = [entry for entry in receipts if entry["url"] == old_receipt["url"]]
+    assert [entry["status_code"] for entry in sorted(same_url, key=lambda entry: entry["retrieved_at"])] == [http_status, 200]
+    assert len({entry["response_file"] for entry in same_url}) == 2
+    assert all((tmp_path / relative).read_bytes() == content for relative, content in old_sources.items())
+    assert all((first_root / relative).read_bytes() == content for relative, content in old_run.items())
+    pilot.verify_pilot(first["manifest_path"], allow_synthetic=True)
+
+
+def test_later_explicit_run_rebuilds_csi_from_latest_success_after_429(tmp_path, synthetic_transport):
+    calls, mode = synthetic_transport
+    mode.update(value="all-valid", deny_code="000905", deny_status=429)
+    first = pilot.acquire_pilot(tmp_path, research_end="2021-09-20", akshare_module=SyntheticSDK(),
+                                 synthetic_only=True, retry_count=1, progress=lambda value: None)
+    assert len(calls) == 21  # Twenty stocks, then one CSI denial with no immediate retry.
+    first_root = Path(first["manifest_path"]).parent
+    old_sources = {path.relative_to(tmp_path).as_posix(): path.read_bytes()
+                   for path in (tmp_path / "sources").rglob("*") if path.is_file()}
+    old_run = {path.relative_to(first_root).as_posix(): path.read_bytes()
+               for path in first_root.rglob("*") if path.is_file()}
+    assert first["statuses"]["data"] == "EXPLORATORY_DATA_UNAVAILABLE"
+    mode.pop("deny_code")
+    second = acquire(tmp_path)
+    assert len(calls) == 22  # Stock cache resumes; the new run issues one ordinary CSI request.
+    assert second["metrics"]["native_http_responses_this_run"] == 1
+    manifest = pilot.verify_pilot(second["manifest_path"], allow_synthetic=True)
+    assert manifest["supplier_access_limit"] is None
+    assert manifest["benchmark_provenance"]["status"] == "NATIVE_RESPONSE_RECONSTRUCTED"
+    records = pilot._read_archived_benchmark_records(Path(second["manifest_path"]).parent, manifest)
+    assert len(records) == 1 and records[0]["entry"]["status_code"] == 200
+    assert manifest["benchmark_provenance"]["native_response_sha256"] == [pilot.sha256(records[0]["body"])]
+    assert all((tmp_path / relative).read_bytes() == content for relative, content in old_sources.items())
+    assert all((first_root / relative).read_bytes() == content for relative, content in old_run.items())
+    pilot.verify_pilot(first["manifest_path"], allow_synthetic=True)

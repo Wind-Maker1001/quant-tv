@@ -76,9 +76,9 @@ TDX旧staging、50股2025—2026探索输入、单股八日HFQ证据均保持其
 公告事件解释放在独立证据中，不据此补全价格或状态链。
 所有10只保留在面板，RAW与HFQ不跨源拼接。
 
-![月度覆盖](evidence/five-year-data-feasibility-v1/pilot-v3-final/coverage-monthly.png)
+![月度覆盖](evidence/five-year-data-feasibility-v1/pilot-v3-recovery/coverage-monthly.png)
 
-![年度缺失](evidence/five-year-data-feasibility-v1/pilot-v3-final/missing-annual.png)
+![年度缺失](evidence/five-year-data-feasibility-v1/pilot-v3-recovery/missing-annual.png)
 
 图的分子是8个RAW/HFQ OHLC字段均存在的实际观察数，分母来自本轮读取的真实基准日历；
 2021及2026为局部年度。CSV给出逐月分子、分母、缺失数；缺失比例不作为证券状态证明。
@@ -153,6 +153,8 @@ V3另外绑定原始指数receipt/body，验证公开CSI价格接口、请求代
 复跑只复用成功请求/原响应，独立新run不会覆盖历史证据。
 整个试点根目录复用既有缓存的OS锁串行化，竞争进程在构造响应记录器和发HTTP前明确拒绝，
 避免失败后再次取数的编号碰撞；锁文件保留，由OS释放锁所有权。
+历史401/403/429保留原字节与原收据，但不作为下一次显式调用的HTTP回放候选；
+新run可以发出一次正常请求，采用新编号，当前run的拒绝后停止规则不变，没有自动即时重试或换代理。
 本地哈希证明同一字节，不是供应商签名或历史真实性保证。
 
 ```powershell
@@ -166,11 +168,11 @@ V3另外绑定原始指数receipt/body，验证公开CSI价格接口、请求代
 `20261015-native-calendar-v1/`及独立supplier-audit目录；新根目录逐字节复制冻结样本和已取得的股票证据，
 另存复制收据，不覆盖旧run。
 公开checkout可重放虚构软件回归，不能仅凭公开SHA下载或认证私有原行情。
-[公开派生摘要/原响应SHA索引](evidence/five-year-data-feasibility-v1/pilot-v3-final/summary.json)、
-[派生文件收据](evidence/five-year-data-feasibility-v1/pilot-v3-final/publication-receipt.json)
-和[验证收据与完整CI入口](evidence/five-year-data-feasibility-v1/validation-v2.json)定位版本和实际验证范围。
-V3最终实测数据版本为`477b285aa23f90eb5fc3705a849b641c68d6e5e674d0e105636ee751abd1def4`，
-独立run为`20261015T065248712015Z-6c8a10d4`；原生指数、股票缓存与面板均成功复核。
+[公开派生摘要/原响应SHA索引](evidence/five-year-data-feasibility-v1/pilot-v3-recovery/summary.json)、
+[派生文件收据](evidence/five-year-data-feasibility-v1/pilot-v3-recovery/publication-receipt.json)
+和[验证收据与完整CI入口](evidence/five-year-data-feasibility-v1/validation-v3.json)定位版本和实际验证范围。
+V3最终实测数据版本为`9070d2bc4d8a8a15696e11b8353b74f6bacdd045e05de300930fbca1dbc3e6e5`，
+独立run为`20261015T111701027971Z-d51bb4d1`；原生指数、股票缓存与面板均成功复核。
 中间V3派生和原V1/V2收据继续保留，不以新源码身份覆盖旧版本。
 
 验证不只检查自报哈希，还重读原响应，复核代码/日期/RAW-HFQ角色、单位转换、缓存及面板逐字段关系、
@@ -207,8 +209,9 @@ DataFrame deep memory为8,199,137字节（约7.82 MiB），一次run证据快照
 V2缓存复跑采用Windows原生GetProcessMemoryInfo测得的当前/生命周期Peak Working Set，见最终收据；
 生命周期峰值包括SDK导入，不能解释为接入步骤独占增量。
 已完成的V2复跑约4.18秒、0个新HTTP响应，Working Set及生命周期峰值均为158,412,800字节（约151.07 MiB）。
-最终V3在原生指数响应重建日历后复跑约2.71秒、0个新HTTP，Working Set及生命周期峰值160,358,400字节
-（约152.93 MiB），一次run快照7,324,075字节；新增原生指数及其绑定证据也纳入快照。
+V3在原生指数响应重建日历后零HTTP复跑实测约2.71—4.07秒；最终run约4.07秒，
+Working Set及生命周期峰值161,030,144字节（约153.57 MiB），快照7,324,071字节。
+该次与完整CI同时运行，不把单次耗时差异归因为补丁性能变化；新增原生指数及其绑定证据也纳入快照。
 
 | 扩展项目 | 可复核估算及限制 |
 | --- | --- |
