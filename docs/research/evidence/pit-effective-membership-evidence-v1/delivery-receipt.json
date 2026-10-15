@@ -1,0 +1,202 @@
+{
+  "actual_membership_evidence_success": false,
+  "artifacts": [
+    {
+      "bytes": 5842,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/baseline-receipt.json",
+      "sha256": "d6cb73d304801b22b04b1c3c6241d2b61d491645c8fc607c4cf6669bbea63ea5"
+    },
+    {
+      "bytes": 9497,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/baseline-review.json",
+      "sha256": "675019d96259912f2e904cd632d641a2b089ae892c91dac5e4dc8400c28e201f"
+    },
+    {
+      "bytes": 1874,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/conditional-receipt.json",
+      "sha256": "bd4c08523f5775527133fac506dab7225ee9ce3b09d3d051c3910494cbc2c44a"
+    },
+    {
+      "bytes": 22771,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/conditional-review.json",
+      "sha256": "e7eb0d36695c0c276217754d38e401b4c12bae618c29855d41c6b72eb862e604"
+    },
+    {
+      "bytes": 12094,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/event-audit-v1/event-matrix.json",
+      "sha256": "6215b2edf13f40d3368c0f66c927809bb0e075011d8658b93e6d757c1b4cbb5f"
+    },
+    {
+      "bytes": 517,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/event-audit-v1/local-replay.json",
+      "sha256": "1365ce764d81adaa597402b03e3d971e350a67259746aa667bd792abbcc3eece"
+    },
+    {
+      "bytes": 11116,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/event-audit-v1/receipt.json",
+      "sha256": "5a3f21cfefb56f9592cfe60d4dac1f92ac721ac6fabf404077b8a5cf784d9c5f"
+    },
+    {
+      "bytes": 5058,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/regular-receipt.json",
+      "sha256": "37304dcf1408ef553dfbe7d0e7672ad4b3563c3df769796b47100c2969fef874"
+    },
+    {
+      "bytes": 75245,
+      "local_relative_path": "docs/research/evidence/pit-effective-membership-evidence-v1/regular-review.json",
+      "sha256": "505c5b217db779dda3ffa40004d54661e1382574a27ec68d0d257cd445bf312c"
+    },
+    {
+      "bytes": 8969,
+      "local_relative_path": "docs/research/PIT_BASELINE_EVIDENCE_REVIEW.md",
+      "sha256": "1cc817e6e83f10faa3aeff3cbe002f63a68a7fa28eac831415b7d3d1b20e1d22"
+    },
+    {
+      "bytes": 7655,
+      "local_relative_path": "docs/research/PIT_CONDITIONAL_EVIDENCE_REVIEW.md",
+      "sha256": "1ebad6a4545029e9a267106ff65673d126c0e06261b7a610bed1f186209d492f"
+    },
+    {
+      "bytes": 10242,
+      "local_relative_path": "docs/research/PIT_EFFECTIVE_MEMBERSHIP_EVIDENCE.md",
+      "sha256": "e6be0ef3f75f1db1c8ceb3224111fbac4f7232ba086be5f889fcb8d8c45a6bac"
+    },
+    {
+      "bytes": 5558,
+      "local_relative_path": "docs/research/PIT_REGULAR_EVIDENCE_REVIEW.md",
+      "sha256": "4a75e206b07c7f8a23856c47f6ec04c60066d7374229849dd79ab8b94fcf0f80"
+    }
+  ],
+  "baseline_commit": "fce2f0a25e8ae8459c1ab86709e26e5e74c9692a",
+  "certified_actual_effective_events": 0,
+  "certified_authoritative_complete_baselines": 0,
+  "certified_daily_pit_published": false,
+  "client_timezone": "Asia/Shanghai",
+  "code_and_tests": [
+    {
+      "bytes": 11341,
+      "local_relative_path": "qbot/research/universe/event_evidence.py",
+      "sha256": "767685940e411a6fb7fe53a4531a4d2fb6d8f667c3850feb9a95b8ecab60bfb6"
+    },
+    {
+      "bytes": 7360,
+      "local_relative_path": "examples/research/audit_pit_event_evidence.py",
+      "sha256": "c6177cf2d8aa81086a45bc40a3db9cef2c0e67b7f61bb3eda7327d1cfe325dd1"
+    },
+    {
+      "bytes": 9085,
+      "local_relative_path": "tests/research/test_pit_event_evidence.py",
+      "sha256": "9fa84076f3b0f1621340aea7f6ce28ee9e35f4781efb99bbd5a8d044ecbdb5fc"
+    }
+  ],
+  "created_at_utc": "2026-10-15T15:28:52.199857+00:00",
+  "delivery_parent_head": "13b66f562033e321a40aa8e2201f930c66e92cdd",
+  "existing_tracked_files_modified_or_deleted": [],
+  "historical_failed_run": {
+    "failed": 1,
+    "failure": "original frozen-baseline test rejected root .gitattributes change",
+    "passed": 3075,
+    "resolution": "Root attributes restored; unchanged frozen test plus event tests passed; final full suite and CI rerun.",
+    "source": "results/diagnostics/pit-effective-membership-evidence/regression-v1/pytest.log",
+    "superseded_not_relabelled_success": true
+  },
+  "independent_review_is_separate": true,
+  "independent_review_receipt": "docs/research/evidence/pit-effective-membership-evidence-v1/independent-review.json",
+  "live_money": false,
+  "local_final_full_suite_coverage_enabled": false,
+  "local_full_suite_command": "python -m pytest tests/research -q -m \"not network\" --junitxml=<regression-v2/research.xml>",
+  "local_membership_replay": {
+    "authoritative_baseline_member_count": null,
+    "baseline_date": "2021-09-13",
+    "blockers": [
+      "AUTHORITATIVE_COMPLETE_500_BASELINE_MISSING",
+      "INDEPENDENT_ACTUAL_EVENT_BOUNDARIES_MISSING",
+      "COMPLETE_TEMPORARY_CONDITIONAL_CORRECTION_CHAIN_UNPROVED"
+    ],
+    "certified_daily_pit_published": false,
+    "certified_events_applied": 0,
+    "daily_member_count_independently_checked": false,
+    "daily_member_counts": null,
+    "membership_rows_generated": 0,
+    "status": "NOT_ATTEMPTED_AUTHORITY_BASELINE_ABSENT"
+  },
+  "local_software_evidence": [
+    {
+      "bytes": 482520,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/regression-v2/research.xml",
+      "sha256": "453af005d2904d230fa3df2cd82e725dd960f276933612cb764990ba1b2fff6f"
+    },
+    {
+      "bytes": 7066,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/regression-v2/pytest.log",
+      "sha256": "68940689237f4acb84737092f69509119fb4147f99a5b48b68bb614185cbad25"
+    },
+    {
+      "bytes": 430,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/remote-report-validation.json",
+      "sha256": "99bb5242182b8231b016a4c3a7c35b342f90c2dbf8c99d44226fbba37ae5ae1f"
+    },
+    {
+      "bytes": 428,
+      "local_relative_path": "results/diagnostics/pit-effective-membership-evidence/regression-v1/architecture-audit.log",
+      "sha256": "0d35b930eae06ff55cedc4a6e673cefe2b71888cb9f92e8d2f0550d7040244f0"
+    }
+  ],
+  "local_windows_full_suite": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 3077
+  },
+  "observed_event_ids": [
+    13888,
+    13420
+  ],
+  "platform": "Windows-10-10.0.26340-SP0",
+  "publication_policy": "Only indexes, evidence summaries and necessary audit fields; original materials remain ignored.",
+  "publisher_source_requests_after_bounded_research_stopped": 0,
+  "python": "3.9.25",
+  "qualification_limit": "Software success does not certify actual index membership; no complete baseline or actual event chain.",
+  "remote_full_suite_coverage_enabled": true,
+  "remote_skipped_tests": [
+    {
+      "classname": "tests.research.test_cache_generation_publication",
+      "name": "test_windows_native_lock_covers_empty_file_before_initialization",
+      "reason": "Windows EOF byte-range lock contract"
+    }
+  ],
+  "remote_software_report_validation": {
+    "coverage_line_rate": 0.8536,
+    "coverage_lines_covered": 15988,
+    "coverage_lines_valid": 18730,
+    "coverage_sha256": "c9fff3f43cf2a870d8187712b6170d7f7d9504a1261d97e1c94ab721f5643bc2",
+    "coverage_threshold": null,
+    "junit_counts": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 1,
+      "tests": 3077
+    },
+    "junit_sha256": "9b057003dca3a4dd43c3ef4e4700bd964f45a244ae8e597eac126832a7f0d887",
+    "kind": "software_coverage_only_not_financial_certification"
+  },
+  "research_ci": {
+    "conclusion": "success",
+    "databaseId": 38756478550,
+    "headSha": "13b66f562033e321a40aa8e2201f930c66e92cdd",
+    "status": "completed",
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38756478550"
+  },
+  "research_exit": "PARTIAL",
+  "schema_version": 1,
+  "software_status": "FULL_RESEARCH_CI_PASSED",
+  "source_files_matched": 23,
+  "static_ci": {
+    "conclusion": "success",
+    "databaseId": 38756478023,
+    "headSha": "13b66f562033e321a40aa8e2201f930c66e92cdd",
+    "status": "completed",
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38756478023"
+  },
+  "tested_source_commit": "13b66f562033e321a40aa8e2201f930c66e92cdd"
+}

@@ -86,6 +86,14 @@
 干净克隆不含原始材料，只能运行合成回归或取得授权档案后复核字节；不能将缺原件视为成功。
 软件测试与最终CI、独立复审记录另见[交付收据](evidence/pit-effective-membership-evidence-v1/delivery-receipt.json)。
 
+提交`13b66f5`的[完整研究CI](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38756478550)和
+[静态CI](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38756478023)均通过。下载的原JUnit与覆盖率XML
+经仓库既有验证器复核：3076项通过、1项Windows专属锁测试在Linux跳过，失败/错误0；覆盖率85.36%。
+新增20项及原冻结测试在远端均实际执行通过。本机Windows完整回归的最终统计记录于交付收据。
+初轮本机全量的3075通过/1失败日志保留：根`.gitattributes`也在470冻结路径中，故其新增规则被原测试拒绝。
+最终恢复根文件，将规则改为仅匹配新文件的目录属性；冻结清单、原测试及正式门槛未修改。
+独立复审另核对全部4970既有路径属性不变，结果见[独立复审收据](evidence/pit-effective-membership-evidence-v1/independent-review.json)。
+
 ## 定向获取与授权建议
 
 本轮三个研究子代理合计14次搜索、2次页面/文档解析；搜索出现429后停止，无重试、身份替换或
