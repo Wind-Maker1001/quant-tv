@@ -2,12 +2,16 @@
 
 import json
 from pathlib import Path
+import subprocess
+import sys
+import time
 
 import pandas as pd
 import pytest
 import requests
 
 from qbot.research.data.providers.akshare import AKShareProvider
+from qbot.research.errors import CacheError
 from qbot.research.exploratory import five_year as pilot
 from qbot.research.exploratory.contract import manifest_version, sha256_file
 
@@ -435,3 +439,148 @@ def test_later_supplier_denial_keeps_prior_data_and_reads_local_benchmark_cache(
     root = Path(result["manifest_path"]).parent
     assert len(pd.read_parquet(root / "bars.parquet")) == 80
     pilot.verify_pilot(result["manifest_path"], allow_synthetic=True)
+
+
+def test_concurrent_entry_fails_before_recorder_http_or_evidence_mutation(semantic_snapshot, synthetic_transport, tmp_path, monkeypatch):
+    """A real second process holds the whole acquire entry, across Windows/POSIX."""
+    first = semantic_snapshot
+    root = Path(first["manifest_path"]).parents[2]
+    calls = synthetic_transport[0]
+    calls_before = len(calls)
+    sources_before = {path.relative_to(root).as_posix(): path.read_bytes()
+                      for path in (root / "sources").rglob("*") if path.is_file()}
+    runs_before = {path.name for path in (root / "runs").iterdir()}
+    first_bytes = {path.relative_to(Path(first["manifest_path"]).parent).as_posix(): path.read_bytes()
+                   for path in Path(first["manifest_path"]).parent.rglob("*") if path.is_file()}
+    ready = tmp_path / "pilot-lock-ready"
+    script = """
+from pathlib import Path
+import sys
+from qbot.research.exploratory import five_year as pilot
+def hold(*args, **kwargs):
+    Path(sys.argv[2]).write_text('whole pilot entry locked', encoding='utf-8')
+    sys.stdin.readline()
+    return {}
+pilot._acquire_pilot_locked = hold
+pilot.acquire_pilot(Path(sys.argv[1]))
+"""
+    process = subprocess.Popen([sys.executable, "-c", script, str(root), str(ready)],
+                               cwd=str(Path(__file__).resolve().parents[2]), stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                               creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    try:
+        deadline = time.monotonic() + 15
+        while not ready.exists() and process.poll() is None and time.monotonic() < deadline:
+            time.sleep(0.02)
+        assert ready.exists(), "child did not acquire the whole pilot root lock"
+
+        def forbidden_recorder(*args, **kwargs):
+            raise AssertionError("competing acquire constructed a recorder before obtaining the root lock")
+
+        with monkeypatch.context() as patch:
+            patch.setattr(pilot, "_AccessLimitedRecorder", forbidden_recorder)
+            with pytest.raises(CacheError, match="writer lock timeout"):
+                acquire(root)
+        assert len(calls) == calls_before
+        assert {path.name for path in (root / "runs").iterdir()} == runs_before
+        assert {path.relative_to(root).as_posix(): path.read_bytes()
+                for path in (root / "sources").rglob("*") if path.is_file()} == sources_before
+    finally:
+        try:
+            stdout, stderr = process.communicate(input="release\n", timeout=15)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            stdout, stderr = process.communicate()
+    assert process.returncode == 0, stdout + stderr
+    assert pilot.PILOT_LOCK_SYMBOL not in pilot.DEFAULT_SYMBOLS + ("000905.SH",)
+    assert not (root / "cache" / (pilot.PILOT_LOCK_SYMBOL + ".metadata.json")).exists()
+    second = acquire(root)  # OS ownership released; the next entry resumes safely.
+    assert second["manifest_path"] != first["manifest_path"]
+    assert {path.relative_to(root).as_posix(): path.read_bytes()
+            for path in (root / "sources").rglob("*") if path.is_file()} == sources_before
+    assert {path.relative_to(Path(first["manifest_path"]).parent).as_posix(): path.read_bytes()
+            for path in Path(first["manifest_path"]).parent.rglob("*") if path.is_file()} == first_bytes
+    pilot.verify_pilot(first["manifest_path"], allow_synthetic=True)
+    pilot.verify_pilot(second["manifest_path"], allow_synthetic=True)
+
+
+@pytest.fixture
+def native_null_snapshot(tmp_path, synthetic_transport, monkeypatch):
+    """SYNTHETIC_TEST_ONLY: mock the exact public URL and {rc:0,data:null} ABI."""
+    benchmark_cache = tmp_path / "fixture-benchmark"
+    provider = AKShareProvider(akshare_module=SyntheticSDK(), request_interval=0, retry_count=0)
+    pilot.ParquetBarCache(benchmark_cache).update_from_provider(
+        provider, "000905.SH", "2021-03-08", "2021-09-20", is_index=True)
+
+    class NativeNullSDK(SyntheticSDK):
+        def stock_zh_a_hist(self, **kwargs):
+            code = kwargs["symbol"]
+            params = {"secid": ("1." if code.startswith(("5", "6", "9")) else "0.") + code,
+                      "fqt": "2" if kwargs["adjust"] == "hfq" else "0", "klt": "101",
+                      "beg": kwargs["start_date"], "end": kwargs["end_date"]}
+            payload = requests.get("https://push2his.eastmoney.com/api/qt/stock/kline/get",
+                                   params=params, timeout=kwargs["timeout"]).json()
+            assert payload == {"rc": 0, "data": None}
+            return pd.DataFrame()  # Actual AKShare stock_zh_a_hist empty-response behavior.
+
+    calls = []
+
+    def mocked_native_request(session, method, url, **options):
+        assert url == "https://push2his.eastmoney.com/api/qt/stock/kline/get"
+        calls.append(dict(options["params"]))
+        response = requests.Response()
+        response.status_code = 200
+        response.url = requests.Request(method, url, params=options["params"]).prepare().url
+        response._content = b'{"rc":0,"data":null}'
+        response.headers["Content-Type"] = "application/json"
+        return response
+
+    monkeypatch.setattr(requests.sessions.Session, "request", mocked_native_request)
+    # The production contract branch is deliberate; no HTTP leaves this mocked
+    # transport and no stock prices are generated. Fixture benchmark stays local.
+    result = pilot.acquire_pilot(tmp_path / "native-null-pilot", research_end="2021-09-20",
+                                  akshare_module=NativeNullSDK(), benchmark_cache_root=benchmark_cache,
+                                  progress=lambda value: None)
+    assert len(calls) == 20
+    return result
+
+
+def test_native_http_200_data_null_remains_empty_unavailable_with_valid_receipt(native_null_snapshot):
+    result = native_null_snapshot
+    assert result["statuses"]["software"] == "SOFTWARE_SUCCESS"
+    assert result["statuses"]["data"] == "EXPLORATORY_DATA_UNAVAILABLE"
+    assert result["statuses"]["formal"] == "FORMAL_ADMISSION_BLOCKED"
+    root = Path(result["manifest_path"]).parent
+    attempts = json.loads((root / "attempts.json").read_text())
+    assert all(item["status"] == "EMPTY_VENDOR_RESPONSE" for item in attempts if item["symbol"] != "000905.SH")
+    bars = pd.read_parquet(root / "bars.parquet")
+    assert len(bars) == 80 and bars["raw_close"].isna().all() and bars["adj_close"].isna().all()
+    assert bars["observation_status"].eq("MISSING_REASON_UNKNOWN").all()
+    assert all(item["paired_observed_research_sessions"] == 0 for item in result["coverage"])
+    pilot.verify_pilot(result["manifest_path"])
+
+
+def test_native_data_null_cannot_prove_a_nonempty_cache_after_local_hash_rebinding(native_null_snapshot):
+    result = native_null_snapshot
+    root = Path(result["manifest_path"]).parent
+    row = {"date": pd.Timestamp("2021-09-13"), "symbol": "600000.SH",
+           "open": 10.0, "high": 12.0, "low": 9.0, "close": 11.0,
+           "volume": 1000.0, "amount": 11000.0, "turnover": 0.02, "adj_factor": 2.0}
+    for field in ("open", "high", "low", "close"):
+        row["raw_" + field], row["adj_" + field] = row[field], row[field] * 2
+    cached_path = root / "evidence/cache/600000.SH.parquet"
+    pilot.canonicalize_bars(pd.DataFrame([row])).to_parquet(cached_path, index=False)
+    metadata_path = root / "evidence/cache/600000.SH.metadata.json"
+    metadata = json.loads(metadata_path.read_text())
+    metadata.update(content_sha256=sha256_file(cached_path), row_count=1,
+                    data_start="2021-09-13", data_end="2021-09-13")
+    metadata_path.write_text(json.dumps(metadata))
+    attempts_path = root / "attempts.json"
+    attempts = json.loads(attempts_path.read_text())
+    attempts[0].update(cache_data_sha256=sha256_file(cached_path),
+                       cache_metadata_sha256=sha256_file(metadata_path))
+    attempts_path.write_text(json.dumps(attempts))
+    (root / "attempt-01.json").write_text(json.dumps(attempts[0]))
+    rebind_local_hashes(result)
+    with pytest.raises(ValueError, match="cached dates are absent from native source response"):
+        pilot.verify_pilot(result["manifest_path"])

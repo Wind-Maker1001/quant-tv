@@ -108,6 +108,9 @@ def freeze_pilot(root, symbols=DEFAULT_SYMBOLS, synthetic_only=False):
 
 VERSION = "five-year-minimal-ingestion-v2"
 UNITS = {"price": "CNY", "volume": "SHARES", "amount": "CNY", "turnover": "RATIO"}
+# Lock namespace only: no bars or metadata are published for this reserved key.
+# It is distinct from every frozen pilot security and the CSI500 benchmark.
+PILOT_LOCK_SYMBOL = "999999.SZ"
 
 
 class _SupplierAccessLimit(ProviderError):
@@ -292,7 +295,29 @@ def _stdlib_memory():
 def acquire_pilot(root, history_start="2021-03-08", research_start="2021-09-13",
                   research_end="2026-09-11", benchmark_cache_root=None,
                   akshare_module=None, progress=print, synthetic_only=False,
-                  timeout_seconds=10.0, retry_count=0):
+                  timeout_seconds=10.0, retry_count=0, lock_timeout_seconds=0.0):
+    """Serialize a whole pilot acquisition before allocating evidence names.
+
+    The existing ParquetBarCache OS writer lock protects RecordingAKShare's
+    source sequence as well as cache snapshots and immutable run publication.
+    A competing process fails explicitly by default, before constructing its
+    recorder, creating a run or issuing HTTP. The permanent lock file is never
+    removed; the OS releases ownership when this context or process exits.
+    """
+    root = safe_path(Path(root))
+    lock_cache = ParquetBarCache(root / "cache", lock_timeout_seconds=lock_timeout_seconds)
+    with lock_cache._writer_lock(PILOT_LOCK_SYMBOL):
+        return _acquire_pilot_locked(
+            root, history_start=history_start, research_start=research_start,
+            research_end=research_end, benchmark_cache_root=benchmark_cache_root,
+            akshare_module=akshare_module, progress=progress, synthetic_only=synthetic_only,
+            timeout_seconds=timeout_seconds, retry_count=retry_count)
+
+
+def _acquire_pilot_locked(root, history_start="2021-03-08", research_start="2021-09-13",
+                          research_end="2026-09-11", benchmark_cache_root=None,
+                          akshare_module=None, progress=print, synthetic_only=False,
+                          timeout_seconds=10.0, retry_count=0):
     """Bounded single-source RAW/HFQ pilot; failures stay in the frozen sample.
 
     Every invocation publishes a new manifest and independent receipt. Successful
@@ -480,6 +505,7 @@ def acquire_pilot(root, history_start="2021-03-08", research_start="2021-09-13",
                                     "missing_reason": "UNKNOWN_UNVERIFIED; never inferred as suspension or pre/post listing",
                                     "revision_history": "UNKNOWN_UNVERIFIED",
                                     "request_policy": "401/403/429: preserve native bytes/receipt, stop new HTTP for this run, no immediate retry or alternate proxy",
+                                    "acquisition_concurrency": "Whole pilot root serialized with existing ParquetBarCache OS writer lock before Recorder allocation; competing entry explicitly fails by default",
                                     "intended_use": "LOCAL_EXPLORATORY_ONLY_NO_REDISTRIBUTION",
                                     "authorization_evidence": "PUBLIC_ENDPOINT_ACCESS_ONLY; no commercial/redistribution grant established",
                                     "cache_metadata_representation": "ORIGINAL_BYTES_MATCH_SNAPSHOT_METADATA_SHA256"},
@@ -531,6 +557,7 @@ def _verify_native_sources(root, manifest, sample):
     frozen, retrieved = _instant(sample["frozen_at"]), _instant(manifest["retrieved_at"])
     attempts = json.loads((root / "attempts.json").read_text(encoding="utf-8"))
     rejected = {item["symbol"] for item in attempts if item["status"] == "DOWNLOAD_OR_VALIDATION_FAILED"}
+    empty_responses = {item["symbol"] for item in attempts if item["status"] == "EMPTY_VENDOR_RESPONSE"}
     for name in sorted(manifest["files"]):
         if not name.startswith("evidence/sources/") or not name.endswith(".request.json"):
             continue
@@ -599,6 +626,15 @@ def _verify_native_sources(root, manifest, sample):
         else:
             data = payload.get("data")
             if data is None:
+                if payload.get("rc") == 0 and symbol in empty_responses:
+                    # The real SDK returns an empty table for HTTP 200 data:null.
+                    # Bind the explicit empty RAW/HFQ response as evidence, then
+                    # require the corresponding cached series to be empty below.
+                    empty = CanonicalAKShareProvider._normalise_vendor_frame(
+                        pd.DataFrame(), begin_date, end_date, require_turnover=adjustment == "",
+                        require_amount=adjustment == "", symbol=symbol)
+                    quotes.setdefault((symbol, adjustment), []).append((acquired, empty))
+                    continue
                 if symbol not in rejected:
                     raise ValueError("acquired native source has no supplier security data")
                 continue
