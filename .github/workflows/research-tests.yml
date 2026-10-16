@@ -53,8 +53,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: factorlab-research-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: factorlab-research-${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   phase-1-offline:
