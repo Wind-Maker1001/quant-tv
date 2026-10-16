@@ -1,0 +1,422 @@
+{
+  "environment": {
+    "collect_only": false,
+    "command": [
+      "D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe",
+      "-m",
+      "pytest",
+      "tests/research",
+      "-q",
+      "-m",
+      "not network",
+      "--durations=40",
+      "--durations-min=0",
+      "--rootdir=.",
+      "-c",
+      "pytest.ini",
+      "-p",
+      "ci_resources",
+      "-p",
+      "ci_profile",
+      "--ci-evidence-dir=D:\\Code\\quant-tv-ci-runtime-optimization\\results\\diagnostics\\ci-runtime-optimization\\20261016\\windows-final-code",
+      "--basetemp=D:\\Code\\.quant-tv-ci-windows-final-code-20261016",
+      "--junitxml=D:\\Code\\quant-tv-ci-runtime-optimization\\results\\diagnostics\\ci-runtime-optimization\\20261016\\windows-final-code\\research.xml",
+      "--cov=qbot.research",
+      "--cov-report=term",
+      "--cov-report=xml:D:\\Code\\quant-tv-ci-runtime-optimization\\results\\diagnostics\\ci-runtime-optimization\\20261016\\windows-final-code\\coverage.xml"
+    ],
+    "controller_sha": "91697291ae6c22dc2552117582727e68b1c313af",
+    "coverage": true,
+    "cpu_environment": "UNKNOWN",
+    "environment": {
+      "CI_PIP_CACHE": "UNSET",
+      "GITHUB_RUN_ATTEMPT": "UNSET",
+      "GITHUB_RUN_ID": "UNSET",
+      "ImageOS": "UNSET",
+      "ImageVersion": "UNSET",
+      "MKL_NUM_THREADS": "UNSET",
+      "NUMEXPR_NUM_THREADS": "UNSET",
+      "OMP_NUM_THREADS": "UNSET",
+      "OPENBLAS_NUM_THREADS": "UNSET",
+      "RUNNER_ARCH": "UNSET"
+    },
+    "execution_scope": "full_offline_suite",
+    "kind": "actual_ci_measurement_not_financial_certification",
+    "logical_cpu_count": 28,
+    "observer_sha256": "ee02be4aa6e623fcf0665fc9dfc9bdc34f75c8b44f9c9bd91f1e251f4b463b83",
+    "packages": [
+      {
+        "name": "akshare",
+        "version": "1.18.88"
+      },
+      {
+        "name": "baostock",
+        "version": "0.8.9"
+      },
+      {
+        "name": "beautifulsoup4",
+        "version": "4.15.0"
+      },
+      {
+        "name": "black",
+        "version": "25.1.0"
+      },
+      {
+        "name": "certifi",
+        "version": "2026.7.22"
+      },
+      {
+        "name": "cffi",
+        "version": "2.0.0"
+      },
+      {
+        "name": "charset-normalizer",
+        "version": "3.5.1"
+      },
+      {
+        "name": "click",
+        "version": "8.1.8"
+      },
+      {
+        "name": "colorama",
+        "version": "0.4.6"
+      },
+      {
+        "name": "contourpy",
+        "version": "1.3.0"
+      },
+      {
+        "name": "coverage",
+        "version": "7.10.6"
+      },
+      {
+        "name": "curl_cffi",
+        "version": "0.13.0"
+      },
+      {
+        "name": "cycler",
+        "version": "0.12.1"
+      },
+      {
+        "name": "decorator",
+        "version": "5.3.1"
+      },
+      {
+        "name": "et_xmlfile",
+        "version": "2.0.0"
+      },
+      {
+        "name": "exceptiongroup",
+        "version": "1.3.1"
+      },
+      {
+        "name": "execnet",
+        "version": "2.1.2"
+      },
+      {
+        "name": "flake8",
+        "version": "7.3.0"
+      },
+      {
+        "name": "fonttools",
+        "version": "4.60.2"
+      },
+      {
+        "name": "html5lib",
+        "version": "1.1"
+      },
+      {
+        "name": "idna",
+        "version": "3.19"
+      },
+      {
+        "name": "importlib_resources",
+        "version": "6.5.2"
+      },
+      {
+        "name": "iniconfig",
+        "version": "2.1.0"
+      },
+      {
+        "name": "joblib",
+        "version": "1.5.3"
+      },
+      {
+        "name": "jsonpath",
+        "version": "0.82.2"
+      },
+      {
+        "name": "kiwisolver",
+        "version": "1.4.7"
+      },
+      {
+        "name": "lightgbm",
+        "version": "4.5.0"
+      },
+      {
+        "name": "lxml",
+        "version": "6.1.3"
+      },
+      {
+        "name": "matplotlib",
+        "version": "3.8.4"
+      },
+      {
+        "name": "mccabe",
+        "version": "0.7.0"
+      },
+      {
+        "name": "mini-racer",
+        "version": "0.12.4"
+      },
+      {
+        "name": "mypy_extensions",
+        "version": "1.1.0"
+      },
+      {
+        "name": "numpy",
+        "version": "1.26.4"
+      },
+      {
+        "name": "openpyxl",
+        "version": "3.1.5"
+      },
+      {
+        "name": "packaging",
+        "version": "26.3"
+      },
+      {
+        "name": "pandas",
+        "version": "2.2.3"
+      },
+      {
+        "name": "pathspec",
+        "version": "1.1.1"
+      },
+      {
+        "name": "pillow",
+        "version": "11.3.0"
+      },
+      {
+        "name": "pip",
+        "version": "23.0.1"
+      },
+      {
+        "name": "platformdirs",
+        "version": "4.4.0"
+      },
+      {
+        "name": "pluggy",
+        "version": "1.6.0"
+      },
+      {
+        "name": "pyarrow",
+        "version": "17.0.0"
+      },
+      {
+        "name": "pycodestyle",
+        "version": "2.14.0"
+      },
+      {
+        "name": "pycparser",
+        "version": "2.23"
+      },
+      {
+        "name": "pyflakes",
+        "version": "3.4.0"
+      },
+      {
+        "name": "pyparsing",
+        "version": "3.3.2"
+      },
+      {
+        "name": "pypdf",
+        "version": "6.13.3"
+      },
+      {
+        "name": "pytest",
+        "version": "8.3.5"
+      },
+      {
+        "name": "pytest-cov",
+        "version": "6.2.1"
+      },
+      {
+        "name": "pytest-xdist",
+        "version": "3.8.0"
+      },
+      {
+        "name": "python-dateutil",
+        "version": "2.9.0.post0"
+      },
+      {
+        "name": "pytz",
+        "version": "2026.3.post1"
+      },
+      {
+        "name": "PyYAML",
+        "version": "6.0.2"
+      },
+      {
+        "name": "requests",
+        "version": "2.32.5"
+      },
+      {
+        "name": "scikit-learn",
+        "version": "1.5.2"
+      },
+      {
+        "name": "scipy",
+        "version": "1.13.1"
+      },
+      {
+        "name": "setuptools",
+        "version": "79.0.1"
+      },
+      {
+        "name": "six",
+        "version": "1.17.0"
+      },
+      {
+        "name": "soupsieve",
+        "version": "2.8.4"
+      },
+      {
+        "name": "tabulate",
+        "version": "0.9.0"
+      },
+      {
+        "name": "threadpoolctl",
+        "version": "3.6.0"
+      },
+      {
+        "name": "tomli",
+        "version": "2.4.1"
+      },
+      {
+        "name": "tqdm",
+        "version": "4.70.1"
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0"
+      },
+      {
+        "name": "tzdata",
+        "version": "2026.4"
+      },
+      {
+        "name": "urllib3",
+        "version": "2.6.3"
+      },
+      {
+        "name": "webencodings",
+        "version": "0.5.1"
+      },
+      {
+        "name": "wheel",
+        "version": "0.45.1"
+      },
+      {
+        "name": "xgboost",
+        "version": "2.1.4"
+      },
+      {
+        "name": "xlrd",
+        "version": "2.0.2"
+      },
+      {
+        "name": "zipp",
+        "version": "3.23.1"
+      }
+    ],
+    "platform": "Windows-10-10.0.26340-SP0",
+    "processor": "UNKNOWN",
+    "profiled": false,
+    "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+    "python": "3.9.25 (main, Nov  3 2025, 22:44:01) [MSC v.1929 64 bit (AMD64)]",
+    "subject_dirty": false,
+    "subject_root": "D:\\Code\\quant-tv-ci-runtime-optimization",
+    "subject_sha": "91697291ae6c22dc2552117582727e68b1c313af",
+    "subject_tree": "95fa8520e1fba335931913e9bf6ead6ea1154f0e",
+    "utc_started": "2026-10-16T11:31:09.242232+00:00",
+    "worker_resources_plugin_sha256": "38ac0384436580b03fc651b6f9596cf564ae196b0c77c67e3a745975991691a5",
+    "worker_state_root": "D:\\Code\\quant-tv-ci-runtime-optimization\\results\\diagnostics\\ci-runtime-optimization\\20261016\\windows-final-code-worker-state",
+    "workers": 0
+  },
+  "files_sha256": {
+    "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+    "configuration-audit.log": "877a265604806a183a1f54a2a7f3300e4b6c98710c0937b2436c4c1fe717a5ca",
+    "coverage.xml": "8616e7a9c395fd534dec56f1d4a7b5f2ad69c7a5ab89080dc166679b1a74bf62",
+    "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+    "environment.json": "2c96e8573ab7a6e4669f1aeb87c0dd435913712100fc99d8c8a1b51cecc36e7a",
+    "fixture-equivalence.json": "9bbb49de496c4552124248830a46c47dee4f1edd6a1071ab544e4ba1dd9cc49c",
+    "pytest-controller.json": "060e6cbcfbdec20b9ce86a76d749f62350bea92cbd3719b34877915c6a846b45",
+    "pytest.log": "ae30e66e7c503cbaae00fa802645ac8c3e90523a9a18e20c698dbb02a95b8c98",
+    "research.xml": "401b690d81c268d0c96088ecbd5e56f4f26bd54c9d87ebc19ee5fd66416e3574",
+    "result.json": "180f07fe3447b7cafd81a2a00cf35e846f303924f23bf58561cc2407bc4501fe",
+    "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+    "validation.json": "fc74f6cc01e97c00cb3b0d7da91ed3d38d93942b923fc29a3aa1be61fb597081",
+    "worker-resources-controller.json": "349720225faf4f18c9be64df6678efe414f161f0bef68adc42a94162cfcd4f5d"
+  },
+  "financial_qualification": "NO LIVE MONEY; no qualification granted",
+  "kind": "actual_local_windows_full_offline_coverage_execution",
+  "pytest_summary_seconds": 1653.61,
+  "raw_evidence_location": "local audit directory; final archive supplied separately",
+  "result": {
+    "all_ids_count": 3144,
+    "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+    "cpu_system_seconds": "UNKNOWN",
+    "cpu_user_seconds": "UNKNOWN",
+    "deselected_ids_count": 2,
+    "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+    "exit_code": 0,
+    "rss_sampling_seconds": 0.25,
+    "rss_shared_pages_may_be_double_counted": true,
+    "sampled_memory_headroom": {
+      "minimum_available_bytes": "UNKNOWN",
+      "minimum_headroom_fraction": "UNKNOWN",
+      "physical_total_bytes": "UNKNOWN"
+    },
+    "sampled_process_tree_rss_peak_bytes": "UNKNOWN",
+    "selected_ids_count": 3142,
+    "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+    "wall_seconds": 1654.8859114000002
+  },
+  "validation": {
+    "coverage_floor_applied": false,
+    "coverage_line_differences": {
+      "forward/activation.py": {
+        "gained": [
+          163,
+          164
+        ],
+        "lost": []
+      }
+    },
+    "coverage_line_rate": 0.855,
+    "coverage_lines_covered": 16014,
+    "coverage_lines_valid": 18730,
+    "coverage_sha256": "8616e7a9c395fd534dec56f1d4a7b5f2ad69c7a5ab89080dc166679b1a74bf62",
+    "coverage_source_count": 133,
+    "coverage_threshold": null,
+    "deselected": 2,
+    "failed": 0,
+    "junit_counts": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 3142
+    },
+    "junit_sha256": "401b690d81c268d0c96088ecbd5e56f4f26bd54c9d87ebc19ee5fd66416e3574",
+    "kind": "software_coverage_only_not_financial_certification",
+    "outcomes_sha256": "273418b21479ed70c6face98bd11eba45370873628183d7f9cbea1807bfd284c",
+    "passed": 3142,
+    "phase_count": 9426,
+    "policy": "production-complete",
+    "skipped": 0,
+    "skips": {},
+    "subject_sha": "91697291ae6c22dc2552117582727e68b1c313af",
+    "workers": 0
+  }
+}

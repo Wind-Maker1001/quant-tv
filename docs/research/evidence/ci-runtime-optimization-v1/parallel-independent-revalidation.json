@@ -1,0 +1,214 @@
+{
+  "checker_sha": "91697291ae6c22dc2552117582727e68b1c313af",
+  "kind": "independent_revalidation_of_actual_downloads_not_a_new_test_run",
+  "original_downloads_unchanged": true,
+  "policy": "experimental-strict",
+  "runs": [
+    {
+      "original_conclusion": "success",
+      "run_id": 38891297145,
+      "strict_revalidation": "passed",
+      "validation": {
+        "coverage_floor_applied": true,
+        "coverage_line_differences": {},
+        "coverage_line_rate": 0.8536,
+        "coverage_lines_covered": 15988,
+        "coverage_lines_valid": 18730,
+        "coverage_sha256": "87974d80a6010224165ef943f9f56fd97d00fe63d8857c9732de8a210588c2b3",
+        "coverage_source_count": 133,
+        "coverage_threshold": null,
+        "deselected": 2,
+        "failed": 0,
+        "junit_counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 1,
+          "tests": 3142
+        },
+        "junit_sha256": "48c1fc1073ed0a0177446ffca78c873491e0ef5ae02634e17a6e2fb0f96c84b2",
+        "kind": "software_coverage_only_not_financial_certification",
+        "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+        "passed": 3141,
+        "phase_count": 9425,
+        "policy": "experimental-strict",
+        "skipped": 1,
+        "skips": {
+          "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+            "Skipped: Windows EOF byte-range lock contract"
+          ]
+        },
+        "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+        "workers": 0
+      }
+    },
+    {
+      "original_conclusion": "success",
+      "run_id": 38891303665,
+      "strict_revalidation": "passed",
+      "validation": {
+        "coverage_floor_applied": true,
+        "coverage_line_differences": {},
+        "coverage_line_rate": 0.8536,
+        "coverage_lines_covered": 15988,
+        "coverage_lines_valid": 18730,
+        "coverage_sha256": "3c1cfad1bbfd3bdb7c1851c8630abe48e71d422dddbace2fb2ca02b771406944",
+        "coverage_source_count": 133,
+        "coverage_threshold": null,
+        "deselected": 2,
+        "failed": 0,
+        "junit_counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 1,
+          "tests": 3142
+        },
+        "junit_sha256": "eb7a0801122c776b81b2da30a45c55c7e3163867f1a3f1eeec6fb8d9638487ed",
+        "kind": "software_coverage_only_not_financial_certification",
+        "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+        "passed": 3141,
+        "phase_count": 9425,
+        "policy": "experimental-strict",
+        "skipped": 1,
+        "skips": {
+          "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+            "Skipped: Windows EOF byte-range lock contract"
+          ]
+        },
+        "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+        "workers": 0
+      }
+    },
+    {
+      "original_conclusion": "failure",
+      "prior_execution_junit_inventory_and_worker_checks": "passed before strict coverage comparison",
+      "reason": "Covered-line regression requires investigation",
+      "run_id": 38891309461,
+      "strict_revalidation": "rejected"
+    },
+    {
+      "original_conclusion": "failure",
+      "prior_execution_junit_inventory_and_worker_checks": "passed before strict coverage comparison",
+      "reason": "Covered-line regression requires investigation",
+      "run_id": 38891314204,
+      "strict_revalidation": "rejected"
+    },
+    {
+      "original_conclusion": "success",
+      "run_id": 38891318921,
+      "strict_revalidation": "passed",
+      "validation": {
+        "coverage_floor_applied": true,
+        "coverage_line_differences": {},
+        "coverage_line_rate": 0.8536,
+        "coverage_lines_covered": 15988,
+        "coverage_lines_valid": 18730,
+        "coverage_sha256": "660adf4bcc5665c732ca5f86fd7b1272370b62c5ce3e463bb4075ac40e39b735",
+        "coverage_source_count": 133,
+        "coverage_threshold": null,
+        "deselected": 2,
+        "failed": 0,
+        "junit_counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 1,
+          "tests": 3142
+        },
+        "junit_sha256": "6a7bb9c93e3a71208f4ceb81a932dc2a804ae0d934dbee23cd4b8ea3152c090c",
+        "kind": "software_coverage_only_not_financial_certification",
+        "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+        "passed": 3141,
+        "phase_count": 9425,
+        "policy": "experimental-strict",
+        "skipped": 1,
+        "skips": {
+          "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+            "Skipped: Windows EOF byte-range lock contract"
+          ]
+        },
+        "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+        "workers": 0
+      }
+    },
+    {
+      "original_conclusion": "success",
+      "run_id": 38891323318,
+      "strict_revalidation": "passed",
+      "validation": {
+        "coverage_floor_applied": true,
+        "coverage_line_differences": {},
+        "coverage_line_rate": 0.8536,
+        "coverage_lines_covered": 15988,
+        "coverage_lines_valid": 18730,
+        "coverage_sha256": "833d030e4a29e6e397ae2fdab60580d0ed2a81f5f90a56eac894baf543912cb0",
+        "coverage_source_count": 133,
+        "coverage_threshold": null,
+        "deselected": 2,
+        "failed": 0,
+        "junit_counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 1,
+          "tests": 3142
+        },
+        "junit_sha256": "aa3180326151f9394847dcf2ea1db70fdabdd3b5510bfef51750ca04e9461f26",
+        "kind": "software_coverage_only_not_financial_certification",
+        "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+        "passed": 3141,
+        "phase_count": 9425,
+        "policy": "experimental-strict",
+        "skipped": 1,
+        "skips": {
+          "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+            "Skipped: Windows EOF byte-range lock contract"
+          ]
+        },
+        "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+        "workers": 0
+      }
+    },
+    {
+      "original_conclusion": "failure",
+      "prior_execution_junit_inventory_and_worker_checks": "passed before strict coverage comparison",
+      "reason": "Covered-line regression requires investigation",
+      "run_id": 38891327855,
+      "strict_revalidation": "rejected"
+    },
+    {
+      "original_conclusion": "success",
+      "run_id": 38891332161,
+      "strict_revalidation": "passed",
+      "validation": {
+        "coverage_floor_applied": true,
+        "coverage_line_differences": {},
+        "coverage_line_rate": 0.8536,
+        "coverage_lines_covered": 15988,
+        "coverage_lines_valid": 18730,
+        "coverage_sha256": "d7d5ac8263bdb3a724dbf5261bd74eeed3a56efdd5af95de6cc18eace6767bcc",
+        "coverage_source_count": 133,
+        "coverage_threshold": null,
+        "deselected": 2,
+        "failed": 0,
+        "junit_counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 1,
+          "tests": 3142
+        },
+        "junit_sha256": "5c43bd25b7e5b6c87bcd0b8b403c914005ce068d28fbc0fc23eae5a99c439403",
+        "kind": "software_coverage_only_not_financial_certification",
+        "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+        "passed": 3141,
+        "phase_count": 9425,
+        "policy": "experimental-strict",
+        "skipped": 1,
+        "skips": {
+          "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+            "Skipped: Windows EOF byte-range lock contract"
+          ]
+        },
+        "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+        "workers": 3
+      }
+    }
+  ]
+}

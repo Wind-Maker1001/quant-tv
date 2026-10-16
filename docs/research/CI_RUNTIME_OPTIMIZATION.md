@@ -1,7 +1,7 @@
 # FactorLab CI 运行效率与等价性验证
 
-状态：IN_PROGRESS，预计PARTIAL（并行已回退，最终HEAD验收待完成）。2026-10-16，Python 3.9，NO LIVE MONEY。
-本文件随阶段更新；尚未完成的实验和未知指标不得视为验收通过。
+状态：PARTIAL方案（保留串行，并行回退）。2026-10-16，Python 3.9，NO LIVE MONEY。
+本报告记录已完成的对照及代码验收；最终文档提交的HEAD、PR合并测试SHA、运行链接和独立复审结论在[Draft PR #9](https://github.com/Wind-Maker1001/quant-tv/pull/9)的最终验收收据中单独绑定。未完成运行和UNKNOWN不得视为通过；不在文件中伪造它自身提交之后才会产生的Actions结果。
 
 ## 1. 基线与证据来源
 
@@ -39,7 +39,7 @@ PR #8 已由用户人工合并。冻结 main 为 `94baf83e993b47344caa12772b65c6
 
 ## 3. 触发策略与保护规则兼容性
 
-触发修改已完成，事件/分支/路径合同通过，开发分支新提交未产生额外Push验证；PR入口真实验证待后续Draft PR。策略为main Push、面向main的所有PR和手动完整验证；
+触发修改已完成，事件/分支/路径合同通过，开发分支新提交未产生额外Push验证；Draft PR #9已实际启动全部三个验证workflow。策略为main Push、面向main的所有PR和手动完整验证；
 开发分支Push不再额外启动三个验证工作流。保留检查名称，移除路径过滤，所有PR路径均实际验证。
 手动诊断独立分组，不替代PR验收；main与诊断按run ID隔离，只有同一PR的synchronize新提交可取消旧验证；标题/正文编辑不取消正在运行的验证。edited事件用于覆盖PR重新定向到main，元数据编辑也会实际重验。
 人工合并前不能声称新main Push策略已有实际合并后运行记录。
@@ -71,6 +71,7 @@ Windows隔离环境由现有研究包副本建立，再安装与CI一致的pytes
 四轮Python 3.9.25、完整依赖版本和测试集合一致；Runner镜像20261012.334.1、2 vCPU。热coverage两轮仍有明显CPU/墙钟波动，不能据单轮差分认定优化收益。无coverage观测差分约187–472秒，包含Runner波动，覆盖率成本仅作粗估。
 
 完整阶段表见[最慢40项CSV](evidence/ci-runtime-optimization-v1/baseline-phase-top40.csv)。
+CSV同时记录可能原因及建议，依据实际阶段、源码调用链和独立profile；未独立归因项明确保留UNKNOWN。其“按文件有限并行”是基线阶段的候选建议，本轮实验后已回退，不是最终采用配置。
 
 | 排名 | 阶段 | 秒 | node ID |
 |---:|---|---:|---|
@@ -155,7 +156,7 @@ exploratory.contract.sha256_file 21606次、0.645秒。它们均包含部分嵌�
 新增15项独立合同覆盖第五项金融文件变更、重命名、删除、4项字节漂移、历史manifest及迁移摘要篡改、扩张收据范围、断言改变、输入缩减和真实squash后离线单分支checkout。
 工程锚点与4个postimage的对应关系在收据生成及独立复审阶段核实；运行时固定收据SHA256及精确blob，不要求将来squash/rebase合并后仍保留分支中间commit对象。缺失中间对象的合法squash通过，任一字节漂移或收据改动仍失败。
 使用`--no-renames`修复原路径重命名漏检；新审计目录局部eol=lf属性保证迁移摘要在真实Windows CRLF checkout中仍可核验。
-迁移阶段独立复审无遗留P0/P1，最终HEAD仍待复审。迁移后正式候选的完整测量重新开始；研究集合仍须与冻结3144/3142清单完全相同。
+迁移阶段独立复审无遗留P0/P1，最终HEAD结论另见PR最终收据。迁移后正式候选的完整测量重新开始；研究集合仍须与冻结3144/3142清单完全相同。
 
 ## 7. 并行资源审计与实验
 
@@ -183,7 +184,7 @@ CI合同现共74项。最小静态依赖增加pytest-cov/coverage两项，以实
 
 ### 7.1 全部并行对照与回退决定
 
-[完整环境/步骤/文件哈希](evidence/ci-runtime-optimization-v1/parallel-bf10661-runs.json)及[回退摘要](evidence/ci-runtime-optimization-v1/parallel-rollback-summary.json)保留全部8轮。Python3.9.25、研究依赖和诊断插件版本一致；2 vCPU，AMD EPYC 9V45，镜像20261012.334.1；热pip下载缓存、native线程1、私有全新字体缓存。CPU配额不可读为UNKNOWN。全部pytest均3141 passed、1 skipped、2 deselected，但严格覆盖比较在三轮并行样本失败。
+[完整环境/步骤/文件哈希](evidence/ci-runtime-optimization-v1/parallel-bf10661-runs.json)及[回退摘要](evidence/ci-runtime-optimization-v1/parallel-rollback-summary.json)保留全部8轮。Python3.9.25、70个已安装包版本、2 vCPU及镜像20261012.334.1一致；实际CPU有AMD EPYC 9V45、9V74、7763三种。两轮优化串行恰均为7763，CPU型号也是混杂因素，不能把差异都归为调度。条件为热pip下载缓存、native线程1、私有全新字体缓存。CPU配额不可读为UNKNOWN。全部pytest均3141 passed、1 skipped、2 deselected，但严格覆盖比较在三轮并行样本失败。
 
 | 被测方案 | 实际Run | pytest秒 | 进程秒 | workflow秒 | user+system CPU秒 | 最低内存余量 | 原状态 / covered行 |
 |---|---|---:|---:|---:|---:|---:|---|
@@ -197,6 +198,8 @@ CI合同现共74项。最小静态依赖增加pytest-cov/coverage两项，以实
 | 3 Workers | [38891332161](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891332161) | 499.09 | 499.587 | 593 | 945.702 | 73.7% | success / 15988 |
 
 三轮失败并行样本仅丢失activation.py第163/164行，原真实失败状态保留。它们没有Worker漏覆盖、漏项或重复JUnit，失败来自新增严格比较门禁。3 Workers第二轮单次workflow593秒不能替代三次连续等价通过；不继续挑选重跑。内存余量均高于20%，RSS峰值串行约1.04–1.06GB、2 Workers约1.53–1.58GB、3 Workers约2.04–2.10GB（可能重复计共享页），不是整个机器精确独占RSS。CPU消耗及墙钟受调度波动影响，不把单次比值当确定增幅。
+
+各run CPU型号依次为：38891297145=9V45、38891303665=7763、38891309461=9V74、38891314204=9V45、38891318921=9V74、38891323318=7763、38891327855=9V45、38891332161=9V45。[独立下载复核](evidence/ci-runtime-optimization-v1/parallel-independent-revalidation.json)在临时副本上重验真实材料：5轮通过、3轮同样被严格比较拒绝，原下载及原始状态未改写。
 
 采用最简单的串行方案，保留原native线程配置。并行及线程限制均不进入普通PR/main验证；显式手动诊断仍允许复核，不能代替PR验收。不引入多job分片。
 
@@ -230,10 +233,58 @@ CI合同现共74项。最小静态依赖增加pytest-cov/coverage两项，以实
 [模型调用记录](evidence/ci-runtime-optimization-v1/model-call-count-equivalence.json)证实热点样本所有训练、预测、save/load次数完全相同。
 保留全部轮次及失败样本，不从不同测试集合、缓存命中或Runner波动推导确定收益。
 
+### 8.1 最终串行代码的实际验收
+
+代码提交为`91697291ae6c22dc2552117582727e68b1c313af`；工程postimage锚点`7e57aa6add9f1f7f7f16bff9ad420870d15b84de`，迁移收据SHA256为`d08e34e905db5b0dee4750220cc5aff5b46b966796b2b554f74c5e5e2347ab9e`。
+[三项实际工作流及完整收据](evidence/ci-runtime-optimization-v1/code-9169729-runs.json)：[研究38894387768](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38894387768)、[静态38894392393](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38894392393)、[actionlint38894396919](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38894396919)均成功。它们是workflow_dispatch，明确不能替代真实PR验收。
+
+| 指标 | 冻结main的有效热缓存基线1 | 最终串行代码普通验证 |
+|---|---|---|
+| 精确被测SHA | 94baf83e993b47344caa12772b65c646da4e09d0 | 91697291ae6c22dc2552117582727e68b1c313af |
+| 精确控制代码SHA | 22c236ca7ca443913c85fbd2a69cabd85d55f3c6 | 91697291ae6c22dc2552117582727e68b1c313af |
+| Python/完整依赖 | 3.9.25 / 68包，版本清单见收据 | 3.9.25 / 同68包，完整清单逐项相等 |
+| node ID集合SHA256 | 218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183 | 完全相同 |
+| 收集/选中 | 3144 / 3142 | 3144 / 3142 |
+| passed/failed/skipped/deselected | 3141 / 0 / 1 / 2 | 3141 / 0 / 1 / 2 |
+| pytest内部秒 | 1180.35 | 1211.88 |
+| pytest进程秒 | 1181.384 | 1213.071 |
+| 完整workflow秒 | 1262（诊断入口） | 1290（普通完整入口） |
+| 依赖安装秒 | 36 | 32 |
+| coverage | 15988/18730 = 85.36% | 相同，133文件、逐行无差异 |
+| JUnit/coverage验证 | 真实结果通过，SHA见收据 | 真实结果通过，SHA见收据 |
+| 进程树RSS采样峰值 | 1,041,321,984字节；最低余量81.41% | 1,039,695,872字节；最低余量81.37% |
+| pytest子进程树user+system CPU秒 | 1240.473 | 1272.568 |
+| 金融资格门禁 | 原门禁完整 | 不变，不授予新资格 |
+
+这不是整体提速证明：控制代码/入口有区别、CPU型号未在早期基线独立采集，完整研究墙钟未稳定达标。静态最终普通workflow61秒、job56秒、安装8秒，实际安装21个工具包；同时保留前期47/54秒观测，不只展示最快一轮。
+
+[Windows完整结果](evidence/ci-runtime-optimization-v1/windows-9169729-run.json)：3142 passed、0 failed、0 skipped、2 deselected，pytest1653.61秒、进程1654.886秒；coverage16014/18730，原平台基线16012/18730。仅activation.py163/164新增覆盖，没有lost行。Windows原生EOF锁测试在Linux跳过、Windows实际执行，因此两平台通过数差1符合冻结合同。Windows CPU/峰值RSS/安装耗时为UNKNOWN；不把本地27分33秒与Linux做加速比较。
+
+### 8.2 安装、执行、I/O及报告的计时边界
+
+| 阶段 | 有效热基线1秒 | 最终串行代码秒 | 边界 |
+|---|---:|---:|---|
+| created→run_started | 0 | 0 | GitHub API时间戳；Runner排队与启动无法独立分离，UNKNOWN |
+| job setup | 1 | 1 | 不含不可见的Runner预配 |
+| Git检出 | 13+4 | 13 | 基线含额外被测worktree；入口不同，不能归为优化收益 |
+| Python设置 | 16 | 18 | 含pip缓存恢复等setup-python行为 |
+| 依赖安装 | 36 | 32 | 全新环境实际安装，热缓存仅指pip下载缓存 |
+| pytest收集 | 8.196 | 8.954 | Observer collection hook |
+| setup合计 | 265.103 | 275.305 | 真实阶段，包含该阶段所有工作 |
+| call合计 | 897.154 | 916.993 | 包含计算/I/O/覆盖插桩，不能再加其内部profile耗时 |
+| teardown合计 | 0.813 | 0.867 | 真实阶段 |
+| sessionfinish hook | 0.094 | 0.098 | 仅该hook；不等于完整报告生成成本 |
+| 报告校验 | 0 | 0 | API秒级舍入；不意味着无耗时 |
+| 配置审计 | 2 | 2 | 原audit实际执行 |
+| artifacts上传 | 1 | 0 | API秒级舍入，原始日志可复查 |
+| workflow墙钟 | 1262 | 1290 | created→updated；与pytest秒分开报告 |
+
+pytest-cov6.2.1在runtestloop内生成coverage XML；JUnit/sessionfinish仅部分计时可见，完整JUnit/coverage生成分离成本UNKNOWN。coverage插桩的on/off观测差分含CPU/Runner混杂，不当成确定开销。模型训练/预测、Parquet、绘图及哈希的独立profile见第6节，只记录实际调用/inclusive成本，嵌套不相加。Linux CPU指标来自resource.RUSAGE_CHILDREN所统计pytest子进程树，不含安装、父采样器或Runner其他进程；计费CPU和整个job精确CPU为UNKNOWN。
+
 ## 9. 金融安全边界
 
 原14因子、39自动发现候选冻结结果、Golden、历史收据、PIT、HFQ与公司行为、证券身份状态、
-统计接受/拒绝条件、walk-forward边界及防泄漏、Forward时间门禁、交易执行和NO LIVE MONEY均须保持不变。
+统计接受/拒绝条件、walk-forward边界及防泄漏、Forward时间门禁、交易执行和NO LIVE MONEY保持不变。
 CI性能证据和软件覆盖率不授予金融数据或实盘资格。
 
 ## 10. 失败传播与反例
@@ -254,12 +305,18 @@ CI性能证据和软件覆盖率不授予金融数据或实盘资格。
 
 上述早期诊断因pytest根目录/配置取自父checkout而被清单校验拒绝，保持原始失败状态，不用于加速验收。修复后重新采集的有效四轮为38862847746、38862851687、38862855654、38862859060；119项固定热点profile为38863504342，明确不作为完整CI或加速对照。Windows原始三失败保留，使用D盘新临时根后五轮锁窄测及完整基线均通过：3142 passed、0 skipped、2 deselected，覆盖16012/18730行（85.49%）。Windows本地CPU/RSS不可测为UNKNOWN；不将26分钟本地结果与Linux直接比较。完整下载、日志、XML和校验收据放在独立本地审计目录及对应Actions artifacts。
 
+### 11.1 Draft PR与最终HEAD收据
+
+[Draft PR #9](https://github.com/Wind-Maker1001/quant-tv/pull/9)已创建。[opened事件快照](evidence/ci-runtime-optimization-v1/pr-opened-events.json)证明Draft仍实际启动研究[38897499099](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38897499099)、静态[38897499193](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38897499193)及actionlint[38897499301](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38897499301)，不是只凭YAML推断。初始PR HEAD为91697291ae6c22dc2552117582727e68b1c313af，合并测试SHA为2253246580a1d7b1aa2bafa34374b1cdfa59552d，base仍94baf83e993b47344caa12772b65c646da4e09d0。
+
+本报告及聚合证据的后续提交将触发真实synchronize；旧HEAD可被新HEAD取消，不把取消样本当通过。最终验收收据单独列出最终40位PR HEAD、实际checkout/merge SHA、每项pull_request运行、完整Windows运行、无额外push验证及手动诊断未被PR取消的事实。只有这些真实检查完成且独立复审无P0/P1，才按PARTIAL交付；手动成功不代替PR检查。收据发布在同PR Conversation及最终交付中，避免把未来结果写入当前commit形成自指。
+
 ## 12. 独立Codex复审与最终结论
 
 中期独立预审发现三项P1：未强制比较平台执行/覆盖范围、收据来源未校验、coverage逐行hits与汇总未对账。
-已加入冻结平台合同、精确SHA/tree绑定及逐行汇总交叉验证，并扩展反例；最终HEAD复审待完成。
+已加入冻结平台合同、精确SHA/tree绑定及逐行汇总交叉验证，并扩展反例。独立Codex子代理对代码91697291ae6c22dc2552117582727e68b1c313af复审通过，无遗留P0/P1，另独立复跑29项执行合同、15项迁移合同和8项触发/workflow合同。四postimage在工程锚点、receipt、代码tree及worktree完全相等；最终文档HEAD的复审与实跑另在PR最终验收收据绑定，不冒充GitHub自动批准review。
 P3输入复用另经独立只读复审：原构造体和45项测试主体保持不变；逐列无共享数组，并额外修改日期数组、索引名、attrs验证下一次调用仍精确相同，未发现P0/P1。
-预计PARTIAL：重复事件调度、静态依赖和固定输入构造已有可复核资源收益；并行因严格等价证据不稳定回退，串行整体墙钟提速未获可靠证明，完整研究workflow未稳定达到10分钟。最终状态须待Windows全量、Draft PR真实三项检查和最终HEAD独立复审完成后确认。
+选择PARTIAL：重复事件调度、静态依赖和固定输入构造已有可复核资源收益；并行因严格等价证据不稳定回退，串行整体墙钟提速未获可靠证明，完整研究workflow未稳定达到10分钟。代码Windows全量和三项远程完整验证均通过；最终文档HEAD的完整Windows、真实PR检查与独立复审须以外部最终验收收据为准。
 
 遗留风险：保护规则API UNKNOWN；Runner约2倍波动；原锁竞争覆盖分支随时序波动；Windows曾有跨盘相对路径错误及一次原生锁PermissionError，完整复跑使用同D盘全新临时根且不改锁语义；新main Push仅经合同验证，人工合并后真实运行尚未发生。
 
@@ -285,4 +342,5 @@ python .github/scripts/ci/summarize_runtime.py results/diagnostics/reproduce
 手动远程采样使用现有research-tests.yml的workflow_dispatch，mode=benchmark，明确指定40位subject_sha、workers、coverage、pip_cache、profile和threads。
 默认mode=verify执行真正完整coverage验证。profile=true仅运行固定119项热点用于定位，元数据和job名称均明确其不具验收资格。
 下载与汇总用download_runtime_evidence.py和compile_runtime_receipts.py；原始ZIP、XML、完整版本、阶段和进程记录保存在对应Actions artifacts，聚合收据列出文件SHA256。
+Actions artifacts保留90天，需在到期前独立下载；不要将其当永久档案。Windows完整材料留存独立本地审计目录，最终交付提供带SHA256清单的本地归档；不谎称Windows材料已经上传至Ubuntu运行的artifact。所有上传均限软件执行、合成测试和聚合证据，无私有行情、凭据或未授权原始材料。
 基线清单仅可在合法新增测试或研究源码变更后，经完整重新冻结与独立复审更新；不得为通过性能验收修改期望清单。
