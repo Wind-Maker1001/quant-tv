@@ -1,28 +1,19 @@
 name: FactorLab static checks
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
-    paths:
-      - 'qbot/research/**'
-      - 'tests/research/**'
-      - 'examples/research/**'
-      - '.github/workflows/**'
-      - '.github/scripts/ci/**'
-      - 'dev/requirements-research*.txt'
-  push:
-    branches: [main, 'codex/**']
-    paths:
-      - 'qbot/research/**'
-      - 'tests/research/**'
-      - 'examples/research/**'
-      - '.github/workflows/**'
-      - '.github/scripts/ci/**'
-      - 'dev/requirements-research*.txt'
+    types: [opened, reopened, synchronize, edited]
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: factorlab-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   research-static:

@@ -2,27 +2,10 @@ name: FactorLab research tests
 
 on:
   push:
-    paths:
-      - "qbot/research/**"
-      - "tests/research/**"
-      - "examples/research/**"
-      - "configs/research/**"
-      - "dev/requirements-research.txt"
-      - "dev/requirements-research-ci.txt"
-      - "pytest.ini"
-      - ".github/workflows/**"
-      - ".github/scripts/ci/**"
+    branches: [main]
   pull_request:
-    paths:
-      - "qbot/research/**"
-      - "tests/research/**"
-      - "examples/research/**"
-      - "configs/research/**"
-      - "dev/requirements-research.txt"
-      - "dev/requirements-research-ci.txt"
-      - "pytest.ini"
-      - ".github/workflows/**"
-      - ".github/scripts/ci/**"
+    branches: [main]
+    types: [opened, reopened, synchronize, edited]
   workflow_dispatch:
     inputs:
       mode:
@@ -53,8 +36,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: factorlab-research-${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
-  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+  group: factorlab-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   phase-1-offline:
