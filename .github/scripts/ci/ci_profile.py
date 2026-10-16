@@ -73,8 +73,10 @@ class Observer:
             }
         )
 
-    @pytest.hookimpl(trylast=True)
+    @pytest.hookimpl(hookwrapper=True, tryfirst=True)
     def pytest_sessionfinish(self, exitstatus):
+        started = time.perf_counter()
+        yield
         self.destination.mkdir(parents=True, exist_ok=True)
         payload = {
             "kind": "actual_pytest_observation_not_financial_certification",
@@ -82,6 +84,8 @@ class Observer:
             "exitstatus": int(exitstatus),
             "elapsed_seconds": time.perf_counter() - self.started,
             "collection_seconds": self.collection_seconds,
+            "report_generation_and_sessionfinish_seconds": time.perf_counter()
+            - started,
             "all_ids": self.all_ids,
             "selected_ids": self.selected_ids,
             "deselected_ids": self.deselected_ids,

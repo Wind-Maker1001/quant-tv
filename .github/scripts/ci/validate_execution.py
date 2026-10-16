@@ -24,7 +24,8 @@ def junit_address(nodeid):
 
 def coverage_inventory(path):
     result = {}
-    for source in ET.parse(path).findall(".//class"):
+    root = ET.parse(path).getroot()
+    for source in root.findall(".//class"):
         name = source.attrib["filename"].replace("\\", "/")
         if "qbot/research/" in name:
             name = name.split("qbot/research/", 1)[1]
@@ -39,13 +40,41 @@ def coverage_inventory(path):
                 if int(line.attrib["hits"]) > 0
             ),
         }
+        if len(result[name]["valid"]) != len(set(result[name]["valid"])):
+            raise ValueError("Duplicate coverage line")
+        if any(int(line.attrib["hits"]) < 0 for line in lines):
+            raise ValueError("Negative coverage hits")
+    valid = sum(len(value["valid"]) for value in result.values())
+    covered = sum(len(value["covered"]) for value in result.values())
+    if valid != int(root.attrib["lines-valid"]) or covered != int(
+        root.attrib["lines-covered"]
+    ):
+        raise ValueError("Coverage aggregates do not match actual line hits")
+    if valid <= 0 or abs(float(root.attrib["line-rate"]) - covered / valid) > 0.000051:
+        raise ValueError("Coverage rate does not match actual line hits")
     return result
 
 
-def validate(directory, expected, reference=None):
+def validate(
+    directory,
+    expected,
+    reference=None,
+    subject_sha=None,
+    controller_sha=None,
+    subject_tree=None,
+):
     directory = Path(directory)
     result = load(directory / "result.json")
     environment = load(directory / "environment.json")
+    if environment["subject_dirty"]:
+        raise ValueError("Measured subject was not clean")
+    for key, wanted in (
+        ("subject_sha", subject_sha),
+        ("controller_sha", controller_sha),
+        ("subject_tree", subject_tree),
+    ):
+        if wanted is not None and environment[key] != wanted:
+            raise ValueError("Evidence belongs to a different " + key)
     controller = load(directory / "pytest-controller.json")
     if result["exit_code"] or controller["exitstatus"] or controller["worker_errors"]:
         raise ValueError("Actual pytest or worker failed")
@@ -164,12 +193,48 @@ def validate(directory, expected, reference=None):
             json.dumps(outcomes, sort_keys=True).encode()
         ).hexdigest(),
     }
+    family = environment["platform"].split("-", 1)[0]
+    contract = expected["execution_by_platform"][family]
+    if validation["outcomes_sha256"] != contract["outcomes_sha256"]:
+        raise ValueError("Execution outcomes differ from frozen platform baseline")
+    if sorted(skips) != contract["skipped_nodeids"]:
+        raise ValueError("Unexpected skipped tests")
+    normalized_skips = {
+        key: [
+            reason.removeprefix("Skipped: ") if reason else reason for reason in reasons
+        ]
+        for key, reasons in skips.items()
+    }
+    if normalized_skips != {
+        key: [value] for key, value in contract["junit_skip_messages"].items()
+    }:
+        raise ValueError("Skip reasons differ from frozen platform baseline")
     if environment["coverage"]:
         validation.update(
             validate_reports(directory / "coverage.xml", directory / "research.xml")
         )
         inventory = coverage_inventory(directory / "coverage.xml")
         validation["coverage_source_count"] = len(inventory)
+        validation["coverage_line_differences"] = {
+            key: {
+                "lost": sorted(
+                    set(contract["coverage_covered_lines"].get(key, []))
+                    - set(value["covered"])
+                ),
+                "gained": sorted(
+                    set(value["covered"])
+                    - set(contract["coverage_covered_lines"].get(key, []))
+                ),
+            }
+            for key, value in inventory.items()
+            if value["covered"] != contract["coverage_covered_lines"].get(key, [])
+        }
+        if {key: value["valid"] for key, value in inventory.items()} != contract[
+            "coverage_valid_lines"
+        ]:
+            raise ValueError("Coverage source inventory differs from frozen baseline")
+        if validation["coverage_lines_covered"] < contract["coverage_lines_covered"]:
+            raise ValueError("Covered-line regression requires investigation")
         if reference:
             old_inventory = coverage_inventory(Path(reference) / "coverage.xml")
             if {key: value["valid"] for key, value in inventory.items()} != {
@@ -198,11 +263,19 @@ if __name__ == "__main__":
     parser.add_argument("directory", type=Path)
     parser.add_argument("--expected", type=Path, required=True)
     parser.add_argument("--reference", type=Path)
+    parser.add_argument("--subject-sha")
+    parser.add_argument("--controller-sha")
+    parser.add_argument("--subject-tree")
     arguments = parser.parse_args()
     print(
         json.dumps(
             validate(
-                arguments.directory, load(arguments.expected), arguments.reference
+                arguments.directory,
+                load(arguments.expected),
+                arguments.reference,
+                arguments.subject_sha,
+                arguments.controller_sha,
+                arguments.subject_tree,
             ),
             sort_keys=True,
         )

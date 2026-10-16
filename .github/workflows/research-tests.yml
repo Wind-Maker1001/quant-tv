@@ -169,6 +169,7 @@ jobs:
           GIT_LFS_SKIP_SMUDGE=1 git worktree add --detach "$GITHUB_WORKSPACE/benchmark-subject" "$SUBJECT_SHA"
           test "$(git -C benchmark-subject rev-parse HEAD)" = "$SUBJECT_SHA"
           test -z "$(git -C benchmark-subject status --porcelain)"
+          printf 'SUBJECT_TREE=%s\n' "$(git -C benchmark-subject rev-parse 'HEAD^{tree}')" >> "$GITHUB_ENV"
       - name: Set up fixed benchmark Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -203,10 +204,15 @@ jobs:
             --output "$GITHUB_WORKSPACE/results/diagnostics/ci/benchmark" \
             --workers "$EXPERIMENT_WORKERS" "${args[@]}"
       - name: Validate genuine complete execution and reports
+        env:
+          SUBJECT_SHA: ${{ inputs.subject_sha }}
+          CONTROLLER_SHA: ${{ github.sha }}
         run: >-
           python .github/scripts/ci/validate_execution.py
           results/diagnostics/ci/benchmark
           --expected docs/research/evidence/ci-runtime-optimization-v1/baseline-collection.json
+          --subject-sha "$SUBJECT_SHA" --controller-sha "$CONTROLLER_SHA"
+          --subject-tree "$SUBJECT_TREE"
       - name: Run subject configuration and architecture audit
         working-directory: benchmark-subject
         run: python -m qbot.research.cli audit --config configs/research/csi500_smoke.yaml

@@ -1,6 +1,7 @@
 """Synthetic contract failures are isolated from real research CI evidence."""
 
 import copy
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -64,12 +65,36 @@ class ExecutionEvidenceTests(unittest.TestCase):
         )
         result = load(cls.original / "result.json")
         cls.expected = {key: value for key, value in result.items() if "_ids_" in key}
+        controller = load(cls.original / "pytest-controller.json")
+        skip = next(
+            nodeid
+            for nodeid in controller["selected_ids"]
+            if nodeid.endswith("::test_actual_skip")
+        )
+        outcomes = {
+            nodeid: "skipped" if nodeid == skip else "passed"
+            for nodeid in controller["selected_ids"]
+        }
+        family = load(cls.original / "environment.json")["platform"].split("-", 1)[0]
+        cls.expected["execution_by_platform"] = {
+            family: {
+                "outcomes_sha256": hashlib.sha256(
+                    json.dumps(outcomes, sort_keys=True).encode()
+                ).hexdigest(),
+                "skipped_nodeids": [skip],
+                "junit_skip_messages": {skip: "synthetic contract skip"},
+                "coverage_valid_lines": {},
+                "coverage_covered_lines": {},
+                "coverage_lines_covered": 0,
+            }
+        }
 
     @classmethod
     def tearDownClass(cls):
         cls.sandbox.cleanup()
 
     def setUp(self):
+        self.expected = copy.deepcopy(type(self).expected)
         self.temporary = tempfile.TemporaryDirectory()
         self.directory = Path(self.temporary.name) / "copied-synthetic-evidence"
         shutil.copytree(self.original, self.directory)
@@ -177,6 +202,92 @@ class ExecutionEvidenceTests(unittest.TestCase):
     def test_missing_coverage_fails(self):
         self.mutate("environment.json", lambda value: value.update(coverage=True))
         self.reject()
+
+    def test_dirty_subject_is_rejected(self):
+        self.mutate("environment.json", lambda value: value.update(subject_dirty=True))
+        self.reject()
+
+    def test_wrong_subject_is_rejected(self):
+        with self.assertRaises(ValueError):
+            validate(self.directory, self.expected, subject_sha="0" * 40)
+
+    def test_wrong_controller_is_rejected(self):
+        with self.assertRaises(ValueError):
+            validate(self.directory, self.expected, controller_sha="0" * 40)
+
+    def test_wrong_tree_is_rejected(self):
+        with self.assertRaises(ValueError):
+            validate(self.directory, self.expected, subject_tree="0" * 40)
+
+    def synthetic_coverage(self):
+        """Deliberate unit-only XML, never uploaded as research measurement."""
+        self.mutate("environment.json", lambda value: value.update(coverage=True))
+        (self.directory / "coverage.xml").write_text(
+            '<coverage lines-valid="2" lines-covered="1" line-rate="0.5">'
+            "<sources><source>/synthetic/qbot/research</source></sources>"
+            '<packages><package><classes><class filename="synthetic_contract.py">'
+            '<lines><line number="1" hits="1"/><line number="2" hits="0"/></lines>'
+            "</class></classes></package></packages></coverage>",
+            encoding="utf-8",
+        )
+        contract = next(iter(self.expected["execution_by_platform"].values()))
+        contract.update(
+            coverage_valid_lines={"synthetic_contract.py": [1, 2]},
+            coverage_covered_lines={"synthetic_contract.py": [1]},
+            coverage_lines_covered=1,
+        )
+
+    def test_coverage_inventory_and_aggregates_agree(self):
+        self.synthetic_coverage()
+        self.assertEqual(
+            validate(self.directory, self.expected)["coverage_lines_covered"], 1
+        )
+
+    def test_false_coverage_aggregate_fails(self):
+        self.synthetic_coverage()
+        path = self.directory / "coverage.xml"
+        path.write_text(
+            path.read_text().replace('hits="1"', 'hits="0"'), encoding="utf-8"
+        )
+        with self.assertRaisesRegex(ValueError, "aggregates"):
+            validate(self.directory, self.expected)
+
+    def test_omitted_coverage_file_fails(self):
+        self.synthetic_coverage()
+        contract = next(iter(self.expected["execution_by_platform"].values()))
+        contract["coverage_valid_lines"]["omitted_source.py"] = [1]
+        with self.assertRaisesRegex(ValueError, "inventory"):
+            validate(self.directory, self.expected)
+
+    def test_changed_skip_reason_fails(self):
+        def change(value):
+            for report in value["reports"]:
+                if report["outcome"] == "skipped":
+                    report["skip_reason"] = "Skipped: another reason"
+
+        self.mutate("pytest-controller.json", change)
+        with self.assertRaisesRegex(ValueError, "Skip reasons"):
+            validate(self.directory, self.expected)
+
+    def test_additional_skip_fails(self):
+        def change(value):
+            for report in value["reports"]:
+                if report["when"] == "call":
+                    report.update(
+                        outcome="skipped", skip_reason="Skipped: unauthorized skip"
+                    )
+
+        self.mutate("pytest-controller.json", change)
+        path = self.directory / "research.xml"
+        root = ET.parse(path)
+        suite = root.getroot().find("testsuite")
+        suite.set("skipped", "2")
+        for case in suite.findall("testcase"):
+            if case.find("skipped") is None:
+                ET.SubElement(case, "skipped", message="unauthorized skip")
+        root.write(path)
+        with self.assertRaisesRegex(ValueError, "outcomes"):
+            validate(self.directory, self.expected)
 
 
 if __name__ == "__main__":

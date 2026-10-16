@@ -64,6 +64,26 @@ def usage():
         return None
 
 
+def memory_headroom():
+    """Observe available machine memory and a numeric cgroup v2 limit if present."""
+    try:
+        fields = {
+            line.split(":", 1)[0]: int(line.split()[1]) * 1024
+            for line in Path("/proc/meminfo").read_text().splitlines()
+            if line.startswith(("MemTotal:", "MemAvailable:"))
+        }
+        total, available = fields["MemTotal"], fields["MemAvailable"]
+        fraction = available / total
+        limit_path = Path("/sys/fs/cgroup/memory.max")
+        limit = limit_path.read_text().strip() if limit_path.exists() else "UNKNOWN"
+        if limit.isdigit():
+            current = int(Path("/sys/fs/cgroup/memory.current").read_text())
+            fraction = min(fraction, (int(limit) - current) / int(limit))
+        return total, available, fraction
+    except (OSError, ValueError, KeyError):
+        return None
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
@@ -170,6 +190,11 @@ def main():
         command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environment
     )
     peak = [None]
+    memory = {
+        "physical_total_bytes": "UNKNOWN",
+        "minimum_available_bytes": "UNKNOWN",
+        "minimum_headroom_fraction": "UNKNOWN",
+    }
     stopped = threading.Event()
 
     def sample():
@@ -177,6 +202,21 @@ def main():
             current = process_tree_rss(process.pid)
             if current is not None:
                 peak[0] = max(peak[0] or 0, current)
+            headroom = memory_headroom()
+            if headroom is not None:
+                memory["physical_total_bytes"] = headroom[0]
+                previous = memory["minimum_available_bytes"]
+                memory["minimum_available_bytes"] = (
+                    min(previous, headroom[1])
+                    if isinstance(previous, int)
+                    else headroom[1]
+                )
+                previous_fraction = memory["minimum_headroom_fraction"]
+                memory["minimum_headroom_fraction"] = (
+                    min(previous_fraction, headroom[2])
+                    if isinstance(previous_fraction, (int, float))
+                    else headroom[2]
+                )
             stopped.wait(0.25)
 
     sampler = threading.Thread(target=sample, daemon=True)
@@ -203,6 +243,7 @@ def main():
         ),
         "rss_sampling_seconds": 0.25,
         "rss_shared_pages_may_be_double_counted": True,
+        "sampled_memory_headroom": memory,
     }
     write_json(output / "result.json", result)
     observations = [
