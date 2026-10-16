@@ -240,7 +240,16 @@ class ExecutionEvidenceTests(unittest.TestCase):
         self.mutate(
             "environment.json",
             lambda value: value.update(
-                platform="Linux-synthetic", subject_root="/synthetic/subject"
+                platform="Linux-synthetic",
+                subject_root="/synthetic/subject",
+                worker_state_root="/synthetic/resources",
+            ),
+        )
+        self.mutate(
+            "worker-resources-controller.json",
+            lambda value: value.update(
+                directory="/synthetic/resources/controller",
+                MPLCONFIGDIR="/synthetic/resources/controller/matplotlib",
             ),
         )
         self.mutate(

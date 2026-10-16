@@ -1,0 +1,48 @@
+[
+  {
+    "run_id": 38863504342,
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38863504342",
+    "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+    "controller_sha": "086d0d60781046790638c91cc90aaab0b04ba8e8",
+    "scope": "fixed_119_hotspot_profile_not_full_suite_or_speed_comparison",
+    "profile_total_seconds": 351.33482139500006,
+    "recipe": [
+      {
+        "function": "_inputs",
+        "calls": 83,
+        "self_seconds": 0.959143049,
+        "inclusive_seconds_do_not_sum": 12.815788183
+      }
+    ],
+    "pstats_sha256": "2c130f4c57994721285b906dd1f8add4db8b65c4801349928459ab265bb200bd"
+  },
+  {
+    "run_id": 38867795374,
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38867795374",
+    "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+    "controller_sha": "9f0c057bd43ab7be55636efca4dcb866d50a7c58",
+    "scope": "fixed_119_hotspot_profile_not_full_suite_or_speed_comparison",
+    "profile_total_seconds": 590.3335683329987,
+    "recipe": [
+      {
+        "function": "_build_inputs",
+        "calls": 1,
+        "self_seconds": 0.022043871000000003,
+        "inclusive_seconds_do_not_sum": 0.24543345800000002
+      },
+      {
+        "function": "_input_template",
+        "calls": 1,
+        "self_seconds": 0.002753498,
+        "inclusive_seconds_do_not_sum": 0.24919312500000002
+      },
+      {
+        "function": "_inputs",
+        "calls": 83,
+        "self_seconds": 0.0005221410000000001,
+        "inclusive_seconds_do_not_sum": 0.354098593
+      }
+    ],
+    "pstats_sha256": "29c66e9f97ce9732f47bc2459fb2b3c94d9becdb80afdcaf2677d1dd779c12bc"
+  }
+]

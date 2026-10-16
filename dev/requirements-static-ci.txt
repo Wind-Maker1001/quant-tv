@@ -6,3 +6,5 @@ black==25.1.0
 pytest==8.3.5
 pytest-xdist==3.8.0
 execnet==2.1.2
+pytest-cov==6.2.1
+coverage==7.10.6

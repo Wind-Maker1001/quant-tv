@@ -64,6 +64,26 @@ def usage():
         return None
 
 
+def cpu_environment():
+    try:
+        models = sorted(
+            {
+                line.split(":", 1)[1].strip()
+                for line in Path("/proc/cpuinfo").read_text().splitlines()
+                if line.startswith("model name")
+            }
+        )
+        quota = Path("/sys/fs/cgroup/cpu.max")
+        return {
+            "model_names": models,
+            "cgroup_cpu_max": (
+                quota.read_text().strip() if quota.exists() else "UNKNOWN"
+            ),
+        }
+    except OSError:
+        return "UNKNOWN"
+
+
 def memory_headroom():
     """Observe available machine memory and a numeric cgroup v2 limit if present."""
     try:
@@ -104,6 +124,8 @@ def main():
         args.no_coverage = True
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
+    worker_state = output.parent / (output.name + "-worker-state")
+    worker_state.mkdir(exist_ok=False)
     scripts = Path(__file__).resolve().parent
     environment = os.environ.copy()
     environment["PYTHONPATH"] = (
@@ -111,6 +133,8 @@ def main():
     )
     environment["MPLBACKEND"] = "Agg"
     environment["PYTHONUTF8"] = "1"
+    environment["CI_WORKER_STATE_ROOT"] = str(worker_state)
+    environment["CI_WORKER_EVIDENCE_DIR"] = str(output)
     command = [sys.executable]
     if args.profile:
         command.extend(
@@ -139,6 +163,8 @@ def main():
             "--rootdir=.",
             "-c",
             "pytest.ini",
+            "-p",
+            "ci_resources",
             "-p",
             "ci_profile",
             "--ci-evidence-dir=" + str(output),
@@ -182,10 +208,15 @@ def main():
             subprocess.check_output(["git", "status", "--porcelain"], text=True).strip()
         ),
         "subject_root": str(Path.cwd().resolve()),
+        "worker_state_root": str(worker_state),
+        "worker_resources_plugin_sha256": hashlib.sha256(
+            (scripts / "ci_resources.py").read_bytes()
+        ).hexdigest(),
         "pytest_ini_sha256": hashlib.sha256(
             Path("pytest.ini").read_bytes()
         ).hexdigest(),
         "logical_cpu_count": os.cpu_count(),
+        "cpu_environment": cpu_environment(),
         "processor": platform.processor() or "UNKNOWN",
         "controller_sha": os.environ.get("CI_CONTROLLER_SHA", "UNKNOWN"),
         "python": sys.version,

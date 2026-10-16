@@ -116,6 +116,33 @@ def validate(
     if set(collector["all_ids"]) != selected | set(collector["deselected_ids"]):
         raise ValueError("Selection and deselection do not partition collection")
     workers = environment["workers"]
+    if environment.get("worker_resources_plugin_sha256"):
+        resource_root = source_path(environment["worker_state_root"])
+        identities = {"controller"} | {"gw" + str(index) for index in range(workers)}
+        resource_files = list(directory.glob("worker-resources-*.json"))
+        if len(resource_files) != len(identities):
+            raise ValueError("Missing or unexpected worker resource evidence")
+        for identity in identities:
+            resources = load(directory / ("worker-resources-" + identity + ".json"))
+            isolated = str(resource_root / identity)
+            matplotlib_cache = str(resource_root / identity / "matplotlib")
+            if (
+                resources["worker"] != identity
+                or resources["directory"] != isolated
+                or resources["MPLCONFIGDIR"] != matplotlib_cache
+                or resources["matplotlib_cache"] not in (None, matplotlib_cache)
+                or not resources["configured_before_matplotlib_import"]
+                or not resources["finished"]
+                or resources["pytest_cache_writer"] != (identity == "controller")
+            ):
+                raise ValueError("Worker resource isolation was not preserved")
+    if environment["coverage"] and controller.get("coverage_failed_workers"):
+        raise ValueError("Coverage plugin reported workers without coverage data")
+    if workers and environment["coverage"]:
+        wanted = {"gw" + str(index) for index in range(workers)}
+        receipts = controller.get("coverage_worker_receipts", {})
+        if set(receipts) != wanted or any(receipts[key] != key for key in wanted):
+            raise ValueError("Every worker must contribute its genuine coverage data")
     worker_rows = [row for row in collectors if row["worker"] != "controller"]
     if len(worker_rows) != workers:
         raise ValueError("Missing or unexpected worker evidence")

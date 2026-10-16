@@ -22,6 +22,7 @@ def pytest_configure(config):
 
 class Observer:
     def __init__(self, config, destination):
+        self.config = config
         self.destination = destination
         self.worker = getattr(config, "workerinput", {}).get("workerid", "controller")
         self.started = time.perf_counter()
@@ -31,6 +32,7 @@ class Observer:
         self.deselected_ids = []
         self.worker_collections = {}
         self.worker_errors = []
+        self.coverage_worker_receipts = {}
         self.reports = []
         self.rootpath = str(config.rootpath.resolve())
         self.inipath = str(config.inipath.resolve()) if config.inipath else None
@@ -61,6 +63,9 @@ class Observer:
 
     @pytest.hookimpl(optionalhook=True)
     def pytest_testnodedown(self, node, error):
+        self.coverage_worker_receipts[node.gateway.id] = getattr(
+            node, "workeroutput", {}
+        ).get("cov_worker_node_id")
         if error:
             self.worker_errors.append({"worker": node.gateway.id, "error": str(error)})
 
@@ -99,6 +104,19 @@ class Observer:
             "deselected_ids": self.deselected_ids,
             "worker_collections": self.worker_collections,
             "worker_errors": self.worker_errors,
+            "coverage_worker_receipts": self.coverage_worker_receipts,
+            "coverage_failed_workers": [
+                str(getattr(getattr(node, "gateway", None), "id", node))
+                for node in getattr(
+                    getattr(
+                        self.config.pluginmanager.getplugin("_cov"),
+                        "cov_controller",
+                        None,
+                    ),
+                    "failed_workers",
+                    [],
+                )
+            ],
             "reports": self.reports,
             "rootpath": self.rootpath,
             "inipath": self.inipath,

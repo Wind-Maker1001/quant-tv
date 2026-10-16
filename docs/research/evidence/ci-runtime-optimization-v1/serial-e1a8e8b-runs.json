@@ -1,0 +1,5219 @@
+[
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "eaf6512cf800bdcaf132b554e2ebc6c3834ab0ea0b032cd676e76aabc0dcb60a",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "361eee96c38fcab1be3f6de9008eead4e332be2af6ba4f878253ce7f4fb7a72a",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "9b75c66b2361b1b98ce1f524dabeecaf51157e204f50448f47c154e5a2d5a7ed",
+          "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+          "pytest-controller.json": "764659fd1df95dbec75877481e7449189631ebd3b9a0469ce896c006049fa18c",
+          "pytest.log": "da41671c788d27c4d8a57edc3d6f26ae2643f580068968b613b800c1c39753f7",
+          "research.xml": "0eef4d4a27d0fd263eee2810733e49382c3c69dd12f11a936e2586cb83a295bf",
+          "result.json": "7c0d53c508cb3d36e08bd065d1c43f2fa0658042ef1661f23db1fe027bc4a909",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+          "validation.json": "2206bc291acf94407ff142196df4c46afeac6fbe77b3edeef8c68d4e90eff229"
+        },
+        "id": 12034510321,
+        "name": "ci-runtime-38870302346-1"
+      }
+    ],
+    "conclusion": "success",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38870302346",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "UNSET",
+        "NUMEXPR_NUM_THREADS": "UNSET",
+        "OMP_NUM_THREADS": "UNSET",
+        "OPENBLAS_NUM_THREADS": "UNSET",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "execnet",
+          "version": "2.1.2"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "pytest-xdist",
+          "version": "3.8.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "subject_tree": "bb9acee5f8383578e558ac1d4088b0e9efd65c0f",
+      "utc_started": "2026-10-16T07:56:59.523576+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "361eee96c38fcab1be3f6de9008eead4e332be2af6ba4f878253ce7f4fb7a72a",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "9b75c66b2361b1b98ce1f524dabeecaf51157e204f50448f47c154e5a2d5a7ed",
+      "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+      "pytest-controller.json": "764659fd1df95dbec75877481e7449189631ebd3b9a0469ce896c006049fa18c",
+      "pytest.log": "da41671c788d27c4d8a57edc3d6f26ae2643f580068968b613b800c1c39753f7",
+      "research.xml": "0eef4d4a27d0fd263eee2810733e49382c3c69dd12f11a936e2586cb83a295bf",
+      "result.json": "7c0d53c508cb3d36e08bd065d1c43f2fa0658042ef1661f23db1fe027bc4a909",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "validation.json": "2206bc291acf94407ff142196df4c46afeac6fbe77b3edeef8c68d4e90eff229"
+    },
+    "fixture_equivalence": {
+      "baseline_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+      "baseline_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "calendar_sessions": 390,
+      "candidate_fixture_sha256": "5f88ccd5eb846d1bad8606fad5559258b5be20404c5f683b10cb88f005614e7b",
+      "exact_values_dtypes_index_and_attrs_equal": true,
+      "frame_columns": [
+        [
+          "date",
+          "symbol",
+          "REV1",
+          "MOM20",
+          "entry_date",
+          "exit_date",
+          "EXCESS_RET5",
+          "MARKET_REGIME",
+          "INDEX_RET5",
+          "INDEX_RET20",
+          "INDEX_RET60",
+          "INDEX_VOL20"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close",
+          "trade_status",
+          "is_st"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close"
+        ]
+      ],
+      "frame_content_sha256": [
+        "bdbf0bcacbc4a5057a11a369dac4d72bb80d6ac02efb9558d5b7aa4bbf60b4a6",
+        "02d7cbe884aa939f4bcec78035b015264892c82331ebbc4d576bac32504f8f74",
+        "1b7a2770ad3273b8599e835d524f7d51f12c5da2fe7f0b6b4e89831a7cb9a02b"
+      ],
+      "frame_rows": [
+        3900,
+        5100,
+        510
+      ],
+      "immutable_template_sha256": "f493f58ac41529c441b4768097d082c498182825e92d4742da8e9f015c57b8f0",
+      "kind": "synthetic_fixture_equivalence_not_financial_certification",
+      "mutations_do_not_affect_next_call": true,
+      "negative_controls_detected": [
+        "changed_value",
+        "dropped_row",
+        "shared_mutable_state"
+      ],
+      "numpy_version": "1.26.4",
+      "original_function_bodies_unchanged": [
+        "_config",
+        "_inputs",
+        "_legacy_universe_manifest",
+        "_provenance",
+        "_write_verified_inputs",
+        "test_baostock_membership_cannot_be_approved_by_old_manifest_or_boolean",
+        "test_build_dataset_binds_producer_code_provenance",
+        "test_build_dataset_validates_security_bundle_before_loading_stock_bars",
+        "test_dataset_reuse_allows_identical_bars_republished_in_a_new_generation",
+        "test_dataset_reuse_allows_non_dataset_model_config_changes",
+        "test_dataset_reuse_conservatively_rejects_cache_extension_outside_research_span",
+        "test_dataset_reuse_rejects_a_new_security_data_generation",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_bar_being_filled",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_cache_being_created",
+        "test_dataset_reuse_rejects_corrected_raw_bar_content",
+        "test_dataset_reuse_rejects_current_cache_source_contract_mismatch",
+        "test_dataset_reuse_requires_matching_build_run_bar_receipt",
+        "test_evaluate_records_verified_dataset_provenance",
+        "test_evaluate_rejects_a_missing_dataset_manifest",
+        "test_evaluate_rejects_a_missing_pit_manifest",
+        "test_evaluate_rejects_a_tampered_content_hash",
+        "test_evaluate_rejects_dataset_from_different_code_provenance",
+        "test_evaluate_rejects_dataset_without_producer_provenance",
+        "test_evaluate_rejects_missing_dataset_producer_run",
+        "test_execution_status_join_allows_nonmember_price_rows_and_pins_generation",
+        "test_verified_legacy_local_membership_also_checks_intervals",
+        "test_verified_local_membership_accepts_allowlisted_manifest_versions",
+        "test_verified_local_membership_rejects_tampered_intervals",
+        "test_verified_local_membership_rejects_unknown_v2_contract",
+        "test_verified_local_membership_requires_import_source_provenance",
+        "test_verified_membership_rejects_manifest_contract_mismatch",
+        "test_walk_forward_and_compare_commands_are_offline_and_complete",
+        "test_walk_forward_pins_bar_generation_before_model_run"
+      ],
+      "paired_microbenchmarks_not_full_ci_wall_time": [],
+      "pandas_version": "2.2.3",
+      "process_local_cache": {
+        "currsize": 1,
+        "hits": 6,
+        "maxsize": 1,
+        "misses": 1
+      },
+      "subject_dirty": false,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "timing_repeats_per_round": 0
+    },
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 1294.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 14.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 4.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 18.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 39.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 1207.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": -1.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 1205.08,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 83.642104,
+      "cpu_user_seconds": 1183.1882329999999,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 0,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6773194752,
+        "minimum_headroom_fraction": 0.8136977363168044,
+        "physical_total_bytes": 8323969024
+      },
+      "sampled_process_tree_rss_peak_bytes": 1027092480,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 1206.29341597
+    },
+    "run_head_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+    "run_id": 38870302346,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 8.307147779999994
+      },
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 911.7540101949947,
+        "setup": 274.5123236639984,
+        "teardown": 0.8517271180014774
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.10598387300001377
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38870302346",
+    "validation": {
+      "coverage_line_differences": {},
+      "coverage_line_rate": 0.8536,
+      "coverage_lines_covered": 15988,
+      "coverage_lines_valid": 18730,
+      "coverage_sha256": "361eee96c38fcab1be3f6de9008eead4e332be2af6ba4f878253ce7f4fb7a72a",
+      "coverage_source_count": 133,
+      "coverage_threshold": null,
+      "deselected": 2,
+      "failed": 0,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 1,
+        "tests": 3142
+      },
+      "junit_sha256": "0eef4d4a27d0fd263eee2810733e49382c3c69dd12f11a936e2586cb83a295bf",
+      "kind": "software_coverage_only_not_financial_certification",
+      "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+      "passed": 3141,
+      "phase_count": 9425,
+      "skipped": 1,
+      "skips": {
+        "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+          "Skipped: Windows EOF byte-range lock contract"
+        ]
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "workflow_wall_seconds": 1297.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "2e580f4ca01a7891c29202169e82f68f7d3208b73df83cb89e8bbacef401dd7c",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "4b6902632164ca7a2efd161bb9a9a1505ce1b9a5ad57d76960c26600a999582e",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "f3440ddc717b1a037b1eb29b3b645d1763b35a8fbd0cfa33501fc0e62abb74f2",
+          "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+          "pytest-controller.json": "33d7b9b3dcf2ad923c581382f71c1207d51c88967f2fde1a6b0148ba74a88c2e",
+          "pytest.log": "5e504201db50025e1c72db776f6a44c2e7828e421553a2b4f4647776598a0a9f",
+          "research.xml": "23e914a910a20ea60917ae6c4218e8eafe77e45ccc920aedc7f9f88110f1ddc2",
+          "result.json": "121f982eb2820a5c2e55ac45fa35c3f997b97627d61d96dd2322deaf5f2b1314",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+          "validation.json": "4b70b4c2507d8fa35a0fc22cdd744b745055c774538cf352dfe0afedd8482b88"
+        },
+        "id": 12033539932,
+        "name": "ci-runtime-38870307069-1"
+      }
+    ],
+    "conclusion": "success",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38870307069",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "UNSET",
+        "NUMEXPR_NUM_THREADS": "UNSET",
+        "OMP_NUM_THREADS": "UNSET",
+        "OPENBLAS_NUM_THREADS": "UNSET",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "execnet",
+          "version": "2.1.2"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "pytest-xdist",
+          "version": "3.8.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "subject_tree": "bb9acee5f8383578e558ac1d4088b0e9efd65c0f",
+      "utc_started": "2026-10-16T07:56:58.873778+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "4b6902632164ca7a2efd161bb9a9a1505ce1b9a5ad57d76960c26600a999582e",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "f3440ddc717b1a037b1eb29b3b645d1763b35a8fbd0cfa33501fc0e62abb74f2",
+      "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+      "pytest-controller.json": "33d7b9b3dcf2ad923c581382f71c1207d51c88967f2fde1a6b0148ba74a88c2e",
+      "pytest.log": "5e504201db50025e1c72db776f6a44c2e7828e421553a2b4f4647776598a0a9f",
+      "research.xml": "23e914a910a20ea60917ae6c4218e8eafe77e45ccc920aedc7f9f88110f1ddc2",
+      "result.json": "121f982eb2820a5c2e55ac45fa35c3f997b97627d61d96dd2322deaf5f2b1314",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "validation.json": "4b70b4c2507d8fa35a0fc22cdd744b745055c774538cf352dfe0afedd8482b88"
+    },
+    "fixture_equivalence": {
+      "baseline_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+      "baseline_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "calendar_sessions": 390,
+      "candidate_fixture_sha256": "5f88ccd5eb846d1bad8606fad5559258b5be20404c5f683b10cb88f005614e7b",
+      "exact_values_dtypes_index_and_attrs_equal": true,
+      "frame_columns": [
+        [
+          "date",
+          "symbol",
+          "REV1",
+          "MOM20",
+          "entry_date",
+          "exit_date",
+          "EXCESS_RET5",
+          "MARKET_REGIME",
+          "INDEX_RET5",
+          "INDEX_RET20",
+          "INDEX_RET60",
+          "INDEX_VOL20"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close",
+          "trade_status",
+          "is_st"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close"
+        ]
+      ],
+      "frame_content_sha256": [
+        "bdbf0bcacbc4a5057a11a369dac4d72bb80d6ac02efb9558d5b7aa4bbf60b4a6",
+        "02d7cbe884aa939f4bcec78035b015264892c82331ebbc4d576bac32504f8f74",
+        "1b7a2770ad3273b8599e835d524f7d51f12c5da2fe7f0b6b4e89831a7cb9a02b"
+      ],
+      "frame_rows": [
+        3900,
+        5100,
+        510
+      ],
+      "immutable_template_sha256": "f493f58ac41529c441b4768097d082c498182825e92d4742da8e9f015c57b8f0",
+      "kind": "synthetic_fixture_equivalence_not_financial_certification",
+      "mutations_do_not_affect_next_call": true,
+      "negative_controls_detected": [
+        "changed_value",
+        "dropped_row",
+        "shared_mutable_state"
+      ],
+      "numpy_version": "1.26.4",
+      "original_function_bodies_unchanged": [
+        "_config",
+        "_inputs",
+        "_legacy_universe_manifest",
+        "_provenance",
+        "_write_verified_inputs",
+        "test_baostock_membership_cannot_be_approved_by_old_manifest_or_boolean",
+        "test_build_dataset_binds_producer_code_provenance",
+        "test_build_dataset_validates_security_bundle_before_loading_stock_bars",
+        "test_dataset_reuse_allows_identical_bars_republished_in_a_new_generation",
+        "test_dataset_reuse_allows_non_dataset_model_config_changes",
+        "test_dataset_reuse_conservatively_rejects_cache_extension_outside_research_span",
+        "test_dataset_reuse_rejects_a_new_security_data_generation",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_bar_being_filled",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_cache_being_created",
+        "test_dataset_reuse_rejects_corrected_raw_bar_content",
+        "test_dataset_reuse_rejects_current_cache_source_contract_mismatch",
+        "test_dataset_reuse_requires_matching_build_run_bar_receipt",
+        "test_evaluate_records_verified_dataset_provenance",
+        "test_evaluate_rejects_a_missing_dataset_manifest",
+        "test_evaluate_rejects_a_missing_pit_manifest",
+        "test_evaluate_rejects_a_tampered_content_hash",
+        "test_evaluate_rejects_dataset_from_different_code_provenance",
+        "test_evaluate_rejects_dataset_without_producer_provenance",
+        "test_evaluate_rejects_missing_dataset_producer_run",
+        "test_execution_status_join_allows_nonmember_price_rows_and_pins_generation",
+        "test_verified_legacy_local_membership_also_checks_intervals",
+        "test_verified_local_membership_accepts_allowlisted_manifest_versions",
+        "test_verified_local_membership_rejects_tampered_intervals",
+        "test_verified_local_membership_rejects_unknown_v2_contract",
+        "test_verified_local_membership_requires_import_source_provenance",
+        "test_verified_membership_rejects_manifest_contract_mismatch",
+        "test_walk_forward_and_compare_commands_are_offline_and_complete",
+        "test_walk_forward_pins_bar_generation_before_model_run"
+      ],
+      "paired_microbenchmarks_not_full_ci_wall_time": [],
+      "pandas_version": "2.2.3",
+      "process_local_cache": {
+        "currsize": 1,
+        "hits": 6,
+        "maxsize": 1,
+        "misses": 1
+      },
+      "subject_dirty": false,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "timing_repeats_per_round": 0
+    },
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 1293.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 14.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 4.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 17.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 39.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 1210.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 3.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 1.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": -1.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 1208.23,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 84.461613,
+      "cpu_user_seconds": 1185.0409869999999,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 0,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6752215040,
+        "minimum_headroom_fraction": 0.8111773386628114,
+        "physical_total_bytes": 8323969024
+      },
+      "sampled_process_tree_rss_peak_bytes": 1054281728,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 1209.478569802
+    },
+    "run_head_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+    "run_id": 38870307069,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 8.497769125000005
+      },
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 916.0324780720068,
+        "setup": 272.92134620199744,
+        "teardown": 0.8773768240012316
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.09938552499988873
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38870307069",
+    "validation": {
+      "coverage_line_differences": {},
+      "coverage_line_rate": 0.8536,
+      "coverage_lines_covered": 15988,
+      "coverage_lines_valid": 18730,
+      "coverage_sha256": "4b6902632164ca7a2efd161bb9a9a1505ce1b9a5ad57d76960c26600a999582e",
+      "coverage_source_count": 133,
+      "coverage_threshold": null,
+      "deselected": 2,
+      "failed": 0,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 1,
+        "tests": 3142
+      },
+      "junit_sha256": "23e914a910a20ea60917ae6c4218e8eafe77e45ccc920aedc7f9f88110f1ddc2",
+      "kind": "software_coverage_only_not_financial_certification",
+      "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+      "passed": 3141,
+      "phase_count": 9425,
+      "skipped": 1,
+      "skips": {
+        "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+          "Skipped: Windows EOF byte-range lock contract"
+        ]
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "workflow_wall_seconds": 1297.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "cf020bed519b908069418c0abba1428871ccc56167665cbd1addac32b0804b17",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "696912968ec999e36ce0f497e80a2f64c34018d131f3504e407be65670d69d0f",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "099341453f14e7ba3cfdda29fa82e848f30ddeaff0fab833ce01b7e20532dc4d",
+          "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+          "pytest-controller.json": "9991cd4c58e81d68af2aee5908c42c1ec553c3b3aa934a6dd1ea20e49d4b82db",
+          "pytest.log": "7f41e197e815f95caf949c5b9cf63f1d8d24c38e5e5b6ef72ba6789c15207f5d",
+          "research.xml": "b368b9a7f8a5b6ece79183d77e98d92cbcb42c0292d7c5413d484889d49a7052",
+          "result.json": "8300c2a0082bdc7814c1eb743c87e60258619ae435e4931e56db85043ebe3df9",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+          "validation.json": "7facc6ff0a255d993ae3475940fb7a0702102b4e6482fb6de5f8f53e6291e588"
+        },
+        "id": 12033149466,
+        "name": "ci-runtime-38870311290-1"
+      }
+    ],
+    "conclusion": "success",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "cold",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38870311290",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "UNSET",
+        "NUMEXPR_NUM_THREADS": "UNSET",
+        "OMP_NUM_THREADS": "UNSET",
+        "OPENBLAS_NUM_THREADS": "UNSET",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "execnet",
+          "version": "2.1.2"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "pytest-xdist",
+          "version": "3.8.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "subject_tree": "bb9acee5f8383578e558ac1d4088b0e9efd65c0f",
+      "utc_started": "2026-10-16T07:56:52.348240+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "696912968ec999e36ce0f497e80a2f64c34018d131f3504e407be65670d69d0f",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "099341453f14e7ba3cfdda29fa82e848f30ddeaff0fab833ce01b7e20532dc4d",
+      "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+      "pytest-controller.json": "9991cd4c58e81d68af2aee5908c42c1ec553c3b3aa934a6dd1ea20e49d4b82db",
+      "pytest.log": "7f41e197e815f95caf949c5b9cf63f1d8d24c38e5e5b6ef72ba6789c15207f5d",
+      "research.xml": "b368b9a7f8a5b6ece79183d77e98d92cbcb42c0292d7c5413d484889d49a7052",
+      "result.json": "8300c2a0082bdc7814c1eb743c87e60258619ae435e4931e56db85043ebe3df9",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "validation.json": "7facc6ff0a255d993ae3475940fb7a0702102b4e6482fb6de5f8f53e6291e588"
+    },
+    "fixture_equivalence": {
+      "baseline_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+      "baseline_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "calendar_sessions": 390,
+      "candidate_fixture_sha256": "5f88ccd5eb846d1bad8606fad5559258b5be20404c5f683b10cb88f005614e7b",
+      "exact_values_dtypes_index_and_attrs_equal": true,
+      "frame_columns": [
+        [
+          "date",
+          "symbol",
+          "REV1",
+          "MOM20",
+          "entry_date",
+          "exit_date",
+          "EXCESS_RET5",
+          "MARKET_REGIME",
+          "INDEX_RET5",
+          "INDEX_RET20",
+          "INDEX_RET60",
+          "INDEX_VOL20"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close",
+          "trade_status",
+          "is_st"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close"
+        ]
+      ],
+      "frame_content_sha256": [
+        "bdbf0bcacbc4a5057a11a369dac4d72bb80d6ac02efb9558d5b7aa4bbf60b4a6",
+        "02d7cbe884aa939f4bcec78035b015264892c82331ebbc4d576bac32504f8f74",
+        "1b7a2770ad3273b8599e835d524f7d51f12c5da2fe7f0b6b4e89831a7cb9a02b"
+      ],
+      "frame_rows": [
+        3900,
+        5100,
+        510
+      ],
+      "immutable_template_sha256": "f493f58ac41529c441b4768097d082c498182825e92d4742da8e9f015c57b8f0",
+      "kind": "synthetic_fixture_equivalence_not_financial_certification",
+      "mutations_do_not_affect_next_call": true,
+      "negative_controls_detected": [
+        "changed_value",
+        "dropped_row",
+        "shared_mutable_state"
+      ],
+      "numpy_version": "1.26.4",
+      "original_function_bodies_unchanged": [
+        "_config",
+        "_inputs",
+        "_legacy_universe_manifest",
+        "_provenance",
+        "_write_verified_inputs",
+        "test_baostock_membership_cannot_be_approved_by_old_manifest_or_boolean",
+        "test_build_dataset_binds_producer_code_provenance",
+        "test_build_dataset_validates_security_bundle_before_loading_stock_bars",
+        "test_dataset_reuse_allows_identical_bars_republished_in_a_new_generation",
+        "test_dataset_reuse_allows_non_dataset_model_config_changes",
+        "test_dataset_reuse_conservatively_rejects_cache_extension_outside_research_span",
+        "test_dataset_reuse_rejects_a_new_security_data_generation",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_bar_being_filled",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_cache_being_created",
+        "test_dataset_reuse_rejects_corrected_raw_bar_content",
+        "test_dataset_reuse_rejects_current_cache_source_contract_mismatch",
+        "test_dataset_reuse_requires_matching_build_run_bar_receipt",
+        "test_evaluate_records_verified_dataset_provenance",
+        "test_evaluate_rejects_a_missing_dataset_manifest",
+        "test_evaluate_rejects_a_missing_pit_manifest",
+        "test_evaluate_rejects_a_tampered_content_hash",
+        "test_evaluate_rejects_dataset_from_different_code_provenance",
+        "test_evaluate_rejects_dataset_without_producer_provenance",
+        "test_evaluate_rejects_missing_dataset_producer_run",
+        "test_execution_status_join_allows_nonmember_price_rows_and_pins_generation",
+        "test_verified_legacy_local_membership_also_checks_intervals",
+        "test_verified_local_membership_accepts_allowlisted_manifest_versions",
+        "test_verified_local_membership_rejects_tampered_intervals",
+        "test_verified_local_membership_rejects_unknown_v2_contract",
+        "test_verified_local_membership_requires_import_source_provenance",
+        "test_verified_membership_rejects_manifest_contract_mismatch",
+        "test_walk_forward_and_compare_commands_are_offline_and_complete",
+        "test_walk_forward_pins_bar_generation_before_model_run"
+      ],
+      "paired_microbenchmarks_not_full_ci_wall_time": [],
+      "pandas_version": "2.2.3",
+      "process_local_cache": {
+        "currsize": 1,
+        "hits": 6,
+        "maxsize": 1,
+        "misses": 1
+      },
+      "subject_dirty": false,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "timing_repeats_per_round": 0
+    },
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 1320.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 14.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 4.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 9.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 37.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 1246.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": 0.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 1244.28,
+    "restored_cache_keys_from_log": [],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 85.899434,
+      "cpu_user_seconds": 1220.594744,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 0,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6753599488,
+        "minimum_headroom_fraction": 0.8113444578015044,
+        "physical_total_bytes": 8323960832
+      },
+      "sampled_process_tree_rss_peak_bytes": 1036996608,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 1245.5082342590001
+    },
+    "run_head_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+    "run_id": 38870311290,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 8.937400251999989
+      },
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 941.1612188900026,
+        "setup": 283.0845327499994,
+        "teardown": 0.9301495009945313
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.09826050100014072
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38870311290",
+    "validation": {
+      "coverage_line_differences": {},
+      "coverage_line_rate": 0.8536,
+      "coverage_lines_covered": 15988,
+      "coverage_lines_valid": 18730,
+      "coverage_sha256": "696912968ec999e36ce0f497e80a2f64c34018d131f3504e407be65670d69d0f",
+      "coverage_source_count": 133,
+      "coverage_threshold": null,
+      "deselected": 2,
+      "failed": 0,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 1,
+        "tests": 3142
+      },
+      "junit_sha256": "b368b9a7f8a5b6ece79183d77e98d92cbcb42c0292d7c5413d484889d49a7052",
+      "kind": "software_coverage_only_not_financial_certification",
+      "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+      "passed": 3141,
+      "phase_count": 9425,
+      "skipped": 1,
+      "skips": {
+        "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+          "Skipped: Windows EOF byte-range lock contract"
+        ]
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "workflow_wall_seconds": 1325.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "06add07ff910f735d3f073b7cb7f446de1846ff66ec4a95836c69ea468081e77",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "36a3104294d0c60eac6858eba4cacd6a7a4246e379f008a1b751e4f776618a29",
+          "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+          "pytest-controller.json": "7d1b82d7fc457651d0cdc63d8225a09cce38990ebf43c6bfeb12d673b808c383",
+          "pytest.log": "26bd41e427b542d5ab8403f3fea5951bcd521f053306194ab430772cb0a273b1",
+          "research.xml": "1e696e0faf8822e05346090516e53bf8a32abb8bae818ba6c0dbcd7922d3b7b3",
+          "result.json": "706be03fe0938a4d1243b0bcd748eba651708338946df886af5ad16a2b08ce08",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+          "validation.json": "90eb775f513d14a58d29f33382e11c5a071d42ac33664257ad36b720208ca3d3"
+        },
+        "id": 12032654602,
+        "name": "ci-runtime-38870315682-1"
+      }
+    ],
+    "conclusion": "success",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml"
+      ],
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": false,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38870315682",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "UNSET",
+        "NUMEXPR_NUM_THREADS": "UNSET",
+        "OMP_NUM_THREADS": "UNSET",
+        "OPENBLAS_NUM_THREADS": "UNSET",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "execnet",
+          "version": "2.1.2"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "pytest-xdist",
+          "version": "3.8.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "subject_tree": "bb9acee5f8383578e558ac1d4088b0e9efd65c0f",
+      "utc_started": "2026-10-16T07:57:04.696299+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "36a3104294d0c60eac6858eba4cacd6a7a4246e379f008a1b751e4f776618a29",
+      "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+      "pytest-controller.json": "7d1b82d7fc457651d0cdc63d8225a09cce38990ebf43c6bfeb12d673b808c383",
+      "pytest.log": "26bd41e427b542d5ab8403f3fea5951bcd521f053306194ab430772cb0a273b1",
+      "research.xml": "1e696e0faf8822e05346090516e53bf8a32abb8bae818ba6c0dbcd7922d3b7b3",
+      "result.json": "706be03fe0938a4d1243b0bcd748eba651708338946df886af5ad16a2b08ce08",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "validation.json": "90eb775f513d14a58d29f33382e11c5a071d42ac33664257ad36b720208ca3d3"
+    },
+    "fixture_equivalence": {
+      "baseline_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+      "baseline_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "calendar_sessions": 390,
+      "candidate_fixture_sha256": "5f88ccd5eb846d1bad8606fad5559258b5be20404c5f683b10cb88f005614e7b",
+      "exact_values_dtypes_index_and_attrs_equal": true,
+      "frame_columns": [
+        [
+          "date",
+          "symbol",
+          "REV1",
+          "MOM20",
+          "entry_date",
+          "exit_date",
+          "EXCESS_RET5",
+          "MARKET_REGIME",
+          "INDEX_RET5",
+          "INDEX_RET20",
+          "INDEX_RET60",
+          "INDEX_VOL20"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close",
+          "trade_status",
+          "is_st"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close"
+        ]
+      ],
+      "frame_content_sha256": [
+        "bdbf0bcacbc4a5057a11a369dac4d72bb80d6ac02efb9558d5b7aa4bbf60b4a6",
+        "02d7cbe884aa939f4bcec78035b015264892c82331ebbc4d576bac32504f8f74",
+        "1b7a2770ad3273b8599e835d524f7d51f12c5da2fe7f0b6b4e89831a7cb9a02b"
+      ],
+      "frame_rows": [
+        3900,
+        5100,
+        510
+      ],
+      "immutable_template_sha256": "f493f58ac41529c441b4768097d082c498182825e92d4742da8e9f015c57b8f0",
+      "kind": "synthetic_fixture_equivalence_not_financial_certification",
+      "mutations_do_not_affect_next_call": true,
+      "negative_controls_detected": [
+        "changed_value",
+        "dropped_row",
+        "shared_mutable_state"
+      ],
+      "numpy_version": "1.26.4",
+      "original_function_bodies_unchanged": [
+        "_config",
+        "_inputs",
+        "_legacy_universe_manifest",
+        "_provenance",
+        "_write_verified_inputs",
+        "test_baostock_membership_cannot_be_approved_by_old_manifest_or_boolean",
+        "test_build_dataset_binds_producer_code_provenance",
+        "test_build_dataset_validates_security_bundle_before_loading_stock_bars",
+        "test_dataset_reuse_allows_identical_bars_republished_in_a_new_generation",
+        "test_dataset_reuse_allows_non_dataset_model_config_changes",
+        "test_dataset_reuse_conservatively_rejects_cache_extension_outside_research_span",
+        "test_dataset_reuse_rejects_a_new_security_data_generation",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_bar_being_filled",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_cache_being_created",
+        "test_dataset_reuse_rejects_corrected_raw_bar_content",
+        "test_dataset_reuse_rejects_current_cache_source_contract_mismatch",
+        "test_dataset_reuse_requires_matching_build_run_bar_receipt",
+        "test_evaluate_records_verified_dataset_provenance",
+        "test_evaluate_rejects_a_missing_dataset_manifest",
+        "test_evaluate_rejects_a_missing_pit_manifest",
+        "test_evaluate_rejects_a_tampered_content_hash",
+        "test_evaluate_rejects_dataset_from_different_code_provenance",
+        "test_evaluate_rejects_dataset_without_producer_provenance",
+        "test_evaluate_rejects_missing_dataset_producer_run",
+        "test_execution_status_join_allows_nonmember_price_rows_and_pins_generation",
+        "test_verified_legacy_local_membership_also_checks_intervals",
+        "test_verified_local_membership_accepts_allowlisted_manifest_versions",
+        "test_verified_local_membership_rejects_tampered_intervals",
+        "test_verified_local_membership_rejects_unknown_v2_contract",
+        "test_verified_local_membership_requires_import_source_provenance",
+        "test_verified_membership_rejects_manifest_contract_mismatch",
+        "test_walk_forward_and_compare_commands_are_offline_and_complete",
+        "test_walk_forward_pins_bar_generation_before_model_run"
+      ],
+      "paired_microbenchmarks_not_full_ci_wall_time": [],
+      "pandas_version": "2.2.3",
+      "process_local_cache": {
+        "currsize": 1,
+        "hits": 6,
+        "maxsize": 1,
+        "misses": 1
+      },
+      "subject_dirty": false,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "timing_repeats_per_round": 0
+    },
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 998.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 14.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 4.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 18.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 39.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 913.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 3.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": 0.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 912.07,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 80.39849699999999,
+      "cpu_user_seconds": 885.1963609999999,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 0,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6771994624,
+        "minimum_headroom_fraction": 0.8135535589422203,
+        "physical_total_bytes": 8323969024
+      },
+      "sampled_process_tree_rss_peak_bytes": 1011785728,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 913.0412877599999
+    },
+    "run_head_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+    "run_id": 38870315682,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 6.015518614000001
+      },
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": false,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 701.797493397997,
+        "setup": 201.42980963599956,
+        "teardown": 0.6714139629960272
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.09969722899995759
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38870315682",
+    "validation": {
+      "deselected": 2,
+      "failed": 0,
+      "kind": "actual_software_execution_equivalence_only",
+      "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+      "passed": 3141,
+      "phase_count": 9425,
+      "skipped": 1,
+      "skips": {
+        "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+          "Skipped: Windows EOF byte-range lock contract"
+        ]
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "workflow_wall_seconds": 1002.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "73fd4ca1f43591be43d6e7e2247d95c141aa5b75aca197e691fd79b6eb9e3e6f",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "40202bc8a3a4abba880764b7667c17d344222f15d81efe8ea38381080535805c",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "fa37a621e628812da36823c5649afb3bd60cc8c01d0c3ec2014af3eb954c4643",
+          "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+          "pytest-controller.json": "8f9b5782db24fb7a32ebfb84633ddadaa84139ab6d9ddb504d00c0a7bd9d0c90",
+          "pytest.log": "16997600d3420e772a6a850887d9a66264baa71672791fef83f8a39b2b52b1f4",
+          "research.xml": "8a0e137e70f71c4a06dd0b0dc8d6a2adf82165dd6fa4780a7e4b5dfbc2ce14e4",
+          "result.json": "8d8cab4514f0d9aaa5d02aad1132c6828920f7c96a2943551a7a82dfb4240ac7",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+          "validation.json": "ba4157237e081321cd57ae9a404be6f43f81452a0ac7470deb91ca449c8657cd"
+        },
+        "id": 12032603908,
+        "name": "ci-runtime-38870319409-1"
+      }
+    ],
+    "conclusion": "success",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38870319409",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "execnet",
+          "version": "2.1.2"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "pytest-xdist",
+          "version": "3.8.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "subject_tree": "bb9acee5f8383578e558ac1d4088b0e9efd65c0f",
+      "utc_started": "2026-10-16T07:57:14.792209+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "40202bc8a3a4abba880764b7667c17d344222f15d81efe8ea38381080535805c",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "fa37a621e628812da36823c5649afb3bd60cc8c01d0c3ec2014af3eb954c4643",
+      "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+      "pytest-controller.json": "8f9b5782db24fb7a32ebfb84633ddadaa84139ab6d9ddb504d00c0a7bd9d0c90",
+      "pytest.log": "16997600d3420e772a6a850887d9a66264baa71672791fef83f8a39b2b52b1f4",
+      "research.xml": "8a0e137e70f71c4a06dd0b0dc8d6a2adf82165dd6fa4780a7e4b5dfbc2ce14e4",
+      "result.json": "8d8cab4514f0d9aaa5d02aad1132c6828920f7c96a2943551a7a82dfb4240ac7",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "validation.json": "ba4157237e081321cd57ae9a404be6f43f81452a0ac7470deb91ca449c8657cd"
+    },
+    "fixture_equivalence": {
+      "baseline_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+      "baseline_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "calendar_sessions": 390,
+      "candidate_fixture_sha256": "5f88ccd5eb846d1bad8606fad5559258b5be20404c5f683b10cb88f005614e7b",
+      "exact_values_dtypes_index_and_attrs_equal": true,
+      "frame_columns": [
+        [
+          "date",
+          "symbol",
+          "REV1",
+          "MOM20",
+          "entry_date",
+          "exit_date",
+          "EXCESS_RET5",
+          "MARKET_REGIME",
+          "INDEX_RET5",
+          "INDEX_RET20",
+          "INDEX_RET60",
+          "INDEX_VOL20"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close",
+          "trade_status",
+          "is_st"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close"
+        ]
+      ],
+      "frame_content_sha256": [
+        "bdbf0bcacbc4a5057a11a369dac4d72bb80d6ac02efb9558d5b7aa4bbf60b4a6",
+        "02d7cbe884aa939f4bcec78035b015264892c82331ebbc4d576bac32504f8f74",
+        "1b7a2770ad3273b8599e835d524f7d51f12c5da2fe7f0b6b4e89831a7cb9a02b"
+      ],
+      "frame_rows": [
+        3900,
+        5100,
+        510
+      ],
+      "immutable_template_sha256": "f493f58ac41529c441b4768097d082c498182825e92d4742da8e9f015c57b8f0",
+      "kind": "synthetic_fixture_equivalence_not_financial_certification",
+      "mutations_do_not_affect_next_call": true,
+      "negative_controls_detected": [
+        "changed_value",
+        "dropped_row",
+        "shared_mutable_state"
+      ],
+      "numpy_version": "1.26.4",
+      "original_function_bodies_unchanged": [
+        "_config",
+        "_inputs",
+        "_legacy_universe_manifest",
+        "_provenance",
+        "_write_verified_inputs",
+        "test_baostock_membership_cannot_be_approved_by_old_manifest_or_boolean",
+        "test_build_dataset_binds_producer_code_provenance",
+        "test_build_dataset_validates_security_bundle_before_loading_stock_bars",
+        "test_dataset_reuse_allows_identical_bars_republished_in_a_new_generation",
+        "test_dataset_reuse_allows_non_dataset_model_config_changes",
+        "test_dataset_reuse_conservatively_rejects_cache_extension_outside_research_span",
+        "test_dataset_reuse_rejects_a_new_security_data_generation",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_bar_being_filled",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_cache_being_created",
+        "test_dataset_reuse_rejects_corrected_raw_bar_content",
+        "test_dataset_reuse_rejects_current_cache_source_contract_mismatch",
+        "test_dataset_reuse_requires_matching_build_run_bar_receipt",
+        "test_evaluate_records_verified_dataset_provenance",
+        "test_evaluate_rejects_a_missing_dataset_manifest",
+        "test_evaluate_rejects_a_missing_pit_manifest",
+        "test_evaluate_rejects_a_tampered_content_hash",
+        "test_evaluate_rejects_dataset_from_different_code_provenance",
+        "test_evaluate_rejects_dataset_without_producer_provenance",
+        "test_evaluate_rejects_missing_dataset_producer_run",
+        "test_execution_status_join_allows_nonmember_price_rows_and_pins_generation",
+        "test_verified_legacy_local_membership_also_checks_intervals",
+        "test_verified_local_membership_accepts_allowlisted_manifest_versions",
+        "test_verified_local_membership_rejects_tampered_intervals",
+        "test_verified_local_membership_rejects_unknown_v2_contract",
+        "test_verified_local_membership_requires_import_source_provenance",
+        "test_verified_membership_rejects_manifest_contract_mismatch",
+        "test_walk_forward_and_compare_commands_are_offline_and_complete",
+        "test_walk_forward_pins_bar_generation_before_model_run"
+      ],
+      "paired_microbenchmarks_not_full_ci_wall_time": [],
+      "pandas_version": "2.2.3",
+      "process_local_cache": {
+        "currsize": 1,
+        "hits": 6,
+        "maxsize": 1,
+        "misses": 1
+      },
+      "subject_dirty": false,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "timing_repeats_per_round": 0
+    },
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 684.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 13.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 5.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 28.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 36.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 592.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": -1.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 590.61,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 28.524021,
+      "cpu_user_seconds": 552.7568960000001,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 0,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6783250432,
+        "minimum_headroom_fraction": 0.8149057754110163,
+        "physical_total_bytes": 8323969024
+      },
+      "sampled_process_tree_rss_peak_bytes": 1056280576,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 591.610855939
+    },
+    "run_head_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+    "run_id": 38870319409,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 5.5186836320000054
+      },
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 450.55365015000206,
+        "setup": 127.85341004400104,
+        "teardown": 0.49778605600164383
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.08434614600002988
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38870319409",
+    "validation": {
+      "coverage_line_differences": {},
+      "coverage_line_rate": 0.8536,
+      "coverage_lines_covered": 15988,
+      "coverage_lines_valid": 18730,
+      "coverage_sha256": "40202bc8a3a4abba880764b7667c17d344222f15d81efe8ea38381080535805c",
+      "coverage_source_count": 133,
+      "coverage_threshold": null,
+      "deselected": 2,
+      "failed": 0,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 1,
+        "tests": 3142
+      },
+      "junit_sha256": "8a0e137e70f71c4a06dd0b0dc8d6a2adf82165dd6fa4780a7e4b5dfbc2ce14e4",
+      "kind": "software_coverage_only_not_financial_certification",
+      "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+      "passed": 3141,
+      "phase_count": 9425,
+      "skipped": 1,
+      "skips": {
+        "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+          "Skipped: Windows EOF byte-range lock contract"
+        ]
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "workflow_wall_seconds": 688.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "c498dbf62a0a185bae2cd3734f7863dbc0070b5e1f2bdc06cbde8cb105bbf4ff",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "356fa5e140c5dd9bd8186aaedb5dbc83e86ba8a1a3f6cb03e4c3aa120c5e3f25",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "ecba7cdfc532808e9f4b93cda1f2a02cf236c772f58ecdf4841dbee9d9d95369",
+          "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+          "pytest-controller.json": "c5f2039ccb803d139c44cffd53dcca6896236bc600c3ffbea72eed267773b782",
+          "pytest.log": "c3d5944c17eb6d829240d63edae05eea4bc738d69e5f8b811956346aba31dc3b",
+          "research.xml": "e87cf55b1aa8e07cb1c30b025a35daa3583ee7040aa2d13416c4ff9016641c27",
+          "result.json": "2b5e38cf6f9d00d5992392df49982bd42483073165b4b4dc066c3fb343d8461f",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+          "validation.json": "1985deb52736937785a1af35ae78be4688db50ce231f6a2fd12705ce8d4b629a"
+        },
+        "id": 12034615050,
+        "name": "ci-runtime-38870323886-1"
+      }
+    ],
+    "conclusion": "success",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38870323886",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "execnet",
+          "version": "2.1.2"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "pytest-xdist",
+          "version": "3.8.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "subject_tree": "bb9acee5f8383578e558ac1d4088b0e9efd65c0f",
+      "utc_started": "2026-10-16T07:57:08.124199+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "356fa5e140c5dd9bd8186aaedb5dbc83e86ba8a1a3f6cb03e4c3aa120c5e3f25",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "ecba7cdfc532808e9f4b93cda1f2a02cf236c772f58ecdf4841dbee9d9d95369",
+      "fixture-equivalence.json": "74b8d7196ae58119f9d1bf01f6254376ff5d13bf40f1efc310ba9f22c051d572",
+      "pytest-controller.json": "c5f2039ccb803d139c44cffd53dcca6896236bc600c3ffbea72eed267773b782",
+      "pytest.log": "c3d5944c17eb6d829240d63edae05eea4bc738d69e5f8b811956346aba31dc3b",
+      "research.xml": "e87cf55b1aa8e07cb1c30b025a35daa3583ee7040aa2d13416c4ff9016641c27",
+      "result.json": "2b5e38cf6f9d00d5992392df49982bd42483073165b4b4dc066c3fb343d8461f",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "validation.json": "1985deb52736937785a1af35ae78be4688db50ce231f6a2fd12705ce8d4b629a"
+    },
+    "fixture_equivalence": {
+      "baseline_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+      "baseline_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "calendar_sessions": 390,
+      "candidate_fixture_sha256": "5f88ccd5eb846d1bad8606fad5559258b5be20404c5f683b10cb88f005614e7b",
+      "exact_values_dtypes_index_and_attrs_equal": true,
+      "frame_columns": [
+        [
+          "date",
+          "symbol",
+          "REV1",
+          "MOM20",
+          "entry_date",
+          "exit_date",
+          "EXCESS_RET5",
+          "MARKET_REGIME",
+          "INDEX_RET5",
+          "INDEX_RET20",
+          "INDEX_RET60",
+          "INDEX_VOL20"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close",
+          "trade_status",
+          "is_st"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close"
+        ]
+      ],
+      "frame_content_sha256": [
+        "bdbf0bcacbc4a5057a11a369dac4d72bb80d6ac02efb9558d5b7aa4bbf60b4a6",
+        "02d7cbe884aa939f4bcec78035b015264892c82331ebbc4d576bac32504f8f74",
+        "1b7a2770ad3273b8599e835d524f7d51f12c5da2fe7f0b6b4e89831a7cb9a02b"
+      ],
+      "frame_rows": [
+        3900,
+        5100,
+        510
+      ],
+      "immutable_template_sha256": "f493f58ac41529c441b4768097d082c498182825e92d4742da8e9f015c57b8f0",
+      "kind": "synthetic_fixture_equivalence_not_financial_certification",
+      "mutations_do_not_affect_next_call": true,
+      "negative_controls_detected": [
+        "changed_value",
+        "dropped_row",
+        "shared_mutable_state"
+      ],
+      "numpy_version": "1.26.4",
+      "original_function_bodies_unchanged": [
+        "_config",
+        "_inputs",
+        "_legacy_universe_manifest",
+        "_provenance",
+        "_write_verified_inputs",
+        "test_baostock_membership_cannot_be_approved_by_old_manifest_or_boolean",
+        "test_build_dataset_binds_producer_code_provenance",
+        "test_build_dataset_validates_security_bundle_before_loading_stock_bars",
+        "test_dataset_reuse_allows_identical_bars_republished_in_a_new_generation",
+        "test_dataset_reuse_allows_non_dataset_model_config_changes",
+        "test_dataset_reuse_conservatively_rejects_cache_extension_outside_research_span",
+        "test_dataset_reuse_rejects_a_new_security_data_generation",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_bar_being_filled",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_cache_being_created",
+        "test_dataset_reuse_rejects_corrected_raw_bar_content",
+        "test_dataset_reuse_rejects_current_cache_source_contract_mismatch",
+        "test_dataset_reuse_requires_matching_build_run_bar_receipt",
+        "test_evaluate_records_verified_dataset_provenance",
+        "test_evaluate_rejects_a_missing_dataset_manifest",
+        "test_evaluate_rejects_a_missing_pit_manifest",
+        "test_evaluate_rejects_a_tampered_content_hash",
+        "test_evaluate_rejects_dataset_from_different_code_provenance",
+        "test_evaluate_rejects_dataset_without_producer_provenance",
+        "test_evaluate_rejects_missing_dataset_producer_run",
+        "test_execution_status_join_allows_nonmember_price_rows_and_pins_generation",
+        "test_verified_legacy_local_membership_also_checks_intervals",
+        "test_verified_local_membership_accepts_allowlisted_manifest_versions",
+        "test_verified_local_membership_rejects_tampered_intervals",
+        "test_verified_local_membership_rejects_unknown_v2_contract",
+        "test_verified_local_membership_requires_import_source_provenance",
+        "test_verified_membership_rejects_manifest_contract_mismatch",
+        "test_walk_forward_and_compare_commands_are_offline_and_complete",
+        "test_walk_forward_pins_bar_generation_before_model_run"
+      ],
+      "paired_microbenchmarks_not_full_ci_wall_time": [],
+      "pandas_version": "2.2.3",
+      "process_local_cache": {
+        "currsize": 1,
+        "hits": 6,
+        "maxsize": 1,
+        "misses": 1
+      },
+      "subject_dirty": false,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "timing_repeats_per_round": 0
+    },
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 1347.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 14.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 4.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 18.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 37.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 1263.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 3.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": 0.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 1260.64,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 39.229602,
+      "cpu_user_seconds": 1227.384143,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 0,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6764462080,
+        "minimum_headroom_fraction": 0.8126486367857008,
+        "physical_total_bytes": 8323969024
+      },
+      "sampled_process_tree_rss_peak_bytes": 1006321664,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 1262.021602673
+    },
+    "run_head_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+    "run_id": 38870323886,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 9.056913146999989
+      },
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 953.8902111170005,
+        "setup": 286.1774074619967,
+        "teardown": 0.9686716679996863
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.10634628499997234
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38870323886",
+    "validation": {
+      "coverage_line_differences": {},
+      "coverage_line_rate": 0.8536,
+      "coverage_lines_covered": 15988,
+      "coverage_lines_valid": 18730,
+      "coverage_sha256": "356fa5e140c5dd9bd8186aaedb5dbc83e86ba8a1a3f6cb03e4c3aa120c5e3f25",
+      "coverage_source_count": 133,
+      "coverage_threshold": null,
+      "deselected": 2,
+      "failed": 0,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 1,
+        "tests": 3142
+      },
+      "junit_sha256": "e87cf55b1aa8e07cb1c30b025a35daa3583ee7040aa2d13416c4ff9016641c27",
+      "kind": "software_coverage_only_not_financial_certification",
+      "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+      "passed": 3141,
+      "phase_count": 9425,
+      "skipped": 1,
+      "skips": {
+        "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+          "Skipped: Windows EOF byte-range lock contract"
+        ]
+      },
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "workers": 0
+    },
+    "workflow_wall_seconds": 1349.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "7b46825cd2a12b5989f6a0eb8ee2e1ae939159fde3a0dbf701e36ba55a6debe6",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "4bca47f1db3aaaa5c7bccac7c8292548786c808a69fcf6c740dd2f1e8673ae5e",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "a839fb4c725f80696349492f24d4b50bd354fedd67cec2acc56cebdb45d6b45e",
+          "fixture-equivalence.json": "0017556dfa1187f92e6044e092169a404c73f13dd83b7c0f7c553aa19ea6e83f",
+          "pytest-controller.json": "8be9b1a34c88f2350cb468cea3711d0587d31a433701c0c867585a2954c018ac",
+          "pytest.log": "afd1ab7358a730997abb3740533ceecbff1098d7c834d7483c39a3be2e2a4269",
+          "research.xml": "2200801a5ad7af489723986a34132e8c534c0f21cf64728664a2062ab85bf154",
+          "result.json": "6b424f5c570dc198a0041f4c4894851516b255b346ce2e20714f1da1dc1d8c1b",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+          "validation.json": "4a09f0affcbab8b3215d9bcab46e246df79e737bfb20df36e3b0263300250351"
+        },
+        "id": 12032824748,
+        "name": "ci-runtime-38870328099-1"
+      }
+    ],
+    "conclusion": "success",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38870328099",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "UNSET",
+        "NUMEXPR_NUM_THREADS": "UNSET",
+        "OMP_NUM_THREADS": "UNSET",
+        "OPENBLAS_NUM_THREADS": "UNSET",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "execnet",
+          "version": "2.1.2"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "pytest-xdist",
+          "version": "3.8.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "subject_tree": "4999830db8b05e0d9d98302cb2b791308df7039d",
+      "utc_started": "2026-10-16T07:57:32.971282+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "4bca47f1db3aaaa5c7bccac7c8292548786c808a69fcf6c740dd2f1e8673ae5e",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "a839fb4c725f80696349492f24d4b50bd354fedd67cec2acc56cebdb45d6b45e",
+      "fixture-equivalence.json": "0017556dfa1187f92e6044e092169a404c73f13dd83b7c0f7c553aa19ea6e83f",
+      "pytest-controller.json": "8be9b1a34c88f2350cb468cea3711d0587d31a433701c0c867585a2954c018ac",
+      "pytest.log": "afd1ab7358a730997abb3740533ceecbff1098d7c834d7483c39a3be2e2a4269",
+      "research.xml": "2200801a5ad7af489723986a34132e8c534c0f21cf64728664a2062ab85bf154",
+      "result.json": "6b424f5c570dc198a0041f4c4894851516b255b346ce2e20714f1da1dc1d8c1b",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "validation.json": "4a09f0affcbab8b3215d9bcab46e246df79e737bfb20df36e3b0263300250351"
+    },
+    "fixture_equivalence": {
+      "baseline_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+      "baseline_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "calendar_sessions": 390,
+      "candidate_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+      "exact_values_dtypes_index_and_attrs_equal": true,
+      "frame_columns": [
+        [
+          "date",
+          "symbol",
+          "REV1",
+          "MOM20",
+          "entry_date",
+          "exit_date",
+          "EXCESS_RET5",
+          "MARKET_REGIME",
+          "INDEX_RET5",
+          "INDEX_RET20",
+          "INDEX_RET60",
+          "INDEX_VOL20"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close",
+          "trade_status",
+          "is_st"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close"
+        ]
+      ],
+      "frame_content_sha256": [
+        "bdbf0bcacbc4a5057a11a369dac4d72bb80d6ac02efb9558d5b7aa4bbf60b4a6",
+        "02d7cbe884aa939f4bcec78035b015264892c82331ebbc4d576bac32504f8f74",
+        "1b7a2770ad3273b8599e835d524f7d51f12c5da2fe7f0b6b4e89831a7cb9a02b"
+      ],
+      "frame_rows": [
+        3900,
+        5100,
+        510
+      ],
+      "immutable_template_sha256": null,
+      "kind": "synthetic_fixture_equivalence_not_financial_certification",
+      "mutations_do_not_affect_next_call": true,
+      "negative_controls_detected": [
+        "changed_value",
+        "dropped_row",
+        "shared_mutable_state"
+      ],
+      "numpy_version": "1.26.4",
+      "original_function_bodies_unchanged": [
+        "_config",
+        "_inputs",
+        "_legacy_universe_manifest",
+        "_provenance",
+        "_write_verified_inputs",
+        "test_baostock_membership_cannot_be_approved_by_old_manifest_or_boolean",
+        "test_build_dataset_binds_producer_code_provenance",
+        "test_build_dataset_validates_security_bundle_before_loading_stock_bars",
+        "test_dataset_reuse_allows_identical_bars_republished_in_a_new_generation",
+        "test_dataset_reuse_allows_non_dataset_model_config_changes",
+        "test_dataset_reuse_conservatively_rejects_cache_extension_outside_research_span",
+        "test_dataset_reuse_rejects_a_new_security_data_generation",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_bar_being_filled",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_cache_being_created",
+        "test_dataset_reuse_rejects_corrected_raw_bar_content",
+        "test_dataset_reuse_rejects_current_cache_source_contract_mismatch",
+        "test_dataset_reuse_requires_matching_build_run_bar_receipt",
+        "test_evaluate_records_verified_dataset_provenance",
+        "test_evaluate_rejects_a_missing_dataset_manifest",
+        "test_evaluate_rejects_a_missing_pit_manifest",
+        "test_evaluate_rejects_a_tampered_content_hash",
+        "test_evaluate_rejects_dataset_from_different_code_provenance",
+        "test_evaluate_rejects_dataset_without_producer_provenance",
+        "test_evaluate_rejects_missing_dataset_producer_run",
+        "test_execution_status_join_allows_nonmember_price_rows_and_pins_generation",
+        "test_verified_legacy_local_membership_also_checks_intervals",
+        "test_verified_local_membership_accepts_allowlisted_manifest_versions",
+        "test_verified_local_membership_rejects_tampered_intervals",
+        "test_verified_local_membership_rejects_unknown_v2_contract",
+        "test_verified_local_membership_requires_import_source_provenance",
+        "test_verified_membership_rejects_manifest_contract_mismatch",
+        "test_walk_forward_and_compare_commands_are_offline_and_complete",
+        "test_walk_forward_pins_bar_generation_before_model_run"
+      ],
+      "paired_microbenchmarks_not_full_ci_wall_time": [],
+      "pandas_version": "2.2.3",
+      "process_local_cache": null,
+      "subject_dirty": false,
+      "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "timing_repeats_per_round": 0
+    },
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 776.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 13.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 3.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 27.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 52.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 670.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": -1.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 667.91,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 72.546864,
+      "cpu_user_seconds": 638.0742779999999,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 0,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6767120384,
+        "minimum_headroom_fraction": 0.8129679921307694,
+        "physical_total_bytes": 8323969024
+      },
+      "sampled_process_tree_rss_peak_bytes": 1074032640,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 669.136028833
+    },
+    "run_head_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+    "run_id": 38870328099,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 6.191861888000005
+      },
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 506.3106911399991,
+        "setup": 147.5607225760003,
+        "teardown": 0.5970860969976286
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.070510039999931
+      },
+      "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38870328099",
+    "validation": {
+      "coverage_line_differences": {},
+      "coverage_line_rate": 0.8536,
+      "coverage_lines_covered": 15988,
+      "coverage_lines_valid": 18730,
+      "coverage_sha256": "4bca47f1db3aaaa5c7bccac7c8292548786c808a69fcf6c740dd2f1e8673ae5e",
+      "coverage_source_count": 133,
+      "coverage_threshold": null,
+      "deselected": 2,
+      "failed": 0,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 1,
+        "tests": 3142
+      },
+      "junit_sha256": "2200801a5ad7af489723986a34132e8c534c0f21cf64728664a2062ab85bf154",
+      "kind": "software_coverage_only_not_financial_certification",
+      "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+      "passed": 3141,
+      "phase_count": 9425,
+      "skipped": 1,
+      "skips": {
+        "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+          "Skipped: Windows EOF byte-range lock contract"
+        ]
+      },
+      "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "workers": 0
+    },
+    "workflow_wall_seconds": 780.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "c63a0043b3324dcea3eee7c9479ebd061199eeee4d54f4c59e66546f1841f2b0",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "f89a8ea7f1222809ddb8ae3e2d4ef00f49a9f4eea2865003fd0bac25a0b454bf",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "e54ae1af43787c28973960884a07878a9f6f4546f2102c534749a6e74a4b1226",
+          "fixture-equivalence.json": "0017556dfa1187f92e6044e092169a404c73f13dd83b7c0f7c553aa19ea6e83f",
+          "pytest-controller.json": "db8ccc57ad2f98afadc0e94500da82a8f3d15ad7a2f983de6d40e30ecdbdca47",
+          "pytest.log": "860d68a8b97dded8cf66f730fe85faa35f74e331b7a0c254edbe07be4f1369c9",
+          "research.xml": "f1e14969205d779790018c9ccf71fd23f19ad477f93835d651c3fb74269eae65",
+          "result.json": "c8eae47ecd53ff13ade16fe6994d221585dc972c84079cdd9b03ff2019e05a9e",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+          "validation.json": "ab7bf514c9f9fa97b3ff90f9a646b7498c57251f9a49e19f67b54e1043aba148"
+        },
+        "id": 12034011304,
+        "name": "ci-runtime-38870332121-1"
+      }
+    ],
+    "conclusion": "success",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38870332121",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "UNSET",
+        "NUMEXPR_NUM_THREADS": "UNSET",
+        "OMP_NUM_THREADS": "UNSET",
+        "OPENBLAS_NUM_THREADS": "UNSET",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "execnet",
+          "version": "2.1.2"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "pytest-xdist",
+          "version": "3.8.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "subject_tree": "4999830db8b05e0d9d98302cb2b791308df7039d",
+      "utc_started": "2026-10-16T07:57:11.473325+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "f89a8ea7f1222809ddb8ae3e2d4ef00f49a9f4eea2865003fd0bac25a0b454bf",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "e54ae1af43787c28973960884a07878a9f6f4546f2102c534749a6e74a4b1226",
+      "fixture-equivalence.json": "0017556dfa1187f92e6044e092169a404c73f13dd83b7c0f7c553aa19ea6e83f",
+      "pytest-controller.json": "db8ccc57ad2f98afadc0e94500da82a8f3d15ad7a2f983de6d40e30ecdbdca47",
+      "pytest.log": "860d68a8b97dded8cf66f730fe85faa35f74e331b7a0c254edbe07be4f1369c9",
+      "research.xml": "f1e14969205d779790018c9ccf71fd23f19ad477f93835d651c3fb74269eae65",
+      "result.json": "c8eae47ecd53ff13ade16fe6994d221585dc972c84079cdd9b03ff2019e05a9e",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "validation.json": "ab7bf514c9f9fa97b3ff90f9a646b7498c57251f9a49e19f67b54e1043aba148"
+    },
+    "fixture_equivalence": {
+      "baseline_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+      "baseline_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "calendar_sessions": 390,
+      "candidate_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+      "exact_values_dtypes_index_and_attrs_equal": true,
+      "frame_columns": [
+        [
+          "date",
+          "symbol",
+          "REV1",
+          "MOM20",
+          "entry_date",
+          "exit_date",
+          "EXCESS_RET5",
+          "MARKET_REGIME",
+          "INDEX_RET5",
+          "INDEX_RET20",
+          "INDEX_RET60",
+          "INDEX_VOL20"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close",
+          "trade_status",
+          "is_st"
+        ],
+        [
+          "date",
+          "symbol",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "amount",
+          "turnover",
+          "adj_factor",
+          "raw_open",
+          "raw_high",
+          "raw_low",
+          "raw_close",
+          "adj_open",
+          "adj_high",
+          "adj_low",
+          "adj_close"
+        ]
+      ],
+      "frame_content_sha256": [
+        "bdbf0bcacbc4a5057a11a369dac4d72bb80d6ac02efb9558d5b7aa4bbf60b4a6",
+        "02d7cbe884aa939f4bcec78035b015264892c82331ebbc4d576bac32504f8f74",
+        "1b7a2770ad3273b8599e835d524f7d51f12c5da2fe7f0b6b4e89831a7cb9a02b"
+      ],
+      "frame_rows": [
+        3900,
+        5100,
+        510
+      ],
+      "immutable_template_sha256": null,
+      "kind": "synthetic_fixture_equivalence_not_financial_certification",
+      "mutations_do_not_affect_next_call": true,
+      "negative_controls_detected": [
+        "changed_value",
+        "dropped_row",
+        "shared_mutable_state"
+      ],
+      "numpy_version": "1.26.4",
+      "original_function_bodies_unchanged": [
+        "_config",
+        "_inputs",
+        "_legacy_universe_manifest",
+        "_provenance",
+        "_write_verified_inputs",
+        "test_baostock_membership_cannot_be_approved_by_old_manifest_or_boolean",
+        "test_build_dataset_binds_producer_code_provenance",
+        "test_build_dataset_validates_security_bundle_before_loading_stock_bars",
+        "test_dataset_reuse_allows_identical_bars_republished_in_a_new_generation",
+        "test_dataset_reuse_allows_non_dataset_model_config_changes",
+        "test_dataset_reuse_conservatively_rejects_cache_extension_outside_research_span",
+        "test_dataset_reuse_rejects_a_new_security_data_generation",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_bar_being_filled",
+        "test_dataset_reuse_rejects_a_previously_missing_stock_cache_being_created",
+        "test_dataset_reuse_rejects_corrected_raw_bar_content",
+        "test_dataset_reuse_rejects_current_cache_source_contract_mismatch",
+        "test_dataset_reuse_requires_matching_build_run_bar_receipt",
+        "test_evaluate_records_verified_dataset_provenance",
+        "test_evaluate_rejects_a_missing_dataset_manifest",
+        "test_evaluate_rejects_a_missing_pit_manifest",
+        "test_evaluate_rejects_a_tampered_content_hash",
+        "test_evaluate_rejects_dataset_from_different_code_provenance",
+        "test_evaluate_rejects_dataset_without_producer_provenance",
+        "test_evaluate_rejects_missing_dataset_producer_run",
+        "test_execution_status_join_allows_nonmember_price_rows_and_pins_generation",
+        "test_verified_legacy_local_membership_also_checks_intervals",
+        "test_verified_local_membership_accepts_allowlisted_manifest_versions",
+        "test_verified_local_membership_rejects_tampered_intervals",
+        "test_verified_local_membership_rejects_unknown_v2_contract",
+        "test_verified_local_membership_requires_import_source_provenance",
+        "test_verified_membership_rejects_manifest_contract_mismatch",
+        "test_walk_forward_and_compare_commands_are_offline_and_complete",
+        "test_walk_forward_pins_bar_generation_before_model_run"
+      ],
+      "paired_microbenchmarks_not_full_ci_wall_time": [],
+      "pandas_version": "2.2.3",
+      "process_local_cache": null,
+      "subject_dirty": false,
+      "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "timing_repeats_per_round": 0
+    },
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 1353.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 13.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 4.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 16.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 39.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 1271.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 3.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": 0.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 1269.45,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 85.85133,
+      "cpu_user_seconds": 1245.53577,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 0,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6753710080,
+        "minimum_headroom_fraction": 0.8113577437842514,
+        "physical_total_bytes": 8323960832
+      },
+      "sampled_process_tree_rss_peak_bytes": 1069846528,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 1270.7292926619998
+    },
+    "run_head_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+    "run_id": 38870332121,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 9.021840314000002
+      },
+      "controller_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 965.5126638070053,
+        "setup": 283.7917452420057,
+        "teardown": 0.9501631400028572
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.1025814970000738
+      },
+      "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38870332121",
+    "validation": {
+      "coverage_line_differences": {},
+      "coverage_line_rate": 0.8536,
+      "coverage_lines_covered": 15988,
+      "coverage_lines_valid": 18730,
+      "coverage_sha256": "f89a8ea7f1222809ddb8ae3e2d4ef00f49a9f4eea2865003fd0bac25a0b454bf",
+      "coverage_source_count": 133,
+      "coverage_threshold": null,
+      "deselected": 2,
+      "failed": 0,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 1,
+        "tests": 3142
+      },
+      "junit_sha256": "f1e14969205d779790018c9ccf71fd23f19ad477f93835d651c3fb74269eae65",
+      "kind": "software_coverage_only_not_financial_certification",
+      "outcomes_sha256": "b830fa0f08c7e348745c307c86d36bf9a9c144c5d024885c824b9c4794d5d33f",
+      "passed": 3141,
+      "phase_count": 9425,
+      "skipped": 1,
+      "skips": {
+        "tests/research/test_cache_generation_publication.py::test_windows_native_lock_covers_empty_file_before_initialization": [
+          "Skipped: Windows EOF byte-range lock contract"
+        ]
+      },
+      "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "workers": 0
+    },
+    "workflow_wall_seconds": 1358.0
+  }
+]
