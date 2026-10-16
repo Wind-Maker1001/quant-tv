@@ -117,6 +117,11 @@ Windows隔离环境由现有研究包副本建立，再安装与CI一致的pytes
 
 研究实现保持不变。静态job拆分为最小固定依赖；在无NumPy/Pandas/LightGBM的新环境中，原编译、Flake8、Black及52项合同全部通过。
 
+[静态测量收据](evidence/ci-runtime-optimization-v1/static-runs.json)保留原main、最小依赖仍用缓存以及关闭缓存三个阶段。
+原main完整workflow95秒、job91秒、安装35秒；关闭静态pip缓存后两轮为workflow54/47秒、job49/44秒、安装4/3秒。
+19个工具包在每轮全新Python环境实际安装，未安装科学计算栈；setup-python原先会按回退key恢复科学计算下载缓存，因此静态job关闭该缓存。
+研究job缓存不变。上述是实际观测，Runner检出等仍有波动，不把差值全部归因于单个变量。
+
 唯一测试准备优化为test_cli_phase2._inputs：原配方保持原样，按配方版本及NumPy/Pandas版本缓存进程内pickle不可变字节，每次解码得到独立对象。与Git绑定的原main配方逐值、数值原始字节、dtype、索引、频率和attrs校验，并验证修改不会污染下次调用。390交易日，数据/股票bar/基准分别3900/5100/510行，规模不变。没有缓存训练、被测验证、收据或文件。45项所属文件测试通过。
 
 串行候选为 `11ce72b93c44c83041d4faaf34798dd6c77851dc`。

@@ -1,0 +1,582 @@
+[
+  {
+    "run_id": 38862847746,
+    "modules": [
+      {
+        "file": "tests/research/test_five_year_pilot.py",
+        "setup": 126.76414899199995,
+        "call": 122.49846141400053,
+        "teardown": 0.019777010000098016,
+        "all_phase_seconds": 249.28238741600057
+      },
+      {
+        "file": "tests/research/test_cli_phase2.py",
+        "setup": 0.05683152999998242,
+        "call": 221.04593583399998,
+        "teardown": 0.013894441000047664,
+        "all_phase_seconds": 221.116661805
+      },
+      {
+        "file": "tests/research/test_factor_discovery_integration.py",
+        "setup": 28.618911486999878,
+        "call": 73.9074379030003,
+        "teardown": 0.008362042000271686,
+        "all_phase_seconds": 102.53471143200045
+      },
+      {
+        "file": "tests/research/test_forward_evaluation_report.py",
+        "setup": 35.48766032299977,
+        "call": 13.173772850999853,
+        "teardown": 0.01215133500011234,
+        "all_phase_seconds": 48.67358450899974
+      },
+      {
+        "file": "tests/research/test_phase2_synthetic_example.py",
+        "setup": 0.002468360999955621,
+        "call": 40.82779181700016,
+        "teardown": 0.0003419490001306258,
+        "all_phase_seconds": 40.83060212700025
+      },
+      {
+        "file": "tests/research/test_factor_performance_diagnostic.py",
+        "setup": 0.22829193299992312,
+        "call": 40.23073003899992,
+        "teardown": 0.0022881840000081866,
+        "all_phase_seconds": 40.461310155999854
+      },
+      {
+        "file": "tests/research/test_adjustment_foundation.py",
+        "setup": 0.03803504200000418,
+        "call": 35.84657192599997,
+        "teardown": 0.01134971999995571,
+        "all_phase_seconds": 35.89595668799993
+      },
+      {
+        "file": "tests/research/test_walk_forward_runner_phase2.py",
+        "setup": 0.004487723000011101,
+        "call": 29.444332853999867,
+        "teardown": 0.0019518959998094942,
+        "all_phase_seconds": 29.450772472999688
+      },
+      {
+        "file": "tests/research/test_walk_forward_stage_diagnostics.py",
+        "setup": 0.016951307000454108,
+        "call": 28.39289560099951,
+        "teardown": 0.004973658999460895,
+        "all_phase_seconds": 28.414820566999424
+      },
+      {
+        "file": "tests/research/test_exploratory_safety.py",
+        "setup": 5.589742484999931,
+        "call": 22.40549973000003,
+        "teardown": 0.02361705799989977,
+        "all_phase_seconds": 28.018859272999862
+      },
+      {
+        "file": "tests/research/test_factor_metrics_golden.py",
+        "setup": 0.09855730899971604,
+        "call": 22.184219865000614,
+        "teardown": 0.07147647899773801,
+        "all_phase_seconds": 22.354253652998068
+      },
+      {
+        "file": "tests/research/test_phase3_synthetic_example.py",
+        "setup": 0.003843860000188215,
+        "call": 22.12777854800015,
+        "teardown": 0.00027231900003243936,
+        "all_phase_seconds": 22.131894727000372
+      },
+      {
+        "file": "tests/research/test_cli_stage_diagnostics.py",
+        "setup": 12.649207244000081,
+        "call": 7.030379993999929,
+        "teardown": 0.011194895999949495,
+        "all_phase_seconds": 19.69078213399996
+      },
+      {
+        "file": "tests/research/test_market_data_qualification.py",
+        "setup": 0.0666901980006287,
+        "call": 19.509368495999865,
+        "teardown": 0.008068231000834203,
+        "all_phase_seconds": 19.58412692500133
+      },
+      {
+        "file": "tests/research/test_real_factor_label_smoke.py",
+        "setup": 3.0719371079997018,
+        "call": 15.794881800999747,
+        "teardown": 0.01874123000061445,
+        "all_phase_seconds": 18.885560139000063
+      },
+      {
+        "file": "tests/research/test_forward_evaluation.py",
+        "setup": 13.105833867999877,
+        "call": 5.751637962000586,
+        "teardown": 0.01947704299993802,
+        "all_phase_seconds": 18.8769488730004
+      },
+      {
+        "file": "tests/research/test_model_stage_diagnostics_report.py",
+        "setup": 5.800821061000079,
+        "call": 11.876591890001237,
+        "teardown": 0.01029572399988865,
+        "all_phase_seconds": 17.687708675001204
+      },
+      {
+        "file": "tests/research/test_cache_generation_publication.py",
+        "setup": 0.044609055999927705,
+        "call": 15.502647151999952,
+        "teardown": 0.011875803999856771,
+        "all_phase_seconds": 15.559132011999736
+      },
+      {
+        "file": "tests/research/test_qualification_admission_boundaries.py",
+        "setup": 0.09065612300014436,
+        "call": 12.625337621000426,
+        "teardown": 0.009096882000676487,
+        "all_phase_seconds": 12.725090626001247
+      },
+      {
+        "file": "tests/research/test_market_regime_diagnostic.py",
+        "setup": 0.24219512600029702,
+        "call": 12.295417012999906,
+        "teardown": 0.006824594999670808,
+        "all_phase_seconds": 12.544436733999873
+      }
+    ]
+  },
+  {
+    "run_id": 38862851687,
+    "modules": [
+      {
+        "file": "tests/research/test_five_year_pilot.py",
+        "setup": 104.48466663499971,
+        "call": 93.26122507899981,
+        "teardown": 0.018249079000270285,
+        "all_phase_seconds": 197.7641407929998
+      },
+      {
+        "file": "tests/research/test_cli_phase2.py",
+        "setup": 0.04300738999992859,
+        "call": 169.04279348899996,
+        "teardown": 0.011559923000106664,
+        "all_phase_seconds": 169.097360802
+      },
+      {
+        "file": "tests/research/test_factor_discovery_integration.py",
+        "setup": 18.644575150999913,
+        "call": 47.32444698699993,
+        "teardown": 0.007681642000420652,
+        "all_phase_seconds": 65.97670378000026
+      },
+      {
+        "file": "tests/research/test_forward_evaluation_report.py",
+        "setup": 27.760904740999422,
+        "call": 10.410784163000358,
+        "teardown": 0.01006879699991714,
+        "all_phase_seconds": 38.1817577009997
+      },
+      {
+        "file": "tests/research/test_phase2_synthetic_example.py",
+        "setup": 0.00221718599993892,
+        "call": 30.771151325000005,
+        "teardown": 0.00024858500000846107,
+        "all_phase_seconds": 30.773617095999953
+      },
+      {
+        "file": "tests/research/test_factor_performance_diagnostic.py",
+        "setup": 0.15424589200017635,
+        "call": 29.734685434000085,
+        "teardown": 0.0019409489998452045,
+        "all_phase_seconds": 29.890872275000106
+      },
+      {
+        "file": "tests/research/test_adjustment_foundation.py",
+        "setup": 0.03282773299994801,
+        "call": 22.90814391799995,
+        "teardown": 0.0100904339999488,
+        "all_phase_seconds": 22.951062084999847
+      },
+      {
+        "file": "tests/research/test_walk_forward_runner_phase2.py",
+        "setup": 0.0034304490000067744,
+        "call": 20.61330540300048,
+        "teardown": 0.001650260000246817,
+        "all_phase_seconds": 20.618386112000735
+      },
+      {
+        "file": "tests/research/test_walk_forward_stage_diagnostics.py",
+        "setup": 0.013160691000393854,
+        "call": 19.924323757000593,
+        "teardown": 0.004131349999852318,
+        "all_phase_seconds": 19.94161579800084
+      },
+      {
+        "file": "tests/research/test_exploratory_safety.py",
+        "setup": 4.150274756000044,
+        "call": 14.81069470500006,
+        "teardown": 0.021743224000147165,
+        "all_phase_seconds": 18.98271268500025
+      },
+      {
+        "file": "tests/research/test_factor_metrics_golden.py",
+        "setup": 0.0810999109991144,
+        "call": 16.004892628000334,
+        "teardown": 0.06041466099873105,
+        "all_phase_seconds": 16.14640719999818
+      },
+      {
+        "file": "tests/research/test_phase3_synthetic_example.py",
+        "setup": 0.002698565999935454,
+        "call": 15.860400732000016,
+        "teardown": 0.00024077199998373544,
+        "all_phase_seconds": 15.863340069999936
+      },
+      {
+        "file": "tests/research/test_real_factor_label_smoke.py",
+        "setup": 2.0931273580000607,
+        "call": 13.157536499999878,
+        "teardown": 0.01684385599980942,
+        "all_phase_seconds": 15.267507713999748
+      },
+      {
+        "file": "tests/research/test_market_data_qualification.py",
+        "setup": 0.04970895299993572,
+        "call": 14.719076858000335,
+        "teardown": 0.006918869999708477,
+        "all_phase_seconds": 14.77570468099998
+      },
+      {
+        "file": "tests/research/test_cli_stage_diagnostics.py",
+        "setup": 9.177836526000078,
+        "call": 4.948297075000028,
+        "teardown": 0.010022120999849449,
+        "all_phase_seconds": 14.136155721999955
+      },
+      {
+        "file": "tests/research/test_forward_evaluation.py",
+        "setup": 8.959889098000076,
+        "call": 3.9154775839998592,
+        "teardown": 0.017482886000152575,
+        "all_phase_seconds": 12.892849568000088
+      },
+      {
+        "file": "tests/research/test_model_stage_diagnostics_report.py",
+        "setup": 3.9819422329996996,
+        "call": 8.629410337999957,
+        "teardown": 0.009610939000481267,
+        "all_phase_seconds": 12.620963510000138
+      },
+      {
+        "file": "tests/research/test_cache_generation_publication.py",
+        "setup": 0.03562907400001336,
+        "call": 11.910440683000019,
+        "teardown": 0.009829101000065066,
+        "all_phase_seconds": 11.955898858000097
+      },
+      {
+        "file": "tests/research/test_forward_evaluation_synthetic_example.py",
+        "setup": 3.0325458300000037,
+        "call": 7.406061762999798,
+        "teardown": 0.002748118000113209,
+        "all_phase_seconds": 10.441355710999915
+      },
+      {
+        "file": "tests/research/test_qualification_admission_boundaries.py",
+        "setup": 0.07027836699978707,
+        "call": 9.203825360000224,
+        "teardown": 0.007907303000251886,
+        "all_phase_seconds": 9.282011030000263
+      }
+    ]
+  },
+  {
+    "run_id": 38862855654,
+    "modules": [
+      {
+        "file": "tests/research/test_five_year_pilot.py",
+        "setup": 130.9562669450005,
+        "call": 126.95670793700003,
+        "teardown": 0.021248467999157583,
+        "all_phase_seconds": 257.9342233499997
+      },
+      {
+        "file": "tests/research/test_cli_phase2.py",
+        "setup": 0.05607337500009635,
+        "call": 228.535515986,
+        "teardown": 0.013723741000092105,
+        "all_phase_seconds": 228.6053131020002
+      },
+      {
+        "file": "tests/research/test_factor_discovery_integration.py",
+        "setup": 29.300367454000593,
+        "call": 75.86633396500065,
+        "teardown": 0.009014276000471,
+        "all_phase_seconds": 105.17571569500171
+      },
+      {
+        "file": "tests/research/test_forward_evaluation_report.py",
+        "setup": 36.63190693899969,
+        "call": 13.544430649999867,
+        "teardown": 0.013242881999985912,
+        "all_phase_seconds": 50.189580470999545
+      },
+      {
+        "file": "tests/research/test_phase2_synthetic_example.py",
+        "setup": 0.0025835009998900205,
+        "call": 42.22153333700021,
+        "teardown": 0.0003252589999647171,
+        "all_phase_seconds": 42.224442097000065
+      },
+      {
+        "file": "tests/research/test_factor_performance_diagnostic.py",
+        "setup": 0.22341723799991087,
+        "call": 41.16874254200002,
+        "teardown": 0.0024128250000785556,
+        "all_phase_seconds": 41.39457260500001
+      },
+      {
+        "file": "tests/research/test_adjustment_foundation.py",
+        "setup": 0.04214922399984289,
+        "call": 37.0771932940001,
+        "teardown": 0.013159980999716936,
+        "all_phase_seconds": 37.132502498999656
+      },
+      {
+        "file": "tests/research/test_walk_forward_runner_phase2.py",
+        "setup": 0.004586789000086355,
+        "call": 30.283502567999903,
+        "teardown": 0.0021005460002925247,
+        "all_phase_seconds": 30.290189903000282
+      },
+      {
+        "file": "tests/research/test_walk_forward_stage_diagnostics.py",
+        "setup": 0.017983478000360265,
+        "call": 29.449117458999808,
+        "teardown": 0.005196383000111382,
+        "all_phase_seconds": 29.47229732000028
+      },
+      {
+        "file": "tests/research/test_exploratory_safety.py",
+        "setup": 5.813577059999602,
+        "call": 23.088649918000215,
+        "teardown": 0.025677875000610584,
+        "all_phase_seconds": 28.927904853000427
+      },
+      {
+        "file": "tests/research/test_factor_metrics_golden.py",
+        "setup": 0.10416738999970221,
+        "call": 22.665188202999616,
+        "teardown": 0.07460432599975775,
+        "all_phase_seconds": 22.843959918999076
+      },
+      {
+        "file": "tests/research/test_phase3_synthetic_example.py",
+        "setup": 0.0039128470000378,
+        "call": 22.67782717099999,
+        "teardown": 0.00030143599997245474,
+        "all_phase_seconds": 22.682041454
+      },
+      {
+        "file": "tests/research/test_market_data_qualification.py",
+        "setup": 0.06563125599950581,
+        "call": 20.27999662499883,
+        "teardown": 0.008289480999337684,
+        "all_phase_seconds": 20.353917361997674
+      },
+      {
+        "file": "tests/research/test_cli_stage_diagnostics.py",
+        "setup": 12.93432711499986,
+        "call": 7.189192030999607,
+        "teardown": 0.011925357999871267,
+        "all_phase_seconds": 20.135444503999338
+      },
+      {
+        "file": "tests/research/test_real_factor_label_smoke.py",
+        "setup": 3.1611007700007576,
+        "call": 16.537247411000635,
+        "teardown": 0.01984737400061931,
+        "all_phase_seconds": 19.718195555002012
+      },
+      {
+        "file": "tests/research/test_forward_evaluation.py",
+        "setup": 13.761208930000521,
+        "call": 5.881183885001292,
+        "teardown": 0.020989280000094368,
+        "all_phase_seconds": 19.663382095001907
+      },
+      {
+        "file": "tests/research/test_model_stage_diagnostics_report.py",
+        "setup": 5.900490658000081,
+        "call": 12.081917244000806,
+        "teardown": 0.011298941999939416,
+        "all_phase_seconds": 17.993706844000826
+      },
+      {
+        "file": "tests/research/test_cache_generation_publication.py",
+        "setup": 0.0496123269998634,
+        "call": 16.41874737900008,
+        "teardown": 0.013185285999838925,
+        "all_phase_seconds": 16.481544991999783
+      },
+      {
+        "file": "tests/research/test_qualification_admission_boundaries.py",
+        "setup": 0.09208973300019352,
+        "call": 13.239188373999468,
+        "teardown": 0.00958059799950206,
+        "all_phase_seconds": 13.340858704999164
+      },
+      {
+        "file": "tests/research/test_market_regime_diagnostic.py",
+        "setup": 0.23366271800023242,
+        "call": 12.515035003000094,
+        "teardown": 0.007398103999321393,
+        "all_phase_seconds": 12.756095824999647
+      }
+    ]
+  },
+  {
+    "run_id": 38862859060,
+    "modules": [
+      {
+        "file": "tests/research/test_five_year_pilot.py",
+        "setup": 79.81461856600009,
+        "call": 69.98437322000058,
+        "teardown": 0.014847096999631049,
+        "all_phase_seconds": 149.8138388830003
+      },
+      {
+        "file": "tests/research/test_cli_phase2.py",
+        "setup": 0.041289872999982435,
+        "call": 139.68910533599987,
+        "teardown": 0.011427792000063164,
+        "all_phase_seconds": 139.74182300099991
+      },
+      {
+        "file": "tests/research/test_factor_discovery_integration.py",
+        "setup": 13.96245333599984,
+        "call": 35.49851209499997,
+        "teardown": 0.006710372999918945,
+        "all_phase_seconds": 49.467675803999725
+      },
+      {
+        "file": "tests/research/test_phase2_synthetic_example.py",
+        "setup": 0.0019965760000104638,
+        "call": 24.860345123000002,
+        "teardown": 0.0002002799999445415,
+        "all_phase_seconds": 24.862541978999957
+      },
+      {
+        "file": "tests/research/test_factor_performance_diagnostic.py",
+        "setup": 0.09266864000005626,
+        "call": 24.36634843600001,
+        "teardown": 0.0018028349998644444,
+        "all_phase_seconds": 24.46081991099993
+      },
+      {
+        "file": "tests/research/test_forward_evaluation_report.py",
+        "setup": 17.09345282000038,
+        "call": 6.605216822999978,
+        "teardown": 0.008457870999677652,
+        "all_phase_seconds": 23.707127514000035
+      },
+      {
+        "file": "tests/research/test_adjustment_foundation.py",
+        "setup": 0.029412607000040225,
+        "call": 16.705300754000092,
+        "teardown": 0.009543097999923589,
+        "all_phase_seconds": 16.744256459000056
+      },
+      {
+        "file": "tests/research/test_walk_forward_runner_phase2.py",
+        "setup": 0.0028588899999704154,
+        "call": 16.048359580999886,
+        "teardown": 0.0013485749999517793,
+        "all_phase_seconds": 16.052567045999808
+      },
+      {
+        "file": "tests/research/test_walk_forward_stage_diagnostics.py",
+        "setup": 0.010942161000116357,
+        "call": 15.463454257999729,
+        "teardown": 0.0034292870000172115,
+        "all_phase_seconds": 15.477825705999862
+      },
+      {
+        "file": "tests/research/test_exploratory_safety.py",
+        "setup": 3.302215470999897,
+        "call": 10.902341703000332,
+        "teardown": 0.017477133999932448,
+        "all_phase_seconds": 14.222034308000161
+      },
+      {
+        "file": "tests/research/test_real_factor_label_smoke.py",
+        "setup": 1.5956392920001008,
+        "call": 12.13629083100011,
+        "teardown": 0.013776771000266308,
+        "all_phase_seconds": 13.745706894000477
+      },
+      {
+        "file": "tests/research/test_factor_metrics_golden.py",
+        "setup": 0.062350355999171825,
+        "call": 12.254508619000262,
+        "teardown": 0.05028806299930011,
+        "all_phase_seconds": 12.367147037998734
+      },
+      {
+        "file": "tests/research/test_phase3_synthetic_example.py",
+        "setup": 0.0022161760000471986,
+        "call": 12.34505854200006,
+        "teardown": 0.00022855300005630852,
+        "all_phase_seconds": 12.347503271000164
+      },
+      {
+        "file": "tests/research/test_market_data_qualification.py",
+        "setup": 0.04226782100010951,
+        "call": 11.806785694999917,
+        "teardown": 0.0055758010003046365,
+        "all_phase_seconds": 11.854629317000331
+      },
+      {
+        "file": "tests/research/test_cli_stage_diagnostics.py",
+        "setup": 6.92430907499994,
+        "call": 3.873694933999957,
+        "teardown": 0.008101895999857334,
+        "all_phase_seconds": 10.806105904999754
+      },
+      {
+        "file": "tests/research/test_model_stage_diagnostics_report.py",
+        "setup": 3.0579676000000973,
+        "call": 6.751774672000238,
+        "teardown": 0.007673624999938511,
+        "all_phase_seconds": 9.817415897000274
+      },
+      {
+        "file": "tests/research/test_cache_generation_publication.py",
+        "setup": 0.035477141999990636,
+        "call": 9.725980311000058,
+        "teardown": 0.00961306900001091,
+        "all_phase_seconds": 9.771070522000059
+      },
+      {
+        "file": "tests/research/test_tdx_delivery_seal.py",
+        "setup": 0.8414388040001768,
+        "call": 8.682121008999843,
+        "teardown": 0.003132663000087632,
+        "all_phase_seconds": 9.526692476000107
+      },
+      {
+        "file": "tests/research/test_cli_forward_evaluation.py",
+        "setup": 5.224024733000022,
+        "call": 4.072617589000004,
+        "teardown": 0.006159206999939215,
+        "all_phase_seconds": 9.302801528999964
+      },
+      {
+        "file": "tests/research/test_forward_evaluation.py",
+        "setup": 6.081343080000238,
+        "call": 2.7194584099996746,
+        "teardown": 0.012230648999889127,
+        "all_phase_seconds": 8.813032138999802
+      }
+    ]
+  }
+]

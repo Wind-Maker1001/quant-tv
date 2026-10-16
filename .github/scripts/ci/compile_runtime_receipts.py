@@ -28,6 +28,12 @@ def compile_run(directory):
     run = load(directory / "run.json")
     jobs = load(directory / "jobs.json")["jobs"]
     job_log = (directory / "run.log").read_text(encoding="utf-8")
+    download = load(directory / "download-receipt.json")
+    for artifact in download["artifacts"]:
+        for name, expected_sha256 in artifact["files_sha256"].items():
+            path = directory / artifact["name"] / name
+            if hashlib.sha256(path.read_bytes()).hexdigest() != expected_sha256:
+                raise ValueError("Downloaded artifact changed: " + str(path))
     row = {
         "run_id": run["id"],
         "url": run["html_url"],
@@ -58,7 +64,7 @@ def compile_run(directory):
             }
             for job in jobs
         ],
-        "artifacts": load(directory / "download-receipt.json")["artifacts"],
+        "artifacts": download["artifacts"],
     }
     evidence = list(directory.glob("*/environment.json"))
     if not evidence:
