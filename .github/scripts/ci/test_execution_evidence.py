@@ -119,8 +119,10 @@ class ExecutionEvidenceTests(unittest.TestCase):
         write_json(path, value)
 
     def reject(self):
-        with self.assertRaises((ValueError, FileNotFoundError, ET.ParseError)):
-            validate(self.directory, self.expected)
+        for policy in ("experimental-strict", "production-complete"):
+            with self.subTest(policy=policy):
+                with self.assertRaises((ValueError, FileNotFoundError, ET.ParseError)):
+                    validate(self.directory, self.expected, policy=policy)
 
     def test_real_observer_and_junit_agree_on_nested_parameter_ids(self):
         result = validate(self.directory, self.expected)
@@ -309,15 +311,41 @@ class ExecutionEvidenceTests(unittest.TestCase):
         path.write_text(
             path.read_text().replace('hits="1"', 'hits="0"'), encoding="utf-8"
         )
-        with self.assertRaisesRegex(ValueError, "aggregates"):
-            validate(self.directory, self.expected)
+        self.reject()
 
     def test_omitted_coverage_file_fails(self):
         self.synthetic_coverage()
         contract = next(iter(self.expected["execution_by_platform"].values()))
         contract["coverage_valid_lines"]["omitted_source.py"] = [1]
-        with self.assertRaisesRegex(ValueError, "inventory"):
+        self.reject()
+
+    def test_production_records_coverage_differences_without_a_new_numeric_floor(self):
+        self.synthetic_coverage()
+        contract = next(iter(self.expected["execution_by_platform"].values()))
+        contract["coverage_lines_covered"] = 2
+        contract["coverage_covered_lines"]["synthetic_contract.py"] = [1, 2]
+        with self.assertRaisesRegex(ValueError, "Covered-line regression"):
             validate(self.directory, self.expected)
+        self.assertFalse((self.directory / "validation.json").exists())
+        result = validate(self.directory, self.expected, policy="production-complete")
+        self.assertEqual(result["policy"], "production-complete")
+        self.assertFalse(result["coverage_floor_applied"])
+        self.assertEqual(
+            result["coverage_line_differences"],
+            {"synthetic_contract.py": {"lost": [2], "gained": []}},
+        )
+
+    def test_production_cannot_replace_a_reference_experiment_or_adopt_workers(self):
+        with self.assertRaisesRegex(ValueError, "substitute"):
+            validate(
+                self.directory,
+                self.expected,
+                reference=self.original,
+                policy="production-complete",
+            )
+        self.mutate("environment.json", lambda value: value.update(workers=2))
+        with self.assertRaisesRegex(ValueError, "serial backend"):
+            validate(self.directory, self.expected, policy="production-complete")
 
     def test_changed_skip_reason_fails(self):
         def change(value):
@@ -326,8 +354,7 @@ class ExecutionEvidenceTests(unittest.TestCase):
                     report["skip_reason"] = "Skipped: another reason"
 
         self.mutate("pytest-controller.json", change)
-        with self.assertRaisesRegex(ValueError, "Skip reasons"):
-            validate(self.directory, self.expected)
+        self.reject()
 
     def test_additional_skip_fails(self):
         def change(value):
@@ -346,8 +373,7 @@ class ExecutionEvidenceTests(unittest.TestCase):
             if case.find("skipped") is None:
                 ET.SubElement(case, "skipped", message="unauthorized skip")
         root.write(path)
-        with self.assertRaisesRegex(ValueError, "outcomes"):
-            validate(self.directory, self.expected)
+        self.reject()
 
 
 if __name__ == "__main__":

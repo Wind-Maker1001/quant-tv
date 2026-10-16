@@ -1,0 +1,34 @@
+[
+  {
+    "run_id": 38863504342,
+    "scope": "fixed_119_hotspot_profile_not_full_acceptance",
+    "actual_model_interface_call_counts": {
+      "ridge.py:fit": 37,
+      "ridge.py:predict": 50,
+      "xgboost.py:fit": 15,
+      "xgboost.py:predict": 30,
+      "base.py:save": 41,
+      "base.py:load": 5,
+      "lightgbm.py:fit": 15,
+      "lightgbm.py:predict": 30,
+      "factor_score.py:fit": 22,
+      "factor_score.py:predict": 51
+    }
+  },
+  {
+    "run_id": 38867795374,
+    "scope": "fixed_119_hotspot_profile_not_full_acceptance",
+    "actual_model_interface_call_counts": {
+      "xgboost.py:fit": 15,
+      "xgboost.py:predict": 30,
+      "ridge.py:fit": 37,
+      "ridge.py:predict": 50,
+      "base.py:save": 41,
+      "base.py:load": 5,
+      "lightgbm.py:fit": 15,
+      "lightgbm.py:predict": 30,
+      "factor_score.py:fit": 22,
+      "factor_score.py:predict": 51
+    }
+  }
+]

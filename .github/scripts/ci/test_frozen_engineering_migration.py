@@ -3,6 +3,7 @@
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 
@@ -125,13 +126,77 @@ class ExactEngineeringMigrationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "scope changed"):
             self.validate()
 
-    def test_unanchored_postimage_fails_even_with_new_digest(self):
+    def test_changed_postimage_cannot_change_the_pinned_receipt_digest(self):
         self.registry["files"][next(iter(ENGINEERING_PATHS))]["approved_blob"] = (
             "0" * 40
         )
-        self.write_receipt()
-        with self.assertRaisesRegex(ValueError, "anchored Git tree"):
+        self.receipt.write_bytes((json.dumps(self.registry, indent=2) + "\n").encode())
+        with self.assertRaisesRegex(ValueError, "receipt digest"):
             self.validate()
+
+    def test_squashed_offline_clone_needs_no_engineering_branch_object(self):
+        git(self.root, "add", ".")
+        tree = git(self.root, "write-tree")
+        squashed = git(
+            self.root,
+            "commit-tree",
+            tree,
+            "-p",
+            self.frozen["baseline_commit"],
+            "-m",
+            "synthetic squashed main",
+        )
+        git(self.root, "update-ref", "refs/heads/squashed", squashed)
+        clone = self.root / "offline-single-branch-clone"
+        git(
+            self.root,
+            "clone",
+            "--no-local",
+            "--single-branch",
+            "--branch",
+            "squashed",
+            "-c",
+            "core.autocrlf=false",
+            str(self.root),
+            str(clone),
+        )
+        with self.assertRaises(subprocess.CalledProcessError):
+            git(
+                clone,
+                "cat-file",
+                "-e",
+                self.registry["engineering_commit"] + "^{commit}",
+            )
+        copied_receipt = clone / self.receipt.relative_to(self.root)
+        validate_migration(
+            clone,
+            self.frozen,
+            self.manifest,
+            self.manifest_blob,
+            copied_receipt,
+            self.digest,
+        )
+        changed = clone / next(iter(ENGINEERING_PATHS))
+        changed.write_bytes(changed.read_bytes() + b"unapproved drift")
+        with self.assertRaisesRegex(ValueError, "Unregistered engineering"):
+            validate_migration(
+                clone,
+                self.frozen,
+                self.manifest,
+                self.manifest_blob,
+                copied_receipt,
+                self.digest,
+            )
+        copied_receipt.write_bytes(copied_receipt.read_bytes() + b" ")
+        with self.assertRaisesRegex(ValueError, "receipt digest"):
+            validate_migration(
+                clone,
+                self.frozen,
+                self.manifest,
+                self.manifest_blob,
+                copied_receipt,
+                self.digest,
+            )
 
     def test_git_clean_filter_preserves_crlf_compatibility(self):
         git(self.root, "config", "core.autocrlf", "true")

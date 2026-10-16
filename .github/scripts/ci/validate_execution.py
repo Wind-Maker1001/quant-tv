@@ -62,7 +62,12 @@ def validate(
     subject_sha=None,
     controller_sha=None,
     subject_tree=None,
+    policy="experimental-strict",
 ):
+    if policy not in ("experimental-strict", "production-complete"):
+        raise ValueError("Unknown execution validation policy")
+    if policy == "production-complete" and reference is not None:
+        raise ValueError("Production validation cannot substitute for an experiment")
     directory = Path(directory)
     result = load(directory / "result.json")
     environment = load(directory / "environment.json")
@@ -116,6 +121,8 @@ def validate(
     if set(collector["all_ids"]) != selected | set(collector["deselected_ids"]):
         raise ValueError("Selection and deselection do not partition collection")
     workers = environment["workers"]
+    if policy == "production-complete" and workers:
+        raise ValueError("Production policy requires the adopted serial backend")
     if environment.get("worker_resources_plugin_sha256"):
         resource_root = source_path(environment["worker_state_root"])
         identities = {"controller"} | {"gw" + str(index) for index in range(workers)}
@@ -229,6 +236,9 @@ def validate(
         raise ValueError("JUnit summary does not match actual execution")
     validation = {
         "kind": "actual_software_execution_equivalence_only",
+        "policy": policy,
+        "coverage_floor_applied": environment["coverage"]
+        and policy == "experimental-strict",
         "subject_sha": environment["subject_sha"],
         "workers": workers,
         "passed": sum(value == "passed" for value in outcomes.values()),
@@ -281,7 +291,11 @@ def validate(
             "coverage_valid_lines"
         ]:
             raise ValueError("Coverage source inventory differs from frozen baseline")
-        if validation["coverage_lines_covered"] < contract["coverage_lines_covered"]:
+        if (
+            policy == "experimental-strict"
+            and validation["coverage_lines_covered"]
+            < contract["coverage_lines_covered"]
+        ):
             raise ValueError("Covered-line regression requires investigation")
         if reference:
             old_inventory = coverage_inventory(Path(reference) / "coverage.xml")
@@ -314,6 +328,11 @@ if __name__ == "__main__":
     parser.add_argument("--subject-sha")
     parser.add_argument("--controller-sha")
     parser.add_argument("--subject-tree")
+    parser.add_argument(
+        "--policy",
+        choices=("experimental-strict", "production-complete"),
+        default="experimental-strict",
+    )
     arguments = parser.parse_args()
     print(
         json.dumps(
@@ -324,6 +343,7 @@ if __name__ == "__main__":
                 arguments.subject_sha,
                 arguments.controller_sha,
                 arguments.subject_tree,
+                arguments.policy,
             ),
             sort_keys=True,
         )

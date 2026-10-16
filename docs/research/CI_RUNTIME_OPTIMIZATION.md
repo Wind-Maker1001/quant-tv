@@ -1,6 +1,6 @@
 # FactorLab CI 运行效率与等价性验证
 
-状态：IN_PROGRESS。2026-10-16，Python 3.9，NO LIVE MONEY。
+状态：IN_PROGRESS，预计PARTIAL（并行已回退，最终HEAD验收待完成）。2026-10-16，Python 3.9，NO LIVE MONEY。
 本文件随阶段更新；尚未完成的实验和未知指标不得视为验收通过。
 
 ## 1. 基线与证据来源
@@ -35,12 +35,16 @@ PR #8 已由用户人工合并。冻结 main 为 `94baf83e993b47344caa12772b65c6
 开发分支更新且已有PR时，Push与pull_request会分别产生研究验证。原研究concurrency以github.ref分组，
 分支ref与PR merge ref不同，不能去重；同分支手动dispatch又与Push共组，可能互相取消。
 
+[真实重复事件收据](evidence/ci-runtime-optimization-v1/historical-duplicate-events.json)：同一原开发提交的研究Push [38726792784](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38726792784)与PR [38726798060](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38726798060)分别成功，几乎同时启动。去重收益针对同时满足原路径过滤且已有main PR的开发提交：完整研究运行2次降为1次。不外推整个仓库所有事件的总用量，因为纯文档PR现在也会真实全量验证。
+
 ## 3. 触发策略与保护规则兼容性
 
 触发修改已完成，事件/分支/路径合同通过，开发分支新提交未产生额外Push验证；PR入口真实验证待后续Draft PR。策略为main Push、面向main的所有PR和手动完整验证；
 开发分支Push不再额外启动三个验证工作流。保留检查名称，移除路径过滤，所有PR路径均实际验证。
 手动诊断独立分组，不替代PR验收；main与诊断按run ID隔离，只有同一PR的synchronize新提交可取消旧验证；标题/正文编辑不取消正在运行的验证。edited事件用于覆盖PR重新定向到main，元数据编辑也会实际重验。
 人工合并前不能声称新main Push策略已有实际合并后运行记录。
+
+GitHub说明[路径过滤可能使必需检查停留Pending](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)，因此移除过滤而非空作业报绿；手动dispatch不作为PR检查资格。[concurrency官方语义](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)由事件合同验证，8轮独立手动实验也没有互相取消。
 
 ## 4. 测量方法、冷/热缓存与环境
 
@@ -115,18 +119,18 @@ Windows隔离环境由现有研究包副本建立，再安装与CI一致的pytes
 
 ## 6. 串行优化与测试语义
 
-研究实现保持不变。静态job拆分为最小固定依赖；在无NumPy/Pandas/LightGBM的新环境中，原编译、Flake8、Black及52项合同全部通过。
+研究实现保持不变。静态job拆分为最小固定依赖；在无NumPy/Pandas/LightGBM的新环境中保留原编译、Flake8、Black。初期52项合同，最终扩展为74项，均通过；真实tiny coverage及崩溃反例不依赖科学计算栈。
 
 [静态测量收据](evidence/ci-runtime-optimization-v1/static-runs.json)保留原main、最小依赖仍用缓存以及关闭缓存三个阶段。
 原main完整workflow95秒、job91秒、安装35秒；关闭静态pip缓存后两轮为workflow54/47秒、job49/44秒、安装4/3秒。
-19个工具包在每轮全新Python环境实际安装，未安装科学计算栈；setup-python原先会按回退key恢复科学计算下载缓存，因此静态job关闭该缓存。
+该测量阶段19个工具包在每轮全新Python环境实际安装（随后为真实coverage合并合同增加pytest-cov/coverage两项），未安装科学计算栈；setup-python原先会按回退key恢复科学计算下载缓存，因此静态job关闭该缓存。
 研究job缓存不变。上述是实际观测，Runner检出等仍有波动，不把差值全部归因于单个变量。
 
 唯一测试准备优化为test_cli_phase2._inputs：原配方保持原样，按配方版本及NumPy/Pandas版本缓存进程内pickle不可变字节，每次解码得到独立对象。与Git绑定的原main配方逐值、数值原始字节、dtype、索引、频率和attrs校验，并验证修改不会污染下次调用。390交易日，数据/股票bar/基准分别3900/5100/510行，规模不变。没有缓存训练、被测验证、收据或文件。45项所属文件测试通过。
 
 输入优化的工程提交为 `11ce72b93c44c83041d4faaf34798dd6c77851dc`；其完整套件因下述旧工程字节冻结冲突失败，不能作为有效候选性能样本。
 [干净提交的等价收据](evidence/ci-runtime-optimization-v1/fixture-equivalence-11ce72b.json)中，10次输入准备的两个配对微测量分别由0.795/1.578秒降至0.004/0.010秒；
-该结果只说明重复输入构造被消除，不外推完整CI提速比例。320份冻结文件中仅此测试准备文件发生变化，研究实现和研究依赖文件未变。
+该结果只说明重复输入构造被消除，不外推完整CI提速比例。11ce阶段320份冻结文件中仅此测试准备文件发生变化；最终还公开迁移下述工程冻结测试实现，研究实现和原研究依赖文件均未变。
 
 独立119项热点profile中：schema canonicalize_bars 6627次、134.456秒inclusive；validate_bars 7791次、116.154秒inclusive；acquire_pilot 59次、138.778秒inclusive；_inputs 83次、12.816秒inclusive。以上嵌套时间不能相加。Ridge/LightGBM/XGBoost fit各37/15/15次、0.092/0.119/0.140秒inclusive，未显示训练为该样本瓶颈。
 51个pytest fixture中已有5个模块级fixture；不能假设所有重复调用都可安全复用。
@@ -148,13 +152,15 @@ exploratory.contract.sha256_file 21606次、0.645秒。它们均包含部分嵌�
 所有金融计算、Golden、历史收据和金融资格接受/拒绝条件保持原样。
 
 门禁实际重跑CI事件/工作流合同和原配方逐值、原测试体AST、规模与隔离验证。
-新增14项独立合同覆盖第五项金融文件变更、重命名、删除、4项字节漂移、历史manifest及迁移摘要篡改、扩张收据范围、未锚定postimage、断言改变及输入缩减。
+新增15项独立合同覆盖第五项金融文件变更、重命名、删除、4项字节漂移、历史manifest及迁移摘要篡改、扩张收据范围、断言改变、输入缩减和真实squash后离线单分支checkout。
+工程锚点与4个postimage的对应关系在收据生成及独立复审阶段核实；运行时固定收据SHA256及精确blob，不要求将来squash/rebase合并后仍保留分支中间commit对象。缺失中间对象的合法squash通过，任一字节漂移或收据改动仍失败。
 使用`--no-renames`修复原路径重命名漏检；新审计目录局部eol=lf属性保证迁移摘要在真实Windows CRLF checkout中仍可核验。
-独立复审无遗留P0/P1。迁移后正式候选的完整测量重新开始；研究集合仍须与冻结3144/3142清单完全相同。
+迁移阶段独立复审无遗留P0/P1，最终HEAD仍待复审。迁移后正式候选的完整测量重新开始；研究集合仍须与冻结3144/3142清单完全相同。
 
 ## 7. 并行资源审计与实验
 
-完整并行实验待串行对照完成。候选为串行、固定pytest-xdist 3.8.0的2/3 Workers，按loadfile分配。
+串行对照已通过，完整并行实验已完成并回退。比较串行、固定pytest-xdist 3.8.0的2/3 Workers，按loadfile分配。
+[该版本支持Python>=3.9](https://pypi.org/project/pytest-xdist/3.8.0/)；[loadfile保持同文件Worker归属](https://pytest-xdist.readthedocs.io/en/stable/distribution.html)。并行依赖独立放置dev/requirements-parallel-ci.txt，仅供显式诊断和CI工具合同；正常研究安装仍使用原研究依赖。
 文件锁、generation和收据操作保留原合同；可写目录按测试/Worker隔离，Worker崩溃不自动重启。
 进程树RSS含共享页重复计数的可能，另采样MemAvailable及可读cgroup限制。
 采用并行前必须实测满足至少20%内存余量；无法可靠测量则不宣告资源门禁通过。
@@ -168,10 +174,61 @@ BLAS/OpenMP线程1是独立实验变量，必须与同样线程1的串行运行�
 activation.py第163/164行对应真实O_EXCL锁争用；失败线程也可在获得已释放的锁后发现收据已存在，两者都满足原“一胜一负”断言。
 若实验未覆盖前一时序，覆盖率合同继续拒绝，不自动豁免，不挑选一次偶然通过来声称稳定。
 
+正式并行控制器为`bf10661cdcf9df0ee483661da562546dca967408`，原main和候选均重新使用同一策略：
+pytest初始conftest导入前，controller/gwN各自设置独立MPLCONFIGDIR，实际缓存路径在sessionfinish核对并记录，缓存内容不上传为验收证据。
+pytest 8.3.5的lastfailed/nodeids/stepwise由controller单写；pytest-cov 6.2.1的Worker/子进程使用原生唯一后缀，仅controller统一合并。
+不分别改变Worker COVERAGE_FILE。另校验每个Worker真实cov_worker_node_id及failed_workers，防止插件只警告漏覆盖贡献而仍成功。
+真实0/2/3 Worker小型覆盖套件及缺Worker贡献、共享字体缓存、缺资源收据反例通过；独立复审另用真实font_manager验证私有字体缓存互异。
+CI合同现共74项。最小静态依赖增加pytest-cov/coverage两项，以实际执行这些覆盖合并反例，仍不安装科学计算栈。
+
+### 7.1 全部并行对照与回退决定
+
+[完整环境/步骤/文件哈希](evidence/ci-runtime-optimization-v1/parallel-bf10661-runs.json)及[回退摘要](evidence/ci-runtime-optimization-v1/parallel-rollback-summary.json)保留全部8轮。Python3.9.25、研究依赖和诊断插件版本一致；2 vCPU，AMD EPYC 9V45，镜像20261012.334.1；热pip下载缓存、native线程1、私有全新字体缓存。CPU配额不可读为UNKNOWN。全部pytest均3141 passed、1 skipped、2 deselected，但严格覆盖比较在三轮并行样本失败。
+
+| 被测方案 | 实际Run | pytest秒 | 进程秒 | workflow秒 | user+system CPU秒 | 最低内存余量 | 原状态 / covered行 |
+|---|---|---:|---:|---:|---:|---:|---|
+| main串行 | [38891297145](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891297145) | 628.73 | 629.610 | 723 | 624.923 | 81.4% | success / 15988 |
+| 优化串行 | [38891303665](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891303665) | 1166.65 | 1167.670 | 1258 | 1171.968 | 81.3% | success / 15988 |
+| 2 Workers | [38891309461](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891309461) | 710.16 | 710.776 | 807 | 1344.718 | 77.7% | failure / 15986 |
+| 3 Workers | [38891314204](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891314204) | 542.07 | 542.677 | 637 | 1039.604 | 74.2% | failure / 15986 |
+| main串行 | [38891318921](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891318921) | 1008.36 | 1009.814 | 1115 | 949.827 | 81.5% | success / 15988 |
+| 优化串行 | [38891323318](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891323318) | 1172.89 | 1173.979 | 1265 | 1178.766 | 81.6% | success / 15988 |
+| 2 Workers | [38891327855](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891327855) | 522.02 | 522.620 | 618 | 985.552 | 77.5% | failure / 15986 |
+| 3 Workers | [38891332161](https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891332161) | 499.09 | 499.587 | 593 | 945.702 | 73.7% | success / 15988 |
+
+三轮失败并行样本仅丢失activation.py第163/164行，原真实失败状态保留。它们没有Worker漏覆盖、漏项或重复JUnit，失败来自新增严格比较门禁。3 Workers第二轮单次workflow593秒不能替代三次连续等价通过；不继续挑选重跑。内存余量均高于20%，RSS峰值串行约1.04–1.06GB、2 Workers约1.53–1.58GB、3 Workers约2.04–2.10GB（可能重复计共享页），不是整个机器精确独占RSS。CPU消耗及墙钟受调度波动影响，不把单次比值当确定增幅。
+
+采用最简单的串行方案，保留原native线程配置。并行及线程限制均不进入普通PR/main验证；显式手动诊断仍允许复核，不能代替PR验收。不引入多job分片。
+
+### 7.2 生产验证与实验比较的明确边界
+
+诊断默认experimental-strict，维持冻结15988行floor，既有失败不改判。普通job显式workers=0、production-complete，保留原validate_reports.py的coverage_threshold=None语义；只不引入本任务新增numeric floor。两种策略都验证真实退出码、所有node ID及阶段/outcome/skip、JUnit、完整133文件/18730可测行、逐行hits和汇总。Worker贡献与资源隔离在并行诊断仍必需。
+
+生产收据明确记录policy、floor是否适用、全部lost/gained行；禁止生产policy带reference或workers，禁止严格失败自动降级。独立反例证明严格比较拒绝覆盖行下降，生产验证完整披露；漏测、篡改JUnit、额外skip、遗漏coverage文件及伪造汇总在两策略下均拒绝。生产绿色不能证明未知覆盖差异已解释：最终复审必须检查全部diff，目前仅解释activation.py163/164的合法竞争时序。
+
 ## 8. 优化前后等价性与性能对照
 
-待填写每轮精确SHA、Python/依赖、node ID哈希、计数、pytest及CI墙钟、安装、coverage、CPU和内存。
-保留全部轮次、冷/热条件和失败样本，不从不同测试集合、缓存命中或Runner波动推导确定收益。
+首轮迁移后串行候选为`e1a8e8b50da90c8fec5900d977d4c68d40310211`，控制器相同。
+[完整逐轮收据](evidence/ci-runtime-optimization-v1/serial-e1a8e8b-runs.json)保留环境、所有步骤、CPU/RSS及XML/日志哈希。
+以下各轮均为3141 passed、0 failed、1 skipped、2 deselected；coverage样本均15988/18730，逐文件covered/valid行与基线无差异。
+
+| 被测代码 / 条件 | Run | pytest内部秒 | pytest进程秒 | workflow秒 | user+system CPU秒 |
+|---|---|---:|---:|---:|---:|
+| 原main / 热cache | 38870328099 | 667.91 | 669.136 | 780 | 710.621 |
+| 原main / 热cache重复 | 38870332121 | 1269.45 | 1270.729 | 1358 | 1331.387 |
+| 候选 / 热cache | 38870302346 | 1205.08 | 1206.293 | 1297 | 1266.830 |
+| 候选 / 热cache重复 | 38870307069 | 1208.23 | 1209.479 | 1297 | 1269.503 |
+| 候选 / 冷pip cache | 38870311290 | 1244.28 | 1245.508 | 1325 | 1306.494 |
+| 候选 / 热cache无coverage | 38870315682 | 912.07 | 913.041 | 1002 | 965.595 |
+| 候选 / native threads=1 | 38870319409 | 590.61 | 591.611 | 688 | 581.281 |
+| 候选 / native threads=1重复 | 38870323886 | 1260.64 | 1262.022 | 1349 | 1266.614 |
+
+各轮Python、完整研究依赖和显式诊断插件版本一致。内存可用余量采样最小值均超过80%。
+两倍量级的Runner波动同时影响原main及候选，不能宣称上述数据证明整体串行提速，也不能将单次591秒全部归因于线程限制。
+后续并行对照统一私有冷字体缓存，并增加CPU型号/cgroup记录；此前表格与新策略分开呈现，不混合作收益估计。
+[配方调用记录](evidence/ci-runtime-optimization-v1/fixture-profile-call-counts.json)证实构造次数83→1；
+[模型调用记录](evidence/ci-runtime-optimization-v1/model-call-count-equivalence.json)证实热点样本所有训练、预测、save/load次数完全相同。
+保留全部轮次及失败样本，不从不同测试集合、缓存命中或Runner波动推导确定收益。
 
 ## 9. 金融安全边界
 
@@ -182,7 +239,7 @@ CI性能证据和软件覆盖率不授予金融数据或实盘资格。
 ## 10. 失败传播与反例
 
 采样器返回真实pytest退出码。执行证据逐项对账冻结集合、Worker报告、阶段、JUnit及coverage源码行。
-已通过66项CI合同测试，包括真实小型pytest观察、重复/遗漏执行、损坏/缺失JUnit、虚假汇总、
+已通过74项CI合同测试，包括真实小型pytest观察、重复/遗漏执行、损坏/缺失JUnit、虚假汇总、
 新增skip、错误skip原因、错误SHA/tree、脏被测目录、Worker异常及coverage遗漏/汇总不一致反例。
 合成反例仅存在于unittest临时目录，不上传为研究CI证据。
 
@@ -202,7 +259,9 @@ CI性能证据和软件覆盖率不授予金融数据或实盘资格。
 中期独立预审发现三项P1：未强制比较平台执行/覆盖范围、收据来源未校验、coverage逐行hits与汇总未对账。
 已加入冻结平台合同、精确SHA/tree绑定及逐行汇总交叉验证，并扩展反例；最终HEAD复审待完成。
 P3输入复用另经独立只读复审：原构造体和45项测试主体保持不变；逐列无共享数组，并额外修改日期数组、索引名、attrs验证下一次调用仍精确相同，未发现P0/P1。
-最终状态与遗留风险将在远程全量验证及最终独立复审完成后填写。
+预计PARTIAL：重复事件调度、静态依赖和固定输入构造已有可复核资源收益；并行因严格等价证据不稳定回退，串行整体墙钟提速未获可靠证明，完整研究workflow未稳定达到10分钟。最终状态须待Windows全量、Draft PR真实三项检查和最终HEAD独立复审完成后确认。
+
+遗留风险：保护规则API UNKNOWN；Runner约2倍波动；原锁竞争覆盖分支随时序波动；Windows曾有跨盘相对路径错误及一次原生锁PermissionError，完整复跑使用同D盘全新临时根且不改锁语义；新main Push仅经合同验证，人工合并后真实运行尚未发生。
 
 ## 13. 独立复跑
 
@@ -213,7 +272,8 @@ python -m pip install -r dev/requirements-research-ci.txt
 python -m pip check
 python .github/scripts/ci/benchmark.py --output results/diagnostics/reproduce --workers 0
 python .github/scripts/ci/validate_execution.py results/diagnostics/reproduce \
-  --expected docs/research/evidence/ci-runtime-optimization-v1/baseline-collection.json
+  --expected docs/research/evidence/ci-runtime-optimization-v1/baseline-collection.json \
+  --policy production-complete
 python .github/scripts/ci/validate_reports.py results/diagnostics/reproduce/coverage.xml \
   results/diagnostics/reproduce/research.xml
 python .github/scripts/ci/validate_fixture_equivalence.py \
