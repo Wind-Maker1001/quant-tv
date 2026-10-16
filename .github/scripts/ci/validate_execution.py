@@ -94,6 +94,8 @@ def validate(
         raise ValueError("Actual pytest or worker failed")
     if environment["collect_only"]:
         raise ValueError("Collection is not test execution")
+    if environment.get("execution_scope", "full_offline_suite") != "full_offline_suite":
+        raise ValueError("Hotspot profiling is not full-suite acceptance")
     collectors = [load(path) for path in sorted(directory.glob("pytest-*.json"))]
     collector = next((row for row in collectors if row["all_ids"]), None)
     if collector is None:

@@ -217,6 +217,15 @@ class ExecutionEvidenceTests(unittest.TestCase):
         self.mutate("environment.json", lambda value: value.update(collect_only=True))
         self.reject()
 
+    def test_hotspot_subset_is_not_acceptance(self):
+        self.mutate(
+            "environment.json",
+            lambda value: value.update(
+                execution_scope="hotspot_profile_not_full_acceptance"
+            ),
+        )
+        self.reject()
+
     def test_missing_coverage_fails(self):
         self.mutate("environment.json", lambda value: value.update(coverage=True))
         self.reject()

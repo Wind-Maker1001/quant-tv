@@ -28,9 +28,14 @@ on:
         default: warm
         options: [cold, warm]
       profile:
-        description: Separate cProfile diagnostic (not a timing comparison)
+        description: Fixed hotspot cProfile subset, never full-suite acceptance or a speed comparison
         type: boolean
         default: false
+      threads:
+        description: Native thread cap, measured separately from worker count
+        type: choice
+        default: inherit
+        options: [inherit, '1']
 
 permissions:
   contents: read
@@ -116,7 +121,7 @@ jobs:
 
   benchmark:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'benchmark'
-    name: Isolated complete-suite measurement (not PR acceptance)
+    name: Isolated measurements and profiling (not PR acceptance)
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -165,6 +170,7 @@ jobs:
         working-directory: benchmark-subject
         env:
           EXPERIMENT_WORKERS: ${{ inputs.workers }}
+          EXPERIMENT_THREADS: ${{ inputs.threads }}
           PIP_NO_CACHE_DIR: ${{ inputs.pip_cache == 'cold' && 'true' || 'false' }}
         run: |
           python -m pip install --upgrade pip
@@ -173,6 +179,9 @@ jobs:
             python -m pip install pytest-xdist==3.8.0
           fi
           python -m pip check
+          if [[ "$EXPERIMENT_THREADS" == '1' ]]; then
+            printf '%s\n' 'OMP_NUM_THREADS=1' 'OPENBLAS_NUM_THREADS=1' 'MKL_NUM_THREADS=1' 'NUMEXPR_NUM_THREADS=1' >> "$GITHUB_ENV"
+          fi
       - name: Measure every offline test without altering subject code
         working-directory: benchmark-subject
         env:
@@ -182,11 +191,12 @@ jobs:
         run: |
           args=()
           if [[ "$MEASURE_COVERAGE" == 'false' ]]; then args+=(--no-coverage); fi
-          if [[ "$PROFILE_EXECUTION" == 'true' ]]; then args+=(--profile); fi
+          if [[ "$PROFILE_EXECUTION" == 'true' ]]; then args+=(--profile --profile-hotspots); fi
           python "$GITHUB_WORKSPACE/.github/scripts/ci/benchmark.py" \
             --output "$GITHUB_WORKSPACE/results/diagnostics/ci/benchmark" \
             --workers "$EXPERIMENT_WORKERS" "${args[@]}"
       - name: Validate genuine complete execution and reports
+        if: inputs.profile != true
         env:
           SUBJECT_SHA: ${{ inputs.subject_sha }}
           CONTROLLER_SHA: ${{ github.sha }}

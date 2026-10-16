@@ -91,8 +91,17 @@ def main():
     parser.add_argument("--no-coverage", action="store_true")
     parser.add_argument("--collect-only", action="store_true")
     parser.add_argument("--profile", action="store_true")
+    parser.add_argument("--profile-hotspots", action="store_true")
     parser.add_argument("--base-temp", type=Path)
     args = parser.parse_args()
+    if args.profile_hotspots and (
+        not args.profile or args.workers or args.collect_only
+    ):
+        parser.error(
+            "Hotspot profiling requires serial --profile and is not acceptance"
+        )
+    if args.profile_hotspots:
+        args.no_coverage = True
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
     scripts = Path(__file__).resolve().parent
@@ -111,7 +120,17 @@ def main():
         command.extend(["-m", "pytest"])
     command.extend(
         [
-            "tests/research",
+            *(
+                [
+                    "tests/research/test_cli_phase2.py",
+                    "tests/research/test_five_year_pilot.py",
+                    "tests/research/test_models_phase2.py",
+                    "tests/research/test_tree_models_phase3.py",
+                    "tests/research/test_phase2_synthetic_example.py",
+                ]
+                if args.profile_hotspots
+                else ["tests/research"]
+            ),
             "-q",
             "-m",
             "not network",
@@ -178,6 +197,11 @@ def main():
         "coverage": not args.no_coverage and not args.collect_only,
         "collect_only": args.collect_only,
         "profiled": args.profile,
+        "execution_scope": (
+            "hotspot_profile_not_full_acceptance"
+            if args.profile_hotspots
+            else "full_offline_suite"
+        ),
         "environment": {
             key: environment.get(key, "UNSET")
             for key in (
