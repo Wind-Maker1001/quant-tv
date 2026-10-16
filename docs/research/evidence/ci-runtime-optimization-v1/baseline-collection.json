@@ -1,0 +1,12 @@
+{
+  "all_ids_count": 3144,
+  "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+  "canonicalization": "sorted raw node IDs, UTF-8, LF with final newline",
+  "deselected_ids_count": 2,
+  "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+  "kind": "frozen_actual_collection_not_financial_certification",
+  "selected_ids_count": 3142,
+  "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+  "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+  "subject_tree": "4999830db8b05e0d9d98302cb2b791308df7039d"
+}
