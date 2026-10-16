@@ -142,6 +142,14 @@ def stat_inventory(roots, exclude):
     return found
 
 
+def preservation_result(before, after):
+    """A missing or modified pre-existing file fails preservation."""
+    changed = sorted(name for name, value in before.items() if after.get(name) != value)
+    return {"preexisting_files": len(before), "changed": changed,
+            "status": "FAIL" if changed else "PASS",
+            "check": "size_and_mtime; DAY/staging also SHA and full roundtrip"}
+
+
 def audit_assets(private, output, pilot_manifest, decoder):
     begin = time.perf_counter()
     private, output = safe_path(private), safe_path(output)
@@ -156,7 +164,7 @@ def audit_assets(private, output, pilot_manifest, decoder):
     for root in (source, staging, old, Path(pilot_manifest).parent):
         disjoint(root, output)
     output.mkdir(parents=True, exist_ok=False)
-    before = stat_inventory([private / "data/research", private / "results/diagnostics"], output.parent)
+    before = stat_inventory([private / "data/research", private / "results/diagnostics"], output)
     save_json(output / "private-input-stats-before.json", before)
     git_root = Path(__file__).resolve().parents[2]
     tracked = subprocess.check_output(["git", "ls-files", "--stage", "-z"], cwd=git_root).decode("utf-8").split("\0")
@@ -272,10 +280,10 @@ def audit_assets(private, output, pilot_manifest, decoder):
                  ).to_csv(output / "anomalies.csv", index=False)
     comparisons = frozen_comparison(private, output, pilot_root, sample, sessions, frozen_frames)
     gbbq = audit_gbbq(source.parent / "T0002/hq_cache", decoder, output)
-    after = stat_inventory([private / "data/research", private / "results/diagnostics"], output.parent)
-    changed = sorted(k for k, v in before.items() if after.get(k) != v)
-    save_json(output / "private-preservation.json", {"preexisting_files": len(before), "changed": changed,
-                                                   "check": "size_and_mtime; DAY/staging also SHA and full roundtrip"})
+    after = stat_inventory([private / "data/research", private / "results/diagnostics"], output)
+    preservation = preservation_result(before, after)
+    changed = preservation["changed"]
+    save_json(output / "private-preservation.json", preservation)
     baseline_changed = [name for name, sha in frozen.items() if tracked_digest(git_root / name) != sha]
     summary = {"schema": "TDX_DATA_QUALITY_AUDIT_V1", "no_live_money": True,
                "financial_admission": False, "hfq_status": "HFQ_UNVERIFIED", "pit_status": "PIT_UNVERIFIED",
@@ -293,6 +301,7 @@ def audit_assets(private, output, pilot_manifest, decoder):
                "old_artifacts_hash_verified": len(manifest["artifacts"]),
                "existing_parquet_files": staging_count, "existing_staging_receipts": receipt_count,
                "private_preexisting_files": len(before), "private_files_changed": len(changed),
+               "private_preservation_status": preservation["status"],
                "tracked_baseline_files": len(frozen), "tracked_baseline_changed": baseline_changed,
                "source_manifest_sha256": digest((old / "manifest.json").read_bytes()),
                "pilot_manifest_sha256": digest(Path(pilot_manifest).read_bytes()),
