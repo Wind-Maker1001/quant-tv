@@ -1,0 +1,25 @@
+{
+  "source_commit": "417beb0646163c511d1ab1fa3bf9deb1f27909a8",
+  "path": "docs/research/TDX_DATA_QUALITY_AUDIT.md",
+  "git_blob": {
+    "bytes": 16463,
+    "sha256": "15b3757b9b950e9d73f3a54379753873c0d61ba8710ae40d2586a314327238ea",
+    "crlf": 0,
+    "lf": 204,
+    "bare_cr": 0
+  },
+  "current_worktree": {
+    "bytes": 16667,
+    "sha256": "f46abc6844c880cdc67b0d66c2833816e94b5214a8a827e9ba230605ef1b9d87",
+    "crlf": 204,
+    "lf": 204,
+    "bare_cr": 0
+  },
+  "old_entry": {
+    "git_blob_bytes": 16463,
+    "git_blob_sha256": "15b3757b9b950e9d73f3a54379753873c0d61ba8710ae40d2586a314327238ea",
+    "worktree_sha256": "f46abc6844c880cdc67b0d66c2833816e94b5214a8a827e9ba230605ef1b9d87"
+  },
+  "lf_normalized_equal": true,
+  "crlf_expansion_equal": true
+}

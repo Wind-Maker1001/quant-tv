@@ -1,0 +1,43 @@
+{
+  "baseline_commit": "417beb0646163c511d1ab1fa3bf9deb1f27909a8",
+  "fixed_targeted_preseal": {
+    "errors": 0,
+    "failures": 0,
+    "sha256": "6f1f694d1c3bf54dfb3c2d73ad143aa577f21b22efa760093f6780d8dc6051d6",
+    "skipped": 0,
+    "tests": 46
+  },
+  "fixture_correction": "Explicit core.eol=lf as well as core.autocrlf=false; inherited Windows core.eol was crlf. Production contract unchanged.",
+  "generation_order_correction": "V2 seals a previously committed immutable payload, then verifies independent worktree bytes before exclusive output creation",
+  "historical_receipts_rewritten": false,
+  "no_live_money": true,
+  "p1_before_fix": {
+    "errors": 0,
+    "failures": 3,
+    "sha256": "55f3fd7e382d77fe3884cec992431f2fd190b28245876546b6d5e6a6ef1c61bf",
+    "skipped": 0,
+    "tests": 3
+  },
+  "p1_before_fix_cases": [
+    "modify sibling",
+    "delete sibling",
+    "create current output only; sibling must be included"
+  ],
+  "p2_cause": "204 CRLF sequences in Windows worktree became 204 LF sequences in Git blob; text unchanged; persistent worktree digest not portable",
+  "p2_old_contract": {
+    "errors": 0,
+    "failures": 1,
+    "sha256": "1600b21cf0d4782513befd13ae83ed4bc91e4163221beeef7227397dc1f18221",
+    "skipped": 0,
+    "tests": 1
+  },
+  "schema": "TDX_P2_RED_GREEN_V2",
+  "synthetic_tests_are_financial_certification": false,
+  "test_fixture_first_attempt": {
+    "errors": 0,
+    "failures": 1,
+    "sha256": "fadfc8f323bfeba6d2cebbeb83c3057e6d787cb65ebcff0ed5ba611a20a9b80c",
+    "skipped": 0,
+    "tests": 46
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "audit_summary_sha256": "a8839e463badeca18b6ab3190538624b2455513dbe364ef45709ac33a55b7254",
+  "conversion_implementation_sha256": "db02868a230ae422063353f3559988f003ec25181ed2daaf29df5b71f80ef6a3",
+  "conversion_module_sha256": {
+    "tdx.py": "3ccb4ca7d81610821646453a3f6fd52e05de8a4639fbb9bc717b490979986a86",
+    "tdx_staging.py": "d46b984da8e39c43d84c360c33232ddd1cf60d6b1baa3684182fe5ccbb43c66d"
+  },
+  "conversion_original_run_commit": "2759870329ec06929a118afc91f8609438226eed",
+  "conversion_original_run_dirty": true,
+  "conversion_source_reference_commit": "46a163aa9e6f635525c29a0daa63408e6cfa983b",
+  "counts": {
+    "day_files": 9374,
+    "day_records": 12041865,
+    "parquet_hashes": 9371,
+    "parquet_struct_sample_records": 54,
+    "receipt_full_contract_and_identity": 9371
+  },
+  "current_git_blob_implementation_sha256": "9369f34e0f9fc0038e15fe186f7dc4f547dad41c4f6498849c92ac1514356e33",
+  "duplicate_security_dates": 0,
+  "financial_admission": false,
+  "gbbq_upstream_scalar_sample_records": 9,
+  "hfq": "HFQ_UNVERIFIED",
+  "human_independent_review": "PENDING_PR_REVIEW",
+  "invalid_ohlc_records": 152,
+  "network_requests": 0,
+  "review_scope": "separate process/stdlib struct and Decimal; same operator; human review pending",
+  "review_script_sha256": "2179c88c3d49a8426e891f7a3fd795d53a236ff5ad1a60cc0358402e31199c37",
+  "schema": "TDX_SEPARATE_IMPLEMENTATION_REVIEW_V1",
+  "source_version_binding": "old receipt matches archived original bytes; current decoder roundtrip separately verified; old receipts unchanged",
+  "status": "PASS"
+}

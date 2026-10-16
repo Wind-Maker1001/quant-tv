@@ -1,0 +1,218 @@
+{
+  "audit_statistics_unchanged": true,
+  "automatic_merge": false,
+  "finalizer_sha256": "cad5b27f32073e327b11cb89b6f595cfc4170fd633601b6a748890903d95d4cc",
+  "financial_admission": false,
+  "hfq": "HFQ_UNVERIFIED",
+  "historical_receipts_rewritten": false,
+  "identical_aggregate_files": [
+    "anomalies.csv",
+    "coverage-monthly.csv",
+    "frozen-comparison.csv",
+    "gbbq-summary.json",
+    "coverage.svg"
+  ],
+  "independent_review": {
+    "codex_review_at_code_seal": {
+      "commit_sha": "0375dd588ca2c443b1c6770c2ab3c61907a625b8",
+      "has_any_findings": false,
+      "has_unresolved_findings": false,
+      "status": "completed",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/pull/8#issuecomment-6200508905"
+    },
+    "human_merge": "PENDING",
+    "implementation": "existing separate struct/Decimal/SHA reviewer plus independent metadata loop",
+    "latest_head_review": "must be checked after appending this envelope",
+    "same_operator": true
+  },
+  "market_data_downloads": 0,
+  "no_live_money": true,
+  "pip_check": "No broken requirements found.",
+  "pit": "PIT_UNVERIFIED",
+  "post_seal_files": {
+    "asset-summary.json": {
+      "bytes": 3193,
+      "sha256": "a8839e463badeca18b6ab3190538624b2455513dbe364ef45709ac33a55b7254"
+    },
+    "independent-review.json": {
+      "bytes": 1601,
+      "sha256": "52fae07c7185d1522449756d0fb08482a7c3bf478362a220d1fbcb1005cd233d"
+    }
+  },
+  "preservation": {
+    "existing_sibling_included": true,
+    "historical_v1_public_evidence_byte_check": {
+      "all_changes_allowlisted": true,
+      "baseline_commit": "417beb0646163c511d1ab1fa3bf9deb1f27909a8",
+      "changed_paths": [
+        "docs/research/evidence/tdx-data-quality-v2/.gitattributes",
+        "docs/research/evidence/tdx-data-quality-v2/README.md",
+        "docs/research/evidence/tdx-data-quality-v2/delivery-files.json",
+        "docs/research/evidence/tdx-data-quality-v2/hash-root-cause.json",
+        "docs/research/evidence/tdx-data-quality-v2/regression-reproduction.json",
+        "examples/research/audit_tdx_quality.py",
+        "examples/research/seal_tdx_delivery.py",
+        "tests/research/test_tdx_audit_preservation.py",
+        "tests/research/test_tdx_delivery_seal.py"
+      ],
+      "old_public_evidence": [
+        {
+          "bytes": 30,
+          "path": "docs/research/evidence/tdx-data-quality-v1/.gitattributes",
+          "sha256": "f06202a408fef9b9ea69bb6b1cb8160dbb0378c5bb67a444d510d231813824c8"
+        },
+        {
+          "bytes": 5935,
+          "path": "docs/research/evidence/tdx-data-quality-v1/README.md",
+          "sha256": "24cd6edca3165e1ae4026d4974ea8d48673dbc143b228f399b0ee031eae40753"
+        },
+        {
+          "bytes": 2542,
+          "path": "docs/research/evidence/tdx-data-quality-v1/anomalies.csv",
+          "sha256": "879e5f75748b23757b345a2649b040ffb15632a48f8bdd327186ed39ac472a33"
+        },
+        {
+          "bytes": 46964,
+          "path": "docs/research/evidence/tdx-data-quality-v1/coverage-monthly.csv",
+          "sha256": "e42dd2b954c3073f96d981a45e511dea81cea2c0ee3bc766fe5444e5fc33fee3"
+        },
+        {
+          "bytes": 81412,
+          "path": "docs/research/evidence/tdx-data-quality-v1/coverage.png",
+          "sha256": "a68efb5529c11cd193d09f8ae4f4af18104b19ee3be129fd32b3420c1f0e1175"
+        },
+        {
+          "bytes": 24042,
+          "path": "docs/research/evidence/tdx-data-quality-v1/coverage.svg",
+          "sha256": "ad3eff16bd8fedb7aebd1702523755514a8125c63183cc9d6900f7ec573df55d"
+        },
+        {
+          "bytes": 7788,
+          "path": "docs/research/evidence/tdx-data-quality-v1/delivery-files.json",
+          "sha256": "d3c5fd06f351b50ee6ec91d219e7d8d1d7473f8537a221b153f29cc1c9802dcf"
+        },
+        {
+          "bytes": 4044,
+          "path": "docs/research/evidence/tdx-data-quality-v1/delivery.json",
+          "sha256": "967757ea9320c20bc7693e025cf0ff2d7ad4f5eb3d6195bad12cc67bce2eb9cd"
+        },
+        {
+          "bytes": 707,
+          "path": "docs/research/evidence/tdx-data-quality-v1/existing-50-summary.json",
+          "sha256": "1e58bab40501e6b9e5ad19133abd0001643727d9a4fdefc8f66641a51120e845"
+        },
+        {
+          "bytes": 4188,
+          "path": "docs/research/evidence/tdx-data-quality-v1/frozen-comparison.csv",
+          "sha256": "6473ef6c4f1492004b5883f649ac061ad0ede19b9004f5879e83e10b9df42e81"
+        },
+        {
+          "bytes": 961,
+          "path": "docs/research/evidence/tdx-data-quality-v1/gbbq-evidence-binding.json",
+          "sha256": "d43ca5cf5489232efeaf234f7a6f1a0be3a2d1886b0e9355e2b1210fa21bdf68"
+        },
+        {
+          "bytes": 1958,
+          "path": "docs/research/evidence/tdx-data-quality-v1/gbbq-summary.json",
+          "sha256": "660ecbf4d8430b0b55e5ae2f0601cc584fea7d435c4b04620e48aa7233b14f6b"
+        },
+        {
+          "bytes": 1084,
+          "path": "docs/research/evidence/tdx-data-quality-v1/publication-receipt.json",
+          "sha256": "2c184b3d54d650d3ebf18714cad3382a27aac173ee9698b001ea9ab66dd8540b"
+        },
+        {
+          "bytes": 1601,
+          "path": "docs/research/evidence/tdx-data-quality-v1/review.json",
+          "sha256": "1015fad5063c3228a3040b7e246719b96da97ac51a1b6f29abf979e7437ee053"
+        },
+        {
+          "bytes": 3152,
+          "path": "docs/research/evidence/tdx-data-quality-v1/summary.json",
+          "sha256": "f6f1693d67a4034df943e80a9f66bebe5e8602f9cd406be468173aefefa9d345"
+        },
+        {
+          "bytes": 265,
+          "path": "docs/research/evidence/tdx-data-quality-v1/supplement-independent-review.json",
+          "sha256": "1d1420adcce9ff155eeaccff5ce1f07beeef1cb3d77c1aa3f91f6e9eeccdbf4e"
+        },
+        {
+          "bytes": 869,
+          "path": "docs/research/evidence/tdx-data-quality-v1/supplement-receipt.json",
+          "sha256": "47b3207cbecf292214510d2751d07a606cccbc0cf45791e80a9deda211aae1a2"
+        },
+        {
+          "bytes": 2986,
+          "path": "docs/research/evidence/tdx-data-quality-v1/units-summary.json",
+          "sha256": "e109c1d3b61f25902d136fa5a79bdec493e81bfb2bf8f3b63eb902e3224e54a5"
+        }
+      ],
+      "old_public_evidence_files_verified": 18,
+      "qbot_configs_golden_forward_trading_diff_empty": true,
+      "raw_data_published": false,
+      "schema": "TDX_P2_SCOPE_AND_HISTORY_V2",
+      "status": "PASS"
+    },
+    "metadata_changes": 0,
+    "old_v1_parent_exclusion_claim_superseded": true,
+    "preexisting_private_files_rechecked": 43441,
+    "real_day_and_parquet_sha_roundtrips_reverified": true,
+    "scope": "all pre-existing private files metadata; DAY/Parquet/GBBQ and conversion evidence additionally SHA checked",
+    "sibling_sha256": "d3251cdb1080527f680ae013570e18a4ebd8bfc3e0fefa65e7d851e18ca10742",
+    "status": "PASS"
+  },
+  "raw_private_market_data_published": false,
+  "schema": "TDX_P2_VALIDATION_ENVELOPE_V2",
+  "seal_index_sha256": "105d9aeab289242af337418baca151fe0c793ac3aac448c576fec00d295aaa5e",
+  "sealed_payload_files_verified": 34,
+  "source_commit": "83bc86a68084f65485c6198ef932a7d76107b4f5",
+  "startup_attempt": {
+    "cause": "direct script invocation omitted package root; corrected to python -m examples.research.audit_tdx_quality",
+    "failed_log_sha256": "828519069dae1140ce7363e954e5b663702f030762b74d74cee1750b17e7dbad",
+    "status": "FAILED_BEFORE_DATA_READ"
+  },
+  "static": {
+    "base": "3d7d2a20e5ee2f5a4be55cf55f912ef14448e52b",
+    "compiled_python_files": 280,
+    "full_pylint_analysis": false,
+    "modifies_source": false,
+    "scopes": [
+      "qbot/research",
+      "tests/research",
+      "examples/research",
+      ".github/scripts/ci"
+    ],
+    "static_rules": "flake8 E9,F63,F7,F82"
+  },
+  "tests": {
+    "ci_contracts": {
+      "errors": 0,
+      "failures": 0,
+      "seconds": 4.229,
+      "sha256": "d631712896e732fd576963c292fdb214cdd6d2fac86376af438227d9a6242113",
+      "skipped": 0,
+      "tests": 19
+    },
+    "coverage_line_rate": 0.8559,
+    "coverage_sha256": "bceff64844679a011ba4e031691811d8fcecf0e7c8133b5c8ed728ae6f19a0b4",
+    "full_log_sha256": "49adf0725c58543d169bf1f62623ce5bc38dea822dfc4fcac0aa7185f97ff21b",
+    "full_offline": {
+      "errors": 0,
+      "failures": 0,
+      "seconds": 1188.712,
+      "sha256": "53e94d3a33590e945ba6cd5149536a9c08cb715832859603192247b20df0444a",
+      "skipped": 0,
+      "tests": 3142
+    },
+    "network_deselected": 2,
+    "synthetic_tests_are_financial_certification": false,
+    "targeted": {
+      "errors": 0,
+      "failures": 0,
+      "seconds": 28.389,
+      "sha256": "95d8dd38adc6b6136a4039dd6353bb51751b1f96f0aecb9553849167ab5cebca",
+      "skipped": 0,
+      "tests": 47
+    }
+  }
+}

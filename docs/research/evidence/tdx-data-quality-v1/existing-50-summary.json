@@ -1,0 +1,20 @@
+{
+  "complete_five_year_hfq_four_prices": "UNVERIFIED",
+  "existing_end": "2026-09-11",
+  "existing_rows": 20586,
+  "existing_start": "2025-01-02",
+  "financial_admission": false,
+  "historical_identity_and_status": "UNVERIFIED",
+  "historical_turnover": "UNVERIFIED",
+  "missing_reason": "UNKNOWN",
+  "names": 50,
+  "pit": false,
+  "schema": "EXISTING_FROZEN_50_TDX_COVERAGE_V1",
+  "selection": "unchanged existing 50-name experiment; no reselection",
+  "source_sha256": "6e6b34bfe6d9e85ef5a5ffe5694cce7fd0a9f03a0f1ed10247877d22f51df1a9",
+  "tdx_absent": 0,
+  "tdx_expected_history_grid": 67050,
+  "tdx_full_history_files": 42,
+  "tdx_observed_history_grid": 66968,
+  "tdx_present": 50
+}

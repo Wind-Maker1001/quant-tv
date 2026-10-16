@@ -1,0 +1,179 @@
+{
+  "checkout_contract": "independently read worktree bytes; Git clean filters must reproduce the committed blob OID",
+  "files": {
+    "docs/research/TDX_DATA_GAP_MATRIX.md": {
+      "git_blob_bytes": 5204,
+      "git_blob_oid": "fc4ec9c1df73e77c96aba230d41fc615d55f1634",
+      "git_blob_sha256": "2fc5a728085389130ef4d6805521a916a07ae7ea49dfa94c2fcb2ffb44d9c51d"
+    },
+    "docs/research/TDX_DATA_QUALITY_AUDIT.md": {
+      "git_blob_bytes": 16463,
+      "git_blob_oid": "566e7b0c34b30382b52b65dbb4b963e764b06a5c",
+      "git_blob_sha256": "15b3757b9b950e9d73f3a54379753873c0d61ba8710ae40d2586a314327238ea"
+    },
+    "docs/research/TDX_GBBQ_FEASIBILITY.md": {
+      "git_blob_bytes": 6850,
+      "git_blob_oid": "8ccb2de2762a861179929e69b3c27f76d4b4a81e",
+      "git_blob_sha256": "720b043292ffe90b472cecd3f0bb61858225276c01db694b9e81e1e337972e21"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/.gitattributes": {
+      "git_blob_bytes": 30,
+      "git_blob_oid": "883436c6dc977dbc31ddf7d778ef43b4e79f37e1",
+      "git_blob_sha256": "f06202a408fef9b9ea69bb6b1cb8160dbb0378c5bb67a444d510d231813824c8"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/README.md": {
+      "git_blob_bytes": 5935,
+      "git_blob_oid": "dca3c3686a945d1a862f4985fa575c76ec023e36",
+      "git_blob_sha256": "24cd6edca3165e1ae4026d4974ea8d48673dbc143b228f399b0ee031eae40753"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/anomalies.csv": {
+      "git_blob_bytes": 2542,
+      "git_blob_oid": "ec49a9b47fcdcd2fb2e7f927c23c6ed981c79f52",
+      "git_blob_sha256": "879e5f75748b23757b345a2649b040ffb15632a48f8bdd327186ed39ac472a33"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/coverage-monthly.csv": {
+      "git_blob_bytes": 46964,
+      "git_blob_oid": "4e79128b57a36aba85cee019467b2ca120afbb8a",
+      "git_blob_sha256": "e42dd2b954c3073f96d981a45e511dea81cea2c0ee3bc766fe5444e5fc33fee3"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/coverage.png": {
+      "git_blob_bytes": 81412,
+      "git_blob_oid": "0f6a93bd9a75794ccbb96eb79cdeeb2dfde94ffd",
+      "git_blob_sha256": "a68efb5529c11cd193d09f8ae4f4af18104b19ee3be129fd32b3420c1f0e1175"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/coverage.svg": {
+      "git_blob_bytes": 24042,
+      "git_blob_oid": "0deb09eb545cd7b80118ec38870d55b6e9bebb3b",
+      "git_blob_sha256": "ad3eff16bd8fedb7aebd1702523755514a8125c63183cc9d6900f7ec573df55d"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/delivery-files.json": {
+      "git_blob_bytes": 7788,
+      "git_blob_oid": "a1989683f6e41abbe920b0352f10f488f6b659f5",
+      "git_blob_sha256": "d3c5fd06f351b50ee6ec91d219e7d8d1d7473f8537a221b153f29cc1c9802dcf"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/delivery.json": {
+      "git_blob_bytes": 4044,
+      "git_blob_oid": "40166794694a25616f248d79152aa4c87222bea0",
+      "git_blob_sha256": "967757ea9320c20bc7693e025cf0ff2d7ad4f5eb3d6195bad12cc67bce2eb9cd"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/existing-50-summary.json": {
+      "git_blob_bytes": 707,
+      "git_blob_oid": "6b7cd8a8970e4bacd8582804b436256fb54ef0b1",
+      "git_blob_sha256": "1e58bab40501e6b9e5ad19133abd0001643727d9a4fdefc8f66641a51120e845"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/frozen-comparison.csv": {
+      "git_blob_bytes": 4188,
+      "git_blob_oid": "e4f36a074a55f17e4d7621ceb8557990c05df375",
+      "git_blob_sha256": "6473ef6c4f1492004b5883f649ac061ad0ede19b9004f5879e83e10b9df42e81"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/gbbq-evidence-binding.json": {
+      "git_blob_bytes": 961,
+      "git_blob_oid": "49936abec137b682a8bc24d74bb7ce9d2be5b38b",
+      "git_blob_sha256": "d43ca5cf5489232efeaf234f7a6f1a0be3a2d1886b0e9355e2b1210fa21bdf68"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/gbbq-summary.json": {
+      "git_blob_bytes": 1958,
+      "git_blob_oid": "adbd3ec2e082abf9e8fab14c8354681e88c61f2b",
+      "git_blob_sha256": "660ecbf4d8430b0b55e5ae2f0601cc584fea7d435c4b04620e48aa7233b14f6b"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/publication-receipt.json": {
+      "git_blob_bytes": 1084,
+      "git_blob_oid": "dfe82f14b2743e4906aa3905aeea54114dc386a0",
+      "git_blob_sha256": "2c184b3d54d650d3ebf18714cad3382a27aac173ee9698b001ea9ab66dd8540b"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/review.json": {
+      "git_blob_bytes": 1601,
+      "git_blob_oid": "7292ea8e562b78e7e5ae84729ef03018780c04a1",
+      "git_blob_sha256": "1015fad5063c3228a3040b7e246719b96da97ac51a1b6f29abf979e7437ee053"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/summary.json": {
+      "git_blob_bytes": 3152,
+      "git_blob_oid": "2822d672c79e51e5f948e25361ea99ff7c9eeb75",
+      "git_blob_sha256": "f6f1693d67a4034df943e80a9f66bebe5e8602f9cd406be468173aefefa9d345"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/supplement-independent-review.json": {
+      "git_blob_bytes": 265,
+      "git_blob_oid": "8e05ed0937dd9b452d1d44f4fcb537c3783251f2",
+      "git_blob_sha256": "1d1420adcce9ff155eeaccff5ce1f07beeef1cb3d77c1aa3f91f6e9eeccdbf4e"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/supplement-receipt.json": {
+      "git_blob_bytes": 869,
+      "git_blob_oid": "8539017675b499d057b0a0db35f9d081342fb1cd",
+      "git_blob_sha256": "47b3207cbecf292214510d2751d07a606cccbc0cf45791e80a9deda211aae1a2"
+    },
+    "docs/research/evidence/tdx-data-quality-v1/units-summary.json": {
+      "git_blob_bytes": 2986,
+      "git_blob_oid": "113e80bf32b12a05534f27a92e643456f9535619",
+      "git_blob_sha256": "e109c1d3b61f25902d136fa5a79bdec493e81bfb2bf8f3b63eb902e3224e54a5"
+    },
+    "docs/research/evidence/tdx-data-quality-v2/.gitattributes": {
+      "git_blob_bytes": 29,
+      "git_blob_oid": "4f7fc3ef1406bfab189a4a14744c344f36d77d9a",
+      "git_blob_sha256": "730a35ae3d558080083c3103d9ac8100c3f6561678092abe341701dfa331eb1d"
+    },
+    "docs/research/evidence/tdx-data-quality-v2/README.md": {
+      "git_blob_bytes": 2303,
+      "git_blob_oid": "6ea17ff3804e9084f0df7070a596ba164f468418",
+      "git_blob_sha256": "f5e4445454ab5826c44bb8fb19669fe5d28773914cadb1563531d4d1ea37eb27"
+    },
+    "docs/research/evidence/tdx-data-quality-v2/hash-root-cause.json": {
+      "git_blob_bytes": 764,
+      "git_blob_oid": "d59caa49231257a258e921ac235b685fa1047101",
+      "git_blob_sha256": "2b15ba7d6464c8042a0b2373e4d9fd87c0942ebc5cc10ed0a4272dd845f0e36a"
+    },
+    "docs/research/evidence/tdx-data-quality-v2/regression-reproduction.json": {
+      "git_blob_bytes": 1553,
+      "git_blob_oid": "e94d8e81973071f4e8ad99241fbe3b91d93403aa",
+      "git_blob_sha256": "e033df79e07c586205f7e90f161018b7081d8d767519a34566b35476a59f920e"
+    },
+    "examples/research/audit_tdx_quality.py": {
+      "git_blob_bytes": 27941,
+      "git_blob_oid": "73ed59a4b71ec56c9b691e24b675b39f56ce7fc9",
+      "git_blob_sha256": "e87e7a15b78f3a22c1c60b4db77aa4a1fbf61528895ea6434f525d8e8fcd0eab"
+    },
+    "examples/research/notebooks/.gitattributes": {
+      "git_blob_bytes": 57,
+      "git_blob_oid": "575eb3f10dbe1f3b4b0eff463be3157230bd7698",
+      "git_blob_sha256": "bf56ca1a21cc7621874db9f23e8683662981c6fe708c9a293639fc8b3a318d8f"
+    },
+    "examples/research/notebooks/tdx_data_quality_review.ipynb": {
+      "git_blob_bytes": 129127,
+      "git_blob_oid": "fc5fde736613eeea4e55809b5bcdfa7df6565b58",
+      "git_blob_sha256": "f0bc79b6c1b4d1efa80c838be123fcd408e328c66fda4a7451d57f46e06b0b0e"
+    },
+    "examples/research/review_tdx_quality.py": {
+      "git_blob_bytes": 13136,
+      "git_blob_oid": "cf5b4cc3f86491ed7a40e21bebb284c637fa5703",
+      "git_blob_sha256": "2179c88c3d49a8426e891f7a3fd795d53a236ff5ad1a60cc0358402e31199c37"
+    },
+    "examples/research/seal_tdx_delivery.py": {
+      "git_blob_bytes": 4820,
+      "git_blob_oid": "988c50c4765156f70330aeecbe21bfb3fa5085a4",
+      "git_blob_sha256": "75b7881ddd77f44bea1557516805eae84f198dd5f21a9b66795051a8f1e6d9a6"
+    },
+    "examples/research/summarize_tdx_quality.py": {
+      "git_blob_bytes": 9319,
+      "git_blob_oid": "0bea0b6c902a6c0c76161c684710d721854bec63",
+      "git_blob_sha256": "d4f7c3160f63bd6b973a52363b44a6a0b01b316048ee9ac398d839c3db6bc200"
+    },
+    "tests/research/test_tdx_audit_preservation.py": {
+      "git_blob_bytes": 2339,
+      "git_blob_oid": "09f602bd2ea19c2c527e4fd8308ee794fd5c20f0",
+      "git_blob_sha256": "dbc8d021a99bad2292fd24f44d5d860e12fd987b5f3217516a2c51c2d8c78ffd"
+    },
+    "tests/research/test_tdx_delivery_seal.py": {
+      "git_blob_bytes": 4695,
+      "git_blob_oid": "90ca8701a33ba1712524ac0ded593313f59915b0",
+      "git_blob_sha256": "4e52dbac3359626292acda3c05f4fe00e2705cbc35af2980f4e963ecb417b764"
+    },
+    "tests/research/test_tdx_quality_audit.py": {
+      "git_blob_bytes": 3879,
+      "git_blob_oid": "bb0894c62ea835f1b9f6faa1c561c393dfbcc3ab",
+      "git_blob_sha256": "a30e49bc6074fb74d389b8d07dc8c6bd48c6228122b8de23a315c1407a5374ec"
+    }
+  },
+  "hash_contract": "SHA256 and byte count of Git blob bytes at source_commit; no worktree_sha256 contract",
+  "native_data_published": false,
+  "schema": "TDX_DELIVERY_FILE_INDEX_V2",
+  "source_commit": "83bc86a68084f65485c6198ef932a7d76107b4f5"
+}

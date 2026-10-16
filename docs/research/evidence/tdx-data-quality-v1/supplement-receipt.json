@@ -1,0 +1,24 @@
+{
+  "audit_summary_sha256": "f6f1693d67a4034df943e80a9f66bebe5e8602f9cd406be468173aefefa9d345",
+  "files": {
+    "coverage.png": {
+      "bytes": 81412,
+      "sha256": "a68efb5529c11cd193d09f8ae4f4af18104b19ee3be129fd32b3420c1f0e1175"
+    },
+    "existing-50-summary.json": {
+      "bytes": 707,
+      "sha256": "1e58bab40501e6b9e5ad19133abd0001643727d9a4fdefc8f66641a51120e845"
+    },
+    "gbbq-evidence-binding.json": {
+      "bytes": 961,
+      "sha256": "d43ca5cf5489232efeaf234f7a6f1a0be3a2d1886b0e9355e2b1210fa21bdf68"
+    },
+    "units-summary.json": {
+      "bytes": 2986,
+      "sha256": "e109c1d3b61f25902d136fa5a79bdec493e81bfb2bf8f3b63eb902e3224e54a5"
+    }
+  },
+  "financial_admission": false,
+  "schema": "TDX_AGGREGATE_SUPPLEMENT_RECEIPT_V1",
+  "script_sha256": "d4f7c3160f63bd6b973a52363b44a6a0b01b316048ee9ac398d839c3db6bc200"
+}

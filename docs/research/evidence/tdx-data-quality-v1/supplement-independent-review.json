@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "scope": "independent struct/Decimal review of all frozen quantity pairs and unchanged existing-50 input SHA/coverage",
+  "quantity_pairs": 10024,
+  "existing_50_names": 50,
+  "full_history_files": 42,
+  "financial_admission": false
+}
