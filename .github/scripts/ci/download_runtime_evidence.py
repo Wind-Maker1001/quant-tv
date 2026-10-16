@@ -54,7 +54,8 @@ def download(run_id, output):
     receipt = {
         "run_id": run_id,
         "url": run["html_url"],
-        "controller_sha": run["head_sha"],
+        "run_head_sha": run["head_sha"],
+        "checkout_sha_source": "artifact environment.json; PR checkout may be a merge commit",
         "event": run["event"],
         "conclusion": run["conclusion"],
         "artifacts": [],

@@ -1,0 +1,8 @@
+# Python 3.9 static checks and genuine synthetic CI failure-propagation contracts.
+# Research compilation/linting does not import or train the research stack.
+PyYAML==6.0.2
+flake8==7.3.0
+black==25.1.0
+pytest==8.3.5
+pytest-xdist==3.8.0
+execnet==2.1.2

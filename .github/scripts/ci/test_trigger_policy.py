@@ -72,7 +72,7 @@ class TriggerPolicyTests(unittest.TestCase):
                 )
                 self.assertEqual(
                     concurrency["cancel-in-progress"],
-                    "${{ github.event_name == 'pull_request' }}",
+                    "${{ github.event_name == 'pull_request' && github.event.action == 'synchronize' }}",
                 )
 
                 def group(event, pr, run):
