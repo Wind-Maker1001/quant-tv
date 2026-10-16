@@ -1,33 +1,24 @@
 name: FactorLab static checks
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
-    paths:
-      - 'qbot/research/**'
-      - 'tests/research/**'
-      - 'examples/research/**'
-      - '.github/workflows/**'
-      - '.github/scripts/ci/**'
-      - 'dev/requirements-research*.txt'
-  push:
-    branches: [main, 'codex/**']
-    paths:
-      - 'qbot/research/**'
-      - 'tests/research/**'
-      - 'examples/research/**'
-      - '.github/workflows/**'
-      - '.github/scripts/ci/**'
-      - 'dev/requirements-research*.txt'
+    types: [opened, reopened, synchronize, edited]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: factorlab-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action == 'synchronize' }}
+
 jobs:
   research-static:
     name: Research syntax and static checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Check out exact commit and full history with ephemeral credentials
@@ -50,13 +41,11 @@ jobs:
           test "$(git rev-parse HEAD)" = "$CHECKOUT_SHA"
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: '3.9'
-          cache: pip
-          cache-dependency-path: |
-            dev/requirements-research.txt
-            dev/requirements-research-ci.txt
-      - name: Install shared isolated CI dependencies
-        run: python -m pip install -r dev/requirements-research-ci.txt
+          python-version: '3.9.25'
+      - name: Install only static checks and CI contract dependencies
+        run: |
+          python -m pip install -r dev/requirements-static-ci.txt
+          python -m pip check
       - name: Check research syntax, static defects and changed whitespace
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}

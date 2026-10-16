@@ -1,0 +1,28 @@
+[
+  {
+    "kind": "high_risk_preflight_not_full_suite_acceptance",
+    "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+    "platform": "Windows",
+    "workers": 2,
+    "distribution": "loadfile",
+    "max_worker_restart": 0,
+    "native_threads": 1,
+    "tests": 452,
+    "failures": 0,
+    "errors": 0,
+    "junit_time_seconds": 30.778
+  },
+  {
+    "kind": "high_risk_preflight_not_full_suite_acceptance",
+    "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+    "platform": "Windows",
+    "workers": 3,
+    "distribution": "loadfile",
+    "max_worker_restart": 0,
+    "native_threads": 1,
+    "tests": 452,
+    "failures": 0,
+    "errors": 0,
+    "junit_time_seconds": 31.018
+  }
+]

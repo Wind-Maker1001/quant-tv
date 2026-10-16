@@ -1,0 +1,4 @@
+# Execution tools shared by diagnostics, CI contracts and the selected CI runner.
+# Keep the original research and research-CI dependency files frozen.
+pytest-xdist==3.8.0
+execnet==2.1.2

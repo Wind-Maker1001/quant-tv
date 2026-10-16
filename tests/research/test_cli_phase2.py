@@ -1,8 +1,10 @@
 """Offline end-to-end tests for the Phase-2 CLI orchestration functions."""
 
 from datetime import date
+from functools import lru_cache
 import json
 from pathlib import Path
+import pickle
 
 import numpy as np
 import pandas as pd
@@ -61,7 +63,7 @@ class _Run:
         self.outputs[name] = str(value)
 
 
-def _inputs():
+def _build_inputs():
     dates = pd.bdate_range("2020-01-02", "2021-06-30")
     warmup_dates = pd.bdate_range(end=dates[0] - pd.offsets.BDay(), periods=120)
     symbols = ["%06d.SZ" % number for number in range(1, 11)]
@@ -131,6 +133,20 @@ def _inputs():
         )
     )
     return dates, pd.DataFrame(rows), canonicalize_bars(pd.DataFrame(bar_rows)), benchmark
+
+
+@lru_cache(maxsize=1)
+def _input_template(fixture_version, numpy_version, pandas_version):
+    """Process-local immutable bytes bound to the fixture recipe and library pins."""
+    version = (fixture_version, numpy_version, pandas_version)
+    return pickle.dumps((version, _build_inputs()), protocol=5)
+
+
+def _inputs():
+    version = (1, np.__version__, pd.__version__)
+    stored_version, values = pickle.loads(_input_template(*version))
+    assert stored_version == version
+    return values
 
 
 def _config(tmp_path):

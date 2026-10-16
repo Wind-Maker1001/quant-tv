@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import re
+import shlex
 import subprocess
 import tempfile
 import unittest
@@ -164,11 +165,37 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(core["permissions"], {"contents": "read"})
         steps = core["jobs"]["phase-1-offline"]["steps"]
         self.assertTrue(
-            any(step.get("with", {}).get("python-version") == "3.9" for step in steps)
+            any(
+                step.get("with", {}).get("python-version") == "3.9.25" for step in steps
+            )
         )
         run = "\n".join(step.get("run", "") for step in steps)
-        self.assertIn('pytest tests/research -q -m "not network"', run)
-        self.assertIn("--cov=qbot.research", run)
+        execution = next(
+            step
+            for step in steps
+            if step.get("name") == "Run all offline research tests with coverage"
+        )
+        self.assertEqual(
+            shlex.split(execution["run"]),
+            [
+                "python",
+                ".github/scripts/ci/benchmark.py",
+                "--output",
+                "results/diagnostics/ci/reports",
+                "--workers",
+                "0",
+            ],
+        )
+        self.assertIn("validate_execution.py", run)
+        self.assertIn("--policy production-complete", run)
+        self.assertIn("validate_reports.py", run)
+        self.assertIn(
+            '--subject-sha "$CHECKED_SHA" --controller-sha "$CHECKED_SHA"', run
+        )
+        self.assertEqual(
+            core["jobs"]["phase-1-offline"]["env"]["CI_CONTROLLER_SHA"],
+            "${{ github.sha }}",
+        )
         self.assertIn("cli audit", run)
         self.assertNotIn("--cov-fail-under", run)
         self.assertFalse(any("continue-on-error" in step for step in steps))

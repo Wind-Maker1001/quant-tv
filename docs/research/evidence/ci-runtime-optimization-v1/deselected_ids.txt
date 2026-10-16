@@ -1,0 +1,2 @@
+tests/research/integration/test_real_providers.py::test_real_akshare_single_security_and_benchmark
+tests/research/integration/test_real_providers.py::test_real_baostock_historical_csi500_snapshot

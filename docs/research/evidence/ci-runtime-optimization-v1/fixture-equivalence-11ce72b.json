@@ -1,0 +1,104 @@
+{
+  "baseline_fixture_sha256": "e6140620210ec0aa0b68d3ad9a0e177902796330191a8d0d9796394f9f34294c",
+  "baseline_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+  "calendar_sessions": 390,
+  "candidate_fixture_sha256": "5f88ccd5eb846d1bad8606fad5559258b5be20404c5f683b10cb88f005614e7b",
+  "exact_values_dtypes_index_and_attrs_equal": true,
+  "frame_columns": [
+    [
+      "date",
+      "symbol",
+      "REV1",
+      "MOM20",
+      "entry_date",
+      "exit_date",
+      "EXCESS_RET5",
+      "MARKET_REGIME",
+      "INDEX_RET5",
+      "INDEX_RET20",
+      "INDEX_RET60",
+      "INDEX_VOL20"
+    ],
+    [
+      "date",
+      "symbol",
+      "open",
+      "high",
+      "low",
+      "close",
+      "volume",
+      "amount",
+      "turnover",
+      "adj_factor",
+      "raw_open",
+      "raw_high",
+      "raw_low",
+      "raw_close",
+      "adj_open",
+      "adj_high",
+      "adj_low",
+      "adj_close",
+      "trade_status",
+      "is_st"
+    ],
+    [
+      "date",
+      "symbol",
+      "open",
+      "high",
+      "low",
+      "close",
+      "volume",
+      "amount",
+      "turnover",
+      "adj_factor",
+      "raw_open",
+      "raw_high",
+      "raw_low",
+      "raw_close",
+      "adj_open",
+      "adj_high",
+      "adj_low",
+      "adj_close"
+    ]
+  ],
+  "frame_content_sha256": [
+    "165bc78c3c0ab733130df2e2fe3931129f0d9e3621f33e643479ce42e127376c",
+    "02d7cbe884aa939f4bcec78035b015264892c82331ebbc4d576bac32504f8f74",
+    "1b7a2770ad3273b8599e835d524f7d51f12c5da2fe7f0b6b4e89831a7cb9a02b"
+  ],
+  "frame_rows": [
+    3900,
+    5100,
+    510
+  ],
+  "immutable_template_sha256": "c532a5f8bdf0b689250591fd0889d14631f68f8452dd4b564ef10d5fa6aa8ad4",
+  "kind": "synthetic_fixture_equivalence_not_financial_certification",
+  "mutations_do_not_affect_next_call": true,
+  "negative_controls_detected": [
+    "changed_value",
+    "dropped_row",
+    "shared_mutable_state"
+  ],
+  "numpy_version": "1.26.4",
+  "paired_microbenchmarks_not_full_ci_wall_time": [
+    {
+      "candidate_seconds": 0.004241899999999799,
+      "original_seconds": 0.7950245
+    },
+    {
+      "candidate_seconds": 0.00985329999999962,
+      "original_seconds": 1.5783282
+    }
+  ],
+  "pandas_version": "2.2.3",
+  "process_local_cache": {
+    "currsize": 1,
+    "hits": 26,
+    "maxsize": 1,
+    "misses": 1
+  },
+  "subject_dirty": false,
+  "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+  "timing_repeats_per_round": 10
+}

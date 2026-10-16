@@ -1,0 +1,35 @@
+{
+  "authorization": "User approved CI scheduling and proven equivalent synthetic fixture optimization; no financial semantics or historical receipts are migrated.",
+  "baseline_commit": "6864315bc8eeaf96356d6822d12f431ec485a94e",
+  "engineering_commit": "7e57aa6add9f1f7f7f16bff9ad420870d15b84de",
+  "files": {
+    ".github/workflows/ci-workflows.yml": {
+      "approved_blob": "71ce0d57c3c1cece5ba1849dcb5adc927119a974",
+      "original_blob": "6ed5aabd4637344a455013286ea0a32fd264f0fd"
+    },
+    ".github/workflows/pylint.yml": {
+      "approved_blob": "e666099602d4dea8d232d3b46228826bcb69b1e0",
+      "original_blob": "fdf16782a58aa165634271bf5ea7557228e13acb"
+    },
+    ".github/workflows/research-tests.yml": {
+      "approved_blob": "5a4334bb51089a7f5f138ace52e0acbb98534f7d",
+      "original_blob": "9ae337d2dc233858df8e7bd3ae8debc5afa04fb3"
+    },
+    "tests/research/test_cli_phase2.py": {
+      "approved_blob": "0e05d37a6cf45c9ccb51fc28c2fedd2bdc524605",
+      "original_blob": "3b72774dde559e235496c139302a9461a4bd410e"
+    }
+  },
+  "frozen_candidate_expressions": 39,
+  "historical_manifest_blob": "e98d621ebdbc8d619de22390502ec07a79d825a3",
+  "kind": "exact_authorized_engineering_postimages_not_financial_requalification",
+  "main_measurement_baseline": "94baf83e993b47344caa12772b65c646da4e09d0",
+  "original_factor_count": 14,
+  "required_actual_checks": [
+    "CI trigger and workflow contracts",
+    "fixture original-function AST and exact values/dtypes/index/attrs",
+    "fixture mutation isolation and negative controls"
+  ],
+  "schema_version": 1,
+  "unchanged_prior_frozen_files": 466
+}

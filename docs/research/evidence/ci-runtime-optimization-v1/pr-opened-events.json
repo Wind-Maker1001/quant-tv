@@ -1,0 +1,40 @@
+{
+  "base_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+  "head_sha": "91697291ae6c22dc2552117582727e68b1c313af",
+  "is_draft": true,
+  "kind": "actual_draft_pr_opened_event_snapshot_not_final_acceptance",
+  "pr_url": "https://github.com/Wind-Maker1001/quant-tv/pull/9",
+  "runs": [
+    {
+      "conclusion": null,
+      "created_at": "2026-10-16T12:00:03Z",
+      "event": "pull_request",
+      "head_sha": "91697291ae6c22dc2552117582727e68b1c313af",
+      "html_url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38897499099",
+      "id": 38897499099,
+      "name": "FactorLab research tests",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-10-16T12:00:03Z",
+      "event": "pull_request",
+      "head_sha": "91697291ae6c22dc2552117582727e68b1c313af",
+      "html_url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38897499301",
+      "id": 38897499301,
+      "name": "FactorLab workflow validation",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-10-16T12:00:03Z",
+      "event": "pull_request",
+      "head_sha": "91697291ae6c22dc2552117582727e68b1c313af",
+      "html_url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38897499193",
+      "id": 38897499193,
+      "name": "FactorLab static checks",
+      "status": "completed"
+    }
+  ],
+  "test_merge_sha": "2253246580a1d7b1aa2bafa34374b1cdfa59552d"
+}

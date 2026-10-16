@@ -1,0 +1,222 @@
+{
+  "conditions": "full offline suite, Python3.9.25, identical dependencies, warm pip cache, native threads=1, private fresh matplotlib caches, controller bf10661",
+  "decision": "serial adopted; parallel rejected, no failed experiment requalified",
+  "runs": [
+    {
+      "conclusion": "success",
+      "controller_sha": "bf10661cdcf9df0ee483661da562546dca967408",
+      "coverage_line_differences": {},
+      "coverage_lines_covered": 15988,
+      "coverage_validation_present": true,
+      "cpu_environment": {
+        "cgroup_cpu_max": "UNKNOWN",
+        "model_names": [
+          "AMD EPYC 9V45 96-Core Processor"
+        ]
+      },
+      "cpu_seconds": 624.923374,
+      "minimum_headroom_fraction": 0.8139299947495816,
+      "pytest_exit_code": 0,
+      "pytest_process_seconds": 629.609812174,
+      "pytest_seconds": 628.73,
+      "rss_peak_bytes": 1058795520,
+      "run_id": 38891297145,
+      "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891297145",
+      "workers": 0,
+      "workflow_seconds": 723.0
+    },
+    {
+      "conclusion": "success",
+      "controller_sha": "bf10661cdcf9df0ee483661da562546dca967408",
+      "coverage_line_differences": {},
+      "coverage_lines_covered": 15988,
+      "coverage_validation_present": true,
+      "cpu_environment": {
+        "cgroup_cpu_max": "UNKNOWN",
+        "model_names": [
+          "AMD EPYC 7763 64-Core Processor"
+        ]
+      },
+      "cpu_seconds": 1171.967765,
+      "minimum_headroom_fraction": 0.8129793098086378,
+      "pytest_exit_code": 0,
+      "pytest_process_seconds": 1167.670464331,
+      "pytest_seconds": 1166.65,
+      "rss_peak_bytes": 1045417984,
+      "run_id": 38891303665,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891303665",
+      "workers": 0,
+      "workflow_seconds": 1258.0
+    },
+    {
+      "conclusion": "failure",
+      "controller_sha": "bf10661cdcf9df0ee483661da562546dca967408",
+      "coverage_line_differences": {
+        "forward/activation.py": {
+          "gained": [],
+          "lost": [
+            163,
+            164
+          ]
+        }
+      },
+      "coverage_lines_covered": 15986,
+      "coverage_validation_present": false,
+      "cpu_environment": {
+        "cgroup_cpu_max": "UNKNOWN",
+        "model_names": [
+          "AMD EPYC 9V74 80-Core Processor"
+        ]
+      },
+      "cpu_seconds": 1344.7180999999998,
+      "minimum_headroom_fraction": 0.776626216590059,
+      "pytest_exit_code": 0,
+      "pytest_process_seconds": 710.7760148440001,
+      "pytest_seconds": 710.16,
+      "rss_peak_bytes": 1584136192,
+      "run_id": 38891309461,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891309461",
+      "workers": 2,
+      "workflow_seconds": 807.0
+    },
+    {
+      "conclusion": "failure",
+      "controller_sha": "bf10661cdcf9df0ee483661da562546dca967408",
+      "coverage_line_differences": {
+        "forward/activation.py": {
+          "gained": [],
+          "lost": [
+            163,
+            164
+          ]
+        }
+      },
+      "coverage_lines_covered": 15986,
+      "coverage_validation_present": false,
+      "cpu_environment": {
+        "cgroup_cpu_max": "UNKNOWN",
+        "model_names": [
+          "AMD EPYC 9V45 96-Core Processor"
+        ]
+      },
+      "cpu_seconds": 1039.603963,
+      "minimum_headroom_fraction": 0.7418157196640717,
+      "pytest_exit_code": 0,
+      "pytest_process_seconds": 542.67683288,
+      "pytest_seconds": 542.07,
+      "rss_peak_bytes": 2037874688,
+      "run_id": 38891314204,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891314204",
+      "workers": 3,
+      "workflow_seconds": 637.0
+    },
+    {
+      "conclusion": "success",
+      "controller_sha": "bf10661cdcf9df0ee483661da562546dca967408",
+      "coverage_line_differences": {},
+      "coverage_lines_covered": 15988,
+      "coverage_validation_present": true,
+      "cpu_environment": {
+        "cgroup_cpu_max": "UNKNOWN",
+        "model_names": [
+          "AMD EPYC 9V74 80-Core Processor"
+        ]
+      },
+      "cpu_seconds": 949.827273,
+      "minimum_headroom_fraction": 0.8151444307921538,
+      "pytest_exit_code": 0,
+      "pytest_process_seconds": 1009.8142980130001,
+      "pytest_seconds": 1008.36,
+      "rss_peak_bytes": 1064263680,
+      "run_id": 38891318921,
+      "subject_sha": "94baf83e993b47344caa12772b65c646da4e09d0",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891318921",
+      "workers": 0,
+      "workflow_seconds": 1115.0
+    },
+    {
+      "conclusion": "success",
+      "controller_sha": "bf10661cdcf9df0ee483661da562546dca967408",
+      "coverage_line_differences": {},
+      "coverage_lines_covered": 15988,
+      "coverage_validation_present": true,
+      "cpu_environment": {
+        "cgroup_cpu_max": "UNKNOWN",
+        "model_names": [
+          "AMD EPYC 7763 64-Core Processor"
+        ]
+      },
+      "cpu_seconds": 1178.765666,
+      "minimum_headroom_fraction": 0.8157032442893648,
+      "pytest_exit_code": 0,
+      "pytest_process_seconds": 1173.9786030639998,
+      "pytest_seconds": 1172.89,
+      "rss_peak_bytes": 1038872576,
+      "run_id": 38891323318,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891323318",
+      "workers": 0,
+      "workflow_seconds": 1265.0
+    },
+    {
+      "conclusion": "failure",
+      "controller_sha": "bf10661cdcf9df0ee483661da562546dca967408",
+      "coverage_line_differences": {
+        "forward/activation.py": {
+          "gained": [],
+          "lost": [
+            163,
+            164
+          ]
+        }
+      },
+      "coverage_lines_covered": 15986,
+      "coverage_validation_present": false,
+      "cpu_environment": {
+        "cgroup_cpu_max": "UNKNOWN",
+        "model_names": [
+          "AMD EPYC 9V45 96-Core Processor"
+        ]
+      },
+      "cpu_seconds": 985.5523320000001,
+      "minimum_headroom_fraction": 0.774993738371701,
+      "pytest_exit_code": 0,
+      "pytest_process_seconds": 522.620315449,
+      "pytest_seconds": 522.02,
+      "rss_peak_bytes": 1527418880,
+      "run_id": 38891327855,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891327855",
+      "workers": 2,
+      "workflow_seconds": 618.0
+    },
+    {
+      "conclusion": "success",
+      "controller_sha": "bf10661cdcf9df0ee483661da562546dca967408",
+      "coverage_line_differences": {},
+      "coverage_lines_covered": 15988,
+      "coverage_validation_present": true,
+      "cpu_environment": {
+        "cgroup_cpu_max": "UNKNOWN",
+        "model_names": [
+          "AMD EPYC 9V45 96-Core Processor"
+        ]
+      },
+      "cpu_seconds": 945.701824,
+      "minimum_headroom_fraction": 0.7369171334388666,
+      "pytest_exit_code": 0,
+      "pytest_process_seconds": 499.58743219499996,
+      "pytest_seconds": 499.09,
+      "rss_peak_bytes": 2099998720,
+      "run_id": 38891332161,
+      "subject_sha": "e1a8e8b50da90c8fec5900d977d4c68d40310211",
+      "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38891332161",
+      "workers": 3,
+      "workflow_seconds": 593.0
+    }
+  ]
+}

@@ -2,44 +2,59 @@ name: FactorLab research tests
 
 on:
   push:
-    paths:
-      - "qbot/research/**"
-      - "tests/research/**"
-      - "examples/research/**"
-      - "configs/research/**"
-      - "dev/requirements-research.txt"
-      - "dev/requirements-research-ci.txt"
-      - "pytest.ini"
-      - ".github/workflows/**"
-      - ".github/scripts/ci/**"
+    branches: [main]
   pull_request:
-    paths:
-      - "qbot/research/**"
-      - "tests/research/**"
-      - "examples/research/**"
-      - "configs/research/**"
-      - "dev/requirements-research.txt"
-      - "dev/requirements-research-ci.txt"
-      - "pytest.ini"
-      - ".github/workflows/**"
-      - ".github/scripts/ci/**"
+    branches: [main]
+    types: [opened, reopened, synchronize, edited]
   workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        default: verify
+        options: [verify, benchmark]
+      subject_sha:
+        description: Exact 40-character commit to measure in benchmark mode
+        type: string
+        default: '94baf83e993b47344caa12772b65c646da4e09d0'
+      workers:
+        type: choice
+        default: '0'
+        options: ['0', '2', '3']
+      coverage:
+        type: boolean
+        default: true
+      pip_cache:
+        type: choice
+        default: warm
+        options: [cold, warm]
+      profile:
+        description: Fixed hotspot cProfile subset, never full-suite acceptance or a speed comparison
+        type: boolean
+        default: false
+      threads:
+        description: Native thread cap, measured separately from worker count
+        type: choice
+        default: inherit
+        options: [inherit, '1']
 
 permissions:
   contents: read
 
 concurrency:
-  group: factorlab-research-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: factorlab-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action == 'synchronize' }}
 
 jobs:
   phase-1-offline:
+    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'benchmark'
     name: Python 3.9 offline suite
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       MPLBACKEND: Agg
       PYTHONUTF8: "1"
+      CI_CONTROLLER_SHA: ${{ github.sha }}
+      CI_PIP_CACHE: warm
 
     steps:
       - name: Check out repository
@@ -64,7 +79,7 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.9"
+          python-version: "3.9.25"
           cache: pip
           cache-dependency-path: |
             dev/requirements-research.txt
@@ -81,16 +96,31 @@ jobs:
 
       - name: Run all offline research tests with coverage
         run: >-
-          python -m pytest tests/research -q -m "not network"
-          --junitxml=results/diagnostics/ci/reports/research.xml
-          --cov=qbot.research --cov-report=term
-          --cov-report=xml:results/diagnostics/ci/reports/coverage.xml
+          python .github/scripts/ci/benchmark.py
+          --output results/diagnostics/ci/reports --workers 0
+
+      - name: Verify complete execution, provenance and coverage inventory
+        env:
+          CHECKED_SHA: ${{ github.sha }}
+        run: >-
+          python .github/scripts/ci/validate_execution.py
+          results/diagnostics/ci/reports
+          --expected docs/research/evidence/ci-runtime-optimization-v1/baseline-collection.json
+          --subject-sha "$CHECKED_SHA" --controller-sha "$CHECKED_SHA"
+          --subject-tree "$(git rev-parse 'HEAD^{tree}')"
+          --policy production-complete
 
       - name: Validate actual coverage and test reports
         run: >-
           python .github/scripts/ci/validate_reports.py
           results/diagnostics/ci/reports/coverage.xml
           results/diagnostics/ci/reports/research.xml
+
+      - name: Verify synthetic input equivalence and isolation
+        run: >-
+          python .github/scripts/ci/validate_fixture_equivalence.py
+          --contract-root docs/research/evidence/ci-runtime-optimization-v1
+          --output results/diagnostics/ci/reports/fixture-equivalence.json
 
       - name: Run configuration and architecture audit smoke check
         run: >-
@@ -102,6 +132,109 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: research-evidence-${{ github.run_id }}-${{ github.run_attempt }}
-          path: results/diagnostics/ci/reports/*.xml
-          retention-days: 14
-          if-no-files-found: warn
+          path: results/diagnostics/ci/reports/
+          retention-days: 90
+          if-no-files-found: error
+
+  benchmark:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'benchmark'
+    name: Isolated measurements and profiling (not PR acceptance)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      MPLBACKEND: Agg
+      PYTHONUTF8: '1'
+      CI_CONTROLLER_SHA: ${{ github.sha }}
+      CI_PIP_CACHE: ${{ inputs.pip_cache }}
+    steps:
+      - name: Check out exact controller commit with full history
+        env:
+          CHECKOUT_TOKEN: ${{ github.token }}
+          CHECKOUT_SHA: ${{ github.sha }}
+          CHECKOUT_SERVER: ${{ github.server_url }}
+          CHECKOUT_REPOSITORY: ${{ github.repository }}
+        run: |
+          [[ "$CHECKOUT_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git init .
+          git remote add origin "$CHECKOUT_SERVER/$CHECKOUT_REPOSITORY.git"
+          auth_header="$(printf 'x-access-token:%s' "$CHECKOUT_TOKEN" | base64 -w0)"
+          printf '::add-mask::%s\n' "$auth_header"
+          GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.$CHECKOUT_SERVER/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
+            git fetch --no-tags --no-recurse-submodules origin \
+            '+refs/heads/*:refs/remotes/origin/*' "$CHECKOUT_SHA"
+          GIT_LFS_SKIP_SMUDGE=1 git checkout --detach "$CHECKOUT_SHA"
+          test "$(git rev-parse HEAD)" = "$CHECKOUT_SHA"
+      - name: Prepare exact unmodified subject worktree
+        env:
+          SUBJECT_SHA: ${{ inputs.subject_sha }}
+        run: |
+          [[ "$SUBJECT_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git rev-parse --verify "$SUBJECT_SHA^{commit}"
+          GIT_LFS_SKIP_SMUDGE=1 git worktree add --detach "$GITHUB_WORKSPACE/benchmark-subject" "$SUBJECT_SHA"
+          test "$(git -C benchmark-subject rev-parse HEAD)" = "$SUBJECT_SHA"
+          test -z "$(git -C benchmark-subject status --porcelain)"
+          printf 'SUBJECT_TREE=%s\n' "$(git -C benchmark-subject rev-parse 'HEAD^{tree}')" >> "$GITHUB_ENV"
+      - name: Set up fixed benchmark Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.9.25'
+          cache: ${{ inputs.pip_cache == 'warm' && 'pip' || '' }}
+          cache-dependency-path: |
+            benchmark-subject/dev/requirements-research.txt
+            benchmark-subject/dev/requirements-research-ci.txt
+      - name: Install subject dependencies and explicit experiment tools
+        working-directory: benchmark-subject
+        env:
+          EXPERIMENT_WORKERS: ${{ inputs.workers }}
+          EXPERIMENT_THREADS: ${{ inputs.threads }}
+          PIP_NO_CACHE_DIR: ${{ inputs.pip_cache == 'cold' && 'true' || 'false' }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r dev/requirements-research-ci.txt
+          python -m pip install -r "$GITHUB_WORKSPACE/dev/requirements-parallel-ci.txt"
+          python -m pip check
+          if [[ "$EXPERIMENT_THREADS" == '1' ]]; then
+            printf '%s\n' 'OMP_NUM_THREADS=1' 'OPENBLAS_NUM_THREADS=1' 'MKL_NUM_THREADS=1' 'NUMEXPR_NUM_THREADS=1' >> "$GITHUB_ENV"
+          fi
+      - name: Measure every offline test without altering subject code
+        working-directory: benchmark-subject
+        env:
+          EXPERIMENT_WORKERS: ${{ inputs.workers }}
+          MEASURE_COVERAGE: ${{ inputs.coverage }}
+          PROFILE_EXECUTION: ${{ inputs.profile }}
+        run: |
+          args=()
+          if [[ "$MEASURE_COVERAGE" == 'false' ]]; then args+=(--no-coverage); fi
+          if [[ "$PROFILE_EXECUTION" == 'true' ]]; then args+=(--profile --profile-hotspots); fi
+          python "$GITHUB_WORKSPACE/.github/scripts/ci/benchmark.py" \
+            --output "$GITHUB_WORKSPACE/results/diagnostics/ci/benchmark" \
+            --workers "$EXPERIMENT_WORKERS" "${args[@]}"
+      - name: Validate genuine complete execution and reports
+        if: inputs.profile != true
+        env:
+          SUBJECT_SHA: ${{ inputs.subject_sha }}
+          CONTROLLER_SHA: ${{ github.sha }}
+        run: >-
+          python .github/scripts/ci/validate_execution.py
+          results/diagnostics/ci/benchmark
+          --expected docs/research/evidence/ci-runtime-optimization-v1/baseline-collection.json
+          --subject-sha "$SUBJECT_SHA" --controller-sha "$CONTROLLER_SHA"
+          --subject-tree "$SUBJECT_TREE"
+      - name: Verify subject synthetic input preparation
+        working-directory: benchmark-subject
+        run: >-
+          python "$GITHUB_WORKSPACE/.github/scripts/ci/validate_fixture_equivalence.py"
+          --contract-root "$GITHUB_WORKSPACE/docs/research/evidence/ci-runtime-optimization-v1"
+          --output "$GITHUB_WORKSPACE/results/diagnostics/ci/benchmark/fixture-equivalence.json"
+      - name: Run subject configuration and architecture audit
+        working-directory: benchmark-subject
+        run: python -m qbot.research.cli audit --config configs/research/csi500_smoke.yaml
+      - name: Preserve actual diagnostic evidence on success or failure
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-runtime-${{ github.run_id }}-${{ github.run_attempt }}
+          path: results/diagnostics/ci/benchmark/
+          retention-days: 90
+          if-no-files-found: error
