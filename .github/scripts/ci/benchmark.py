@@ -91,6 +91,7 @@ def main():
     parser.add_argument("--no-coverage", action="store_true")
     parser.add_argument("--collect-only", action="store_true")
     parser.add_argument("--profile", action="store_true")
+    parser.add_argument("--base-temp", type=Path)
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
@@ -116,12 +117,19 @@ def main():
             "not network",
             "--durations=40",
             "--durations-min=0",
+            "--rootdir=.",
+            "-c",
+            "pytest.ini",
             "-p",
             "ci_profile",
-            "--ci-evidence-dir",
-            str(output),
+            "--ci-evidence-dir=" + str(output),
         ]
     )
+    if args.base_temp is not None:
+        base_temp = args.base_temp.resolve()
+        if base_temp.exists():
+            raise ValueError("A fresh, nonexistent base-temp is required")
+        command.append("--basetemp=" + str(base_temp))
     if args.collect_only:
         command.append("--collect-only")
     else:
@@ -154,6 +162,12 @@ def main():
         "subject_dirty": bool(
             subprocess.check_output(["git", "status", "--porcelain"], text=True).strip()
         ),
+        "subject_root": str(Path.cwd().resolve()),
+        "pytest_ini_sha256": hashlib.sha256(
+            Path("pytest.ini").read_bytes()
+        ).hexdigest(),
+        "logical_cpu_count": os.cpu_count(),
+        "processor": platform.processor() or "UNKNOWN",
         "controller_sha": os.environ.get("CI_CONTROLLER_SHA", "UNKNOWN"),
         "python": sys.version,
         "platform": platform.platform(),

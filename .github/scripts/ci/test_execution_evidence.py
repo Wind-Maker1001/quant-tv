@@ -22,6 +22,13 @@ class ExecutionEvidenceTests(unittest.TestCase):
         cls.root = Path(cls.sandbox.name)
         subject = cls.root / "subject"
         (subject / "tests/research").mkdir(parents=True)
+        # An existing parent config and an external output directory reproduced
+        # a real root-discovery bug when the observer option used a split value.
+        (cls.root / "pytest.ini").write_text("[pytest]\n", encoding="utf-8")
+        (subject / "pytest.ini").write_text(
+            "[pytest]\nmarkers =\n    network: synthetic contract only\n",
+            encoding="utf-8",
+        )
         (subject / "tests/research/test_synthetic_contract.py").write_text(
             "import pytest\n"
             '@pytest.mark.parametrize("value", [1], ids=["nested::[id]"])\n'
@@ -65,6 +72,9 @@ class ExecutionEvidenceTests(unittest.TestCase):
         )
         result = load(cls.original / "result.json")
         cls.expected = {key: value for key, value in result.items() if "_ids_" in key}
+        cls.expected["pytest_ini_sha256"] = load(cls.original / "environment.json")[
+            "pytest_ini_sha256"
+        ]
         controller = load(cls.original / "pytest-controller.json")
         skip = next(
             nodeid
@@ -114,6 +124,14 @@ class ExecutionEvidenceTests(unittest.TestCase):
 
     def test_real_observer_and_junit_agree_on_nested_parameter_ids(self):
         result = validate(self.directory, self.expected)
+        self.assertTrue(
+            all(
+                nodeid.startswith("tests/research/")
+                for nodeid in load(self.directory / "pytest-controller.json")[
+                    "selected_ids"
+                ]
+            )
+        )
         self.assertEqual(
             (result["passed"], result["skipped"], result["deselected"]), (1, 1, 1)
         )
@@ -205,6 +223,30 @@ class ExecutionEvidenceTests(unittest.TestCase):
 
     def test_dirty_subject_is_rejected(self):
         self.mutate("environment.json", lambda value: value.update(subject_dirty=True))
+        self.reject()
+
+    def test_linux_artifact_can_be_verified_on_windows(self):
+        contract = next(iter(self.expected["execution_by_platform"].values()))
+        self.expected["execution_by_platform"] = {"Linux": contract}
+        self.mutate(
+            "environment.json",
+            lambda value: value.update(
+                platform="Linux-synthetic", subject_root="/synthetic/subject"
+            ),
+        )
+        self.mutate(
+            "pytest-controller.json",
+            lambda value: value.update(
+                rootpath="/synthetic/subject", inipath="/synthetic/subject/pytest.ini"
+            ),
+        )
+        self.assertEqual(validate(self.directory, self.expected)["passed"], 1)
+
+    def test_parent_pytest_configuration_is_rejected(self):
+        self.mutate(
+            "pytest-controller.json",
+            lambda value: value.update(inipath="/parent/pytest.ini"),
+        )
         self.reject()
 
     def test_wrong_subject_is_rejected(self):

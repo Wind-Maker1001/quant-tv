@@ -4,7 +4,7 @@ import argparse
 from collections import Counter, defaultdict
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import xml.etree.ElementTree as ET
 
 from benchmark import canonical_ids, write_json
@@ -76,6 +76,20 @@ def validate(
         if wanted is not None and environment[key] != wanted:
             raise ValueError("Evidence belongs to a different " + key)
     controller = load(directory / "pytest-controller.json")
+    source_path = (
+        PureWindowsPath
+        if environment["platform"].startswith("Windows-")
+        else PurePosixPath
+    )
+    if controller["rootpath"] != environment["subject_root"] or controller[
+        "inipath"
+    ] != str(source_path(environment["subject_root"]) / "pytest.ini"):
+        raise ValueError("pytest root or configuration did not belong to subject")
+    if (
+        controller["pytest_ini_sha256"] != expected["pytest_ini_sha256"]
+        or environment["pytest_ini_sha256"] != expected["pytest_ini_sha256"]
+    ):
+        raise ValueError("pytest configuration differs from frozen baseline")
     if result["exit_code"] or controller["exitstatus"] or controller["worker_errors"]:
         raise ValueError("Actual pytest or worker failed")
     if environment["collect_only"]:
@@ -109,6 +123,11 @@ def validate(
         for row in worker_rows:
             if row["exitstatus"] or row["worker_errors"]:
                 raise ValueError("Worker failed")
+            if any(
+                row[key] != controller[key]
+                for key in ("rootpath", "inipath", "pytest_ini_sha256")
+            ):
+                raise ValueError("Worker used a different pytest root or configuration")
             for key in ("all_ids", "selected_ids", "deselected_ids"):
                 if row[key] != collector[key]:
                     raise ValueError("Worker collection differs")

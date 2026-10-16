@@ -1,5 +1,6 @@
 """Observe real pytest collection and reports without changing test execution."""
 
+import hashlib
 import json
 from pathlib import Path
 import time
@@ -31,6 +32,13 @@ class Observer:
         self.worker_collections = {}
         self.worker_errors = []
         self.reports = []
+        self.rootpath = str(config.rootpath.resolve())
+        self.inipath = str(config.inipath.resolve()) if config.inipath else None
+        self.ini_sha256 = (
+            hashlib.sha256(config.inipath.read_bytes()).hexdigest()
+            if config.inipath
+            else None
+        )
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_collection(self):
@@ -92,6 +100,9 @@ class Observer:
             "worker_collections": self.worker_collections,
             "worker_errors": self.worker_errors,
             "reports": self.reports,
+            "rootpath": self.rootpath,
+            "inipath": self.inipath,
+            "pytest_ini_sha256": self.ini_sha256,
         }
         (self.destination / ("pytest-" + self.worker + ".json")).write_text(
             json.dumps(payload, sort_keys=True, indent=2) + "\n", encoding="utf-8"
