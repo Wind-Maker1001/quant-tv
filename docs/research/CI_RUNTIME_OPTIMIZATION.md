@@ -124,7 +124,7 @@ Windows隔离环境由现有研究包副本建立，再安装与CI一致的pytes
 
 唯一测试准备优化为test_cli_phase2._inputs：原配方保持原样，按配方版本及NumPy/Pandas版本缓存进程内pickle不可变字节，每次解码得到独立对象。与Git绑定的原main配方逐值、数值原始字节、dtype、索引、频率和attrs校验，并验证修改不会污染下次调用。390交易日，数据/股票bar/基准分别3900/5100/510行，规模不变。没有缓存训练、被测验证、收据或文件。45项所属文件测试通过。
 
-串行候选为 `11ce72b93c44c83041d4faaf34798dd6c77851dc`。
+输入优化的工程提交为 `11ce72b93c44c83041d4faaf34798dd6c77851dc`；其完整套件因下述旧工程字节冻结冲突失败，不能作为有效候选性能样本。
 [干净提交的等价收据](evidence/ci-runtime-optimization-v1/fixture-equivalence-11ce72b.json)中，10次输入准备的两个配对微测量分别由0.795/1.578秒降至0.004/0.010秒；
 该结果只说明重复输入构造被消除，不外推完整CI提速比例。320份冻结文件中仅此测试准备文件发生变化，研究实现和研究依赖文件未变。
 
@@ -135,6 +135,22 @@ Windows隔离环境由现有研究包副本建立，再安装与CI一致的pytes
 同一热点profile另测：Parquet读3176次、6.020秒inclusive，写1723次、6.256秒；savefig 83次、13.762秒；
 exploratory.contract.sha256_file 21606次、0.645秒。它们均包含部分嵌套调用，不能与schema、pilot时间相加。
 这些操作仍属真实证据生成与核验，本次未缓存或绕过；五年pilot收据绑定绝对路径和原生响应，未强行复用其可写产物。
+
+### 6.1 原冻结检查的精确工程迁移
+
+完整候选测量发现此前审计遗漏：test_five_year_frozen_baseline把3个CI YAML和test_cli_phase2.py也包含在470文件的一次历史字节冻结中，
+因此本任务已经授权的工程改动触发真实失败。6次失败样本全部保留在[拒绝样本收据](evidence/ci-runtime-optimization-v1/rejected-candidate-runs.json)，不作为提速验收。
+
+没有更改旧frozen-baseline.json、旧研究收据或原`6864315bc8eeaf96356d6822d12f431ec485a94e`锚点。
+门禁仍核验470项原始blob、14因子、39候选和250000行参数；另固定历史manifest blob为`e98d621ebdbc8d619de22390502ec07a79d825a3`。
+新增[独立工程迁移收据](evidence/ci-runtime-optimization-v1/engineering-migration.json)，固定其SHA256后，仅接受明确授权的4个工程文件在已审工程提交中的精确Git postimage。
+剩余466项仍须完全不变；不是按路径无条件豁免。原test node ID保留，但工程字节冻结检查的实现发生了此项公开迁移，不能声称它的测试体完全未变。
+所有金融计算、Golden、历史收据和金融资格接受/拒绝条件保持原样。
+
+门禁实际重跑CI事件/工作流合同和原配方逐值、原测试体AST、规模与隔离验证。
+新增14项独立合同覆盖第五项金融文件变更、重命名、删除、4项字节漂移、历史manifest及迁移摘要篡改、扩张收据范围、未锚定postimage、断言改变及输入缩减。
+使用`--no-renames`修复原路径重命名漏检；新审计目录局部eol=lf属性保证迁移摘要在真实Windows CRLF checkout中仍可核验。
+独立复审无遗留P0/P1。迁移后正式候选的完整测量重新开始；研究集合仍须与冻结3144/3142清单完全相同。
 
 ## 7. 并行资源审计与实验
 
@@ -166,7 +182,7 @@ CI性能证据和软件覆盖率不授予金融数据或实盘资格。
 ## 10. 失败传播与反例
 
 采样器返回真实pytest退出码。执行证据逐项对账冻结集合、Worker报告、阶段、JUnit及coverage源码行。
-已通过52项CI合同测试，包括真实小型pytest观察、重复/遗漏执行、损坏/缺失JUnit、虚假汇总、
+已通过66项CI合同测试，包括真实小型pytest观察、重复/遗漏执行、损坏/缺失JUnit、虚假汇总、
 新增skip、错误skip原因、错误SHA/tree、脏被测目录、Worker异常及coverage遗漏/汇总不一致反例。
 合成反例仅存在于unittest临时目录，不上传为研究CI证据。
 

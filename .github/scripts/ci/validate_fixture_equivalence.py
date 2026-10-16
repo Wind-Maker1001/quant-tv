@@ -1,7 +1,6 @@
 """Compare candidate preparation with the original Git-bound synthetic recipe."""
 
 import argparse
-import ast
 import hashlib
 import importlib.util
 import json
@@ -12,6 +11,8 @@ import tempfile
 import time
 
 import pandas as pd
+
+from frozen_engineering_migration import assert_fixture_functions_equal
 
 
 ROOT = Path.cwd()
@@ -64,26 +65,9 @@ def main():
         ["git", "show", manifest["subject_sha"] + ":" + FIXTURE]
     )
     assert hashlib.sha256(original_bytes).hexdigest() == hashes[FIXTURE]
-    old_functions = {
-        node.name: node
-        for node in ast.parse(original_bytes).body
-        if isinstance(node, ast.FunctionDef)
-    }
-    new_functions = {
-        node.name: node
-        for node in ast.parse((ROOT / FIXTURE).read_bytes()).body
-        if isinstance(node, ast.FunctionDef)
-    }
-    for name, original_function in old_functions.items():
-        candidate_function = new_functions[
-            (
-                "_build_inputs"
-                if name == "_inputs" and "_build_inputs" in new_functions
-                else name
-            )
-        ]
-        original_function.name = candidate_function.name
-        assert ast.dump(original_function) == ast.dump(candidate_function), name
+    original_functions = assert_fixture_functions_equal(
+        original_bytes, (ROOT / FIXTURE).read_bytes()
+    )
     candidate = module("ci_candidate_synthetic_inputs", ROOT / FIXTURE)
     with tempfile.TemporaryDirectory() as temporary:
         source = Path(temporary) / "original_synthetic_inputs.py"
@@ -167,7 +151,7 @@ def main():
         ],
         "frame_columns": [list(frame.columns) for frame in expected[1:]],
         "exact_values_dtypes_index_and_attrs_equal": True,
-        "original_function_bodies_unchanged": sorted(old_functions),
+        "original_function_bodies_unchanged": original_functions,
         "mutations_do_not_affect_next_call": True,
         "negative_controls_detected": negative_controls,
         "process_local_cache": cache_info,

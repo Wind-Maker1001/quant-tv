@@ -1,0 +1,2899 @@
+[
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "3d18a520d92db6d5c46d4a1f81d66e17e86ac173d3cecc8e6145163c3f55df94",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "364839fbaa2b7b557bb841d97f21c71d9fbdbcd8c56f4a50d5168c2b046e7191",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "00bfa3074e1e93b85d190cbdaf2dc9bfee12ebb86134a92a89a0f069d51ad599",
+          "pytest-controller.json": "2c426487d0ee4f20936038f013433a3fe9b616e595d62008e3fe0c8f97ab46a8",
+          "pytest.log": "3d329d179512c512cae1d9e4a085ea93d8ea512c17aadd5ee4ec1d1a8462cfa7",
+          "research.xml": "66fec4cea292be7eb957b9b07b9f20013a713aaf65aabbb3ca5b2c1dab9d606a",
+          "result.json": "2052f68ad50e341a9cf26911cdd8ca0bb101f1bd2a0270f0c39bf0cd423004f1",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+        },
+        "id": 12032323503,
+        "name": "ci-runtime-38866956312-1"
+      }
+    ],
+    "conclusion": "failure",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38866956312",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "UNSET",
+        "NUMEXPR_NUM_THREADS": "UNSET",
+        "OMP_NUM_THREADS": "UNSET",
+        "OPENBLAS_NUM_THREADS": "UNSET",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "subject_tree": "eddc03eb23ebeb345857c9638bb19958116aac73",
+      "utc_started": "2026-10-16T07:25:09.380530+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "364839fbaa2b7b557bb841d97f21c71d9fbdbcd8c56f4a50d5168c2b046e7191",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "00bfa3074e1e93b85d190cbdaf2dc9bfee12ebb86134a92a89a0f069d51ad599",
+      "pytest-controller.json": "2c426487d0ee4f20936038f013433a3fe9b616e595d62008e3fe0c8f97ab46a8",
+      "pytest.log": "3d329d179512c512cae1d9e4a085ea93d8ea512c17aadd5ee4ec1d1a8462cfa7",
+      "research.xml": "66fec4cea292be7eb957b9b07b9f20013a713aaf65aabbb3ca5b2c1dab9d606a",
+      "result.json": "2052f68ad50e341a9cf26911cdd8ca0bb101f1bd2a0270f0c39bf0cd423004f1",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+    },
+    "jobs": [
+      {
+        "conclusion": "failure",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 1306.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 13.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 4.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 16.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 36.0
+          },
+          {
+            "conclusion": "failure",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 1232.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": -1.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 1230.85,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 85.104646,
+      "cpu_user_seconds": 1206.170419,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 1,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6765187072,
+        "minimum_headroom_fraction": 0.8127357336979922,
+        "physical_total_bytes": 8323969024
+      },
+      "sampled_process_tree_rss_peak_bytes": 1066819584,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 1232.1592354820002
+    },
+    "run_head_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+    "run_id": 38866956312,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 9.115485820000004
+      },
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 927.5997015289994,
+        "setup": 282.71489095399943,
+        "teardown": 0.9002379850012119
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.10820072299998174
+      },
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38866956312",
+    "workflow_wall_seconds": 1310.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "09ab45dd1a6a176a32bbe41656f28a7b9ef3babacb3a0886fd36b75ca3ce7d37",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "000f02dc9d397ffb153936481cddd6a296f2e5726e5fa65c976eb03e7942051e",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "a9cf1019c97e666c88932df5a258f5927100abcf3f22f873124a40cc8dc105a0",
+          "pytest-controller.json": "dfb0eae5e86874c6eec2c2dc0ae0c371030c0391ef3a22d6ea42944db87268af",
+          "pytest.log": "ce0c7c68911a19ef94fa1747b5774de1ad1e170a6928fafb7614a73a74616351",
+          "research.xml": "90765f269b2d7e997c802433943fd2f3e4bf34a82b31b69514e5ebdbb4c5d6c9",
+          "result.json": "b6fbe0f015c0a43b4d2e7522e548b3f7d17bf28c53b3f38bb0acf84320b16d2d",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+        },
+        "id": 12032028429,
+        "name": "ci-runtime-38866960095-1"
+      }
+    ],
+    "conclusion": "failure",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38866960095",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "UNSET",
+        "NUMEXPR_NUM_THREADS": "UNSET",
+        "OMP_NUM_THREADS": "UNSET",
+        "OPENBLAS_NUM_THREADS": "UNSET",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "subject_tree": "eddc03eb23ebeb345857c9638bb19958116aac73",
+      "utc_started": "2026-10-16T07:25:24.443253+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "000f02dc9d397ffb153936481cddd6a296f2e5726e5fa65c976eb03e7942051e",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "a9cf1019c97e666c88932df5a258f5927100abcf3f22f873124a40cc8dc105a0",
+      "pytest-controller.json": "dfb0eae5e86874c6eec2c2dc0ae0c371030c0391ef3a22d6ea42944db87268af",
+      "pytest.log": "ce0c7c68911a19ef94fa1747b5774de1ad1e170a6928fafb7614a73a74616351",
+      "research.xml": "90765f269b2d7e997c802433943fd2f3e4bf34a82b31b69514e5ebdbb4c5d6c9",
+      "result.json": "b6fbe0f015c0a43b4d2e7522e548b3f7d17bf28c53b3f38bb0acf84320b16d2d",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+    },
+    "jobs": [
+      {
+        "conclusion": "failure",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 898.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 13.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 7.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 25.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 37.0
+          },
+          {
+            "conclusion": "failure",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 811.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": -1.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 809.74,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 74.036087,
+      "cpu_user_seconds": 778.248796,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 1,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6688641024,
+        "minimum_headroom_fraction": 0.8035402697938903,
+        "physical_total_bytes": 8323964928
+      },
+      "sampled_process_tree_rss_peak_bytes": 1078177792,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 810.653864928
+    },
+    "run_head_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+    "run_id": 38866960095,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 6.117882778000009
+      },
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 614.7430632819969,
+        "setup": 180.61779512099804,
+        "teardown": 0.6320074500020638
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.07847581900000478
+      },
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38866960095",
+    "workflow_wall_seconds": 902.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "1275ff9be7a6851752a998eb62b6e8e25e7e4cad106724d55b2650ca40ebe6f1",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "ea5037a9202db3b01c91463575d24e16fad4047657e43f6306f629c01c16a78e",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "b72ca1983fe83d92addce122c60c483a5c3906463166b725089c91eae1db871d",
+          "pytest-controller.json": "780deb84c1c2385b142e3e9974bb5a8bdaa478c1c899b5b6d90bae7e8ddd01ca",
+          "pytest.log": "a75c8820c86f8872372dfb9e9d5d1b12a2202f5ca2ce22395a96b3068d4dce28",
+          "research.xml": "7db4e9386786949291dd0091b68decf28f5224176a523ea74db9d81f46fd067e",
+          "result.json": "d60d43b5476af93f2fe369550a9a3d8a4d706593c2ab5ada4ed5439ebdf53a2c",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+        },
+        "id": 12032058350,
+        "name": "ci-runtime-38866964386-1"
+      }
+    ],
+    "conclusion": "failure",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "cold",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38866964386",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "UNSET",
+        "NUMEXPR_NUM_THREADS": "UNSET",
+        "OMP_NUM_THREADS": "UNSET",
+        "OPENBLAS_NUM_THREADS": "UNSET",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "subject_tree": "eddc03eb23ebeb345857c9638bb19958116aac73",
+      "utc_started": "2026-10-16T07:25:18.658252+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "ea5037a9202db3b01c91463575d24e16fad4047657e43f6306f629c01c16a78e",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "b72ca1983fe83d92addce122c60c483a5c3906463166b725089c91eae1db871d",
+      "pytest-controller.json": "780deb84c1c2385b142e3e9974bb5a8bdaa478c1c899b5b6d90bae7e8ddd01ca",
+      "pytest.log": "a75c8820c86f8872372dfb9e9d5d1b12a2202f5ca2ce22395a96b3068d4dce28",
+      "research.xml": "7db4e9386786949291dd0091b68decf28f5224176a523ea74db9d81f46fd067e",
+      "result.json": "d60d43b5476af93f2fe369550a9a3d8a4d706593c2ab5ada4ed5439ebdf53a2c",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+    },
+    "jobs": [
+      {
+        "conclusion": "failure",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 881.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 15.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 4.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 16.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 38.0
+          },
+          {
+            "conclusion": "failure",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 802.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": 0.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 801.29,
+    "restored_cache_keys_from_log": [],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 73.750191,
+      "cpu_user_seconds": 776.897551,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 1,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6777139200,
+        "minimum_headroom_fraction": 0.814171602568424,
+        "physical_total_bytes": 8323969024
+      },
+      "sampled_process_tree_rss_peak_bytes": 1073147904,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 802.186455476
+    },
+    "run_head_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+    "run_id": 38866964386,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 6.203280597000003
+      },
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 607.2983922809992,
+        "setup": 179.52314015900075,
+        "teardown": 0.6359018660001254
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.08299978200000169
+      },
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38866964386",
+    "workflow_wall_seconds": 885.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "622cc3c14551133b51551534a21a7838f06d6b7a8003a5db27db34217a80ae7b",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "cf90f7a8dea9b7c737f3310ee21044f84ae8485801890d0223aeca94ed9c0d0e",
+          "pytest-controller.json": "f2ab982f3d634dca718a81223fed172380e688b4b046544795a6f2a663ae5a93",
+          "pytest.log": "a60b4763f8df3d625438751c557d7ac868371543699c1ade0d74b17e561d6794",
+          "research.xml": "e9060103646ba53f992d56ccd3a739ba6bc03f8f72029b7a0ffbd7f6eab7268e",
+          "result.json": "7dd9f2ff23321bd904b8f859477086f19086ef29186578fa3a0567c0465724ee",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+        },
+        "id": 12031634043,
+        "name": "ci-runtime-38866969157-1"
+      }
+    ],
+    "conclusion": "failure",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml"
+      ],
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": false,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38866969157",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "UNSET",
+        "NUMEXPR_NUM_THREADS": "UNSET",
+        "OMP_NUM_THREADS": "UNSET",
+        "OPENBLAS_NUM_THREADS": "UNSET",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "subject_tree": "eddc03eb23ebeb345857c9638bb19958116aac73",
+      "utc_started": "2026-10-16T07:25:18.313051+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "cf90f7a8dea9b7c737f3310ee21044f84ae8485801890d0223aeca94ed9c0d0e",
+      "pytest-controller.json": "f2ab982f3d634dca718a81223fed172380e688b4b046544795a6f2a663ae5a93",
+      "pytest.log": "a60b4763f8df3d625438751c557d7ac868371543699c1ade0d74b17e561d6794",
+      "research.xml": "e9060103646ba53f992d56ccd3a739ba6bc03f8f72029b7a0ffbd7f6eab7268e",
+      "result.json": "7dd9f2ff23321bd904b8f859477086f19086ef29186578fa3a0567c0465724ee",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+    },
+    "jobs": [
+      {
+        "conclusion": "failure",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 1032.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 13.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 4.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 17.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 36.0
+          },
+          {
+            "conclusion": "failure",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 957.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": 0.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 954.83,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 84.21282199999999,
+      "cpu_user_seconds": 925.353331,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 1,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6758883328,
+        "minimum_headroom_fraction": 0.8119784334267124,
+        "physical_total_bytes": 8323969024
+      },
+      "sampled_process_tree_rss_peak_bytes": 1057603584,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 956.0291266419999
+    },
+    "run_head_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+    "run_id": 38866969157,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 7.1892738519999995
+      },
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": false,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 732.4414440180018,
+        "setup": 211.8675221870018,
+        "teardown": 0.7470481930032946
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.11320173900003283
+      },
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38866969157",
+    "workflow_wall_seconds": 1036.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "7c381c7ebcc9130cf0614313c434a127d81a438be4eddc871995adfd0ac16d55",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "484405aaa37a53cbefe4679b5ef6682d1298805afa51300e72c88356cd9b7ed3",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "e01972e14b7e7cf61e816022871f991e0e8ad9147e39670d6d37cfb3f2e3763f",
+          "pytest-controller.json": "4b5febad3cb7b10becf7acd7e179c926ce40b9cb5ce442124fce9d1d008fe907",
+          "pytest.log": "9140c4097d06908fc74f7202ff9de08b2efc15a0d2d79de69e6706247913898b",
+          "research.xml": "dfed7977787299b567ef9f3d5c242905323b9af6b1d05cbacb22050f7430ac82",
+          "result.json": "bce787cfcc19bdd5775d041d375a01842547dd3dbf0cd686edd466027c6828b1",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+        },
+        "id": 12031274581,
+        "name": "ci-runtime-38866973465-1"
+      }
+    ],
+    "conclusion": "failure",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38866973465",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "subject_tree": "eddc03eb23ebeb345857c9638bb19958116aac73",
+      "utc_started": "2026-10-16T07:25:33.124856+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "484405aaa37a53cbefe4679b5ef6682d1298805afa51300e72c88356cd9b7ed3",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "e01972e14b7e7cf61e816022871f991e0e8ad9147e39670d6d37cfb3f2e3763f",
+      "pytest-controller.json": "4b5febad3cb7b10becf7acd7e179c926ce40b9cb5ce442124fce9d1d008fe907",
+      "pytest.log": "9140c4097d06908fc74f7202ff9de08b2efc15a0d2d79de69e6706247913898b",
+      "research.xml": "dfed7977787299b567ef9f3d5c242905323b9af6b1d05cbacb22050f7430ac82",
+      "result.json": "bce787cfcc19bdd5775d041d375a01842547dd3dbf0cd686edd466027c6828b1",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+    },
+    "jobs": [
+      {
+        "conclusion": "failure",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 918.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 13.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 6.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 26.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 38.0
+          },
+          {
+            "conclusion": "failure",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 829.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": 0.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 827.16,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 31.568949,
+      "cpu_user_seconds": 762.873737,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 1,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6792257536,
+        "minimum_headroom_fraction": 0.8159878438298235,
+        "physical_total_bytes": 8323969024
+      },
+      "sampled_process_tree_rss_peak_bytes": 1069146112,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 828.278598072
+    },
+    "run_head_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+    "run_id": 38866973465,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 6.9146857960000006
+      },
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 629.0036727680013,
+        "setup": 182.87545034400011,
+        "teardown": 0.6407515190003181
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.07878699399998368
+      },
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38866973465",
+    "workflow_wall_seconds": 921.0
+  },
+  {
+    "artifacts": [
+      {
+        "archive_sha256": "0adc6de8ddcd20de0536ab6a52163f9b9491d58595417ed43f1abea29e410ebc",
+        "files_sha256": {
+          "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+          "coverage.xml": "bba333c1a5d52929b0194ec546d6d5ab88156d4a24335be8829fb1b8f0eab7a2",
+          "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+          "environment.json": "3431e18cf89e863d0e47f81e52426ad9c096b57ef28a38b3363753c9f06696ef",
+          "pytest-controller.json": "1eaf6e308854ce979aef2147c43f213afd40cfbe12d10e3e8b50285b93542ed7",
+          "pytest.log": "14ed6cd5798297bf29f70c338ef0dcc3c34638545a9851a9e062cd86b5d78db4",
+          "research.xml": "e12cb25e1555575740aff1959d5f8db1335ef5bc396321f6b1a7c498ffcdb525",
+          "result.json": "7f746a7016fa915c1a62ecd7da775cd414eb73342b14759f28c871bb2ae6786d",
+          "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+        },
+        "id": 12032940233,
+        "name": "ci-runtime-38867380295-1"
+      }
+    ],
+    "conclusion": "failure",
+    "created_to_run_start_seconds": 0.0,
+    "environment": {
+      "collect_only": false,
+      "command": [
+        "/opt/hostedtoolcache/Python/3.9.25/x64/bin/python",
+        "-m",
+        "pytest",
+        "tests/research",
+        "-q",
+        "-m",
+        "not network",
+        "--durations=40",
+        "--durations-min=0",
+        "--rootdir=.",
+        "-c",
+        "pytest.ini",
+        "-p",
+        "ci_profile",
+        "--ci-evidence-dir=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark",
+        "--junitxml=/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/research.xml",
+        "--cov=qbot.research",
+        "--cov-report=term",
+        "--cov-report=xml:/home/runner/work/quant-tv/quant-tv/results/diagnostics/ci/benchmark/coverage.xml"
+      ],
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": true,
+      "environment": {
+        "CI_PIP_CACHE": "warm",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "38867380295",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20261012.334.1",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "RUNNER_ARCH": "X64"
+      },
+      "execution_scope": "full_offline_suite",
+      "kind": "actual_ci_measurement_not_financial_certification",
+      "logical_cpu_count": 2,
+      "observer_sha256": "4fbe573a6924f037eb6ddbd283a5f20bb440d60a8f9beb526cbf47d009e2e83d",
+      "packages": [
+        {
+          "name": "akracer",
+          "version": "0.0.14"
+        },
+        {
+          "name": "akshare",
+          "version": "1.18.88"
+        },
+        {
+          "name": "baostock",
+          "version": "0.8.9"
+        },
+        {
+          "name": "beautifulsoup4",
+          "version": "4.15.0"
+        },
+        {
+          "name": "black",
+          "version": "25.1.0"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2"
+        },
+        {
+          "name": "click",
+          "version": "8.1.8"
+        },
+        {
+          "name": "contourpy",
+          "version": "1.3.0"
+        },
+        {
+          "name": "coverage",
+          "version": "7.10.6"
+        },
+        {
+          "name": "curl_cffi",
+          "version": "0.13.0"
+        },
+        {
+          "name": "cycler",
+          "version": "0.12.1"
+        },
+        {
+          "name": "decorator",
+          "version": "5.3.1"
+        },
+        {
+          "name": "et_xmlfile",
+          "version": "2.0.0"
+        },
+        {
+          "name": "exceptiongroup",
+          "version": "1.3.1"
+        },
+        {
+          "name": "flake8",
+          "version": "7.3.0"
+        },
+        {
+          "name": "fonttools",
+          "version": "4.60.2"
+        },
+        {
+          "name": "html5lib",
+          "version": "1.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.20"
+        },
+        {
+          "name": "importlib_resources",
+          "version": "6.5.2"
+        },
+        {
+          "name": "iniconfig",
+          "version": "2.1.0"
+        },
+        {
+          "name": "joblib",
+          "version": "1.5.3"
+        },
+        {
+          "name": "jsonpath",
+          "version": "0.82.2"
+        },
+        {
+          "name": "kiwisolver",
+          "version": "1.4.7"
+        },
+        {
+          "name": "lightgbm",
+          "version": "4.5.0"
+        },
+        {
+          "name": "lxml",
+          "version": "6.1.3"
+        },
+        {
+          "name": "matplotlib",
+          "version": "3.8.4"
+        },
+        {
+          "name": "mccabe",
+          "version": "0.7.0"
+        },
+        {
+          "name": "mypy_extensions",
+          "version": "1.1.0"
+        },
+        {
+          "name": "numpy",
+          "version": "1.26.4"
+        },
+        {
+          "name": "nvidia-nccl-cu12",
+          "version": "2.32.3"
+        },
+        {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        {
+          "name": "packaging",
+          "version": "26.3"
+        },
+        {
+          "name": "pandas",
+          "version": "2.2.3"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "11.3.0"
+        },
+        {
+          "name": "pip",
+          "version": "26.0.1"
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.4.0"
+        },
+        {
+          "name": "pluggy",
+          "version": "1.6.0"
+        },
+        {
+          "name": "py-mini-racer",
+          "version": "0.6.0"
+        },
+        {
+          "name": "pyarrow",
+          "version": "17.0.0"
+        },
+        {
+          "name": "pycodestyle",
+          "version": "2.14.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "2.23"
+        },
+        {
+          "name": "pyflakes",
+          "version": "3.4.0"
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3"
+        },
+        {
+          "name": "pytest",
+          "version": "8.3.5"
+        },
+        {
+          "name": "pytest-cov",
+          "version": "6.2.1"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "pytz",
+          "version": "2026.5"
+        },
+        {
+          "name": "PyYAML",
+          "version": "6.0.2"
+        },
+        {
+          "name": "requests",
+          "version": "2.32.5"
+        },
+        {
+          "name": "scikit-learn",
+          "version": "1.5.2"
+        },
+        {
+          "name": "scipy",
+          "version": "1.13.1"
+        },
+        {
+          "name": "setuptools",
+          "version": "79.0.1"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "soupsieve",
+          "version": "2.8.4"
+        },
+        {
+          "name": "tabulate",
+          "version": "0.9.0"
+        },
+        {
+          "name": "threadpoolctl",
+          "version": "3.7.0"
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.70.1"
+        },
+        {
+          "name": "typing_extensions",
+          "version": "4.16.0"
+        },
+        {
+          "name": "tzdata",
+          "version": "2026.4"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.6.3"
+        },
+        {
+          "name": "webencodings",
+          "version": "0.5.1"
+        },
+        {
+          "name": "xgboost",
+          "version": "2.1.4"
+        },
+        {
+          "name": "xlrd",
+          "version": "2.0.2"
+        },
+        {
+          "name": "zipp",
+          "version": "3.23.1"
+        }
+      ],
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "processor": "x86_64",
+      "profiled": false,
+      "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+      "python": "3.9.25 (main, Nov  3 2025, 15:16:36) \n[GCC 13.3.0]",
+      "subject_dirty": false,
+      "subject_root": "/home/runner/work/quant-tv/quant-tv/benchmark-subject",
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "subject_tree": "eddc03eb23ebeb345857c9638bb19958116aac73",
+      "utc_started": "2026-10-16T07:29:34.546939+00:00",
+      "workers": 0
+    },
+    "event": "workflow_dispatch",
+    "execution_evidence_files_sha256": {
+      "all_ids.txt": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "coverage.xml": "bba333c1a5d52929b0194ec546d6d5ab88156d4a24335be8829fb1b8f0eab7a2",
+      "deselected_ids.txt": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "environment.json": "3431e18cf89e863d0e47f81e52426ad9c096b57ef28a38b3363753c9f06696ef",
+      "pytest-controller.json": "1eaf6e308854ce979aef2147c43f213afd40cfbe12d10e3e8b50285b93542ed7",
+      "pytest.log": "14ed6cd5798297bf29f70c338ef0dcc3c34638545a9851a9e062cd86b5d78db4",
+      "research.xml": "e12cb25e1555575740aff1959d5f8db1335ef5bc396321f6b1a7c498ffcdb525",
+      "result.json": "7f746a7016fa915c1a62ecd7da775cd414eb73342b14759f28c871bb2ae6786d",
+      "selected_ids.txt": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+    },
+    "jobs": [
+      {
+        "conclusion": "failure",
+        "name": "Isolated measurements and profiling (not PR acceptance)",
+        "seconds": 1025.0,
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job",
+            "seconds": 1.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out exact controller commit with full history",
+            "seconds": 18.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Prepare exact unmodified subject worktree",
+            "seconds": 4.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up fixed benchmark Python",
+            "seconds": 29.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Install subject dependencies and explicit experiment tools",
+            "seconds": 42.0
+          },
+          {
+            "conclusion": "failure",
+            "name": "Measure every offline test without altering subject code",
+            "seconds": 926.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Validate genuine complete execution and reports",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Verify subject synthetic input preparation",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Run subject configuration and architecture audit",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Preserve actual diagnostic evidence on success or failure",
+            "seconds": 2.0
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Post Set up fixed benchmark Python",
+            "seconds": 0.0
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job",
+            "seconds": 0.0
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Python 3.9 offline suite",
+        "seconds": 0.0,
+        "steps": []
+      }
+    ],
+    "pytest_summary_seconds": 925.17,
+    "restored_cache_keys_from_log": [
+      "setup-python-Linux-x64-24.04-Ubuntu-python-3.9.25-pip-e6c7e90507fa8c32b8919fc1841fa18877674d077cb9f3a2bbaa38fbd98b9408"
+    ],
+    "result": {
+      "all_ids_count": 3144,
+      "all_ids_sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b",
+      "cpu_system_seconds": 25.376146,
+      "cpu_user_seconds": 899.027581,
+      "deselected_ids_count": 2,
+      "deselected_ids_sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d",
+      "exit_code": 1,
+      "rss_sampling_seconds": 0.25,
+      "rss_shared_pages_may_be_double_counted": true,
+      "sampled_memory_headroom": {
+        "minimum_available_bytes": 6739451904,
+        "minimum_headroom_fraction": 0.809745246596275,
+        "physical_total_bytes": 8322928640
+      },
+      "sampled_process_tree_rss_peak_bytes": 1055875072,
+      "selected_ids_count": 3142,
+      "selected_ids_sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183",
+      "wall_seconds": 926.252624552
+    },
+    "run_head_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+    "run_id": 38867380295,
+    "runner_provisioning_separate_from_queue_seconds": "UNKNOWN",
+    "timings": {
+      "collection_seconds_by_process": {
+        "controller": 7.821117334999997
+      },
+      "controller_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "coverage": true,
+      "kind": "actual_software_ci_timing_only",
+      "phase_seconds_sum_not_parallel_wall_time": {
+        "call": 702.8124547329982,
+        "setup": 205.39628223700123,
+        "teardown": 0.6939564020035789
+      },
+      "profiled": false,
+      "sessionfinish_seconds_by_process": {
+        "controller": 0.07766895100007787
+      },
+      "subject_sha": "11ce72b93c44c83041d4faaf34798dd6c77851dc",
+      "workers": 0
+    },
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/38867380295",
+    "workflow_wall_seconds": 1029.0
+  }
+]

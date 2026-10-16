@@ -1,0 +1,4 @@
+# Audit digests bind canonical UTF-8/LF bytes on Windows and Linux.
+*.json text eol=lf
+*.txt text eol=lf
+*.csv text eol=lf
