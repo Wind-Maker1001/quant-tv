@@ -39,7 +39,7 @@ def test_original_research_evidence_and_factor_parameters_are_frozen(tmp_path):
         ROOT, frozen, FREEZE.relative_to(ROOT).as_posix(),
         "e98d621ebdbc8d619de22390502ec07a79d825a3",
         ROOT / "docs/research/evidence/ci-runtime-optimization-v1/engineering-migration.json",
-        "bf1bec9d1bade956c548644f70540a6fdc1045acb15e674e16963f045cd3b4bd",
+        "d08e34e905db5b0dee4750220cc5aff5b46b966796b2b554f74c5e5e2347ab9e",
     )
     assert result["unchanged_financial_and_other_files"] == 466
     assert protected.intersection(changed) == migration.ENGINEERING_PATHS

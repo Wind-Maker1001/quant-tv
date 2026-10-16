@@ -1,18 +1,18 @@
 {
   "authorization": "User approved CI scheduling and proven equivalent synthetic fixture optimization; no financial semantics or historical receipts are migrated.",
   "baseline_commit": "6864315bc8eeaf96356d6822d12f431ec485a94e",
-  "engineering_commit": "806cd0249aab0b7367236e5c5ee791b5db877c53",
+  "engineering_commit": "7e57aa6add9f1f7f7f16bff9ad420870d15b84de",
   "files": {
     ".github/workflows/ci-workflows.yml": {
       "approved_blob": "71ce0d57c3c1cece5ba1849dcb5adc927119a974",
       "original_blob": "6ed5aabd4637344a455013286ea0a32fd264f0fd"
     },
     ".github/workflows/pylint.yml": {
-      "approved_blob": "187f397100432291140d2b221bea43854ec7ad39",
+      "approved_blob": "e666099602d4dea8d232d3b46228826bcb69b1e0",
       "original_blob": "fdf16782a58aa165634271bf5ea7557228e13acb"
     },
     ".github/workflows/research-tests.yml": {
-      "approved_blob": "e5a85c38310c31d7b7ede0c9cc6582792c05aa82",
+      "approved_blob": "5a4334bb51089a7f5f138ace52e0acbb98534f7d",
       "original_blob": "9ae337d2dc233858df8e7bd3ae8debc5afa04fb3"
     },
     "tests/research/test_cli_phase2.py": {
