@@ -119,16 +119,33 @@ Windows隔离环境由现有研究包副本建立，再安装与CI一致的pytes
 
 唯一测试准备优化为test_cli_phase2._inputs：原配方保持原样，按配方版本及NumPy/Pandas版本缓存进程内pickle不可变字节，每次解码得到独立对象。与Git绑定的原main配方逐值、数值原始字节、dtype、索引、频率和attrs校验，并验证修改不会污染下次调用。390交易日，数据/股票bar/基准分别3900/5100/510行，规模不变。没有缓存训练、被测验证、收据或文件。45项所属文件测试通过。
 
+串行候选为 `11ce72b93c44c83041d4faaf34798dd6c77851dc`。
+[干净提交的等价收据](evidence/ci-runtime-optimization-v1/fixture-equivalence-11ce72b.json)中，10次输入准备的两个配对微测量分别由0.795/1.578秒降至0.004/0.010秒；
+该结果只说明重复输入构造被消除，不外推完整CI提速比例。320份冻结文件中仅此测试准备文件发生变化，研究实现和研究依赖文件未变。
+
 独立119项热点profile中：schema canonicalize_bars 6627次、134.456秒inclusive；validate_bars 7791次、116.154秒inclusive；acquire_pilot 59次、138.778秒inclusive；_inputs 83次、12.816秒inclusive。以上嵌套时间不能相加。Ridge/LightGBM/XGBoost fit各37/15/15次、0.092/0.119/0.140秒inclusive，未显示训练为该样本瓶颈。
 51个pytest fixture中已有5个模块级fixture；不能假设所有重复调用都可安全复用。
 训练调用次数、独立重跑、防泄漏变异比较、序列化和哈希验证仍须实际执行。
 
+同一热点profile另测：Parquet读3176次、6.020秒inclusive，写1723次、6.256秒；savefig 83次、13.762秒；
+exploratory.contract.sha256_file 21606次、0.645秒。它们均包含部分嵌套调用，不能与schema、pilot时间相加。
+这些操作仍属真实证据生成与核验，本次未缓存或绕过；五年pilot收据绑定绝对路径和原生响应，未强行复用其可写产物。
+
 ## 7. 并行资源审计与实验
 
-尚未开始完整并行实验。候选为串行、固定pytest-xdist 3.8.0的2/3 Workers，按loadfile分配。
+完整并行实验待串行对照完成。候选为串行、固定pytest-xdist 3.8.0的2/3 Workers，按loadfile分配。
 文件锁、generation和收据操作保留原合同；可写目录按测试/Worker隔离，Worker崩溃不自动重启。
 进程树RSS含共享页重复计数的可能，另采样MemAvailable及可读cgroup限制。
 采用并行前必须实测满足至少20%内存余量；无法可靠测量则不宣告资源门禁通过。
+
+Windows的2/3 Workers高风险预检各452项通过，分别30.80/31.06秒，见[独立预检收据](evidence/ci-runtime-optimization-v1/parallel-preflights.json)。
+该子集包含cache/PIT并发发布、Forward锁、Golden及Ridge/树模型；它不是完整套件验收或加速对照。
+独立审计未发现跨Worker可写根：tmp_path/tmp_path_factory由xdist隔离，monkeypatch作用于各进程，模块fixture由loadfile保留在单一Worker。
+现有5秒屏障、15秒子进程启动期限等不放宽。模型原有种子、单线程参数及LightGBM deterministic保持原值。
+BLAS/OpenMP线程1是独立实验变量，必须与同样线程1的串行运行比较。
+
+activation.py第163/164行对应真实O_EXCL锁争用；失败线程也可在获得已释放的锁后发现收据已存在，两者都满足原“一胜一负”断言。
+若实验未覆盖前一时序，覆盖率合同继续拒绝，不自动豁免，不挑选一次偶然通过来声称稳定。
 
 ## 8. 优化前后等价性与性能对照
 
@@ -163,4 +180,28 @@ CI性能证据和软件覆盖率不授予金融数据或实盘资格。
 
 中期独立预审发现三项P1：未强制比较平台执行/覆盖范围、收据来源未校验、coverage逐行hits与汇总未对账。
 已加入冻结平台合同、精确SHA/tree绑定及逐行汇总交叉验证，并扩展反例；最终HEAD复审待完成。
+P3输入复用另经独立只读复审：原构造体和45项测试主体保持不变；逐列无共享数组，并额外修改日期数组、索引名、attrs验证下一次调用仍精确相同，未发现P0/P1。
 最终状态与遗留风险将在远程全量验证及最终独立复审完成后填写。
+
+## 13. 独立复跑
+
+以下命令均从完整Git历史的独立checkout执行，Python为3.9.25，输出目录必须不存在：
+
+```bash
+python -m pip install -r dev/requirements-research-ci.txt
+python -m pip check
+python .github/scripts/ci/benchmark.py --output results/diagnostics/reproduce --workers 0
+python .github/scripts/ci/validate_execution.py results/diagnostics/reproduce \
+  --expected docs/research/evidence/ci-runtime-optimization-v1/baseline-collection.json
+python .github/scripts/ci/validate_reports.py results/diagnostics/reproduce/coverage.xml \
+  results/diagnostics/reproduce/research.xml
+python .github/scripts/ci/validate_fixture_equivalence.py \
+  --contract-root docs/research/evidence/ci-runtime-optimization-v1 \
+  --output results/diagnostics/reproduce/fixture-equivalence.json
+python .github/scripts/ci/summarize_runtime.py results/diagnostics/reproduce
+```
+
+手动远程采样使用现有research-tests.yml的workflow_dispatch，mode=benchmark，明确指定40位subject_sha、workers、coverage、pip_cache、profile和threads。
+默认mode=verify执行真正完整coverage验证。profile=true仅运行固定119项热点用于定位，元数据和job名称均明确其不具验收资格。
+下载与汇总用download_runtime_evidence.py和compile_runtime_receipts.py；原始ZIP、XML、完整版本、阶段和进程记录保存在对应Actions artifacts，聚合收据列出文件SHA256。
+基线清单仅可在合法新增测试或研究源码变更后，经完整重新冻结与独立复审更新；不得为通过性能验收修改期望清单。

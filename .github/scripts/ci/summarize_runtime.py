@@ -33,6 +33,7 @@ def summarize(directory):
     ) as stream:
         writer = csv.DictWriter(
             stream,
+            lineterminator="\n",
             fieldnames=(
                 "rank",
                 "file",
