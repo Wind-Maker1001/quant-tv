@@ -1,0 +1,72 @@
+{
+  "schema": "PIT_PHASE1_IDENTITY_MAPPING_PROPOSAL_V1",
+  "proposal_only": true,
+  "formal_identity_snapshot_eligible": false,
+  "stable_security_id": "LOCAL-PROPOSED-AVIC-LISTING-001",
+  "stable_id_authority": "Local design proposal; not an exchange identifier or ISIN",
+  "master_identity_verified": false,
+  "layers": [
+    "Immutable supplier symbol and original row key",
+    "Evidence-versioned supplier alias to stable security identity",
+    "Historical exchange trading-symbol intervals",
+    "Independent index-membership events linked through identity"
+  ],
+  "transition": {
+    "old_exchange_symbol": "300114.SZ",
+    "new_exchange_symbol": "302132.SZ",
+    "source_stated_code_change_date": "2025-02-17",
+    "date_evidence_status": "ISSUER_IMPLEMENTATION_ANNOUNCEMENT_AND_LATER_ADVISER_RETROSPECTIVE_STATEMENT_AGREE",
+    "effective_boundary_text": "2025-02-17 market open, as declared by issuer",
+    "actual_exchange_operational_timestamp": "UNKNOWN",
+    "first_historically_known_at": "UNKNOWN",
+    "issuer_signature_date": "2025-02-14",
+    "issuer_first_publication_date": "UNKNOWN",
+    "listing_date": "UNKNOWN",
+    "old_interval_start": "UNKNOWN",
+    "old_inclusive_exit_session": "UNKNOWN",
+    "new_interval_end": "UNKNOWN",
+    "same_listed_entity_basis": "Issuer source states listed entity continues; full security-master and capital/reorganization history remain unqualified",
+    "evidence_ids": [
+      "identity-issuer-2025-028",
+      "identity-adviser-2025-supervision"
+    ]
+  },
+  "supplier_alias": {
+    "namespace": "YHH_LOCAL_DELIVERY_REVIEW_20261017",
+    "namespace_is_local_audit_label": true,
+    "original_supplier_identifier": "302132.SZ",
+    "observed_delivery_range": [
+      "2021-01-04",
+      "2026-09-30"
+    ],
+    "upstream_vendor_identity": "UNKNOWN",
+    "alias_validity_contract": "UNKNOWN",
+    "historical_code_conflict": "New exchange symbol used in pre-2025-02-17 delivered history; retain raw label and stage a separate mapping, never overwrite rows",
+    "observation_evidence": "docs/research/evidence/independent-data-review-20261017-v1/security-observations.csv",
+    "observation_evidence_sha256": "6738a7b26ee7e8d67be89d4f634c51cf175cd67bc66b99174cb7d35f1fb6cdf6"
+  },
+  "required_fields_for_future_rows": [
+    "supplier_namespace",
+    "supplier_security_id",
+    "stable_security_id",
+    "exchange_symbol",
+    "effective_start",
+    "effective_end_inclusive",
+    "relationship",
+    "source_evidence_sha256",
+    "available_at",
+    "retrieved_at",
+    "revision_id",
+    "evidence_status"
+  ],
+  "projection_to_existing_contract": "IdentitySnapshot accepts explicit inclusive intervals and available_at. UNKNOWN bounds/availability are not converted into a formal snapshot; do not invent a previous trading day.",
+  "rejection_rules": [
+    "Reject ambiguous/many-to-many identity matches",
+    "Reject a PIT symbol not valid for its date",
+    "Reject unavailable_at or unknown original listing identity",
+    "Reject automatic merger/predecessor price splices",
+    "Do not infer CSI500 membership from a code transition"
+  ],
+  "formal_admission": false,
+  "no_live_money": true
+}

@@ -1,0 +1,980 @@
+{
+  "scope": "Nine dates, fixed prior pilot securities plus identity boundary codes; diagnostic aggregation only. Nine time labels and unknown interval/auction semantics prevent certifying this as daily RAW. Agreement does not authenticate independent upstream lineage or timestamp convention.",
+  "records": [
+    {
+      "date": "2021-01-04",
+      "source": "30min/20210104_A股30分钟K线@余哈哈的数据仓库 原创整理.csv",
+      "selected_observations": [
+        {
+          "证券代码": "000001.SZ",
+          "rows": 9,
+          "names": "平安银行"
+        },
+        {
+          "证券代码": "000002.SZ",
+          "rows": 9,
+          "names": "万科A"
+        },
+        {
+          "证券代码": "000780.SZ",
+          "rows": 9,
+          "names": "*ST平能"
+        },
+        {
+          "证券代码": "000961.SZ",
+          "rows": 9,
+          "names": "中南建设"
+        },
+        {
+          "证券代码": "300750.SZ",
+          "rows": 9,
+          "names": "宁德时代"
+        },
+        {
+          "证券代码": "302132.SZ",
+          "rows": 9,
+          "names": "中航电测"
+        },
+        {
+          "证券代码": "600000.SH",
+          "rows": 9,
+          "names": "浦发银行"
+        },
+        {
+          "证券代码": "600112.SH",
+          "rows": 9,
+          "names": "ST天成"
+        },
+        {
+          "证券代码": "600519.SH",
+          "rows": 9,
+          "names": "贵州茅台"
+        },
+        {
+          "证券代码": "688981.SH",
+          "rows": 9,
+          "names": "中芯国际"
+        }
+      ],
+      "comparisons": []
+    },
+    {
+      "date": "2021-09-13",
+      "source": "30min/20210913_A股30分钟K线@余哈哈的数据仓库 原创整理.csv",
+      "selected_observations": [
+        {
+          "证券代码": "000001.SZ",
+          "rows": 9,
+          "names": "平安银行"
+        },
+        {
+          "证券代码": "000002.SZ",
+          "rows": 9,
+          "names": "万科A"
+        },
+        {
+          "证券代码": "000780.SZ",
+          "rows": 9,
+          "names": "ST平能"
+        },
+        {
+          "证券代码": "000961.SZ",
+          "rows": 9,
+          "names": "中南建设"
+        },
+        {
+          "证券代码": "300750.SZ",
+          "rows": 9,
+          "names": "宁德时代"
+        },
+        {
+          "证券代码": "302132.SZ",
+          "rows": 9,
+          "names": "中航电测"
+        },
+        {
+          "证券代码": "600000.SH",
+          "rows": 9,
+          "names": "浦发银行"
+        },
+        {
+          "证券代码": "600112.SH",
+          "rows": 9,
+          "names": "*ST天成"
+        },
+        {
+          "证券代码": "600519.SH",
+          "rows": 9,
+          "names": "贵州茅台"
+        },
+        {
+          "证券代码": "688981.SH",
+          "rows": 9,
+          "names": "中芯国际"
+        }
+      ],
+      "comparisons": [
+        {
+          "symbol": "000001.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000000154174902,
+          "amount_aggregation_ratio": 0.9999999969303407
+        },
+        {
+          "symbol": "000002.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000002040200102,
+          "amount_aggregation_ratio": 1.0000000009784877
+        },
+        {
+          "symbol": "000961.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000000390821937,
+          "amount_aggregation_ratio": 1.0
+        },
+        {
+          "symbol": "300750.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999962091649013,
+          "amount_aggregation_ratio": 0.9999999942208516
+        },
+        {
+          "symbol": "600000.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.000000238311664,
+          "amount_aggregation_ratio": 0.9999999818369076
+        },
+        {
+          "symbol": "600519.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000007215007214,
+          "amount_aggregation_ratio": 1.0000000217153773
+        },
+        {
+          "symbol": "688981.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000006495756106,
+          "amount_aggregation_ratio": 1.0000000037528831
+        }
+      ]
+    },
+    {
+      "date": "2022-01-24",
+      "source": "30min/20220124_A股30分钟K线@余哈哈的数据仓库 原创整理.csv",
+      "selected_observations": [
+        {
+          "证券代码": "000001.SZ",
+          "rows": 9,
+          "names": "平安银行"
+        },
+        {
+          "证券代码": "000002.SZ",
+          "rows": 9,
+          "names": "万科A"
+        },
+        {
+          "证券代码": "000961.SZ",
+          "rows": 9,
+          "names": "中南建设"
+        },
+        {
+          "证券代码": "001289.SZ",
+          "rows": 9,
+          "names": "龙源电力"
+        },
+        {
+          "证券代码": "300750.SZ",
+          "rows": 9,
+          "names": "宁德时代"
+        },
+        {
+          "证券代码": "302132.SZ",
+          "rows": 9,
+          "names": "中航电测"
+        },
+        {
+          "证券代码": "600000.SH",
+          "rows": 9,
+          "names": "浦发银行"
+        },
+        {
+          "证券代码": "600112.SH",
+          "rows": 9,
+          "names": "*ST天成"
+        },
+        {
+          "证券代码": "600519.SH",
+          "rows": 9,
+          "names": "贵州茅台"
+        },
+        {
+          "证券代码": "688981.SH",
+          "rows": 9,
+          "names": "中芯国际"
+        }
+      ],
+      "comparisons": [
+        {
+          "symbol": "000001.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.999999851389678,
+          "amount_aggregation_ratio": 0.9999999900092603
+        },
+        {
+          "symbol": "000002.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000002335345828,
+          "amount_aggregation_ratio": 1.000000009081219
+        },
+        {
+          "symbol": "000961.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000002055047004,
+          "amount_aggregation_ratio": 1.000000008150129
+        },
+        {
+          "symbol": "001289.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000024149071567,
+          "amount_aggregation_ratio": 1.0000000096061072
+        },
+        {
+          "symbol": "300750.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.000002508194878,
+          "amount_aggregation_ratio": 1.0000000095712025
+        },
+        {
+          "symbol": "600000.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000006771376775,
+          "amount_aggregation_ratio": 0.9999999929194874
+        },
+        {
+          "symbol": "600112.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0,
+          "amount_aggregation_ratio": 1.0
+        },
+        {
+          "symbol": "600519.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999916618027183,
+          "amount_aggregation_ratio": 1.0000000038416867
+        },
+        {
+          "symbol": "688981.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999944272586662,
+          "amount_aggregation_ratio": 0.9999999889179473
+        }
+      ]
+    },
+    {
+      "date": "2023-02-01",
+      "source": "30min/20230201_A股30分钟K线@余哈哈的数据仓库 原创整理.csv",
+      "selected_observations": [
+        {
+          "证券代码": "000001.SZ",
+          "rows": 9,
+          "names": "平安银行"
+        },
+        {
+          "证券代码": "000002.SZ",
+          "rows": 9,
+          "names": "万科A"
+        },
+        {
+          "证券代码": "000961.SZ",
+          "rows": 9,
+          "names": "中南建设"
+        },
+        {
+          "证券代码": "001289.SZ",
+          "rows": 9,
+          "names": "龙源电力"
+        },
+        {
+          "证券代码": "300750.SZ",
+          "rows": 9,
+          "names": "宁德时代"
+        },
+        {
+          "证券代码": "302132.SZ",
+          "rows": 9,
+          "names": "中航电测"
+        },
+        {
+          "证券代码": "600000.SH",
+          "rows": 9,
+          "names": "浦发银行"
+        },
+        {
+          "证券代码": "600112.SH",
+          "rows": 9,
+          "names": "ST天成"
+        },
+        {
+          "证券代码": "600519.SH",
+          "rows": 9,
+          "names": "贵州茅台"
+        },
+        {
+          "证券代码": "601059.SH",
+          "rows": 9,
+          "names": "信达证券"
+        },
+        {
+          "证券代码": "688981.SH",
+          "rows": 9,
+          "names": "中芯国际"
+        }
+      ],
+      "comparisons": [
+        {
+          "symbol": "000001.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.000000284259121,
+          "amount_aggregation_ratio": 0.999999983712979
+        },
+        {
+          "symbol": "000002.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999998407668668,
+          "amount_aggregation_ratio": 0.9999999738170269
+        },
+        {
+          "symbol": "000961.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999998705882733,
+          "amount_aggregation_ratio": 0.9999999940527512
+        },
+        {
+          "symbol": "001289.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000079318269641,
+          "amount_aggregation_ratio": 1.0000000238489792
+        },
+        {
+          "symbol": "300750.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.999997130983638,
+          "amount_aggregation_ratio": 1.0000000031109353
+        },
+        {
+          "symbol": "600000.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.000002250864171,
+          "amount_aggregation_ratio": 1.0000000072836104
+        },
+        {
+          "symbol": "600112.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000039627501487,
+          "amount_aggregation_ratio": 0.9999999742806484
+        },
+        {
+          "symbol": "600519.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999967622299405,
+          "amount_aggregation_ratio": 1.0000000001601363
+        },
+        {
+          "symbol": "601059.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.000005968522531,
+          "amount_aggregation_ratio": 1.0000000109696214
+        },
+        {
+          "symbol": "688981.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999999361028489,
+          "amount_aggregation_ratio": 0.9999999851019851
+        }
+      ]
+    },
+    {
+      "date": "2024-07-19",
+      "source": "30min/20240719_A股30分钟K线@余哈哈的数据仓库 原创整理.csv",
+      "selected_observations": [
+        {
+          "证券代码": "000001.SZ",
+          "rows": 9,
+          "names": "平安银行"
+        },
+        {
+          "证券代码": "000002.SZ",
+          "rows": 9,
+          "names": "万科A"
+        },
+        {
+          "证券代码": "001289.SZ",
+          "rows": 9,
+          "names": "龙源电力"
+        },
+        {
+          "证券代码": "300750.SZ",
+          "rows": 9,
+          "names": "宁德时代"
+        },
+        {
+          "证券代码": "302132.SZ",
+          "rows": 9,
+          "names": "中航电测"
+        },
+        {
+          "证券代码": "600000.SH",
+          "rows": 9,
+          "names": "浦发银行"
+        },
+        {
+          "证券代码": "600112.SH",
+          "rows": 9,
+          "names": "*ST天成"
+        },
+        {
+          "证券代码": "600519.SH",
+          "rows": 9,
+          "names": "贵州茅台"
+        },
+        {
+          "证券代码": "601059.SH",
+          "rows": 9,
+          "names": "信达证券"
+        },
+        {
+          "证券代码": "688981.SH",
+          "rows": 9,
+          "names": "中芯国际"
+        }
+      ],
+      "comparisons": [
+        {
+          "symbol": "000001.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000002670455748,
+          "amount_aggregation_ratio": 0.9999999810481117
+        },
+        {
+          "symbol": "000002.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999998978791543,
+          "amount_aggregation_ratio": 1.0000000074504678
+        },
+        {
+          "symbol": "001289.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999927583325596,
+          "amount_aggregation_ratio": 0.9999999983036901
+        },
+        {
+          "symbol": "300750.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000014869817149,
+          "amount_aggregation_ratio": 0.9999999913478593
+        },
+        {
+          "symbol": "600000.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000005489067876,
+          "amount_aggregation_ratio": 1.0000000037063743
+        },
+        {
+          "symbol": "600112.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0,
+          "amount_aggregation_ratio": 1.0
+        },
+        {
+          "symbol": "600519.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999976889299745,
+          "amount_aggregation_ratio": 1.000000001528373
+        },
+        {
+          "symbol": "601059.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.00000097493866,
+          "amount_aggregation_ratio": 1.0000000115905474
+        },
+        {
+          "symbol": "688981.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999995235153395,
+          "amount_aggregation_ratio": 0.9999999986933943
+        }
+      ]
+    },
+    {
+      "date": "2025-02-14",
+      "source": "30min/20250214_A股30分钟K线@余哈哈的数据仓库 原创整理.csv",
+      "selected_observations": [
+        {
+          "证券代码": "000001.SZ",
+          "rows": 9,
+          "names": "平安银行"
+        },
+        {
+          "证券代码": "000002.SZ",
+          "rows": 9,
+          "names": "万科A"
+        },
+        {
+          "证券代码": "001289.SZ",
+          "rows": 9,
+          "names": "龙源电力"
+        },
+        {
+          "证券代码": "300750.SZ",
+          "rows": 9,
+          "names": "宁德时代"
+        },
+        {
+          "证券代码": "302132.SZ",
+          "rows": 9,
+          "names": "中航电测"
+        },
+        {
+          "证券代码": "600000.SH",
+          "rows": 9,
+          "names": "浦发银行"
+        },
+        {
+          "证券代码": "600519.SH",
+          "rows": 9,
+          "names": "贵州茅台"
+        },
+        {
+          "证券代码": "601059.SH",
+          "rows": 9,
+          "names": "信达证券"
+        },
+        {
+          "证券代码": "688981.SH",
+          "rows": 9,
+          "names": "中芯国际"
+        }
+      ],
+      "comparisons": [
+        {
+          "symbol": "000001.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.999999732801128,
+          "amount_aggregation_ratio": 0.9999999834042111
+        },
+        {
+          "symbol": "000002.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000001596961818,
+          "amount_aggregation_ratio": 1.0000000134488003
+        },
+        {
+          "symbol": "001289.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000098626037275,
+          "amount_aggregation_ratio": 1.0000000014653723
+        },
+        {
+          "symbol": "300750.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000007735946363,
+          "amount_aggregation_ratio": 0.9999999983669361
+        },
+        {
+          "symbol": "600000.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.999999662525799,
+          "amount_aggregation_ratio": 1.0000000154681032
+        },
+        {
+          "symbol": "600519.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999970479704797,
+          "amount_aggregation_ratio": 0.9999999954759025
+        },
+        {
+          "symbol": "601059.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999992399220574,
+          "amount_aggregation_ratio": 0.999999980271626
+        },
+        {
+          "symbol": "688981.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000006171370133,
+          "amount_aggregation_ratio": 0.999999996973719
+        }
+      ]
+    },
+    {
+      "date": "2025-02-17",
+      "source": "30min/20250217_A股30分钟K线@余哈哈的数据仓库 原创整理.csv",
+      "selected_observations": [
+        {
+          "证券代码": "000001.SZ",
+          "rows": 9,
+          "names": "平安银行"
+        },
+        {
+          "证券代码": "000002.SZ",
+          "rows": 9,
+          "names": "万科A"
+        },
+        {
+          "证券代码": "001289.SZ",
+          "rows": 9,
+          "names": "龙源电力"
+        },
+        {
+          "证券代码": "300750.SZ",
+          "rows": 9,
+          "names": "宁德时代"
+        },
+        {
+          "证券代码": "302132.SZ",
+          "rows": 9,
+          "names": "中航成飞"
+        },
+        {
+          "证券代码": "600000.SH",
+          "rows": 9,
+          "names": "浦发银行"
+        },
+        {
+          "证券代码": "600519.SH",
+          "rows": 9,
+          "names": "贵州茅台"
+        },
+        {
+          "证券代码": "601059.SH",
+          "rows": 9,
+          "names": "信达证券"
+        },
+        {
+          "证券代码": "688981.SH",
+          "rows": 9,
+          "names": "中芯国际"
+        }
+      ],
+      "comparisons": [
+        {
+          "symbol": "000001.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000002133886852,
+          "amount_aggregation_ratio": 0.9999999898182707
+        },
+        {
+          "symbol": "000002.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999999331929197,
+          "amount_aggregation_ratio": 0.9999999771557972
+        },
+        {
+          "symbol": "001289.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999920524187139,
+          "amount_aggregation_ratio": 1.000000020532785
+        },
+        {
+          "symbol": "300750.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999983459454989,
+          "amount_aggregation_ratio": 1.0000000023030564
+        },
+        {
+          "symbol": "600000.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000006117248539,
+          "amount_aggregation_ratio": 1.000000009287529
+        },
+        {
+          "symbol": "600519.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999873733485264,
+          "amount_aggregation_ratio": 1.0000000122797352
+        },
+        {
+          "symbol": "601059.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000003880346289,
+          "amount_aggregation_ratio": 0.9999999867175862
+        },
+        {
+          "symbol": "688981.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999996729449756,
+          "amount_aggregation_ratio": 1.0000000095586992
+        }
+      ]
+    },
+    {
+      "date": "2025-07-16",
+      "source": "30min/20250716_A股30分钟K线@余哈哈的数据仓库 原创整理.csv",
+      "selected_observations": [
+        {
+          "证券代码": "000001.SZ",
+          "rows": 9,
+          "names": "平安银行"
+        },
+        {
+          "证券代码": "000002.SZ",
+          "rows": 9,
+          "names": "万科A"
+        },
+        {
+          "证券代码": "001289.SZ",
+          "rows": 9,
+          "names": "龙源电力"
+        },
+        {
+          "证券代码": "300750.SZ",
+          "rows": 9,
+          "names": "宁德时代"
+        },
+        {
+          "证券代码": "302132.SZ",
+          "rows": 9,
+          "names": "中航成飞"
+        },
+        {
+          "证券代码": "600000.SH",
+          "rows": 9,
+          "names": "浦发银行"
+        },
+        {
+          "证券代码": "600519.SH",
+          "rows": 9,
+          "names": "贵州茅台"
+        },
+        {
+          "证券代码": "601059.SH",
+          "rows": 9,
+          "names": "信达证券"
+        },
+        {
+          "证券代码": "688981.SH",
+          "rows": 9,
+          "names": "中芯国际"
+        }
+      ],
+      "comparisons": [
+        {
+          "symbol": "000001.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999998858840665,
+          "amount_aggregation_ratio": 0.9999999846308263
+        },
+        {
+          "symbol": "000002.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.00000018843903,
+          "amount_aggregation_ratio": 1.0000000184661821
+        },
+        {
+          "symbol": "001289.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000052374301676,
+          "amount_aggregation_ratio": 1.0000000093961887
+        },
+        {
+          "symbol": "300750.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999986561290116,
+          "amount_aggregation_ratio": 1.0000000091879735
+        },
+        {
+          "symbol": "600000.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.000000442114338,
+          "amount_aggregation_ratio": 1.0000000265533295
+        },
+        {
+          "symbol": "600519.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0000023489617589,
+          "amount_aggregation_ratio": 1.000000023612495
+        },
+        {
+          "symbol": "601059.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999985094871146,
+          "amount_aggregation_ratio": 0.9999999940400142
+        },
+        {
+          "symbol": "688981.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999975090107722,
+          "amount_aggregation_ratio": 0.9999999901194316
+        }
+      ]
+    },
+    {
+      "date": "2026-09-11",
+      "source": "20260911_A股30分钟K线@余哈哈的数据仓库 原创整理.csv",
+      "selected_observations": [
+        {
+          "证券代码": "000001.SZ",
+          "rows": 9,
+          "names": "平安银行"
+        },
+        {
+          "证券代码": "000002.SZ",
+          "rows": 9,
+          "names": "万 科Ａ"
+        },
+        {
+          "证券代码": "001289.SZ",
+          "rows": 9,
+          "names": "龙源电力"
+        },
+        {
+          "证券代码": "300750.SZ",
+          "rows": 9,
+          "names": "宁德时代"
+        },
+        {
+          "证券代码": "302132.SZ",
+          "rows": 9,
+          "names": "中航成飞"
+        },
+        {
+          "证券代码": "600000.SH",
+          "rows": 9,
+          "names": "浦发银行"
+        },
+        {
+          "证券代码": "600519.SH",
+          "rows": 9,
+          "names": "贵州茅台"
+        },
+        {
+          "证券代码": "601059.SH",
+          "rows": 9,
+          "names": "信达证券"
+        },
+        {
+          "证券代码": "688981.SH",
+          "rows": 9,
+          "names": "中芯国际"
+        }
+      ],
+      "comparisons": [
+        {
+          "symbol": "000001.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999998077988038,
+          "amount_aggregation_ratio": 1.0000000089796783
+        },
+        {
+          "symbol": "000002.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999999398314559,
+          "amount_aggregation_ratio": 0.9999999923651995
+        },
+        {
+          "symbol": "001289.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.999992730382724,
+          "amount_aggregation_ratio": 1.0000000110375957
+        },
+        {
+          "symbol": "300750.SZ",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999998553868402,
+          "amount_aggregation_ratio": 1.0000000075459217
+        },
+        {
+          "symbol": "600000.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999998928472477,
+          "amount_aggregation_ratio": 1.0000000165391532
+        },
+        {
+          "symbol": "600519.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.000012068618718,
+          "amount_aggregation_ratio": 0.9999999975174015
+        },
+        {
+          "symbol": "601059.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 1.0,
+          "amount_aggregation_ratio": 0.9999999880034094
+        },
+        {
+          "symbol": "688981.SH",
+          "ohlc_exact_fields": 4,
+          "ohlc_max_abs_difference": 0.0,
+          "volume_aggregation_ratio": 0.9999986634475659,
+          "amount_aggregation_ratio": 0.9999999880971715
+        }
+      ]
+    }
+  ]
+}

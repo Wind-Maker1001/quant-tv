@@ -1,0 +1,42 @@
+{
+  "schema": "AUDIT_PIT_RELEASE_OFFLINE_CHECKS_V1",
+  "checked_at": "2026-10-17T17:08:05.188347+00:00",
+  "no_live_money": true,
+  "formal_admission": false,
+  "test_command": ".venv-py39/python.exe -B -X utf8 -m pytest -q -p no:cacheprovider -m \"not network\" --basetemp=data/research/diagnostics/audit-release-20261018-v1/pytest-approved tests/research/test_qualification_admission_boundaries.py tests/research/test_market_data_qualification.py tests/research/test_forward_contract_phase4.py tests/research/test_universe_phase1.py",
+  "tests": {
+    "passed": 106,
+    "warnings": 13,
+    "seconds": 71.29,
+    "exit_code": 0,
+    "scope": "Existing software gate regressions only; no financial certification, training or real-data replay"
+  },
+  "earlier_attempts": [
+    {
+      "exit_code": 1,
+      "passed": 31,
+      "setup_errors": 75,
+      "reason": "Missing custom basetemp parent directory; full setup trace returned"
+    },
+    {
+      "exit_code": 1,
+      "reason": "Sandbox-created pytest temporary directory inaccessible: WinError 5; rerun outside sandbox after explicit tool approval"
+    }
+  ],
+  "credential_pattern_check": {
+    "state": "PASS_NO_MATCHES",
+    "patterns": [
+      "private key header",
+      "GitHub token",
+      "AWS access id",
+      "Bearer token literal",
+      "quoted credential assignment"
+    ],
+    "scope": "Selected new text artifacts only; finite pattern check"
+  },
+  "original_data_rescan": "NOT_RUN",
+  "formal_or_forward_gate_modifications": false,
+  "training": false,
+  "trading": false,
+  "archive_whitespace_policy": "Exact historical CRLF bytes preserved; cr-at-eol declared for frozen artifacts; Markdown hard breaks/original whitespace retained in report snapshots."
+}

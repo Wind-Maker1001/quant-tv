@@ -1,0 +1,23 @@
+{
+  "note": "A zero-volume bar coexists with positive-volume bars for the same security/day; it cannot establish a full-day suspension. No status inferred.",
+  "records": [
+    {
+      "date": "2021-01-04",
+      "symbol": "000023.SZ",
+      "zero_volume_rows": 1,
+      "positive_volume_rows": 8
+    },
+    {
+      "date": "2021-01-04",
+      "symbol": "000586.SZ",
+      "zero_volume_rows": 1,
+      "positive_volume_rows": 8
+    },
+    {
+      "date": "2021-01-04",
+      "symbol": "000803.SZ",
+      "zero_volume_rows": 1,
+      "positive_volume_rows": 8
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "schema": "EXTERNAL_PIT_SPEC_DELIVERY_V1",
+  "created_at": "2026-10-17T16:54:48.953619+00:00",
+  "no_live_money": true,
+  "design_only": true,
+  "formal_admission": false,
+  "documents": [
+    "docs/research/EXTERNAL_PIT_ACCEPTANCE_SPEC_2026-10-18.md",
+    "docs/research/EXTERNAL_PIT_ACCEPTANCE_TEST_PLAN_2026-10-18.md"
+  ],
+  "artifacts": [
+    {
+      "path": "docs/research/EXTERNAL_PIT_ACCEPTANCE_SPEC_2026-10-18.md",
+      "sha256": "e0442ddfdab2139ce8e09e9b58b96c3c6acbfb4ef3470b7d4327bebac9c9f73b",
+      "bytes": 28756
+    },
+    {
+      "path": "docs/research/EXTERNAL_PIT_ACCEPTANCE_TEST_PLAN_2026-10-18.md",
+      "sha256": "69f5c94ff1aaefd97afb9c6be53a523e76766583879e7d40d3c7ac2ad023b49f",
+      "bytes": 14662
+    },
+    {
+      "path": "docs/research/evidence/external-pit-acceptance-20261018-v1/verify_spec.py",
+      "sha256": "b0867453076f75b71f9487d6ae2d91c2132babbf426c785c9df2debb7224aa36",
+      "bytes": 7234
+    },
+    {
+      "path": "docs/research/evidence/external-pit-acceptance-20261018-v1/preservation-before.json",
+      "sha256": "2561fea08fbad75eaeccb494287236f925d3e1a5344dacd9fdc151fb41f73b73",
+      "bytes": 114083
+    }
+  ],
+  "existing_evidence": [
+    {
+      "path": "data/research/diagnostics/official-browser-notices/20261010/13888.observation.json",
+      "sha256": "e29c45ecfc4fabef97091031a20f52963dbb048cc611707355afa84ed99b66f0",
+      "bytes": 45320,
+      "source_url": "https://www.csindex.com.cn/csindex-home/announcement/queryAnnouncementById?id=13888",
+      "evidence_id": "13888-NOTICE_BODY",
+      "representation": "browser response.text UTF-8; container bytes separately bound; not publisher HTTP wire bytes",
+      "historical_known_at": "UNKNOWN",
+      "authority_certification": false
+    },
+    {
+      "path": "data/research/diagnostics/official-browser-attachments/20261010-regular-workbooks/f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909.xlsx",
+      "sha256": "f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909",
+      "bytes": 872904,
+      "source_url": "https://oss-ch.csindex.com.cn/notice/20211130195824-中证指数调入调出名单.xlsx",
+      "evidence_id": "13888-NOTICE_ATTACHMENT",
+      "representation": "Publisher attachment response bytes retained in prior cache",
+      "historical_known_at": "UNKNOWN",
+      "authority_certification": false
+    },
+    {
+      "path": "results/diagnostics/five-year-data-feasibility-v1/pit-source-audit/20261014T161856.152767Z-public-byte-acquisition/300114-302132-code-change-issuer.pdf",
+      "sha256": "dd68049c48df826848f361fd9e7b23dd20b6805144a2e5bc36e54db638611488",
+      "bytes": 370156,
+      "source_url": "https://disc.static.szse.cn/disc/disk03/finalpage/2025-02-15/cedb693a-f5ee-4463-9682-ea33d406b569.PDF",
+      "evidence_id": "identity-issuer-2025-028",
+      "representation": "Previously acquired issuer PDF bytes, re-read; not a fresh network acquisition",
+      "historical_known_at": "UNKNOWN",
+      "authority_certification": false
+    },
+    {
+      "path": "data/research/diagnostics/pit-phase1/20261018-v1/raw/20261017T163050.804241Z-public-byte-acquisition/avic-2025-supervision-adviser.pdf",
+      "sha256": "9234be47b07dcfa6e4ef070f099d6b19ce927864897bd6e827eca31830dd6779",
+      "bytes": 433136,
+      "source_url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-05-11/7c817bfa-0047-40ef-8fd9-cc6e879a709b.PDF",
+      "evidence_id": "identity-adviser-2025-supervision",
+      "representation": "Newly acquired publisher-hosted original PDF response bytes",
+      "historical_known_at": "UNKNOWN",
+      "authority_certification": false
+    },
+    {
+      "path": "data/research/diagnostics/pit-phase1/20261018-v1/raw/20261017T163050.804241Z-public-byte-acquisition/avic-2025-supervision-adviser.receipt.json",
+      "sha256": "1d698cbb5cc92be62bf990458a58b2b69ea4178edf5bef169cc571004b824a0e",
+      "bytes": 1203,
+      "evidence_id": "identity-adviser-2025-supervision-receipt",
+      "representation": "Existing acquisition receipt"
+    }
+  ],
+  "contract_shapes": {
+    "dataclasses": [
+      {
+        "path": "qbot/research/data/evidence.py",
+        "name": "SourceArtifact",
+        "fields": [
+          "path",
+          "sha256",
+          "bytes",
+          "source_id",
+          "acquired_at",
+          "locator"
+        ]
+      },
+      {
+        "path": "qbot/research/universe/identity.py",
+        "name": "SecurityIdentity",
+        "fields": [
+          "security_id",
+          "symbol",
+          "start",
+          "end",
+          "listing_date",
+          "available_at",
+          "source_sha256",
+          "delisting_date",
+          "relationship",
+          "security_type"
+        ]
+      },
+      {
+        "path": "qbot/research/universe/identity.py",
+        "name": "IdentitySnapshot",
+        "fields": [
+          "intervals",
+          "artifacts",
+          "synthetic_only"
+        ]
+      },
+      {
+        "path": "qbot/research/data/market_qualification.py",
+        "name": "QualificationInputs",
+        "fields": [
+          "raw",
+          "turnover",
+          "identity",
+          "units",
+          "adjustments",
+          "signal_as_of",
+          "source_version",
+          "status",
+          "listings",
+          "membership",
+          "raw_sources",
+          "calendar_reference",
+          "calendar_source",
+          "status_source",
+          "pit_source",
+          "source_reviews",
+          "expected_member_count",
+          "synthetic_only",
+          "benchmark_source",
+          "research_start",
+          "research_end"
+        ]
+      }
+    ],
+    "unbound_real_roles": [
+      "PIT",
+      "STATUS",
+      "CALENDAR",
+      "IDENTITY",
+      "UNITS",
+      "ADJUSTMENT",
+      "REFERENCE",
+      "BENCHMARK",
+      "TURNOVER",
+      "LISTINGS",
+      "ANCHOR"
+    ],
+    "independent_review_fields": [
+      "bound_sha256",
+      "coverage_basis",
+      "effective_date_basis",
+      "history_kind",
+      "reviewed_at",
+      "reviewer",
+      "role",
+      "schema",
+      "scope_end",
+      "scope_start",
+      "time_basis",
+      "upstream_origin"
+    ]
+  },
+  "event_13888_expected": {
+    "announcement_publish_date": "2021-11-26",
+    "planned_after_close_date": "2021-12-10",
+    "actual_effective_member_date": "UNKNOWN",
+    "historical_known_at": "UNKNOWN",
+    "historical_attachment_vintage": "UNKNOWN",
+    "attachment_create_at": "2021-11-30",
+    "attachment_original_sha256": "f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909"
+  },
+  "scope": "Document design and frozen existing references only. No external original newly acquired; no member dataset, historical baseline or actual effective date certified."
+}

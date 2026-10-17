@@ -1,0 +1,278 @@
+{
+  "schema": "PIT_PHASE1_BASELINE_RESULT_V1",
+  "target_index": "000905 / CSI500",
+  "target_trading_date": "2021-09-13",
+  "required_count": 500,
+  "result": "BLOCKED_AUTHORITY_BASELINE_NOT_OBTAINED",
+  "verified_complete_baselines": 0,
+  "verified_members_from_authoritative_baseline": "UNKNOWN",
+  "no_member_list_generated": true,
+  "not_an_exhaustive_web_unavailability_proof": true,
+  "new_baseline_search_count": 6,
+  "all_new_search_count": 7,
+  "new_scrape_count": 1,
+  "direct_http_attempts": 2,
+  "successful_original_downloads": 1,
+  "direct_http_note": "First original-PDF fetch failed with URLError in sandbox; approved outside-sandbox retry succeeded. Neither request targeted CSI notice bodies.",
+  "csi_notice_body_requests": 0,
+  "csi_denied_workflow_reopened": false,
+  "search_archive": "data/research/diagnostics/pit-phase1/20261018-v1/tool-responses.json",
+  "search_archive_sha256": "2a07c1480e25c9b402fe704cef2ada331321c2bc24bffff4d9cccb5e959e1ebb",
+  "archive_timestamp_is_not_per_call_timestamp": true,
+  "queries": [
+    {
+      "operation": "search-1",
+      "role": "BASELINE_DISCOVERY",
+      "tool_result_id": "01a14aad-e8e3-77df-9c91-1ef343d89ec1",
+      "returned_results": [],
+      "complete_20210913_official_baseline_found": false,
+      "query": "site:csindex.com.cn \"中证500\" \"2021-09\" \"成分\""
+    },
+    {
+      "operation": "search-2",
+      "role": "BASELINE_DISCOVERY",
+      "tool_result_id": "01a14aae-b4c2-7655-a98e-57a1f00ad4ea",
+      "returned_results": [
+        {
+          "url": "https://www.csindex.com.cn/",
+          "title": "中证指数官网",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/931589_Index_Methodology_cn.pdf",
+          "title": "[PDF] 中证智选成长创新策略指数系列编制方案",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/000852factsheet.pdf",
+          "title": "[PDF] 中证1000",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/000510factsheet.pdf",
+          "title": "[PDF] 中证A500指数",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/931637factsheet.pdf",
+          "title": "[PDF] 港股通互联网 - 中证指数有限公司",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/931855factsheet.pdf",
+          "title": "[PDF] 通用航空 - 中证指数有限公司",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        }
+      ],
+      "complete_20210913_official_baseline_found": false,
+      "query": "\"中证500\" \"2021年9月\" \"样本\" site:csindex.com.cn OR site:oss-ch.csindex.com.cn"
+    },
+    {
+      "operation": "search-3",
+      "role": "BASELINE_DISCOVERY",
+      "tool_result_id": "01a14aaf-09e7-755e-a2ee-f73bd3f3a082",
+      "returned_results": [
+        {
+          "url": "https://www.xueyandata.com/3722/",
+          "title": "指数型开放式基金全景分析：总量、头部集中与周期性风险 - 学研数据网",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        }
+      ],
+      "complete_20210913_official_baseline_found": false,
+      "query": "\"000905\" \"20210913\" 成分"
+    },
+    {
+      "operation": "search-4",
+      "role": "BASELINE_DISCOVERY",
+      "tool_result_id": "01a14aaf-eb18-701e-b800-0af1a3ccc712",
+      "returned_results": [
+        {
+          "url": "https://www.csopasset.com/en/products/csi-500-etf",
+          "title": "CSOP CSI 500 ETF * (*This is a synthetic ETF)",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "http://www.igwfmc.com/upload/20251114/20251114193138395.pdf",
+          "title": "[PDF] IGW CSI 500 Enhanced ETF Ticker 159610",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://www.fsmone.com.my/funds/research/article-details/241380/fsmone-etf-choice-november-2021-xtrackers-harvest-csi-500-china-a-shar?src=funds",
+          "title": "Xtrackers Harvest CSI 500 China A-Shares Small-Cap ETF - FSMOne",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://www.researchgate.net/figure/Average-Market-Quality-Series-of-the-CSI-300-and-CSI-500-Component-Stocks-and_fig3_315377299",
+          "title": "Average Market Quality Series of the CSI 300 and CSI 500 Component...",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://www.sciencedirect.com/science/article/abs/pii/S1544612325015466",
+          "title": "Intraday herding drivers in China's A-share market - ScienceDirect.com",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        }
+      ],
+      "complete_20210913_official_baseline_found": false,
+      "query": "\"CSI 500\" \"September\" \"2021\" constituents"
+    },
+    {
+      "operation": "search-5",
+      "role": "IDENTITY_DISCOVERY",
+      "tool_result_id": "01a14aaf-e707-705e-afa2-58de714106a8",
+      "returned_results": [
+        {
+          "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2025-02-15/cedb693a-f5ee-4463-9682-ea33d406b569.PDF",
+          "title": "[PDF] 300114 证券简称：中航电测公告编号：2025-028 - 巨潮资讯",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-05-11/7c817bfa-0047-40ef-8fd9-cc6e879a709b.PDF",
+          "title": "[PDF] 独立财务顾问：中信证券股份有限公司",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        }
+      ],
+      "complete_20210913_official_baseline_found": false,
+      "query": "site:szse.cn \"302132\" \"2025年2月17日\""
+    },
+    {
+      "operation": "search-6",
+      "role": "BASELINE_DISCOVERY",
+      "tool_result_id": "01a14ab1-1179-71b5-89c2-8445665819a2",
+      "returned_results": [
+        {
+          "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/000510factsheet.pdf",
+          "title": "[PDF] 中证A500指数",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        }
+      ],
+      "complete_20210913_official_baseline_found": false,
+      "query": "site:oss-ch.csindex.com.cn \"中证500\" \"2021\" \"样本名单\""
+    },
+    {
+      "operation": "search-7",
+      "role": "BASELINE_DISCOVERY",
+      "tool_result_id": "01a14ab1-12c7-7782-b692-1cf4dc7b1d61",
+      "returned_results": [
+        {
+          "url": "http://www.jajxfund.com/d/file/ajajxfundup/zhongxindongtai/2021/09-13/4ac5fb6744451c2f1b7bc0c4363c9eae.pdf",
+          "title": "【第544 期】济安金信基金周报 - 济安金信基金评价中心",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://www.jsfund.cn/plat_files/upload/product_ann/20260914/202609141789375630179/%E5%98%89%E5%AE%9E%E5%AE%89%E5%BA%B7%E7%A8%B3%E5%81%A5%E5%85%BB%E8%80%81%E7%9B%AE%E6%A0%87%E4%B8%80%E5%B9%B4%E6%8C%81%E6%9C%89%E6%9C%9F%E6%B7%B7%E5%90%88%E5%9E%8B%E5%9F%BA%E9%87%91%E4%B8%AD%E5%9F%BA%E9%87%91%EF%BC%88FOF%EF%BC%89%E6%9B%B4%E6%96%B0%E6%8B%9B%E5%8B%9F%E8%AF%B4%E6%98%8E%E4%B9%A6%EF%BC%882026%E5%B9%B409%E6%9C%8815%E6%97%A5%E6%9B%B4%E6%96%B0%EF%BC%89.pdf",
+          "title": "[PDF] 嘉实安康稳健养老目标一年持有期混合型基金中基金（FOF）更新招募说明书",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://fund.sina.cn/fund/?code=660011",
+          "title": "农银中证500指数A(660011)_基金行情_新浪财经_新浪网",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "http://www.cmfchina.com/fundarticle/20250321/20014374028854.pdf",
+          "title": "招商中证全指证券公司指数证券投资基金更新的招募说明书（二零二 ...",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        },
+        {
+          "url": "https://accountquery.chinaamc.com/front/ui/contentcore/resource/download?ID=54764",
+          "title": "[PDF] 华夏回报二号证券投资基金2021 年第3 季度报告",
+          "source_original_sha256": "UNKNOWN",
+          "publication_date": "UNKNOWN",
+          "actual_effective_date": "UNKNOWN",
+          "confidence": "DISCOVERY_ONLY"
+        }
+      ],
+      "complete_20210913_official_baseline_found": false,
+      "query": "\"中证500\" \"2021年9月13日\" \"名单\""
+    }
+  ],
+  "reused_prior_inputs": [
+    {
+      "path": "data/research/diagnostics/pit-effective-membership-evidence/baseline-20261015-ciis-bounded/public-observations.json",
+      "sha256": "9e2b2104372a0fb0f63e35da4a7cfd03230ccd8bc3c300a0d22007be367c8584"
+    },
+    {
+      "path": "data/research/diagnostics/pit-effective-membership-evidence/regular-20261015-bounded-search/regular-review.draft.json",
+      "sha256": "e94b24ad9b5387a1acf405f0f7cc01ebb4189361a3586044399c265dca6d2fe2"
+    },
+    {
+      "path": "data/research/diagnostics/pit-effective-membership-evidence/conditional-20261015T122346Z/conditional-review.draft.json",
+      "sha256": "0eb4dd4bb10c8c6e7371a309079fdbe48237104ebb1acee13c16e65c4e9f4358"
+    },
+    {
+      "path": "docs/research/evidence/five-year-data-feasibility-v1/pit-gaps.json",
+      "sha256": "8c80fcd040c18734f6f0bfa61f8e594c03d1b418c83da91c93b0f8de1de8a4e7"
+    }
+  ],
+  "rejected_substitutes": [
+    "Current 500 constituents",
+    "BaoStock 499 query-date snapshot plus one guessed member",
+    "000510 A500 or 000852 CSI1000 fact sheets",
+    "ETF holdings/PCF baskets",
+    "Adjustment add/remove lists as a baseline",
+    "2021-labelled backtested performance in a current document"
+  ],
+  "critical_boundary": {
+    "notice_13716": "2021-09-10 after-close plan, one addition/removal only; actual and historical attachment availability UNKNOWN",
+    "notice_13420": "Listing-triggered China Energy change; source addition code '-' retained; 2021-09-13 transition membership UNKNOWN"
+  },
+  "formal_admission": false,
+  "no_live_money": true
+}

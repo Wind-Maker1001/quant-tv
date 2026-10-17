@@ -1,0 +1,124 @@
+{
+  "schema": "AUDIT_PIT_CLEAN_STAGED_EXPORT_V1",
+  "checked_at": "2026-10-17T17:11:55.390865+00:00",
+  "base_commit": "d9f42d6524055db029a34ccab888d1c93460d5ae",
+  "export_kind": "Selective git archive of base research/docs/config/tests plus exact staged Git blobs; no git metadata or ignored/external inputs. Existing Python 3.9 interpreter, not a fresh dependency installation.",
+  "exported_base_paths": [
+    "qbot/research",
+    "configs/research",
+    "docs/research",
+    "tests/research",
+    ".gitattributes",
+    ".gitignore"
+  ],
+  "staged_paths_checked": [
+    ".gitattributes",
+    "AUDIT_SUMMARY_2026-10-17.md",
+    "INDEPENDENT_DATA_REVIEW_2026-10-17.md",
+    "STRICT_AUDIT_REPORT_2026-10-17.md",
+    "docs/research/AUDIT_PIT_RELEASE_2026-10-18.md",
+    "docs/research/EXTERNAL_PIT_ACCEPTANCE_SPEC_2026-10-18.md",
+    "docs/research/EXTERNAL_PIT_ACCEPTANCE_TEST_PLAN_2026-10-18.md",
+    "docs/research/PIT_PHASE1_EVIDENCE_2026-10-18.md",
+    "docs/research/evidence/audit-pit-release-20261018-v1/dependency-inventory.json",
+    "docs/research/evidence/audit-pit-release-20261018-v1/offline-checks.json",
+    "docs/research/evidence/audit-pit-release-20261018-v1/release-manifest.json",
+    "docs/research/evidence/audit-pit-release-20261018-v1/verify_release.py",
+    "docs/research/evidence/external-pit-acceptance-20261018-v1/delivery-manifest.json",
+    "docs/research/evidence/external-pit-acceptance-20261018-v1/preservation-before.json",
+    "docs/research/evidence/external-pit-acceptance-20261018-v1/verification.json",
+    "docs/research/evidence/external-pit-acceptance-20261018-v1/verify_spec.py",
+    "docs/research/evidence/independent-data-review-20261017-v1/calendar-and-method.json",
+    "docs/research/evidence/independent-data-review-20261017-v1/daily-counts.csv",
+    "docs/research/evidence/independent-data-review-20261017-v1/exception-details.json",
+    "docs/research/evidence/independent-data-review-20261017-v1/final-verification.json",
+    "docs/research/evidence/independent-data-review-20261017-v1/input-hashes.json",
+    "docs/research/evidence/independent-data-review-20261017-v1/readonly_review.py",
+    "docs/research/evidence/independent-data-review-20261017-v1/repository-cross-checks.json",
+    "docs/research/evidence/independent-data-review-20261017-v1/security-observations.csv",
+    "docs/research/evidence/independent-data-review-20261017-v1/spot-cross-source.json",
+    "docs/research/evidence/independent-data-review-20261017-v1/summary.json",
+    "docs/research/evidence/independent-data-review-20261017-v1/target-observations.csv",
+    "docs/research/evidence/independent-data-review-20261017-v1/zero-volume-counterexamples.json",
+    "docs/research/evidence/pit-phase1-20261018-v1/actual-effective-gaps.csv",
+    "docs/research/evidence/pit-phase1-20261018-v1/assemble_phase1_delivery.py",
+    "docs/research/evidence/pit-phase1-20261018-v1/baseline-result.json",
+    "docs/research/evidence/pit-phase1-20261018-v1/candidate-events.json",
+    "docs/research/evidence/pit-phase1-20261018-v1/delivery-assembly-receipt.json",
+    "docs/research/evidence/pit-phase1-20261018-v1/evidence-register.json",
+    "docs/research/evidence/pit-phase1-20261018-v1/final-verification.json",
+    "docs/research/evidence/pit-phase1-20261018-v1/identity-mapping-proposal.json",
+    "docs/research/evidence/pit-phase1-20261018-v1/next-evidence-request.md",
+    "docs/research/evidence/pit-phase1-20261018-v1/offline-check-receipt.json",
+    "docs/research/evidence/pit-phase1-20261018-v1/pit-evidence-matrix.csv",
+    "docs/research/evidence/pit-phase1-20261018-v1/review_pit_evidence.py",
+    "docs/research/evidence/pit-phase1-20261018-v1/source-index.json",
+    "docs/research/evidence/pit-phase1-20261018-v1/verify_phase1.py"
+  ],
+  "release_manifest_sha256": "f4ca6279b6e4a93ac01c89086ecbd73706bc3b8935585a79ea629881434dcb28",
+  "portable_command": "python -I -S -B -X utf8 <clean-export>/docs/research/evidence/audit-pit-release-20261018-v1/verify_release.py",
+  "portable_result": {
+    "schema": "AUDIT_PIT_RELEASE_CHECK_V1",
+    "checked_at": "2026-10-17T17:11:54.773437+00:00",
+    "python": "3.9.25 (main, Nov  3 2025, 22:44:01) [MSC v.1929 64 bit (AMD64)]",
+    "archive_consistency": "PASS",
+    "artifacts_checked": 41,
+    "protected_research_text_files": 135,
+    "new_program_syntax_checked": 6,
+    "daily_derivative_rows": 1393,
+    "historical_rows_reconciled_from_derivatives_only": 64115523,
+    "candidate_events": 14,
+    "candidate_actions": 1008,
+    "dependency_paths_present_not_authenticated": {
+      "ARCHIVED_ARTIFACT": 30,
+      "EXISTING_TRACKED_INPUT": 478
+    },
+    "dependency_paths_missing_or_external": {
+      "EXTERNAL_INPUT": 191,
+      "OUT_OF_SCOPE_REPORT": 1,
+      "LOCAL_IGNORED_EVIDENCE": 123,
+      "EXISTING_TRACKED_INPUT": 22
+    },
+    "original_market_audit_replay": "NOT_RUN_EXTERNAL_INPUTS_REQUIRED",
+    "original_notice_and_identity_replay": "NOT_RUN_PRIVATE_ORIGINALS_REQUIRED",
+    "historical_full_verifiers": "NOT_RUN_PRIVATE_DEPENDENCIES_AND_PRECOMMIT_HEAD_CONSTRAINT",
+    "actual_baseline_and_effective_date_certification": "NOT_RUN_EVIDENCE_INCOMPLETE",
+    "negative_acceptance_scenarios": "NOT_RUN_DESIGN_ONLY",
+    "financial_certification": false,
+    "formal_admission": false,
+    "no_live_money": true
+  },
+  "legacy_read_only_attempts": [
+    {
+      "program": "docs/research/evidence/pit-phase1-20261018-v1/verify_phase1.py",
+      "exit_code": 1,
+      "full_verification": "NOT_RUN_MISSING_PRIVATE_DEPENDENCY",
+      "failure_tail": [
+        "    return io.open(self, mode, buffering, encoding, errors, newline,",
+        "  File \"<REPO>/.venv-py39\\lib\\pathlib.py\", line 1038, in _opener",
+        "    return self._accessor.open(self, flags, mode)",
+        "FileNotFoundError: [Errno 2] No such file or directory: '<REPO>/data\\\\research\\\\diagnostics\\\\audit-release-20261018-v1\\\\clean-staged-export-approved\\\\data\\\\research\\\\diagnostics\\\\pit-phase1\\\\20261018-v1\\\\start-preservation.json'"
+      ]
+    },
+    {
+      "program": "docs/research/evidence/external-pit-acceptance-20261018-v1/verify_spec.py",
+      "exit_code": 1,
+      "full_verification": "NOT_RUN_MISSING_PRIVATE_DEPENDENCY",
+      "failure_tail": [
+        "    return io.open(self, mode, buffering, encoding, errors, newline,",
+        "  File \"<REPO>/.venv-py39\\lib\\pathlib.py\", line 1038, in _opener",
+        "    return self._accessor.open(self, flags, mode)",
+        "FileNotFoundError: [Errno 2] No such file or directory: '<REPO>/data\\\\research\\\\diagnostics\\\\audit-release-20261018-v1\\\\clean-staged-export-approved\\\\data\\\\research\\\\diagnostics\\\\official-browser-notices\\\\20261010\\\\13888.observation.json'"
+      ]
+    }
+  ],
+  "source_gate_tests": {
+    "passed": 106,
+    "warnings": 13,
+    "see": "offline-checks.json"
+  },
+  "earlier_clean_export_attempt": "Sandbox tar extraction failed with WinError 5 creating mode-0700 directories; no successful verification claimed for that attempt.",
+  "no_ignored_data_or_results_directory": true,
+  "no_live_money": true,
+  "formal_admission": false
+}

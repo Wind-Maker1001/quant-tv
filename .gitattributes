@@ -14,3 +14,17 @@ docs/research/evidence/factor-discovery-private-v1/** -text whitespace=cr-at-eol
 docs/research/evidence/factor-discovery-synthetic-v2/** -text whitespace=cr-at-eol
 docs/research/evidence/factor-discovery-private-v2/** -text whitespace=cr-at-eol
 
+# Preserve audit receipt bytes across Windows/Linux checkout.
+.gitattributes -text whitespace=cr-at-eol
+AUDIT_SUMMARY_2026-10-17.md -text whitespace=cr-at-eol,-blank-at-eol
+STRICT_AUDIT_REPORT_2026-10-17.md -text whitespace=cr-at-eol,-blank-at-eol
+INDEPENDENT_DATA_REVIEW_2026-10-17.md -text whitespace=cr-at-eol,-blank-at-eol
+docs/research/PIT_PHASE1_EVIDENCE_2026-10-18.md -text whitespace=cr-at-eol,-blank-at-eol
+docs/research/EXTERNAL_PIT_ACCEPTANCE_SPEC_2026-10-18.md -text whitespace=cr-at-eol,-blank-at-eol
+docs/research/EXTERNAL_PIT_ACCEPTANCE_TEST_PLAN_2026-10-18.md -text whitespace=cr-at-eol,-blank-at-eol
+docs/research/AUDIT_PIT_RELEASE_2026-10-18.md -text whitespace=cr-at-eol,-blank-at-eol
+docs/research/evidence/independent-data-review-20261017-v1/** -text whitespace=cr-at-eol
+docs/research/evidence/pit-phase1-20261018-v1/** -text whitespace=cr-at-eol
+docs/research/evidence/external-pit-acceptance-20261018-v1/** -text whitespace=cr-at-eol
+docs/research/evidence/audit-pit-release-20261018-v1/** -text whitespace=cr-at-eol
+

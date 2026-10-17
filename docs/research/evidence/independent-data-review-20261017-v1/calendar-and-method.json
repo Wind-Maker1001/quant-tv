@@ -1,0 +1,32 @@
+{
+  "csv_count": 181,
+  "csv_bytes": 910411471,
+  "zip_bytes": 1399973001,
+  "range": [
+    "2026-01-05",
+    "2026-09-30"
+  ],
+  "weekdays_absent": [
+    "2026-02-16",
+    "2026-02-17",
+    "2026-02-18",
+    "2026-02-19",
+    "2026-02-20",
+    "2026-02-23",
+    "2026-04-06",
+    "2026-05-01",
+    "2026-05-04",
+    "2026-05-05",
+    "2026-06-19",
+    "2026-09-25"
+  ],
+  "comparison": "All 12 weekday absences match 2026 Shanghai Stock Exchange closure schedule. Weekend exclusion and closure list do not certify individual stock observations.",
+  "official_calendar_url": "https://www.sse.com.cn/disclosure/dealinstruc/closed/",
+  "official_time_rule_url": "https://www.sse.com.cn/lawandrules/sselawsrules2025/fund/trading/c/c_20260424_10817739.shtml",
+  "retrieval_date_utc": "2026-10-17",
+  "source_representation": "Browser-tool extracted official webpage text, not retained publisher HTTP bytes; do not claim historical availability from this read.",
+  "unavailable_reads": [
+    "SZSE investor pages: timeout",
+    "BaoStock API webpage: returned navigation shell"
+  ]
+}

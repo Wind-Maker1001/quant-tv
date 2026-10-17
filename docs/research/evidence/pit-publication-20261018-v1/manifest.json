@@ -1,0 +1,415 @@
+{
+  "schema": "PIT_PUBLICATION_REDACTION_V1",
+  "private_source_commit": "f183c6502a135fc8ed7814f0b7ebeee968e33273",
+  "main_base_commit": "cac65a79a42bcb6c1d322180fd192a3e100c4b9c",
+  "original_delivery_files": 43,
+  "migration_artifacts": 5,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "original_sha256": "01c112cea0d16ff385943ebcdee1eb202bd8ee5dfb4d446b231d4ea0a93d0a15",
+      "original_bytes": 2095,
+      "public_sha256": "01c112cea0d16ff385943ebcdee1eb202bd8ee5dfb4d446b231d4ea0a93d0a15",
+      "public_bytes": 2095,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "AUDIT_SUMMARY_2026-10-17.md",
+      "original_sha256": "8782bb97ab464ae0050aca08f1552dce036522e5044ccecc69862863e99b5fa8",
+      "original_bytes": 3907,
+      "public_sha256": "8782bb97ab464ae0050aca08f1552dce036522e5044ccecc69862863e99b5fa8",
+      "public_bytes": 3907,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "INDEPENDENT_DATA_REVIEW_2026-10-17.md",
+      "original_sha256": "f9667256aff7fa093c07214291a39f4a375135e9860076a36c3cf2fc529a7a23",
+      "original_bytes": 28775,
+      "public_sha256": "f5b29b406a8b0da72835f2bf93106b872269369158ec1462d6adc44b038a65e7",
+      "public_bytes": 29052,
+      "transformation": "LOCAL_PATH_REDACTION+HISTORICAL_CONTEXT_NOTICE"
+    },
+    {
+      "path": "STRICT_AUDIT_REPORT_2026-10-17.md",
+      "original_sha256": "228a6b6e432d2deebe6dac9a1610579dfc73457a9e3caa8a63211ffc48165d62",
+      "original_bytes": 22707,
+      "public_sha256": "1a0d6cfe95003dc898716007b1cab1ba64781dbe552ecbec84b7bd1a3ef105dd",
+      "public_bytes": 22997,
+      "transformation": "LOCAL_PATH_REDACTION+HISTORICAL_CONTEXT_NOTICE"
+    },
+    {
+      "path": "docs/research/AUDIT_PIT_RELEASE_2026-10-18.md",
+      "original_sha256": "66b205db5852698eb248b4fd5b9ae6dce2fe285e5f87ebdf716890035d35a761",
+      "original_bytes": 7295,
+      "public_sha256": "cbc62fe3d4bc887555696dbcdcaff00591104cc6b2679c3b8e81c109d78f2815",
+      "public_bytes": 7576,
+      "transformation": "LOCAL_PATH_REDACTION+HISTORICAL_CONTEXT_NOTICE"
+    },
+    {
+      "path": "docs/research/EXTERNAL_PIT_ACCEPTANCE_SPEC_2026-10-18.md",
+      "original_sha256": "e0442ddfdab2139ce8e09e9b58b96c3c6acbfb4ef3470b7d4327bebac9c9f73b",
+      "original_bytes": 28756,
+      "public_sha256": "e0442ddfdab2139ce8e09e9b58b96c3c6acbfb4ef3470b7d4327bebac9c9f73b",
+      "public_bytes": 28756,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/EXTERNAL_PIT_ACCEPTANCE_TEST_PLAN_2026-10-18.md",
+      "original_sha256": "69f5c94ff1aaefd97afb9c6be53a523e76766583879e7d40d3c7ac2ad023b49f",
+      "original_bytes": 14662,
+      "public_sha256": "69f5c94ff1aaefd97afb9c6be53a523e76766583879e7d40d3c7ac2ad023b49f",
+      "public_bytes": 14662,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/PIT_EVIDENCE_RELEASE_MIGRATION_2026-10-18.md",
+      "original_sha256": "a4c4dcdc44b3c0b5c3cdd8f33e42bfd6e527d525ba9a024d47a4780056b41f9b",
+      "original_bytes": 5069,
+      "public_sha256": "35f940aa71b38efdb6a482872c0919d17ed7f041ca9a402ff0da268ec7c78c49",
+      "public_bytes": 5355,
+      "transformation": "UNCHANGED+HISTORICAL_CONTEXT_NOTICE"
+    },
+    {
+      "path": "docs/research/PIT_PHASE1_EVIDENCE_2026-10-18.md",
+      "original_sha256": "43e2dc682df67df4c5af028852547a881a4b6d9bbd8389f172ac59c14276980d",
+      "original_bytes": 18998,
+      "public_sha256": "43e2dc682df67df4c5af028852547a881a4b6d9bbd8389f172ac59c14276980d",
+      "public_bytes": 18998,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/audit-pit-release-20261018-v1/clean-checkout-verification.json",
+      "original_sha256": "09cb578967f1084459b11131923a482554f4954d77b8913dd396ac5771b7e26f",
+      "original_bytes": 7207,
+      "public_sha256": "f91737629d3c6d5475b3bf64b240a4e2c67758fa6302c5d178b474491a8eb845",
+      "public_bytes": 7143,
+      "transformation": "LOCAL_PATH_REDACTION"
+    },
+    {
+      "path": "docs/research/evidence/audit-pit-release-20261018-v1/dependency-inventory.json",
+      "original_sha256": "8463a40da7aa5cabb39bf9e060258f59ce688a7e3a4dd5b457622354bd72568c",
+      "original_bytes": 310590,
+      "public_sha256": "cb17f8f2b8c53b026ddda6ba2a26c1b9a8be33914f7ef98e74306a85f5574b63",
+      "public_bytes": 309444,
+      "transformation": "LOCAL_PATH_REDACTION"
+    },
+    {
+      "path": "docs/research/evidence/audit-pit-release-20261018-v1/offline-checks.json",
+      "original_sha256": "e8a7f81e50964b9e7101c742a5188a4f9d6502e54a0b497693525df9cafb1560",
+      "original_bytes": 1776,
+      "public_sha256": "e8a7f81e50964b9e7101c742a5188a4f9d6502e54a0b497693525df9cafb1560",
+      "public_bytes": 1776,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/audit-pit-release-20261018-v1/release-manifest.json",
+      "original_sha256": "f4ca6279b6e4a93ac01c89086ecbd73706bc3b8935585a79ea629881434dcb28",
+      "original_bytes": 32759,
+      "public_sha256": "a3eeea2879ee83b14be409eaf6f44d6a22dc5f8713964bb4e170fe3dc293fee7",
+      "public_bytes": 32754,
+      "transformation": "LOCAL_PATH_REDACTION"
+    },
+    {
+      "path": "docs/research/evidence/audit-pit-release-20261018-v1/verify_release.py",
+      "original_sha256": "73b241ae789efcb79c80fb363a43006e6bd52728c73291de8251d32be1f23584",
+      "original_bytes": 9099,
+      "public_sha256": "eea62978ce8bb65e928e6c2330546a7ecf00c8faf0636a310879182bcdd50e3b",
+      "public_bytes": 562,
+      "transformation": "EXPLICIT_PUBLIC_SCOPE_ADAPTER"
+    },
+    {
+      "path": "docs/research/evidence/external-pit-acceptance-20261018-v1/delivery-manifest.json",
+      "original_sha256": "c92d12831ec7228265d170deccc9ce93a7d5eaf3e7021c2eb34949eeaf68fbcd",
+      "original_bytes": 6914,
+      "public_sha256": "c92d12831ec7228265d170deccc9ce93a7d5eaf3e7021c2eb34949eeaf68fbcd",
+      "public_bytes": 6914,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/external-pit-acceptance-20261018-v1/preservation-before.json",
+      "original_sha256": "2561fea08fbad75eaeccb494287236f925d3e1a5344dacd9fdc151fb41f73b73",
+      "original_bytes": 114083,
+      "public_sha256": "2561fea08fbad75eaeccb494287236f925d3e1a5344dacd9fdc151fb41f73b73",
+      "public_bytes": 114083,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/external-pit-acceptance-20261018-v1/verification.json",
+      "original_sha256": "1c03f5956a351ea0ea91fd04526e195b248687867da97b48d733876d4303a2f2",
+      "original_bytes": 1225,
+      "public_sha256": "1c03f5956a351ea0ea91fd04526e195b248687867da97b48d733876d4303a2f2",
+      "public_bytes": 1225,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/external-pit-acceptance-20261018-v1/verify_spec.py",
+      "original_sha256": "b0867453076f75b71f9487d6ae2d91c2132babbf426c785c9df2debb7224aa36",
+      "original_bytes": 7234,
+      "public_sha256": "b0867453076f75b71f9487d6ae2d91c2132babbf426c785c9df2debb7224aa36",
+      "public_bytes": 7234,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/calendar-and-method.json",
+      "original_sha256": "3b90c639452fe7f2a4f2bd7f0931946683bb4131068b78016875afec0481780d",
+      "original_bytes": 1111,
+      "public_sha256": "3b90c639452fe7f2a4f2bd7f0931946683bb4131068b78016875afec0481780d",
+      "public_bytes": 1111,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/daily-counts.csv",
+      "original_sha256": "bc73a88d8f3c0a8a0214010ffa796ae15091164e40be1441400904a92995214a",
+      "original_bytes": 568001,
+      "public_sha256": "bc73a88d8f3c0a8a0214010ffa796ae15091164e40be1441400904a92995214a",
+      "public_bytes": 568001,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/exception-details.json",
+      "original_sha256": "ce8f22a2baf6ab33522f2646d4b271dcaccde79a8cbb6b565e22524b9edf8545",
+      "original_bytes": 3748197,
+      "public_sha256": "ce8f22a2baf6ab33522f2646d4b271dcaccde79a8cbb6b565e22524b9edf8545",
+      "public_bytes": 3748197,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/final-verification.json",
+      "original_sha256": "7a4e174a27f6a478eb9795546aa33cf304de176e6edbfd316eeacd2f7b359e82",
+      "original_bytes": 2629,
+      "public_sha256": "7a4e174a27f6a478eb9795546aa33cf304de176e6edbfd316eeacd2f7b359e82",
+      "public_bytes": 2629,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/input-hashes.json",
+      "original_sha256": "14a9b74946168a234128bc9cf4bbc6fd38077e097fa17c65d5fe0553f9bb8f5b",
+      "original_bytes": 502592,
+      "public_sha256": "9e36ce8f75fa40371974fa6464c99faf08480eb3ec515f3208c09dd7e9b1bb83",
+      "public_bytes": 494525,
+      "transformation": "LOCAL_PATH_REDACTION"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/readonly_review.py",
+      "original_sha256": "47085f1f8b5a4d7d3579440e07799b47711bdb715ce00348adc3ba50216e2af7",
+      "original_bytes": 14111,
+      "public_sha256": "47085f1f8b5a4d7d3579440e07799b47711bdb715ce00348adc3ba50216e2af7",
+      "public_bytes": 14111,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/repository-cross-checks.json",
+      "original_sha256": "e55491bb5b0aff04c4e9a6dd47a42e9d74c0e002741f519f086ed4642c25e4b1",
+      "original_bytes": 136199,
+      "public_sha256": "e55491bb5b0aff04c4e9a6dd47a42e9d74c0e002741f519f086ed4642c25e4b1",
+      "public_bytes": 136199,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/security-observations.csv",
+      "original_sha256": "6738a7b26ee7e8d67be89d4f634c51cf175cd67bc66b99174cb7d35f1fb6cdf6",
+      "original_bytes": 352188,
+      "public_sha256": "6738a7b26ee7e8d67be89d4f634c51cf175cd67bc66b99174cb7d35f1fb6cdf6",
+      "public_bytes": 352188,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/spot-cross-source.json",
+      "original_sha256": "fdf61174a833aa82766c739c923476d53b5077575585256a0005bf25fb3e4db6",
+      "original_bytes": 29368,
+      "public_sha256": "fdf61174a833aa82766c739c923476d53b5077575585256a0005bf25fb3e4db6",
+      "public_bytes": 29368,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/summary.json",
+      "original_sha256": "b4cd715e3c42517f3195021b15e6c6a8c585ddf0f697ca8aa0c150740e10d9f0",
+      "original_bytes": 9365,
+      "public_sha256": "5b6853f006d7487822e030f2b935ee637ef375c17d1d30f95bc57577b4d01f2e",
+      "public_bytes": 9359,
+      "transformation": "LOCAL_PATH_REDACTION"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/target-observations.csv",
+      "original_sha256": "a4b7f915c9ceb96865e7cacbce0e75f379ee6f3e4866087018821cb44f2647e8",
+      "original_bytes": 498186,
+      "public_sha256": "a4b7f915c9ceb96865e7cacbce0e75f379ee6f3e4866087018821cb44f2647e8",
+      "public_bytes": 498186,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/independent-data-review-20261017-v1/zero-volume-counterexamples.json",
+      "original_sha256": "b83ca24898b13837ed6f4479deac5bfa8e1f56058fadc795fdd09b39b6e982a3",
+      "original_bytes": 594,
+      "public_sha256": "b83ca24898b13837ed6f4479deac5bfa8e1f56058fadc795fdd09b39b6e982a3",
+      "public_bytes": 594,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/actual-effective-gaps.csv",
+      "original_sha256": "038ef4c4e9aad239c06e94668e7deb1d5c830bb981a6f3f4a814bfda6da05d9c",
+      "original_bytes": 4171,
+      "public_sha256": "038ef4c4e9aad239c06e94668e7deb1d5c830bb981a6f3f4a814bfda6da05d9c",
+      "public_bytes": 4171,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/assemble_phase1_delivery.py",
+      "original_sha256": "aa3ff67b0f68ecaf9480e5c4fe819395877e4eb0ec55d3e797ffb10026155bf2",
+      "original_bytes": 16787,
+      "public_sha256": "aa3ff67b0f68ecaf9480e5c4fe819395877e4eb0ec55d3e797ffb10026155bf2",
+      "public_bytes": 16787,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/baseline-result.json",
+      "original_sha256": "e7ff92982401ad90b91ae6551bf7be84afec4ee6229087b9000c4b169d33d0bd",
+      "original_bytes": 12883,
+      "public_sha256": "e7ff92982401ad90b91ae6551bf7be84afec4ee6229087b9000c4b169d33d0bd",
+      "public_bytes": 12883,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/candidate-events.json",
+      "original_sha256": "15545b0f2011753a16993185b101148f3ef3440e460407dcbb2fd5d773e96d69",
+      "original_bytes": 232996,
+      "public_sha256": "15545b0f2011753a16993185b101148f3ef3440e460407dcbb2fd5d773e96d69",
+      "public_bytes": 232996,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/delivery-assembly-receipt.json",
+      "original_sha256": "85167e8779f7a16d4b8fbb7393a77266ffc5340d7b7e680d951ae6ad1703b2eb",
+      "original_bytes": 853,
+      "public_sha256": "85167e8779f7a16d4b8fbb7393a77266ffc5340d7b7e680d951ae6ad1703b2eb",
+      "public_bytes": 853,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/evidence-register.json",
+      "original_sha256": "82402845f33baf16549b546de99c6c89adf308487d726d55cb99157fa4a90d58",
+      "original_bytes": 44270,
+      "public_sha256": "82402845f33baf16549b546de99c6c89adf308487d726d55cb99157fa4a90d58",
+      "public_bytes": 44270,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/final-verification.json",
+      "original_sha256": "3643b9a7719da6a6f7747c6943856f6808011d085059614efa9b63b8e70cc4e1",
+      "original_bytes": 2855,
+      "public_sha256": "3643b9a7719da6a6f7747c6943856f6808011d085059614efa9b63b8e70cc4e1",
+      "public_bytes": 2855,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/identity-mapping-proposal.json",
+      "original_sha256": "f8103f4286505ca0172eefe6e93177394881d3fdd4a35b82154b2ed394a1193d",
+      "original_bytes": 3164,
+      "public_sha256": "f8103f4286505ca0172eefe6e93177394881d3fdd4a35b82154b2ed394a1193d",
+      "public_bytes": 3164,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/next-evidence-request.md",
+      "original_sha256": "de5c59ebc9893ed2199fd362c72a7ed73228e49012b9a60a246c2ad0e38f6c74",
+      "original_bytes": 3564,
+      "public_sha256": "de5c59ebc9893ed2199fd362c72a7ed73228e49012b9a60a246c2ad0e38f6c74",
+      "public_bytes": 3564,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/offline-check-receipt.json",
+      "original_sha256": "cd9b847396fd712cb69b57fd523403f00856fa642462d9ff7aa653ebe39ffb5b",
+      "original_bytes": 9577,
+      "public_sha256": "cd9b847396fd712cb69b57fd523403f00856fa642462d9ff7aa653ebe39ffb5b",
+      "public_bytes": 9577,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/pit-evidence-matrix.csv",
+      "original_sha256": "a837340f5960f0dc43b113ee971aeb3634539971cf7c7699853bc9d2eb579d98",
+      "original_bytes": 9523,
+      "public_sha256": "a837340f5960f0dc43b113ee971aeb3634539971cf7c7699853bc9d2eb579d98",
+      "public_bytes": 9523,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/review_pit_evidence.py",
+      "original_sha256": "1fadc823a2d4cfadd5ad23a607c0af2a65e6df929ba4d086556d7d77c2ef14c3",
+      "original_bytes": 15196,
+      "public_sha256": "1fadc823a2d4cfadd5ad23a607c0af2a65e6df929ba4d086556d7d77c2ef14c3",
+      "public_bytes": 15196,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/source-index.json",
+      "original_sha256": "53b35e2607d8d14fe2720efeaeff04a9400a109cf2a2ec5242db53689f4f71db",
+      "original_bytes": 28975,
+      "public_sha256": "53b35e2607d8d14fe2720efeaeff04a9400a109cf2a2ec5242db53689f4f71db",
+      "public_bytes": 28975,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-phase1-20261018-v1/verify_phase1.py",
+      "original_sha256": "657e2115c9acb06225d58806ef2aad7f757b1e63310616b7aa82fa0a9590e686",
+      "original_bytes": 6375,
+      "public_sha256": "657e2115c9acb06225d58806ef2aad7f757b1e63310616b7aa82fa0a9590e686",
+      "public_bytes": 6375,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-release-migration-20261018-v1/.gitattributes",
+      "original_sha256": "730a35ae3d558080083c3103d9ac8100c3f6561678092abe341701dfa331eb1d",
+      "original_bytes": 29,
+      "public_sha256": "730a35ae3d558080083c3103d9ac8100c3f6561678092abe341701dfa331eb1d",
+      "public_bytes": 29,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-release-migration-20261018-v1/PR_DESCRIPTION.md",
+      "original_sha256": "07e8f87cce2e0d3f427833ae2d85d26b377a20e343a2f840bdc82e1d192d72d9",
+      "original_bytes": 1413,
+      "public_sha256": "07e8f87cce2e0d3f427833ae2d85d26b377a20e343a2f840bdc82e1d192d72d9",
+      "public_bytes": 1413,
+      "transformation": "UNCHANGED"
+    },
+    {
+      "path": "docs/research/evidence/pit-release-migration-20261018-v1/validation.json",
+      "original_sha256": "cfc53cc13784ef3e99f4fb18ec2972e43630ef5463434fb49b4afaa9cacdd4db",
+      "original_bytes": 17978,
+      "public_sha256": "8f5ca44ac19898eaedb1289032df46919aedcd33a9307bdaf5192f89c0dda138",
+      "public_bytes": 17870,
+      "transformation": "LOCAL_PATH_REDACTION"
+    },
+    {
+      "path": "docs/research/evidence/pit-release-migration-20261018-v1/verify_migration.py",
+      "original_sha256": "252ddb86123f048098596dc435ff0538550ec3be7657f0bf6aec401490e26108",
+      "original_bytes": 4083,
+      "public_sha256": "eea62978ce8bb65e928e6c2330546a7ecf00c8faf0636a310879182bcdd50e3b",
+      "public_bytes": 562,
+      "transformation": "EXPLICIT_PUBLIC_SCOPE_ADAPTER"
+    }
+  ],
+  "numeric_json_values_preserved": true,
+  "redaction_policy": "Only machine-path strings and historical-publication context are redacted; two public adapters explicitly verify public copies only. Original hash references in historical manifests remain references to private original bytes, not hashes of redacted public copies.",
+  "private_original_replay": "NOT_RUN_ORIGINALS_NOT_PUBLISHED",
+  "formal_admission": false,
+  "no_live_money": true,
+  "publication_artifacts": [
+    {
+      "path": "docs/research/evidence/pit-publication-20261018-v1/.gitattributes",
+      "public_sha256": "730a35ae3d558080083c3103d9ac8100c3f6561678092abe341701dfa331eb1d",
+      "public_bytes": 29
+    },
+    {
+      "path": "docs/research/evidence/pit-publication-20261018-v1/README.md",
+      "public_sha256": "2277c957b026d64e9a8b8a9715457aafce946de6fb9d95586b02c696c20a9861",
+      "public_bytes": 2248
+    },
+    {
+      "path": "docs/research/evidence/pit-publication-20261018-v1/verify_publication.py",
+      "public_sha256": "89f095ec61f0ab6e54318e459d353ced30cdd31008227fa7885c0f8a5a11d9d3",
+      "public_bytes": 5439
+    }
+  ]
+}
