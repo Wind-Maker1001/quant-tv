@@ -1,0 +1,5 @@
+# Freeze only the new audit publication directories; preserve frozen root policy.
+independent-data-review-20261017-v1/** -text whitespace=cr-at-eol
+pit-phase1-20261018-v1/** -text whitespace=cr-at-eol
+external-pit-acceptance-20261018-v1/** -text whitespace=cr-at-eol
+audit-pit-release-20261018-v1/** -text whitespace=cr-at-eol

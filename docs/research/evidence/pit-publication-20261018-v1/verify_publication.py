@@ -44,6 +44,8 @@ def verify():
     scripts = 0
     for item in manifest["files"] + manifest["publication_artifacts"]:
         raw = local(item["path"]).read_bytes()
+        if item.get("public_hash_mode") == "LF_CANONICAL_TEXT":
+            raw = raw.replace(b"\r\n", b"\n")
         require(hashlib.sha256(raw).hexdigest() == item["public_sha256"]
                 and len(raw) == item["public_bytes"], "Public-copy hash mismatch: " + item["path"])
         text = raw.decode("utf-8")

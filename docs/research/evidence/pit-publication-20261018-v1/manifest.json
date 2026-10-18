@@ -9,9 +9,10 @@
       "path": ".gitattributes",
       "original_sha256": "01c112cea0d16ff385943ebcdee1eb202bd8ee5dfb4d446b231d4ea0a93d0a15",
       "original_bytes": 2095,
-      "public_sha256": "01c112cea0d16ff385943ebcdee1eb202bd8ee5dfb4d446b231d4ea0a93d0a15",
-      "public_bytes": 2095,
-      "transformation": "UNCHANGED"
+      "public_sha256": "1c862f9ae84fe80301a5025d52016f945617c49f30f96d50e73c335b09bd4c51",
+      "public_bytes": 1053,
+      "transformation": "RESTORE_FROZEN_MAIN_ROOT_POLICY",
+      "public_hash_mode": "LF_CANONICAL_TEXT"
     },
     {
       "path": "AUDIT_SUMMARY_2026-10-17.md",
@@ -19,7 +20,8 @@
       "original_bytes": 3907,
       "public_sha256": "8782bb97ab464ae0050aca08f1552dce036522e5044ccecc69862863e99b5fa8",
       "public_bytes": 3907,
-      "transformation": "UNCHANGED"
+      "transformation": "UNCHANGED",
+      "public_hash_mode": "LF_CANONICAL_TEXT"
     },
     {
       "path": "INDEPENDENT_DATA_REVIEW_2026-10-17.md",
@@ -27,7 +29,8 @@
       "original_bytes": 28775,
       "public_sha256": "f5b29b406a8b0da72835f2bf93106b872269369158ec1462d6adc44b038a65e7",
       "public_bytes": 29052,
-      "transformation": "LOCAL_PATH_REDACTION+HISTORICAL_CONTEXT_NOTICE"
+      "transformation": "LOCAL_PATH_REDACTION+HISTORICAL_CONTEXT_NOTICE",
+      "public_hash_mode": "LF_CANONICAL_TEXT"
     },
     {
       "path": "STRICT_AUDIT_REPORT_2026-10-17.md",
@@ -35,7 +38,8 @@
       "original_bytes": 22707,
       "public_sha256": "1a0d6cfe95003dc898716007b1cab1ba64781dbe552ecbec84b7bd1a3ef105dd",
       "public_bytes": 22997,
-      "transformation": "LOCAL_PATH_REDACTION+HISTORICAL_CONTEXT_NOTICE"
+      "transformation": "LOCAL_PATH_REDACTION+HISTORICAL_CONTEXT_NOTICE",
+      "public_hash_mode": "LF_CANONICAL_TEXT"
     },
     {
       "path": "docs/research/AUDIT_PIT_RELEASE_2026-10-18.md",
@@ -43,7 +47,8 @@
       "original_bytes": 7295,
       "public_sha256": "cbc62fe3d4bc887555696dbcdcaff00591104cc6b2679c3b8e81c109d78f2815",
       "public_bytes": 7576,
-      "transformation": "LOCAL_PATH_REDACTION+HISTORICAL_CONTEXT_NOTICE"
+      "transformation": "LOCAL_PATH_REDACTION+HISTORICAL_CONTEXT_NOTICE",
+      "public_hash_mode": "LF_CANONICAL_TEXT"
     },
     {
       "path": "docs/research/EXTERNAL_PIT_ACCEPTANCE_SPEC_2026-10-18.md",
@@ -51,7 +56,8 @@
       "original_bytes": 28756,
       "public_sha256": "e0442ddfdab2139ce8e09e9b58b96c3c6acbfb4ef3470b7d4327bebac9c9f73b",
       "public_bytes": 28756,
-      "transformation": "UNCHANGED"
+      "transformation": "UNCHANGED",
+      "public_hash_mode": "LF_CANONICAL_TEXT"
     },
     {
       "path": "docs/research/EXTERNAL_PIT_ACCEPTANCE_TEST_PLAN_2026-10-18.md",
@@ -59,7 +65,8 @@
       "original_bytes": 14662,
       "public_sha256": "69f5c94ff1aaefd97afb9c6be53a523e76766583879e7d40d3c7ac2ad023b49f",
       "public_bytes": 14662,
-      "transformation": "UNCHANGED"
+      "transformation": "UNCHANGED",
+      "public_hash_mode": "LF_CANONICAL_TEXT"
     },
     {
       "path": "docs/research/PIT_EVIDENCE_RELEASE_MIGRATION_2026-10-18.md",
@@ -67,7 +74,8 @@
       "original_bytes": 5069,
       "public_sha256": "35f940aa71b38efdb6a482872c0919d17ed7f041ca9a402ff0da268ec7c78c49",
       "public_bytes": 5355,
-      "transformation": "UNCHANGED+HISTORICAL_CONTEXT_NOTICE"
+      "transformation": "UNCHANGED+HISTORICAL_CONTEXT_NOTICE",
+      "public_hash_mode": "LF_CANONICAL_TEXT"
     },
     {
       "path": "docs/research/PIT_PHASE1_EVIDENCE_2026-10-18.md",
@@ -75,7 +83,8 @@
       "original_bytes": 18998,
       "public_sha256": "43e2dc682df67df4c5af028852547a881a4b6d9bbd8389f172ac59c14276980d",
       "public_bytes": 18998,
-      "transformation": "UNCHANGED"
+      "transformation": "UNCHANGED",
+      "public_hash_mode": "LF_CANONICAL_TEXT"
     },
     {
       "path": "docs/research/evidence/audit-pit-release-20261018-v1/clean-checkout-verification.json",
@@ -403,13 +412,20 @@
     },
     {
       "path": "docs/research/evidence/pit-publication-20261018-v1/README.md",
-      "public_sha256": "2277c957b026d64e9a8b8a9715457aafce946de6fb9d95586b02c696c20a9861",
-      "public_bytes": 2248
+      "public_sha256": "1dab21d353abc1d2ac49539ca59f48bdc9bba535c47f534d631551036e978821",
+      "public_bytes": 3157
     },
     {
       "path": "docs/research/evidence/pit-publication-20261018-v1/verify_publication.py",
-      "public_sha256": "89f095ec61f0ab6e54318e459d353ced30cdd31008227fa7885c0f8a5a11d9d3",
-      "public_bytes": 5439
+      "public_sha256": "a2aa88014a9114f6e1a5248db534b70106a09c982f4f1e23e6df92af8f397cf9",
+      "public_bytes": 5549
+    },
+    {
+      "path": "docs/research/evidence/.gitattributes",
+      "public_sha256": "ac8c986a7dcff71284bd336986168c38f43e6469cbc6cc1298b1af1b5e34c894",
+      "public_bytes": 327,
+      "public_hash_mode": "LF_CANONICAL_TEXT"
     }
-  ]
+  ],
+  "public_text_policy": "LF_CANONICAL_TEXT entries use CRLF-to-LF bytes for hashes and byte counts; all other public hashes use exact bytes. Frozen root attribute policy is restored to main; new scoped policy affects only new archive directories."
 }
