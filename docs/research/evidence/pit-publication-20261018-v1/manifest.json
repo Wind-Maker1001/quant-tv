@@ -394,13 +394,13 @@
       "path": "docs/research/evidence/pit-release-migration-20261018-v1/verify_migration.py",
       "original_sha256": "252ddb86123f048098596dc435ff0538550ec3be7657f0bf6aec401490e26108",
       "original_bytes": 4083,
-      "public_sha256": "eea62978ce8bb65e928e6c2330546a7ecf00c8faf0636a310879182bcdd50e3b",
-      "public_bytes": 562,
+      "public_sha256": "cc17402544e8d8393b85a22c2bc722818be67cdba4d3767b3e7777d804de21eb",
+      "public_bytes": 9102,
       "transformation": "EXPLICIT_PUBLIC_SCOPE_ADAPTER"
     }
   ],
   "numeric_json_values_preserved": true,
-  "redaction_policy": "Only machine-path strings and historical-publication context are redacted; two public adapters explicitly verify public copies only. Original hash references in historical manifests remain references to private original bytes, not hashes of redacted public copies.",
+  "redaction_policy": "Only machine-path strings and historical-publication context are redacted. Public adapters retain explicit scopes; migration verification additionally checks recorded local Git objects, while full private-original replay remains NOT_RUN. Original hash references in historical manifests remain references to private original bytes, not hashes of redacted public copies.",
   "private_original_replay": "NOT_RUN_ORIGINALS_NOT_PUBLISHED",
   "formal_admission": false,
   "no_live_money": true,
@@ -412,13 +412,13 @@
     },
     {
       "path": "docs/research/evidence/pit-publication-20261018-v1/README.md",
-      "public_sha256": "1dab21d353abc1d2ac49539ca59f48bdc9bba535c47f534d631551036e978821",
-      "public_bytes": 3157
+      "public_sha256": "0a96c976562d3b3997c5e400fe00237b035e7a584ee9f36f7f6af368b3a41680",
+      "public_bytes": 4996
     },
     {
       "path": "docs/research/evidence/pit-publication-20261018-v1/verify_publication.py",
-      "public_sha256": "a2aa88014a9114f6e1a5248db534b70106a09c982f4f1e23e6df92af8f397cf9",
-      "public_bytes": 5549
+      "public_sha256": "2d53a6afb34c490276b1d40f47806711f923e3297326017bf25bf7a2da3a68f1",
+      "public_bytes": 8912
     },
     {
       "path": "docs/research/evidence/.gitattributes",

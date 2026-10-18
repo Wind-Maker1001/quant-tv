@@ -11,7 +11,15 @@ import re
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
-PRIVATE_PATH = re.compile(r"(?<![A-Za-z0-9_])[A-Za-z]:[\\/]+|(?<![A-Za-z0-9_])/(?:Users|home|mnt)/")
+# Recognize roots independently of mount names; URLs and relative components
+# (including globs, environment variables and redaction markers) are not roots.
+NETWORK_URL = re.compile(
+    r"\b(?!file:)[A-Za-z][A-Za-z0-9+.-]+:\x2f\x2f[^\s<>\"'`]*", re.I,
+)
+PRIVATE_PATH = re.compile(
+    r"(?<![\w])[A-Za-z]:[\\/]+|(?<![\w\\])\\\\[\w.-]+\\"
+    r"|(?<![\w.\x2f\\~>*%}-])\x2f[^\s<>\"'`|,;()\[\]{}]*"
+)
 SECRET_PATTERNS = [
     re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
     re.compile(r"gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}"),
@@ -35,6 +43,71 @@ def load(name):
     return json.loads(local(name).read_text(encoding="utf-8"))
 
 
+def relative_expression(node):
+    if not isinstance(node, ast.Call):
+        return False
+    if isinstance(node.func, ast.Name) and node.func.id == "str" and len(node.args) == 1:
+        return relative_expression(node.args[0])
+    if isinstance(node.func, ast.Attribute):
+        if node.func.attr == "relative_to":
+            return True
+        if node.func.attr == "replace" and len(node.args) == 2:
+            if all(isinstance(arg, ast.Constant) for arg in node.args):
+                if [arg.value for arg in node.args] == [chr(92), chr(47)]:
+                    return relative_expression(node.func.value)
+    return False
+
+
+def python_path_text(text):
+    # The historical assembler adds a slash-prefixed filename to a proven
+    # relative_to(...) expression. Mask only that suffix's AST span; a generic
+    # prefix + absolute_literal must still be rejected.
+    spans = []
+    relative_suffixes = set()
+    tree = ast.parse(text)
+    raw = text.encode("utf-8")
+    starts = [0]
+    for line in raw.splitlines(keepends=True):
+        starts.append(starts[-1] + len(line))
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add)
+                and relative_expression(node.left) and isinstance(node.right, ast.Constant)
+                and isinstance(node.right.value, str) and node.right.value.startswith(chr(47))):
+            suffix = node.right
+            relative_suffixes.add(id(suffix))
+            spans.append((starts[suffix.lineno - 1] + suffix.col_offset,
+                          starts[suffix.end_lineno - 1] + suffix.end_col_offset))
+    for start, end in sorted(spans, reverse=True):
+        raw = raw[:start] + b" " * (end - start) + raw[end:]
+    # Decode Python string escapes as well, including escaped UNC paths. The
+    # single slash used as a separator is not a machine path in source code.
+    decoded = [node.value for node in ast.walk(tree)
+               if isinstance(node, ast.Constant) and isinstance(node.value, str)
+               and id(node) not in relative_suffixes and node.value != chr(47)]
+    return raw.decode("utf-8") + "\n" + "\n".join(decoded)
+
+
+def has_local_path(text):
+    text = NETWORK_URL.sub("URL", text)
+    for match in PRIVATE_PATH.finditer(text):
+        if match.group() == chr(47):
+            continue
+        return True
+    return text.strip(" \t\r\n\"'`") == chr(47)
+
+
+def json_strings(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            yield key
+            yield from json_strings(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from json_strings(item)
+
+
 def verify():
     manifest = json.loads((HERE / "manifest.json").read_text(encoding="utf-8"))
     require(manifest["schema"] == "PIT_PUBLICATION_REDACTION_V1", "Unknown public-copy schema")
@@ -49,15 +122,20 @@ def verify():
         require(hashlib.sha256(raw).hexdigest() == item["public_sha256"]
                 and len(raw) == item["public_bytes"], "Public-copy hash mismatch: " + item["path"])
         text = raw.decode("utf-8")
-        require(not PRIVATE_PATH.search(text), "Absolute local path in: " + item["path"])
+        scan_text = python_path_text(text) if item["path"].endswith(".py") else text
+        require(not has_local_path(scan_text),
+                "Absolute local path in: " + item["path"])
         require(not any(pattern.search(text) for pattern in SECRET_PATTERNS),
                 "Credential pattern in: " + item["path"])
         if item["path"].endswith(".json"):
-            json.loads(text)
+            # JSON can escape both slashes and letters in a machine path.
+            require(not any(has_local_path(value) for value in json_strings(json.loads(text))),
+                    "Absolute local path in decoded JSON: " + item["path"])
         if item["path"].endswith(".py"):
             ast.parse(text, filename=item["path"])
             scripts += 1
-    require(not PRIVATE_PATH.search(json.dumps(manifest)), "Private path in public manifest")
+    require(not any(has_local_path(value) for value in json_strings(manifest)),
+            "Private path in public manifest")
 
     prefix = "docs/research/evidence/"
     release = load(prefix + "audit-pit-release-20261018-v1/release-manifest.json")
