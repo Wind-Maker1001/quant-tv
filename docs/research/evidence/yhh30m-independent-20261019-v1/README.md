@@ -11,6 +11,7 @@
 - `structure-boundary.json`：并行市场结构框架精确快照、实际拒绝探针及不可直接接入的字段缺口；未合并分支。
 - `sources.json`：交易所官方来源、阅读范围及解析 Markdown SHA；不冒充已验证 HTTP/DOCX 原始字节。
 - `test-results.json`：修复前红灯、修复后完整研究单次通过、定向与发布工具测试，以及原跨盘失败原因。
+- `latest-main-review.json`：PR 创建后 main 前进的独立范围审查，保留本地测试旧基点与最新组合 CI 的区别。
 - `invariants.json`：原数据清单 SHA、69 分区类型、原审计绑定及正式/Forward 门禁不变证明。
 
 方法、完整命令与适用范围见 [独立验收报告](../../YHH_30M_INDEPENDENT_ACCEPTANCE.md)。

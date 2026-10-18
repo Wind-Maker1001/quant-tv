@@ -43,7 +43,7 @@
     {
       "hash_mode": "EXACT_BYTES",
       "path": "docs/research/evidence/yhh30m-independent-20261019-v1/README.md",
-      "sha256": "fa73beb9dc89703d7d932b16e5c805359d672b0074bd67c4cf155c12d2308d23"
+      "sha256": "1f282156bfa5a982d172b418877f8143619d93930274da8e9fb59709b985f416"
     },
     {
       "hash_mode": "EXACT_BYTES",
@@ -63,12 +63,17 @@
     {
       "hash_mode": "EXACT_BYTES",
       "path": "docs/research/evidence/yhh30m-independent-20261019-v1/test-results.json",
-      "sha256": "990c7c84e7f9b95b9004b55bfcd370b961db3e06fae812314585de9608793bae"
+      "sha256": "16edf9a3b43e08432a7ed7621abb78a5f032c2504f925e4af00a6b96ef254209"
     },
     {
       "hash_mode": "LF_CANONICAL_TEXT",
       "path": "docs/research/YHH_30M_INDEPENDENT_ACCEPTANCE.md",
-      "sha256": "a9578cf5d26a570133f15f7e98e72126bb8467de75c3bc682f87f1a3809e98a0"
+      "sha256": "89af053e94da1ee3e32ce6f85a5eb68bf8a580f00c580c5dd8d0d6ad81d9427f"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/latest-main-review.json",
+      "sha256": "c34282a6c2dde1760964c3fe5221f120779806c7573f832ca479eef6771a3d41"
     }
   ],
   "candidate_reader_and_producer_digest": "ce629cf89a5398000e77c935428ad1fa2424d87187590a99851afbb7b780c9ca",
@@ -84,7 +89,8 @@
   "formal_financial_data_admission": "FAIL",
   "full_conversion_repeated": false,
   "historical_producer_digest": "8e59c7058e9c96721cc376ba795a5e31da78671bfb05b89330653406650619c2",
-  "main_base_commit": "39eecf869c9c2075ba3f6e3c76aeba3338c63432",
+  "initial_main_base_commit": "39eecf869c9c2075ba3f6e3c76aeba3338c63432",
+  "main_base_commit": "5cb4225d6190bdf27b609a325e560421e4211922",
   "market_structure_branch_merged": false,
   "no_live_money": true,
   "original_monthly_parquet_rewritten": false,

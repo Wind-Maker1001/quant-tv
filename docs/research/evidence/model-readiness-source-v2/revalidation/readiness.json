@@ -1,0 +1,405 @@
+{
+  "configuration": {
+    "features": [
+      "REV1",
+      "REV5",
+      "MOM20",
+      "MOM60",
+      "VOL5",
+      "VOL20",
+      "VOL60",
+      "TURN5",
+      "TURN20",
+      "VOLUME_RATIO",
+      "AMIHU20",
+      "PRICE_MA20",
+      "MA5_MA20",
+      "MA20_MA60"
+    ],
+    "label": "t_close -> t+1_open -> t+6_open",
+    "minimum_cross_section": 8,
+    "models": {
+      "factor_score": {
+        "factor_weights": {
+          "AMIHU20": 1.0,
+          "MA20_MA60": 1.0,
+          "MA5_MA20": 1.0,
+          "MOM20": 1.0,
+          "MOM60": 1.0,
+          "PRICE_MA20": 1.0,
+          "REV1": 1.0,
+          "REV5": 1.0,
+          "TURN20": 1.0,
+          "TURN5": 1.0,
+          "VOL20": 1.0,
+          "VOL5": 1.0,
+          "VOL60": 1.0,
+          "VOLUME_RATIO": 1.0
+        }
+      },
+      "lightgbm": {
+        "lightgbm_candidates": [
+          {
+            "max_depth": 3,
+            "min_child_samples": 8,
+            "n_estimators": 8,
+            "num_leaves": 7
+          },
+          {
+            "max_depth": 3,
+            "min_child_samples": 8,
+            "n_estimators": 12,
+            "num_leaves": 7
+          }
+        ],
+        "lightgbm_n_jobs": 1
+      },
+      "ridge": {
+        "ridge_alphas": [
+          0.1,
+          10.0
+        ]
+      },
+      "xgboost": {
+        "xgboost_candidates": [
+          {
+            "max_depth": 2,
+            "n_estimators": 8
+          },
+          {
+            "max_depth": 2,
+            "n_estimators": 12
+          }
+        ],
+        "xgboost_n_jobs": 1
+      }
+    },
+    "probes": true,
+    "regime_column": "MARKET_REGIME",
+    "sessions": 300,
+    "splitter": {
+      "embargo_days": 5,
+      "initial_train_months": 4,
+      "purge_days": 5,
+      "step_months": 3,
+      "test_months": 3,
+      "validation_months": 2
+    },
+    "symbols": 12,
+    "top_k": 3,
+    "warmup_sessions": 120
+  },
+  "environment": {
+    "git_commit": "4bec2efcc3db9ca2aed2f9b1c8986b498fd2ad06",
+    "packages": {
+      "PyYAML": "6.0.2",
+      "akshare": "1.18.88",
+      "baostock": "0.8.9",
+      "lightgbm": "4.5.0",
+      "matplotlib": "3.8.4",
+      "numpy": "1.26.4",
+      "pandas": "2.2.3",
+      "pyarrow": "17.0.0",
+      "pytest": "8.3.5",
+      "scikit-learn": "1.5.2",
+      "scipy": "1.13.1",
+      "tzdata": "2026.4",
+      "xgboost": "2.1.4"
+    },
+    "platform": "Windows-10-10.0.26340-SP0",
+    "python": "3.9.25",
+    "source_hash_protocol": "factorlab-model-readiness-source-v2",
+    "source_sha256": "fd4487a10a25253bf581035720e3e7e95996f44854cc1b4513fd3e51f9ac5505",
+    "source_snapshot_start": "source-start.json",
+    "threads": {
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "financial_data_qualified": false,
+  "formal_experiment_readiness": "BLOCKED",
+  "future_probes": {
+    "cutoff": "2018-10-01T00:00:00",
+    "unchanged_prediction_rows": {
+      "factor_score/future_labels": 792,
+      "factor_score/future_prices": 792,
+      "lightgbm/future_labels": 792,
+      "lightgbm/future_prices": 792,
+      "ridge/future_labels": 792,
+      "ridge/future_prices": 792,
+      "xgboost/future_labels": 792,
+      "xgboost/future_prices": 792
+    }
+  },
+  "input_sha256": {
+    "bars": "893ed59ef5aa1480b416b1f490b0525156f21adb7f61e4e162ec5b6024a6b95a",
+    "benchmark": "4d1a4727f0c7c49a428926610a5f9bcf6bb35b6043912985e7b70010120984af",
+    "calendar": "82fc579e2da47f57900d3ddbb3ed100371c1c5b84ff9709e15ccbcdcd1b7ecea",
+    "dataset": "e37ed1a1efc0a88f3fa507292a27e0badc400ad9770ba480c5605a126f273c55",
+    "listings": "80f6e92959e63c384a8219970497a6d43b3e51151256121795729ca0e74191f8",
+    "membership": "71e206ad2072dc94c4efc9f0c19abdd9d7c1071fbcf5dbd401d2e18cadc746c6",
+    "status": "54ba5306766a44380253adb6b2108e5e33d6697c5dab4e3b5100a5898fd400c2"
+  },
+  "matrix": [
+    {
+      "category": "功能",
+      "check": "dataset_labels",
+      "reason": "既有14因子Dataset；独立验证t+1/t+6标签数值及未成熟尾部",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "fold_isolation",
+      "reason": "2个Fold；purge/embargo为0时实际标签exit边界仍隔离",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "pipeline/factor_score",
+      "reason": "真实fit/predict实参隔离、Validation选参、Test单次预测及两级回测通过",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "pipeline/ridge",
+      "reason": "真实fit/predict实参隔离、Validation选参、Test单次预测及两级回测通过",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "pipeline/lightgbm",
+      "reason": "真实fit/predict实参隔离、Validation选参、Test单次预测及两级回测通过",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "pipeline/xgboost",
+      "reason": "真实fit/predict实参隔离、Validation选参、Test单次预测及两级回测通过",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "four_model_cohort",
+      "reason": "四模型共享日期、证券、Fold、标签身份、Train来源及运行身份",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "future_causality",
+      "reason": "未来行情及未成熟标签扰动后，历史14因子与四模型预测逐值不变",
+      "status": "PASS"
+    },
+    {
+      "category": "性能",
+      "check": "resources",
+      "reason": "阶段耗时、原生RSS采样峰值与OS累计峰值已记录；无性能SLA",
+      "status": "PASS"
+    },
+    {
+      "category": "性能",
+      "check": "scale_run",
+      "reason": "本次仅小规模；需显式--size scale",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "性能",
+      "check": "formal_parameter_stress",
+      "reason": "诊断使用小候选配置；未执行正式YAML完整候选资源验收",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "可复现性",
+      "check": "input_identity",
+      "reason": "七类输入内容、源代码、依赖、参数和线程设置均绑定SHA或版本",
+      "status": "PASS"
+    },
+    {
+      "category": "可复现性",
+      "check": "repeat_predictions",
+      "reason": "相同seed重建Dataset并重新运行四模型，完整预测表SHA相同",
+      "status": "PASS"
+    },
+    {
+      "category": "统计合同",
+      "check": "historical_inference",
+      "reason": "调用既有配对RankIC/HAC/MBB/固定三项Holm；可用性状态单独保留，不评选模型",
+      "status": "PASS"
+    },
+    {
+      "category": "统计合同",
+      "check": "statistical_counterexamples",
+      "reason": "缺日/低coverage/不足60日/常数/序列相关/溢出及固定Holm反例通过",
+      "status": "PASS"
+    },
+    {
+      "category": "统计合同",
+      "check": "comparison_counterexamples",
+      "reason": "真实比较入口反例：61项；见comparison-tests.xml/log",
+      "status": "PASS"
+    },
+    {
+      "category": "数据资格",
+      "check": "Formal",
+      "reason": "仅合成输入；未提供本实验可验收的五年PIT/HFQ/状态证据及Forward激活证据",
+      "status": "BLOCKED"
+    },
+    {
+      "category": "数据资格",
+      "check": "Forward",
+      "reason": "仅合成输入；未提供本实验可验收的五年PIT/HFQ/状态证据及Forward激活证据",
+      "status": "BLOCKED"
+    }
+  ],
+  "models": {
+    "factor_score": {
+      "backtests": {
+        "execution_backtest": {
+          "nav_sha256": "0d7f39ee36943e42866c304a2447501d2e0f5d0d74eaa077a1408970f4872feb",
+          "trades": 102
+        },
+        "fast_backtest": {
+          "nav_sha256": "0b081d3787b3f51b587dcdb2e7fc0ce327efc63b1f3a841a3be103d5bfd21186",
+          "trades": 112
+        }
+      },
+      "folds": 2,
+      "model_call_counts": {
+        "0": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        },
+        "1": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        }
+      },
+      "prediction_rows": 1584,
+      "prediction_sha256": "9654a8ebf5dfad6cf53f20d91fb930a755fa57906a2b7d2f78fb557c76645dd1",
+      "run_identity_sha256": "aecd365b6627db52e08883bef73b6a5609c0378d689c92954d5021f4e75905ee"
+    },
+    "lightgbm": {
+      "backtests": {
+        "execution_backtest": {
+          "nav_sha256": "399cefa60b5d2c5f42e6c46d9614ad2163e5392906fb0f0581730657fc689b5f",
+          "trades": 101
+        },
+        "fast_backtest": {
+          "nav_sha256": "5fb57631b104e802ad86ce7611b41ae4be32307923db4d03d3e504aadb4a2dd1",
+          "trades": 111
+        }
+      },
+      "folds": 2,
+      "model_call_counts": {
+        "0": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "1": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        }
+      },
+      "prediction_rows": 1584,
+      "prediction_sha256": "f1d762d788fbc1cd265e7461d5235802a0c04d1ee8447beff370945b3d8ed7bf",
+      "run_identity_sha256": "aecd365b6627db52e08883bef73b6a5609c0378d689c92954d5021f4e75905ee"
+    },
+    "ridge": {
+      "backtests": {
+        "execution_backtest": {
+          "nav_sha256": "1b3a7cab5ded73535949b355c49a8d04ecc920b134b707bbf968d856bb3992fc",
+          "trades": 118
+        },
+        "fast_backtest": {
+          "nav_sha256": "e6449ad96b4526406d6472733ed67bb4196b0795441b547ea2cc6cc2c419504b",
+          "trades": 122
+        }
+      },
+      "folds": 2,
+      "model_call_counts": {
+        "0": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "1": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        }
+      },
+      "prediction_rows": 1584,
+      "prediction_sha256": "720e0d8000c733580c82e6e4c5d234f59d067845d7373716209dbea0d79ca1fb",
+      "run_identity_sha256": "aecd365b6627db52e08883bef73b6a5609c0378d689c92954d5021f4e75905ee"
+    },
+    "xgboost": {
+      "backtests": {
+        "execution_backtest": {
+          "nav_sha256": "71e6006d313ab433261812d9e9ff6b57b6db38451f44bd54f1abeb77a37aae54",
+          "trades": 117
+        },
+        "fast_backtest": {
+          "nav_sha256": "55201dce9729c4d7ab5282ed469ce78711bee062d71d4e5b5a79dbb37f614f81",
+          "trades": 124
+        }
+      },
+      "folds": 2,
+      "model_call_counts": {
+        "0": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "1": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        }
+      },
+      "prediction_rows": 1584,
+      "prediction_sha256": "f26a98b694d13be653c7af8818d057182640c90cfc41a8863107086d72c8fc59",
+      "run_identity_sha256": "aecd365b6627db52e08883bef73b6a5609c0378d689c92954d5021f4e75905ee"
+    }
+  },
+  "primary_inference_status": {
+    "lightgbm": "OK",
+    "ridge": "OK",
+    "xgboost": "OK"
+  },
+  "run_identity_sha256": "aecd365b6627db52e08883bef73b6a5609c0378d689c92954d5021f4e75905ee",
+  "schema_version": 2,
+  "seed": 42,
+  "size": "small",
+  "software_acceptance": "PASS",
+  "source_verification": {
+    "end": "source-end.json",
+    "final": "source-final.json",
+    "limits": "Start/end observations; cannot detect transient changes reverted between snapshots",
+    "protocol": "factorlab-model-readiness-source-v2",
+    "start": "source-start.json",
+    "status": "PASS"
+  },
+  "statistical_probes": {
+    "bootstrap_status": "OK",
+    "constant_status": "DEGENERATE_VARIANCE",
+    "extreme_inputs_rejected": 2,
+    "fixed_holm_family": 3,
+    "hac_to_iid_se_ratio": 4.219990458866133,
+    "missing_status": "INSUFFICIENT_COVERAGE",
+    "short_status": "INSUFFICIENT_DATES"
+  },
+  "synthetic": true,
+  "warning": "SYNTHETIC SOFTWARE ACCEPTANCE ONLY / NO LIVE MONEY / 非五年中证500研究结果"
+}

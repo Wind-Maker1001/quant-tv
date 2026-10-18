@@ -1,4 +1,5 @@
 {
+  "final_main_base": "5cb4225d6190bdf27b609a325e560421e4211922",
   "full_offline_suite": {
     "artifact": "results/diagnostics/yhh30m-independent-full-research.xml",
     "errors": 0,
@@ -13,6 +14,10 @@
     "test_relative_import_paths_use_repository_root_from_another_cwd",
     "test_read_only_relative_root_resolves_against_repository_not_cwd"
   ],
+  "latest_combined_tree_remote_result": "SEE_PR12_FINAL_CI_RECEIPTS;NOT_THE_OLD_BASE_RUN",
+  "local_run_head_before_main_advanced": "1105b4ecbb184e8979ce772e0cce17972024dce9",
+  "local_run_main_base": "39eecf869c9c2075ba3f6e3c76aeba3338c63432",
+  "minute_runtime_unchanged_after_main_update": true,
   "network_tests_deselected_by_existing_default": 2,
   "pre_fix_reproductions": {
     "artifact": "results/diagnostics/yhh30m-review-before.xml",
