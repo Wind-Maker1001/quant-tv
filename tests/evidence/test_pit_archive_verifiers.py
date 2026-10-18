@@ -329,7 +329,9 @@ def test_available_objects_with_inconsistent_history_fail(migration, history, he
     assert result["formal_admission"] is False and result["no_live_money"] is True
 
 
-def test_missing_intermediate_history_remains_not_run(migration, history, capsys):
+@pytest.mark.parametrize("git_behavior", ["native", "status_one"])
+def test_missing_intermediate_history_remains_not_run(migration, history, monkeypatch,
+                                                     capsys, git_behavior):
     root, _, _ = history
     intermediate = commit(root, "intermediate publication commit")
     write(root, "publication-note.txt", b"synthetic history traversal\n")
@@ -338,10 +340,27 @@ def test_missing_intermediate_history_remains_not_run(migration, history, capsys
     assert target.resolve().is_relative_to((root / ".git" / "objects").resolve())
     target.chmod(stat.S_IWRITE | stat.S_IREAD)
     target.unlink()
+    observed = []
+    if git_behavior == "status_one":
+        original_run = migration.subprocess.run
+
+        def git_243_status(*args, **kwargs):
+            result = original_run(*args, **kwargs)
+            if args[0][:2] == ["git", "merge-base"] and result.returncode:
+                # Retain the real missing-object error; Git versions differ in
+                # whether this command returns 1 or 128 for that same failure.
+                assert result.stderr.strip()
+                observed.append(result.stderr)
+                result.returncode = 1
+            return result
+
+        monkeypatch.setattr(migration.subprocess, "run", git_243_status)
     assert migration.main() == 1
     result = json.loads(capsys.readouterr().out)
     assert result["migration_consistency"].startswith("NOT_RUN")
     assert result["reason"].endswith("merge-base")
+    if git_behavior == "status_one":
+        assert observed, "The real object-read error must exercise status 1"
 
 
 @pytest.mark.parametrize("mutation", ["schema", "boundary", "duplicate", "hash", "length", "blob",
