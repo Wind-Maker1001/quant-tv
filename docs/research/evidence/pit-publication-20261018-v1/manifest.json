@@ -412,8 +412,8 @@
     },
     {
       "path": "docs/research/evidence/pit-publication-20261018-v1/README.md",
-      "public_sha256": "e75c7a9ea91986c0667097191ece07f0180bd71da39a213e45dcacd020d3ae35",
-      "public_bytes": 6391
+      "public_sha256": "af7f76eb92cf6c7e9341fec12ae334236f5061ec6fa54371b746c534fb62dd33",
+      "public_bytes": 6947
     },
     {
       "path": "docs/research/evidence/pit-publication-20261018-v1/verify_publication.py",
