@@ -1,0 +1,38 @@
+{
+  "schema": "EXTERNAL_PIT_SPEC_VERIFICATION_V1",
+  "checked_at": "2026-10-17T16:56:11.648110+00:00",
+  "protected_existing_files_unchanged": 580,
+  "delivery_artifacts_checked": 4,
+  "reused_original_evidence_checked": 5,
+  "contract_shapes_checked": 4,
+  "source_binding_roles_unchanged": [
+    "PIT",
+    "STATUS",
+    "CALENDAR",
+    "IDENTITY",
+    "UNITS",
+    "ADJUSTMENT",
+    "REFERENCE",
+    "BENCHMARK",
+    "TURNOVER",
+    "LISTINGS",
+    "ANCHOR"
+  ],
+  "local_document_links_checked": 20,
+  "candidate_events_still_unverified": 14,
+  "event_13888_candidate_actions": {
+    "ADD": 50,
+    "REMOVE": 50
+  },
+  "event_13888_reserves_excluded": 25,
+  "event_13888_actual_boundary_and_vintage": "UNKNOWN",
+  "real_baseline_acceptance": "NOT_RUN_BASELINE_NOT_OBTAINED",
+  "real_before_after_set_difference": "NOT_RUN_INDEPENDENT_SNAPSHOTS_NOT_OBTAINED",
+  "real_identity_sample_acceptance": "NOT_RUN_IDENTITY_CONTRACT_INCOMPLETE",
+  "planned_negative_cases_execution": "NOT_RUN_DESIGN_ONLY",
+  "tracked_diff_empty": true,
+  "no_live_money": true,
+  "financial_certification": false,
+  "formal_admission": false,
+  "scope": "Read-only document, contract-shape, candidate metadata and byte-binding consistency only"
+}

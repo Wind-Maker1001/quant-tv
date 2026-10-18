@@ -1,0 +1,14 @@
+{
+  "created_at_utc": "2026-10-17T16:37:24.653712+00:00",
+  "script_sha256": "aa3ff67b0f68ecaf9480e5c4fe819395877e4eb0ec55d3e797ffb10026155bf2",
+  "network_requests": 0,
+  "new_original_sha256": "9234be47b07dcfa6e4ef070f099d6b19ce927864897bd6e827eca31830dd6779",
+  "new_original_bytes": 433136,
+  "new_original_path": "data/research/diagnostics/pit-phase1/20261018-v1/raw/20261017T163050.804241Z-public-byte-acquisition/avic-2025-supervision-adviser.pdf",
+  "reused_issuer_path": "results/diagnostics/five-year-data-feasibility-v1/pit-source-audit/20261014T161856.152767Z-public-byte-acquisition/300114-302132-code-change-issuer.pdf",
+  "reused_issuer_sha256": "dd68049c48df826848f361fd9e7b23dd20b6805144a2e5bc36e54db638611488",
+  "evidence_register_records": 30,
+  "market_price_files_opened": 0,
+  "formal_admission": false,
+  "no_live_money": true
+}

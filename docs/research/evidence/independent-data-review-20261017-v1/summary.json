@@ -1,0 +1,331 @@
+{
+  "schema": "INDEPENDENT_READONLY_REVIEW_V1",
+  "started_at_utc": "2026-10-17T15:37:50.874411+00:00",
+  "finished_at_utc": "2026-10-17T15:43:10.432716+00:00",
+  "git_commit": "d9f42d6524055db029a34ccab888d1c93460d5ae",
+  "source": "<EXTERNAL_MARKET>/",
+  "python": "3.9.25 (main, Nov  3 2025, 22:44:01) [MSC v.1929 64 bit (AMD64)]",
+  "pandas": "2.2.3",
+  "numpy": "1.26.4",
+  "elapsed_seconds": 319.6024587,
+  "formal_admission": false,
+  "no_live_money": true,
+  "network_requests_by_checker": 0,
+  "csv_days": 1393,
+  "total_rows": 64115523,
+  "unique_codes": 5783,
+  "duplicate_file_dates": 0,
+  "year_summary": [
+    {
+      "year": "2021",
+      "csv_days": 243,
+      "first": "2021-01-04",
+      "last": "2021-12-31",
+      "rows": 9575848,
+      "unique_codes": 4701,
+      "daily_securities_min": 4127,
+      "daily_securities_max": 4683,
+      "daily_securities_median": 4376.0,
+      "daily_securities_mean": 4377.222222222223,
+      "bars_min": 9,
+      "bars_max": 10,
+      "zero_volume_rows": 71631
+    },
+    {
+      "year": "2022",
+      "csv_days": 242,
+      "first": "2022-01-04",
+      "last": "2022-12-30",
+      "rows": 10537411,
+      "unique_codes": 5113,
+      "daily_securities_min": 4683,
+      "daily_securities_max": 5067,
+      "daily_securities_median": 4828.0,
+      "daily_securities_mean": 4851.719008264463,
+      "bars_min": 6,
+      "bars_max": 10,
+      "zero_volume_rows": 117502
+    },
+    {
+      "year": "2023",
+      "csv_days": 242,
+      "first": "2023-01-03",
+      "last": "2023-12-29",
+      "rows": 11385471,
+      "unique_codes": 5380,
+      "daily_securities_min": 4937,
+      "daily_securities_max": 5335,
+      "daily_securities_median": 5223.0,
+      "daily_securities_mean": 5205.677685950413,
+      "bars_min": 9,
+      "bars_max": 10,
+      "zero_volume_rows": 128199
+    },
+    {
+      "year": "2024",
+      "csv_days": 242,
+      "first": "2024-01-02",
+      "last": "2024-12-31",
+      "rows": 11728570,
+      "unique_codes": 5435,
+      "daily_securities_min": 5112,
+      "daily_securities_max": 5383,
+      "daily_securities_median": 5358.5,
+      "daily_securities_mean": 5357.376033057852,
+      "bars_min": 9,
+      "bars_max": 10,
+      "zero_volume_rows": 86863
+    },
+    {
+      "year": "2025",
+      "csv_days": 243,
+      "first": "2025-01-02",
+      "last": "2025-12-31",
+      "rows": 11901836,
+      "unique_codes": 5499,
+      "daily_securities_min": 5282,
+      "daily_securities_max": 5470,
+      "daily_securities_median": 5418.0,
+      "daily_securities_mean": 5418.020576131687,
+      "bars_min": 9,
+      "bars_max": 10,
+      "zero_volume_rows": 59377
+    },
+    {
+      "year": "2026",
+      "csv_days": 181,
+      "first": "2026-01-05",
+      "last": "2026-09-30",
+      "rows": 8986387,
+      "unique_codes": 5592,
+      "daily_securities_min": 5469,
+      "daily_securities_max": 5572,
+      "daily_securities_median": 5522.0,
+      "daily_securities_mean": 5515.867403314917,
+      "bars_min": 9,
+      "bars_max": 10,
+      "zero_volume_rows": 28402
+    }
+  ],
+  "time_label_row_counts": {
+    "09:30:00": 7108991,
+    "10:00:00": 7095301,
+    "10:30:00": 7108991,
+    "11:00:00": 7095301,
+    "11:30:00": 7108991,
+    "13:30:00": 7095301,
+    "14:00:00": 7108991,
+    "14:30:00": 7095301,
+    "15:00:00": 7108991,
+    "15:30:00": 189364
+  },
+  "aggregate_checks": {
+    "duplicate_keys": 0,
+    "date_mismatch_rows": 0,
+    "invalid_timestamp_rows": 0,
+    "null_cells": 126,
+    "nonfinite_numeric_cells": 126,
+    "ohlc_logic_rows": 0,
+    "nonpositive_price_rows": 0,
+    "negative_volume_rows": 13,
+    "negative_amount_rows": 12,
+    "zero_volume_rows": 491974,
+    "zero_amount_rows": 491974,
+    "nonpositive_factor_rows": 0,
+    "intraday_factor_change_securities": 0,
+    "outside_nine_label_rows": 189364
+  },
+  "examples_key_only": {
+    "zero_volume": [
+      {
+        "证券代码": "000023.SZ",
+        "交易日期": "20210104",
+        "分钟时间": "2021-01-04 09:30:00"
+      },
+      {
+        "证券代码": "000586.SZ",
+        "交易日期": "20210104",
+        "分钟时间": "2021-01-04 09:30:00"
+      },
+      {
+        "证券代码": "000780.SZ",
+        "交易日期": "20210104",
+        "分钟时间": "2021-01-04 09:30:00"
+      },
+      {
+        "证券代码": "000023.SZ",
+        "交易日期": "20210105",
+        "分钟时间": "2021-01-05 09:30:00"
+      },
+      {
+        "证券代码": "000586.SZ",
+        "交易日期": "20210105",
+        "分钟时间": "2021-01-05 09:30:00"
+      },
+      {
+        "证券代码": "000635.SZ",
+        "交易日期": "20210105",
+        "分钟时间": "2021-01-05 09:30:00"
+      },
+      {
+        "证券代码": "000023.SZ",
+        "交易日期": "20210106",
+        "分钟时间": "2021-01-06 09:30:00"
+      },
+      {
+        "证券代码": "000042.SZ",
+        "交易日期": "20210106",
+        "分钟时间": "2021-01-06 09:30:00"
+      },
+      {
+        "证券代码": "000045.SZ",
+        "交易日期": "20210106",
+        "分钟时间": "2021-01-06 09:30:00"
+      },
+      {
+        "证券代码": "002868.SZ",
+        "交易日期": "20210107",
+        "分钟时间": "2021-01-07 09:30:00"
+      },
+      {
+        "证券代码": "002882.SZ",
+        "交易日期": "20210107",
+        "分钟时间": "2021-01-07 09:30:00"
+      },
+      {
+        "证券代码": "002917.SZ",
+        "交易日期": "20210107",
+        "分钟时间": "2021-01-07 09:30:00"
+      }
+    ]
+  },
+  "calendar_comparison": {
+    "path": "data\\research\\five-year-pilot\\20261015-native-calendar-v1\\runs\\20261015T111701027971Z-d51bb4d1\\calendar.csv",
+    "sha256": "b22b708ff2dabb24f05bef33fba0a5a58f95c3bf52647a8972ba17c651a01bf6",
+    "days": 1341,
+    "research_days": 1211,
+    "missing_research_dates": [],
+    "missing_warmup_dates": [],
+    "extra_dates_within_calendar_bounds": [],
+    "research_daily_securities_min": 4470,
+    "research_daily_securities_max": 5562
+  },
+  "targets": [
+    {
+      "symbol": "000001.SZ",
+      "observed_days": 1393,
+      "first_observation": "2021-01-04",
+      "last_observation": "2026-09-30",
+      "research_observed_days": 1211,
+      "research_missing_grid_days": 0,
+      "names": "平安银行"
+    },
+    {
+      "symbol": "000002.SZ",
+      "observed_days": 1393,
+      "first_observation": "2021-01-04",
+      "last_observation": "2026-09-30",
+      "research_observed_days": 1211,
+      "research_missing_grid_days": 0,
+      "names": "万 科Ａ|万科A"
+    },
+    {
+      "symbol": "000780.SZ",
+      "observed_days": 257,
+      "first_observation": "2021-01-04",
+      "last_observation": "2022-01-21",
+      "research_observed_days": 87,
+      "research_missing_grid_days": 1124,
+      "names": "*ST平能|ST平能"
+    },
+    {
+      "symbol": "000961.SZ",
+      "observed_days": 852,
+      "first_observation": "2021-01-04",
+      "last_observation": "2024-07-10",
+      "research_observed_days": 682,
+      "research_missing_grid_days": 529,
+      "names": "ST中南|中南建设"
+    },
+    {
+      "symbol": "001289.SZ",
+      "observed_days": 1136,
+      "first_observation": "2022-01-24",
+      "last_observation": "2026-09-30",
+      "research_observed_days": 1124,
+      "research_missing_grid_days": 87,
+      "names": "龙源电力"
+    },
+    {
+      "symbol": "300750.SZ",
+      "observed_days": 1393,
+      "first_observation": "2021-01-04",
+      "last_observation": "2026-09-30",
+      "research_observed_days": 1211,
+      "research_missing_grid_days": 0,
+      "names": "宁德时代"
+    },
+    {
+      "symbol": "302132.SZ",
+      "observed_days": 1393,
+      "first_observation": "2021-01-04",
+      "last_observation": "2026-09-30",
+      "research_observed_days": 1211,
+      "research_missing_grid_days": 0,
+      "names": "中航成飞|中航电测"
+    },
+    {
+      "symbol": "600000.SH",
+      "observed_days": 1393,
+      "first_observation": "2021-01-04",
+      "last_observation": "2026-09-30",
+      "research_observed_days": 1211,
+      "research_missing_grid_days": 0,
+      "names": "浦发银行"
+    },
+    {
+      "symbol": "600112.SH",
+      "observed_days": 877,
+      "first_observation": "2021-01-04",
+      "last_observation": "2024-08-14",
+      "research_observed_days": 707,
+      "research_missing_grid_days": 504,
+      "names": "*ST天成|ST天成"
+    },
+    {
+      "symbol": "600519.SH",
+      "observed_days": 1393,
+      "first_observation": "2021-01-04",
+      "last_observation": "2026-09-30",
+      "research_observed_days": 1211,
+      "research_missing_grid_days": 0,
+      "names": "贵州茅台"
+    },
+    {
+      "symbol": "601059.SH",
+      "observed_days": 892,
+      "first_observation": "2023-02-01",
+      "last_observation": "2026-09-30",
+      "research_observed_days": 880,
+      "research_missing_grid_days": 331,
+      "names": "信达证券"
+    },
+    {
+      "symbol": "688981.SH",
+      "observed_days": 1393,
+      "first_observation": "2021-01-04",
+      "last_observation": "2026-09-30",
+      "research_observed_days": 1211,
+      "research_missing_grid_days": 0,
+      "names": "中芯国际"
+    }
+  ],
+  "errors": [],
+  "preservation": {
+    "protected_files": 508,
+    "containers": 186,
+    "changed_protected_sha256": [],
+    "changed_container_sha256": [],
+    "changed_container_size_mtime": []
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "INDEPENDENT_REVIEW_FINAL_VERIFICATION_V1",
+  "verified_at_utc": "2026-10-17T16:20:49.914331+00:00",
+  "no_live_money": true,
+  "formal_admission": false,
+  "original_files_sha256_rechecked": 1023,
+  "original_files_changed": [],
+  "tracked_diff_empty": true,
+  "daily_counts_and_annual_summary_reconcile": true,
+  "anomaly_re_reads_reconcile": true,
+  "relative_report_links_verified": 15,
+  "broken_links": [],
+  "output_sha256": {
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\calendar-and-method.json": "3b90c639452fe7f2a4f2bd7f0931946683bb4131068b78016875afec0481780d",
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\daily-counts.csv": "bc73a88d8f3c0a8a0214010ffa796ae15091164e40be1441400904a92995214a",
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\exception-details.json": "ce8f22a2baf6ab33522f2646d4b271dcaccde79a8cbb6b565e22524b9edf8545",
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\input-hashes.json": "14a9b74946168a234128bc9cf4bbc6fd38077e097fa17c65d5fe0553f9bb8f5b",
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\readonly_review.py": "47085f1f8b5a4d7d3579440e07799b47711bdb715ce00348adc3ba50216e2af7",
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\repository-cross-checks.json": "e55491bb5b0aff04c4e9a6dd47a42e9d74c0e002741f519f086ed4642c25e4b1",
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\security-observations.csv": "6738a7b26ee7e8d67be89d4f634c51cf175cd67bc66b99174cb7d35f1fb6cdf6",
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\spot-cross-source.json": "fdf61174a833aa82766c739c923476d53b5077575585256a0005bf25fb3e4db6",
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\summary.json": "b4cd715e3c42517f3195021b15e6c6a8c585ddf0f697ca8aa0c150740e10d9f0",
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\target-observations.csv": "a4b7f915c9ceb96865e7cacbce0e75f379ee6f3e4866087018821cb44f2647e8",
+    "docs\\research\\evidence\\independent-data-review-20261017-v1\\zero-volume-counterexamples.json": "b83ca24898b13837ed6f4479deac5bfa8e1f56058fadc795fdd09b39b6e982a3",
+    "INDEPENDENT_DATA_REVIEW_2026-10-17.md": "f9667256aff7fa093c07214291a39f4a375135e9860076a36c3cf2fc529a7a23"
+  },
+  "scope_note": "Original protected scope is the 508-file report/code/config/test/doc baseline plus 186 source containers, indexed PIT/pilot artifacts and the prior 50-stock input. This does not claim a before/after hash of every unrelated file in the workstation."
+}
