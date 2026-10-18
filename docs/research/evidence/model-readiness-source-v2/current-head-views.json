@@ -1,0 +1,26 @@
+{
+  "clean_lf": {
+    "canonical_sha256": "fd4487a10a25253bf581035720e3e7e95996f44854cc1b4513fd3e51f9ac5505",
+    "git_commit": "4bec2efcc3db9ca2aed2f9b1c8986b498fd2ad06",
+    "protocol": "factorlab-model-readiness-source-v2",
+    "source_count": 139
+  },
+  "clean_windows": {
+    "canonical_sha256": "fd4487a10a25253bf581035720e3e7e95996f44854cc1b4513fd3e51f9ac5505",
+    "git_commit": "4bec2efcc3db9ca2aed2f9b1c8986b498fd2ad06",
+    "protocol": "factorlab-model-readiness-source-v2",
+    "source_count": 139
+  },
+  "git_objects": {
+    "canonical_sha256": "fd4487a10a25253bf581035720e3e7e95996f44854cc1b4513fd3e51f9ac5505",
+    "git_commit": "4bec2efcc3db9ca2aed2f9b1c8986b498fd2ad06",
+    "protocol": "factorlab-model-readiness-source-v2",
+    "source_count": 139
+  },
+  "windows_worktree": {
+    "canonical_sha256": "fd4487a10a25253bf581035720e3e7e95996f44854cc1b4513fd3e51f9ac5505",
+    "git_commit": "4bec2efcc3db9ca2aed2f9b1c8986b498fd2ad06",
+    "protocol": "factorlab-model-readiness-source-v2",
+    "source_count": 139
+  }
+}
