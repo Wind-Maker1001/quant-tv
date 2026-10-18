@@ -1,0 +1,68 @@
+{
+  "Formal": "BLOCKED",
+  "Forward": "BLOCKED",
+  "all_checkouts_clean_after_validation": true,
+  "classification": "COMMITTED_CLEAN_CHECKOUT_REVALIDATION",
+  "default_cli": {
+    "checkout": "clean LF sparse checkout on Windows",
+    "comparison_counterexamples": 61,
+    "status": "PASS"
+  },
+  "files_sha256": {
+    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+    "README.md": "6a3a006ec8588e95de04ee664b9f022e8c94adf4ad4f56d72a1b65244c94273f",
+    "canonical-reference.json": "c29d96776c9d5e99efd66d2943aaa913d2ff2cea56b074e4c5509e0848317c16",
+    "clean_lf.json": "3e4a8948a50c6f8c10fa62119affdb8456200be4dcd88cc547a6d2a2f3006664",
+    "clean_windows.json": "91276231b1b2ee89155224fc4875634b51a22afac5b47c700fa5442e169d0094",
+    "current-head-views.json": "afbb2643125484eeee126ac361b63036b844d636ad9e80026745a6d8452912b1",
+    "historical-equivalence.json": "2d60cc3147cc49f8240102f0783594d3be835d95c8c73e50dd141e87a78c62cf",
+    "infrastructure-attempt.json": "bec028e1957815883a43b91b89b28595ac26e1507e16e22d90563b6efa0e6026",
+    "original-head-forensics.json": "cad2cc1d3d18f4ed9ae2ccdc9c83fe4bdd700fd7f46816eb351d911d7a86766d",
+    "recompute_canonical.py": "29b2dd7d76b1542494d9a9c81da930138cbc7184d00d34a74f108c0c79635bcf",
+    "regression.xml": "a4b6a3efaacc0f516bc2fd2226508af314181a8d72bad972a4b8bfc5c199b5c1",
+    "revalidation/comparison-tests.log": "6c8705f44cd8f839ba4ed0f43cfc39b5f5270cb7bc8d52d9da37038f5a6434b7",
+    "revalidation/comparison-tests.xml": "24257957ee6671d2a4f597caacb0c6878d47ed2cde2d8c41dfcad6eddad268f7",
+    "revalidation/events.jsonl": "a486e705ff7aa804caf2e0b8df166288570038517b5db9646b44109b936915b2",
+    "revalidation/inference.csv": "7da47b17e7b8a6c4990b7bab17a7507d803b4c937ec38c9c8e282c9fd20d63f9",
+    "revalidation/inference_protocol.json": "299baf06a0a690acb9e75891545f693e349f2bd0887d2dce8cffdafc73a97a03",
+    "revalidation/readiness.json": "682cb1275574afd837ae1083c98c9706945dcf05106aa9a0c63f438962c98aa6",
+    "revalidation/readiness.md": "7cf002d680cc35202c7abf5cb06e72c7bc51f51ea1c35a15e3a350907c1b81a7",
+    "revalidation/resources.csv": "c7c25f501443c30b785b92da56c244aa982cd59c89da05364bcf77414e8f50de",
+    "revalidation/source-end.json": "3e4a8948a50c6f8c10fa62119affdb8456200be4dcd88cc547a6d2a2f3006664",
+    "revalidation/source-final.json": "3e4a8948a50c6f8c10fa62119affdb8456200be4dcd88cc547a6d2a2f3006664",
+    "revalidation/source-start.json": "3e4a8948a50c6f8c10fa62119affdb8456200be4dcd88cc547a6d2a2f3006664",
+    "windows_worktree.json": "e13cb55d7dfc1ab547a2bd97673fe095cdf71f2938d963e266d63bc517ca991c"
+  },
+  "independent_reference": "canonical-reference.json",
+  "independent_regression": {
+    "checkout": "clean Windows CRLF sparse checkout",
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 85
+  },
+  "original_small_prediction_and_backtest_comparison": {
+    "factor_score": {
+      "backtests_equal": true,
+      "prediction_sha256_equal": true
+    },
+    "lightgbm": {
+      "backtests_equal": true,
+      "prediction_sha256_equal": true
+    },
+    "ridge": {
+      "backtests_equal": true,
+      "prediction_sha256_equal": true
+    },
+    "xgboost": {
+      "backtests_equal": true,
+      "prediction_sha256_equal": true
+    }
+  },
+  "scale_remeasured": false,
+  "schema_version": 2,
+  "source_canonical_sha256": "fd4487a10a25253bf581035720e3e7e95996f44854cc1b4513fd3e51f9ac5505",
+  "source_commit": "4bec2efcc3db9ca2aed2f9b1c8986b498fd2ad06",
+  "source_hash_protocol": "factorlab-model-readiness-source-v2",
+  "v1_evidence_tree_oid_unchanged": "79bcd31d025127d76c1b23b7e4440e20150e946c"
+}
