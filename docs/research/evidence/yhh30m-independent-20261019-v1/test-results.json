@@ -1,0 +1,55 @@
+{
+  "full_offline_suite": {
+    "artifact": "results/diagnostics/yhh30m-independent-full-research.xml",
+    "errors": 0,
+    "failures": 0,
+    "sha256": "a6c0b446c56246bb7e4a62f9df3e79740b2cc67c38a8194318efcdcd9556b5a2",
+    "skipped": 0,
+    "tests": 3176,
+    "time_seconds": 1263.3679999999881
+  },
+  "historical_failure_cause": "CROSS_WINDOWS_VOLUME_RELPATH_VALUEERROR_NOT_TIMEOUT",
+  "historical_path_cases_passed_in_full_run": [
+    "test_relative_import_paths_use_repository_root_from_another_cwd",
+    "test_read_only_relative_root_resolves_against_repository_not_cwd"
+  ],
+  "network_tests_deselected_by_existing_default": 2,
+  "pre_fix_reproductions": {
+    "artifact": "results/diagnostics/yhh30m-review-before.xml",
+    "errors": 0,
+    "failures": 5,
+    "sha256": "c7a30ccb28a8bcbcc87c6a2510012c2d252e7352dec0b96561b796822f67edcb",
+    "skipped": 0,
+    "status": "EXPECTED_FAILURES_BEFORE_FIX",
+    "tests": 5,
+    "time_seconds": 2.852
+  },
+  "release_check_tests": {
+    "artifact": "results/diagnostics/yhh30m-release-tests-final.xml",
+    "errors": 0,
+    "failures": 0,
+    "sha256": "7ea1f81eaf7d1e2bac48a7de0c9e0416c68d21e165464adccb07f527680bd81a",
+    "skipped": 0,
+    "tests": 8,
+    "time_seconds": 4.324
+  },
+  "schema": "YHH_INDEPENDENT_SOFTWARE_TESTS_V1",
+  "status": "PASS_SINGLE_FULL_OFFLINE_RUN",
+  "targeted_converter_reader_tests": {
+    "artifact": "results/diagnostics/yhh30m-independent-targeted-final.xml",
+    "errors": 0,
+    "failures": 0,
+    "sha256": "c1311b3e04b5c114b0f005a9169e6ef229b3f847c8e9e5dcc11c014c3ce1c8d0",
+    "skipped": 0,
+    "tests": 34,
+    "time_seconds": 18.430999999999997
+  },
+  "temp_layout": "NEW_SAME_VOLUME_SIBLING_DIRECTORY",
+  "test_assertions_or_production_gates_relaxed": false,
+  "updated_reader_full_dataset_verify": {
+    "formal_admission": false,
+    "partitions": 69,
+    "rows": 64115523,
+    "status": "VERIFIED"
+  }
+}

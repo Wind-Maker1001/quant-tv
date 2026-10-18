@@ -44,7 +44,7 @@ def convert(source, audit, output, start=None, end=None, block_size=1024 * 1024,
     for item in chosen:
         grouped[item["date"][:7]].append(item)
     with writer_lock(root):
-        request_file = root / "selection.json"
+        request_file = assert_no_link_components(root / "selection.json")
         if request_file.exists():
             if request_file.read_bytes() != json_bytes(selection):
                 raise IntradayDataError("OUTPUT_SELECTION_OR_IMPLEMENTATION_CHANGED_USE_NEW_ROOT")
@@ -67,7 +67,9 @@ def convert(source, audit, output, start=None, end=None, block_size=1024 * 1024,
                 if folder.exists():
                     receipt = verify_partition(folder)
                     if (receipt["identity"] != identity or receipt["implementation_sha256"] != implementation or
-                            receipt["audit_evidence"] != evidence or [d["date"] for d in receipt["days"]] != [d["date"] for d in items]):
+                            receipt["audit_evidence"] != evidence or receipt["month"] != month or
+                            [(d["date"], d["source_id"], d["rows"], d["container"], d["locator"]) for d in receipt["days"]] !=
+                            [(d["date"], d["content_sha256"], int(d["rows"]), d["container"], d["locator"]) for d in items]):
                         raise IntradayDataError("EXISTING_PARTITION_IDENTITY_MISMATCH")
                 else:
                     temporary = parent / (".incomplete-" + uuid.uuid4().hex)

@@ -81,7 +81,7 @@ def prepare_root(root, source, audit):
         raise IntradayDataError("REFUSE_NONEMPTY_UNMARKED_OUTPUT")
     root.mkdir(parents=True, exist_ok=True)
     with writer_lock(root):
-        marker = root / "contract.json"
+        marker = assert_no_link_components(root / "contract.json")
         if marker.exists():
             if marker.read_bytes() != json_bytes(CONTRACT):
                 raise IntradayDataError("OUTPUT_CONTRACT_MISMATCH")
@@ -94,7 +94,7 @@ def verify_partition(folder, receipt=None):
     """Read output once: schema, row count, logical digest and source samples."""
     folder = assert_no_link_components(folder)
     if receipt is None:
-        receipt = json.loads((folder / "receipt.json").read_text(encoding="utf-8"))
+        receipt = json.loads(assert_no_link_components(folder / "receipt.json").read_text(encoding="utf-8"))
     if receipt["contract"] != json.loads(json_bytes(CONTRACT)):
         raise IntradayDataError("PARTITION_CONTRACT_MISMATCH")
     path = folder / "bars.parquet"

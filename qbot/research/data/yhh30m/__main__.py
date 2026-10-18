@@ -6,7 +6,6 @@ from pathlib import Path
 
 from .conversion import convert
 from .provider import IntradayParquetProvider
-from .storage import verify_partition
 
 
 def main(argv=None):
@@ -27,14 +26,7 @@ def main(argv=None):
                          progress=lambda value: print(json.dumps(value, ensure_ascii=False), flush=True))
     else:
         provider = IntradayParquetProvider(args.dataset, purpose="engineering")
-        for partition in provider.catalog["partitions"]:
-            receipt_path = provider._path(partition["receipt"])
-            from .source import file_sha
-            if file_sha(receipt_path) != partition["receipt_sha256"]:
-                raise ValueError("RECEIPT_HASH_MISMATCH")
-            verify_partition(receipt_path.parent)
-        result = {"status": "VERIFIED", "rows": provider.catalog["rows"],
-                  "partitions": len(provider.catalog["partitions"]), "formal_admission": False}
+        result = provider.verify()
     print(json.dumps({key: value for key, value in result.items() if key != "source_containers"}, ensure_ascii=False), flush=True)
     return 0
 

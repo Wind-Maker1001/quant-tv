@@ -1,0 +1,93 @@
+[
+  {
+    "symbol": "920000.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920175.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920185.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920267.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920305.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920367.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920402.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920422.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920808.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920855.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": true
+  },
+  {
+    "symbol": "920856.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920943.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  },
+  {
+    "symbol": "920957.BJ",
+    "negative_is_minus_previous_bar": false,
+    "negative_is_minus_preceding_sum": false,
+    "total_volume_remains_positive": true,
+    "amount_sign_disagrees": false
+  }
+]

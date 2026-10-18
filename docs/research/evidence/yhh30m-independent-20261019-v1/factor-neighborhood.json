@@ -1,0 +1,442 @@
+[
+  {
+    "date": "2021-04-26",
+    "symbol": "600701.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "退市工新"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2021-04-27",
+    "symbol": "600701.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "退市工新"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2021-04-28",
+    "symbol": "600701.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "退市工新"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2021-04-29",
+    "symbol": "600701.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "退市工新"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2021-04-30",
+    "symbol": "600701.SH",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "退市工新"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "002231.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "*ST奥维"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "002462.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "嘉事堂"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "300344.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "*ST立方"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "300391.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "*ST长药"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "300666.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "江丰电子"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "300912.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "凯龙高科"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "601969.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "海南矿业"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "603056.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "德邦股份"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "603616.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "韩建河山"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "603729.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "龙韵股份"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "603980.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "吉华集团"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "688165.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "埃夫特"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-02",
+    "symbol": "920179.BJ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "凯德石英"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "002231.SZ",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "*ST奥维"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "002462.SZ",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "嘉事堂"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "300344.SZ",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "*ST立方"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "300391.SZ",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "*ST长药"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "300666.SZ",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "江丰电子"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "300912.SZ",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "凯龙高科"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "601969.SH",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "海南矿业"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "603056.SH",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "德邦股份"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "603616.SH",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "韩建河山"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "603729.SH",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "龙韵股份"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "603980.SH",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "吉华集团"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "688165.SH",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "埃夫特"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-03",
+    "symbol": "920179.BJ",
+    "rows": 9,
+    "missing_factor": 9,
+    "observed_names": [
+      "凯德石英"
+    ],
+    "nonmissing_factor_values": 0
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "002231.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "*ST奥维"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "002462.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "嘉事堂"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "300344.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "*ST立方"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "300391.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "*ST长药"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "300666.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "江丰电子"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "300912.SZ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "凯龙高科"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "601969.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "海南矿业"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "603056.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "德邦股份"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "603616.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "韩建河山"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "603729.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "龙韵股份"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "603980.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "吉华集团"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "688165.SH",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "埃夫特"
+    ],
+    "nonmissing_factor_values": 1
+  },
+  {
+    "date": "2026-02-04",
+    "symbol": "920179.BJ",
+    "rows": 9,
+    "missing_factor": 0,
+    "observed_names": [
+      "凯德石英"
+    ],
+    "nonmissing_factor_values": 1
+  }
+]

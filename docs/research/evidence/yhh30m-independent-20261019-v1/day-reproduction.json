@@ -1,0 +1,9 @@
+{
+  "rows": 37143,
+  "logical_and_schema_equal": true,
+  "parquet_bytes_identical": true,
+  "parquet_sha256": "052be883cf6f2b095088a8d8b460d70565c3aeb75e203cc4605799a3eca9935a",
+  "historical_producer_sha256": "8e59c7058e9c96721cc376ba795a5e31da78671bfb05b89330653406650619c2",
+  "current_producer_sha256": "ce629cf89a5398000e77c935428ad1fa2424d87187590a99851afbb7b780c9ca",
+  "original_full_dataset_reconverted": false
+}

@@ -1,0 +1,52 @@
+{
+  "dataset_and_69_partition_types": "PASS",
+  "formal_admission": false,
+  "full_dataset_sha256_unchanged": "2809a017e9b9cc1ba74386a5faa79650025e930056dc4e617db5114626c00f9a",
+  "no_market_structure_branch_merged": true,
+  "protected_gate_comparison": [
+    {
+      "mode": "LF_CANONICAL_TEXT",
+      "path": "qbot/research/data/schema.py",
+      "sha256": "b68885b546ecc59dd2acf3a5eeccdfa43017e781997a2221b1aa03b005eb8ebf",
+      "unchanged_from_main": true
+    },
+    {
+      "mode": "LF_CANONICAL_TEXT",
+      "path": "qbot/research/data/providers/local.py",
+      "sha256": "f87c70ebcf595f414406bea9ff9e09525c388be82eae56b0a85ccf72de703fdd",
+      "unchanged_from_main": true
+    },
+    {
+      "mode": "LF_CANONICAL_TEXT",
+      "path": "qbot/research/data/market_qualification.py",
+      "sha256": "654dc96f01e5cef8b42de7bea8f465fba1c22ee8f4177b5aa631f1e2303c3cc1",
+      "unchanged_from_main": true
+    },
+    {
+      "mode": "LF_CANONICAL_TEXT",
+      "path": "qbot/research/config/models.py",
+      "sha256": "8f432421def230d984a32de6591ced8fc1b0f572c1ec63a862e704e9a2ed05dd",
+      "unchanged_from_main": true
+    },
+    {
+      "mode": "LF_CANONICAL_TEXT",
+      "path": "qbot/research/forward/contract.py",
+      "sha256": "f45d027a5a320934a5ef4f6835fcf344361aaf436319872665896f51182b9bc2",
+      "unchanged_from_main": true
+    },
+    {
+      "mode": "LF_CANONICAL_TEXT",
+      "path": "qbot/research/forward/policy.py",
+      "sha256": "62ff81ef46416675be00d91a85a5338d22272322e15a6bf279aaaa71fbdb7979",
+      "unchanged_from_main": true
+    },
+    {
+      "mode": "LF_CANONICAL_TEXT",
+      "path": ".github/workflows/research-tests.yml",
+      "sha256": "22d5b43e45a9bb5ff77dcfc8d97c878230df269d06d35b99c6cc7fb22a81b273",
+      "unchanged_from_main": true
+    }
+  ],
+  "schema": "YHH_INDEPENDENT_INVARIANT_REVIEW_V1",
+  "source_audit_bytes_match_original_published_binding": true
+}
