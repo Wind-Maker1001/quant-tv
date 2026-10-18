@@ -1,0 +1,41 @@
+{
+  "baseline_main": "39eecf869c9c2075ba3f6e3c76aeba3338c63432",
+  "files_sha256": {
+    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+    "README.md": "9612b11e8cc58e2731da60d7b8ec33a9f6ddd39da0fa2102ee583d4993f38518",
+    "coverage.xml": "142fc608a1e84f77f77befa84b92746f91e186ed0146ca4599456fc56f45de4f",
+    "final-tests.xml": "775eef96f15a01488250684778167ae4da225b7186d0dea23e28676b69effd89",
+    "resources-summary.csv": "b9a82cc524e36390b05ef54baa24be4e8e9259af5a0573ca49a04cd14bb84b63",
+    "scale/events.jsonl": "a847b6bf880842268b3d9a1ae86bdcfb3f89d8851e5f488b16e450fe7571ccf4",
+    "scale/inference.csv": "d1b16e8e4b26a28fe82b4d9a1b2e2bc8e114c1624c278481c1530624eda70cea",
+    "scale/inference_protocol.json": "299baf06a0a690acb9e75891545f693e349f2bd0887d2dce8cffdafc73a97a03",
+    "scale/readiness.json": "44292b5376cbd83b1fbd231f8e31068ab10bfa336f091e2c58beea9f07e0dade",
+    "scale/readiness.md": "dc1418e73f6c2e25606790d324b11577f5d6d24296ba2d7fce6fb199dc9c04ce",
+    "scale/resources-summary.csv": "f746cc4e2f905505c47404c1b0fbc9973ccf55d34a63cf3e8c48071d72efae04",
+    "scale/resources.csv": "8f4476df155f3a194d12ceafb0a1bc10c40c9e0b180bd358635ca5d9ee860e18",
+    "small/comparison-tests.log": "d0e6488cfecdca956306bc9c7b00ab3d7dd515aca66ad83cfb4960d2ece4677b",
+    "small/comparison-tests.xml": "10c20411dfa787591d1853345d0ec9e36d6110e65decc58b1bb815d71369626c",
+    "small/events.jsonl": "6e6610c2af58c82997909828f81f8da3118a0ef5a693116c8e59d7b677cdeb03",
+    "small/inference.csv": "7da47b17e7b8a6c4990b7bab17a7507d803b4c937ec38c9c8e282c9fd20d63f9",
+    "small/inference_protocol.json": "299baf06a0a690acb9e75891545f693e349f2bd0887d2dce8cffdafc73a97a03",
+    "small/readiness.json": "b9342a937812245536298d3246406244327d528c7d4c2950321f3a1b5ab6d655",
+    "small/readiness.md": "7cf002d680cc35202c7abf5cb06e72c7bc51f51ea1c35a15e3a350907c1b81a7",
+    "small/resources-summary.csv": "f36d9bd203b76330121b89493fa73bf46e0eadec066c4ddb3d59ad5aa134f028",
+    "small/resources.csv": "df1bb3a5a0a26148f666aceeed8c4e9bed8d7fb4327078f21f0c3ec9f79559fc"
+  },
+  "hardware": {
+    "NUMBER_OF_PROCESSORS": "28",
+    "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel"
+  },
+  "scale_start_note": "scale started before committing the added source files; its git_commit records the then-current main while source_sha256 binds the actual source bytes, verified unchanged against 29a5af4",
+  "scope": "synthetic software evidence only; Formal and Forward BLOCKED; NO LIVE MONEY",
+  "source_sha256": "c4c5e400ff44abdd968be10c81cd66e10fc8312422987ff7009d1e8c884a00c5",
+  "source_verification": "git diff --exit-code 29a5af4 -- qbot/research; runtime source hashes match current working source bytes",
+  "source_verified_against_commit": "29a5af43cd07846dbfe7371d06864a6442880f12",
+  "test_cases": 68,
+  "tests_sha256": {
+    "tests/model_readiness/conftest.py": "9d5cfbefc0d28086c7cff24a679f0cf1e9a5bac840db60539b77065682058f88",
+    "tests/model_readiness/test_comparison_contract.py": "5dd832f62a78aaa9ccb456301afdaedbd7f2fe8513e6855f791c001e5dad8151",
+    "tests/model_readiness/test_readiness.py": "964b66dd32eb40125c65cf148a4f873dc2d4431f1217869a55fcf01d82d37918"
+  }
+}

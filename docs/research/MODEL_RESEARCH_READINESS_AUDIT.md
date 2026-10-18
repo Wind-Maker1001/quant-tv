@@ -100,3 +100,88 @@ HAC标准误与IID标准误比较，要求其显著增大；没有把该比较�
 
 大规模使用8/12棵树的诊断候选，**不代表正式YAML完整候选配置的资源验收**；后者保持NOT_RUN。
 软件证据不能证明模型优越性、收益、五年数据完整性或真实Forward可运行。
+未来扰动仅修改截点后的行，不模拟未来除权事件导致供应商重算历史HFQ的情形，也不替代历史
+修订、真实成分轮换、停牌或极端流动性证据。资源指标是单进程RSS与壁钟观察，宿主CPU和内存
+不独占，不能据单次结果作机器间速度排名；公开原始阶段记录以便同条件复测。
+
+## 实测研究就绪矩阵
+
+本次没有发现需要修改既有核心的可复现缺陷；因此没有触碰核心研究、统计实现或资格门禁。
+该结论限于下述场景，不是对所有数据、参数、平台的正确性证明。
+
+| 维度 | 项目 | 小规模 | 500×1200 | 原因/范围 |
+|---|---|---|---|---|
+| 功能 | Dataset、14因子、t+1/t+6、尾6日未成熟 | PASS | PASS | 由行情独立重算标签；保留原过滤器 |
+| 功能 | 实际Train/Validation/Test调用及跨Fold | PASS | PASS | 2/9个Fold；每模型实际实参核对，Test不重复预测 |
+| 功能 | 四模型同日期/证券/标签/来源身份 | PASS | PASS | 每模型OOS主键及阶段来源SHA一致 |
+| 功能 | 两级回测与下一开盘 | PASS | PASS | 各四模型均有真实合成成交；执行日期逐条核对 |
+| 可复现性 | 输入/代码/依赖身份 | PASS | PASS | 七类输入SHA、代码SHA、参数、依赖和线程记录 |
+| 可复现性 | 同seed重建及预测表SHA | PASS | NOT_RUN | 规模运行默认省略重复计算，需显式`--probes` |
+| 可复现性 | 未来行情/未成熟标签扰动 | PASS | NOT_RUN | 小规模四模型逐值验证；规模需`--probes` |
+| 统计合同 | 配对RankIC、HAC、MBB、固定3项Holm | PASS | PASS | 复用已有推断；保留各组不可检验状态 |
+| 统计合同 | 缺日/样本不足/自相关/极值 | PASS | PASS | 相同确定性反例，不以60万股票日冒充日度样本 |
+| 统计合同 | 原比较器版本、SHA、重封装语义反例 | PASS | NOT_RUN | 独立61项通过；纯规模命令显式`--skip-comparison-tests` |
+| 性能 | 构建/训练/预测/评价/回测收据 | PASS | PASS | 含原生RSS采样和OS累计峰值；未设SLA |
+| 性能 | 正式YAML全部候选/更长树训练 | NOT_RUN | NOT_RUN | 只验收诊断候选，不外推正式超参数成本 |
+| 平台 | 新独立套件的Linux运行 | NOT_RUN | NOT_RUN | 本次新增套件在Windows/Python3.9.25上实测；原CI仅冻结原套件 |
+| 数据资格 | 五年中证500Formal | BLOCKED | BLOCKED | 未提供本实验可验收的真实PIT/HFQ/状态输入 |
+| 数据资格 | 真实Forward | BLOCKED | BLOCKED | 缺真实资格与激活证据；本任务不激活 |
+
+原有CI的3141 passed、1 skipped、2 deselected验证冻结研究契约保持不变；不能声称其收集了新增
+独立套件。新增套件68项另有JUnit及87%独立代码覆盖率证据；覆盖率中CLI入口为0%，因为完整
+默认CLI通过另一个真实子进程验收，没有把这次外部执行合并进该覆盖率数字。Linux RSS分支和
+真实资源耗尽路径未执行；仅通过MemoryError注入验证异常收据。
+
+## 性能基准与可检查证据
+
+实测环境：Windows、Python 3.9.25、三个原生线程环境变量均为1；依赖版本和CPU标识见
+[`index.json`](evidence/model-readiness-v1/index.json)及两个场景的`readiness.json`。
+四模型在规模场景各9个Fold、293,500条Test预测。Dataset为600,000行，行情另含120日预热。
+没有改变正式YAML，也没有以这组小树参数预测正式实验的运行成本。
+
+小规模，单位秒；内存列为该模型整段Walk-Forward的采样RSS峰值（GiB）：
+
+| 模型 | WF总计 | fit合计 | predict合计 | 逐日指标合计 | Fast | Execution | WF峰值 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| FactorScore | 1.728 | 0.003 | 0.007 | 1.207 | 0.080 | 0.176 | 0.153 |
+| Ridge | 2.008 | 0.016 | 0.012 | 1.431 | 0.088 | 0.234 | 0.161 |
+| LightGBM | 2.544 | 0.313 | 0.020 | 1.667 | 0.104 | 0.228 | 0.174 |
+| XGBoost | 2.131 | 0.222 | 0.038 | 1.365 | 0.084 | 0.162 | 0.282 |
+
+规模场景，同口径：
+
+| 模型 | WF总计 | fit合计 | predict合计 | 逐日指标合计 | Fast | Execution | WF峰值 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| FactorScore | 274.214 | 0.335 | 0.978 | 34.496 | 2.035 | 5.379 | 5.802 |
+| Ridge | 309.686 | 17.565 | 1.311 | 37.967 | 2.159 | 6.019 | 6.355 |
+| LightGBM | 307.863 | 27.098 | 2.214 | 38.332 | 1.917 | 4.839 | 6.412 |
+| XGBoost | 290.040 | 32.079 | 1.693 | 35.656 | 1.947 | 5.026 | 6.569 |
+
+共享阶段：Dataset构建小/规模分别4.107/37.505秒；切分0.053/6.554秒；统计评价0.574/2.976秒。
+OS累计进程峰值小规模0.289 GiB、规模6.569 GiB。fit合计包含全部候选；predict合计包含候选
+Validation及所选模型的Train诊断/Test。WF总计包含上述子阶段，以及来源哈希、表构建、断言、
+排序等开销；未将未分解时间直接归因于某个核心函数。可观察到裸fit/predict并非当前诊断链路
+的全部成本，资源规划必须计入既有阶段诊断；本任务没有擅自优化或删减这些诊断。
+
+压测与独立验证曾在同一宿主并行运行，进程RSS独立记录，壁钟可能受资源竞争影响。上述数据
+是可复测工程观察，不是独占机器基准或模型速度排名。所有阶段均正常完成，未记录失败位置；
+故障路径由单独的MemoryError注入测试覆盖。
+
+- [小规模完整就绪报告](evidence/model-readiness-v1/small/readiness.md)，软件验收PASS。
+- [规模场景就绪报告](evidence/model-readiness-v1/scale/readiness.md)，执行的检查全部PASS；
+  未来扰动/重跑/比较子进程按显式选项省略，因此该文件的完整软件验收汇总保持NOT_RUN。
+- [逐阶段资源汇总](evidence/model-readiness-v1/resources-summary.csv)；原始每次调用的CSV与
+  START/END收据在对应small/scale目录，CSV保留字节和完整精度。
+- [独立68项JUnit](evidence/model-readiness-v1/final-tests.xml)、
+  [独立覆盖率](evidence/model-readiness-v1/coverage.xml)、
+  [默认入口61项比较反例日志](evidence/model-readiness-v1/small/comparison-tests.log)。
+- [原有完整离线CI](https://github.com/Wind-Maker1001/quant-tv/actions/runs/39127052573)：
+  3141 passed，冻结测试及133个覆盖源清单无差异，覆盖15988/18730行（85.36%）。
+- [PIT证据CI](https://github.com/Wind-Maker1001/quant-tv/actions/runs/39127052397)及
+  [静态检查CI](https://github.com/Wind-Maker1001/quant-tv/actions/runs/39127052350)均通过。
+
+资源测量的研究代码字节SHA为`c4c5e400ff44abdd968be10c81cd66e10fc8312422987ff7009d1e8c884a00c5`，
+小/规模完全一致，并核对与`29a5af4`的研究源文件无diff。规模进程在代码提交前启动，故其
+环境中的git_commit仍是启动时main；该字段不是对工作区新增代码的单独身份证明，应同时核对
+source_sha256。独立测试文件另在index中绑定SHA，不把后来新增文档误认为重跑了性能基准。
+原始预测Parquet保留在本地运行目录，以报告内SHA绑定；PR归档可读收据与JUnit，复跑入口可重建。
