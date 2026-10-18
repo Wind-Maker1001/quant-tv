@@ -21,6 +21,15 @@ RECEIPT = "docs/research/evidence/pit-release-migration-20261018-v1/validation.j
 VERIFIER = "docs/research/evidence/pit-release-migration-20261018-v1/verify_migration.py"
 PROTECTED = {"qbot/research", "configs/research", "tests/research",
              ".github/workflows", ".github/scripts"}
+# Git's local repository variables plus namespace routing must not override
+# ROOT. Retain ordinary global config so checkout line-ending policy still applies.
+GIT_REPOSITORY_ENV = {
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_CONFIG", "GIT_CONFIG_PARAMETERS",
+    "GIT_CONFIG_COUNT", "GIT_OBJECT_DIRECTORY", "GIT_DIR", "GIT_WORK_TREE",
+    "GIT_IMPLICIT_WORK_TREE", "GIT_GRAFT_FILE", "GIT_INDEX_FILE",
+    "GIT_NO_REPLACE_OBJECTS", "GIT_REPLACE_REF_BASE", "GIT_PREFIX",
+    "GIT_SHALLOW_FILE", "GIT_COMMON_DIR", "GIT_NAMESPACE",
+}
 
 
 class MissingGitObjects(Exception):
@@ -33,8 +42,14 @@ def require(condition, message):
 
 
 def git(*args, allowed_returncodes=(0,)):
-    environment = os.environ.copy()
-    environment.update(GIT_NO_LAZY_FETCH="1", GIT_TERMINAL_PROMPT="0")
+    environment = {
+        key: value for key, value in os.environ.items()
+        if key not in GIT_REPOSITORY_ENV
+        and not key.startswith(("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_"))
+    }
+    environment.update(GIT_NO_LAZY_FETCH="1", GIT_TERMINAL_PROMPT="0",
+                       GIT_CONFIG_COUNT="0", GIT_NO_REPLACE_OBJECTS="1",
+                       GIT_OPTIONAL_LOCKS="0")
     result = subprocess.run(
         ["git", *args], cwd=ROOT, env=environment, capture_output=True, timeout=30,
     )

@@ -394,8 +394,8 @@
       "path": "docs/research/evidence/pit-release-migration-20261018-v1/verify_migration.py",
       "original_sha256": "252ddb86123f048098596dc435ff0538550ec3be7657f0bf6aec401490e26108",
       "original_bytes": 4083,
-      "public_sha256": "bca6816748ec054555fe21203b1e6ed789de899092c27f57a218817ac99e9f2a",
-      "public_bytes": 9571,
+      "public_sha256": "4be48d3da6cafe470de1501e81ad8e91a72f14ef6d8eee0a24b401efb799ca46",
+      "public_bytes": 10384,
       "transformation": "EXPLICIT_PUBLIC_SCOPE_ADAPTER"
     }
   ],

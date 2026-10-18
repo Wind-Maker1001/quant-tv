@@ -258,6 +258,63 @@ def test_synthetic_repository_is_independent(history, historical_repository, mon
     assert actual.resolve() == root.resolve()
 
 
+@pytest.mark.parametrize("override", ["repository", "object_store", "index_and_config"])
+def test_verifier_ignores_inherited_repository_overrides(migration, history, tmp_path,
+                                                       monkeypatch, capsys, override):
+    root, receipt, _ = history
+    foreign = tmp_path / "foreign"
+    foreign.mkdir()
+    git(foreign, "init", "-b", "foreign")
+    write(foreign, "foreign.txt", b"unrelated synthetic repository\n")
+    commit(foreign, "foreign repository")
+    write(foreign, "shallow", (receipt["main_base_commit"] + "\n").encode())
+    overrides = {
+        "repository": {
+            "GIT_DIR": str(foreign / ".git"), "GIT_WORK_TREE": str(foreign),
+            "GIT_COMMON_DIR": str(foreign / ".git"), "GIT_NAMESPACE": "foreign",
+            "GIT_PREFIX": "foreign/", "GIT_IMPLICIT_WORK_TREE": "0",
+        },
+        "object_store": {
+            "GIT_OBJECT_DIRECTORY": str(foreign / ".git/objects"),
+            "GIT_ALTERNATE_OBJECT_DIRECTORIES": str(foreign / ".git/objects"),
+            "GIT_SHALLOW_FILE": str(foreign / "shallow"),
+            "GIT_GRAFT_FILE": str(foreign / "missing-grafts"),
+            "GIT_REPLACE_REF_BASE": "refs/foreign/",
+        },
+        "index_and_config": {
+            "GIT_INDEX_FILE": str(foreign / ".git/index"),
+            "GIT_CONFIG": str(foreign / ".git/config"),
+            "GIT_CONFIG_PARAMETERS": "invalid inherited config injection",
+            "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "core.worktree",
+            "GIT_CONFIG_VALUE_0": str(foreign),
+        },
+    }[override]
+    # Poison after the autouse fixture: the production wrapper must isolate
+    # itself rather than relying on the fixture's environment cleanup.
+    for key, value in overrides.items():
+        monkeypatch.setenv(key, value)
+    actual = Path(migration.git("rev-parse", "--show-toplevel").decode().strip())
+    assert actual.resolve() == root.resolve()
+    assert migration.main() == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["migration_consistency"] == "PASS_RECORDED_GIT_OBJECTS_ONLY"
+
+
+def test_foreign_alternates_cannot_supply_missing_object(migration, history, tmp_path,
+                                                       monkeypatch, capsys):
+    root, receipt, _ = history
+    blob = receipt["delivery_files"][-1]["git_blob"]
+    target = root / ".git" / "objects" / blob[:2] / blob[2:]
+    assert target.resolve().is_relative_to((root / ".git" / "objects").resolve())
+    foreign_objects = tmp_path / "foreign-objects"
+    write(foreign_objects, blob[:2] + "/" + blob[2:], target.read_bytes())
+    target.chmod(stat.S_IWRITE | stat.S_IREAD)
+    target.unlink()
+    monkeypatch.setenv("GIT_ALTERNATE_OBJECT_DIRECTORIES", str(foreign_objects))
+    assert migration.main() == 1
+    assert json.loads(capsys.readouterr().out)["migration_consistency"].startswith("NOT_RUN")
+
+
 @pytest.mark.parametrize("field", ["main_base_commit", "source_commit", "cherry_pick_commit"])
 def test_missing_commit_is_not_success(migration, history, field, capsys):
     root, receipt, manifest = history
