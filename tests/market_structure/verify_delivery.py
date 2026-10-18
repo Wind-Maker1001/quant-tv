@@ -34,12 +34,14 @@ def sha(path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--artifacts", type=Path, required=True)
+    parser.add_argument("--formal-reports", type=Path, required=True)
     args = parser.parse_args()
     artifacts = args.artifacts.resolve()
     target = ROOT / "docs/research/market_structure/evidence/v1"
     if target.exists():
         raise ValueError("new evidence directory required")
     coverage = json.loads((artifacts / "coverage.json").read_text())
+    coverage["files"] = {k.replace("\\", "/"): v for k, v in coverage["files"].items()}
     expected = {
         p.relative_to(ROOT).as_posix() for p in (ROOT / PREFIXES[0]).glob("*.py")
     }
@@ -67,6 +69,26 @@ def main():
     formal = json.loads((artifacts / "frozen-validation.json").read_text())
     if formal["policy"] != "production-complete" or formal["failed"] != 0:
         raise ValueError("formal frozen execution did not validate")
+    formal_reports = args.formal_reports.resolve()
+    formal_suites = list(
+        ET.parse(formal_reports / "research.xml").getroot().iter("testsuite")
+    )
+    formal_counts = {
+        k: sum(int(s.attrib[k]) for s in formal_suites)
+        for k in ("tests", "failures", "errors", "skipped")
+    }
+    expected_count = json.loads(
+        (
+            ROOT
+            / "docs/research/evidence/ci-runtime-optimization-v1/baseline-collection.json"
+        ).read_text()
+    )["selected_ids_count"]
+    if formal_counts["tests"] != expected_count or any(
+        formal_counts[k] for k in ("failures", "errors", "skipped")
+    ):
+        raise ValueError("formal JUnit does not prove full successful execution")
+    if formal_counts["tests"] != formal["passed"]:
+        raise ValueError("formal JUnit/validator mismatch")
     for filename in ("static.json", "source-cli.json"):
         evidence = json.loads((artifacts / filename).read_text())
         if evidence["exit_code"] != 0:
@@ -99,11 +121,13 @@ def main():
         "source-cli.json",
         "source-cli.log",
         "frozen-validation.json",
+        "environment-notes.json",
+        "determinism.json",
     ):
         shutil.copyfile(artifacts / filename, target / filename)
-    shutil.copyfile(artifacts / "frozen" / "research.xml", target / "frozen-tests.xml")
+    shutil.copyfile(formal_reports / "research.xml", target / "frozen-tests.xml")
     shutil.copyfile(
-        artifacts / "frozen" / "environment.json", target / "frozen-environment.json"
+        formal_reports / "environment.json", target / "frozen-environment.json"
     )
     inventory = {
         name: dict(source_sha256=sha(ROOT / name), **coverage["files"][name]["summary"])

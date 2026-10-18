@@ -66,6 +66,12 @@ def _status(enough, identical, pearson, spearman, threshold):
     return "NON_REDUNDANT"
 
 
+def _table(rows, columns):
+    """Preserve the evidence interface even when no candidate is rejected."""
+    extras = sorted({key for row in rows for key in row} - set(columns))
+    return pd.DataFrame(rows, columns=list(columns) + extras)
+
+
 def diagnose_features(values, policy=None):
     policy = policy if policy is not None else RedundancyPolicy()
     required = [
@@ -298,10 +304,60 @@ def diagnose_features(values, policy=None):
                 )
             )
     return dict(
-        quality=pd.DataFrame(quality),
-        redundancy=pd.DataFrame(pairs),
-        redundancy_windows=pd.DataFrame(daily),
-        rejections=pd.DataFrame(rejected),
+        quality=_table(
+            quality,
+            scopes
+            + [
+                "feature_id",
+                "expected_cells",
+                "finite_cells",
+                "completeness",
+                "mean_input_coverage",
+                "constant",
+                "duplicate_value_ratio",
+                "cross_section_constant_windows",
+                "cross_section_status",
+                "quality_status",
+                "reason_counts",
+                "rejection_reason",
+            ],
+        ),
+        redundancy=_table(
+            pairs,
+            scopes
+            + [
+                "left",
+                "right",
+                "diagnostic_kind",
+                "valid_observation_windows",
+                "total_observation_windows",
+                "distinct_trading_sessions",
+                "minimum_entities",
+                "mean_pair_coverage",
+                "mean_abs_pearson",
+                "mean_abs_spearman",
+                "status",
+            ],
+        ),
+        redundancy_windows=_table(
+            daily,
+            scopes
+            + [
+                "observation_end",
+                "session_id",
+                "left",
+                "right",
+                "paired_entities",
+                "pair_coverage",
+                "pearson",
+                "spearman",
+                "same_values_and_missing_mask",
+            ],
+        ),
+        rejections=_table(
+            rejected,
+            scopes + ["feature_id", "reason", "observed", "threshold", "evidence"],
+        ),
     )
 
 

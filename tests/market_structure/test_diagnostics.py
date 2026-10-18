@@ -1,4 +1,5 @@
 from dataclasses import replace
+from io import StringIO
 
 import numpy as np
 import pandas as pd
@@ -176,3 +177,18 @@ def test_structure_includes_scope_semantics_and_keeps_duplicates():
 def test_invalid_policy(kwargs):
     with pytest.raises(ContractError):
         RedundancyPolicy(**kwargs)
+
+
+def test_empty_diagnostic_evidence_keeps_parseable_csv_schema():
+    f = panel()
+    d = diagnose_features(f[f.feature_id == "A"])
+    for name in ("redundancy", "redundancy_windows", "rejections"):
+        assert d[name].empty
+        parsed = pd.read_csv(StringIO(d[name].to_csv(index=False)))
+        assert parsed.empty and {
+            "scenario",
+            "frequency",
+            "grain",
+            "namespace",
+        }.issubset(parsed.columns)
+    assert {"feature_id", "reason", "evidence"}.issubset(d["rejections"].columns)

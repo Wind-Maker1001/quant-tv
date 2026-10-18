@@ -201,7 +201,7 @@ def compute_features(store, sessions, request, feature_ids=None):
                         1.0 if complete.get(namespace) else 0.0,
                         "OK" if complete.get(namespace) else "INCOMPLETE_SOURCE_SCOPE",
                     )
-    for namespace in industry_namespaces:
+    for namespace in sorted(industry_namespaces):
         for security, seq in industry_projected.items():
             seq = [(w, r) for n, w, r in seq if n == namespace]
             available = (
@@ -342,7 +342,7 @@ def compute_features(store, sessions, request, feature_ids=None):
         market_coverage,
         "OK" if np.isfinite(hhi) else "ZERO_DENOMINATOR_OR_COVERAGE",
     )
-    for namespace in industry_namespaces:
+    for namespace in sorted(industry_namespaces):
         rs = [r for key, r in industry_returns.items() if key[0] == namespace]
         finite = [r for r in rs if np.isfinite(r)]
         cov = len(finite) / len(rs) if rs else 0.0
