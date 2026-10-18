@@ -129,14 +129,33 @@ def test_decoded_json_keys_are_scanned(publication, monkeypatch, tmp_path):
         publication.verify()
 
 
+def git_environment():
+    # Never inherit a developer/runner repository, index, object store, config
+    # injection or template directory into the disposable synthetic histories.
+    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    env.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull,
+               GIT_CONFIG_COUNT="0", GIT_TERMINAL_PROMPT="0", GIT_NO_LAZY_FETCH="1")
+    return env
+
+
+@pytest.fixture(autouse=True)
+def isolated_git_environment(monkeypatch):
+    # The verifier invokes its own Git subprocesses, so isolate those too.
+    env = git_environment()
+    for key in list(os.environ):
+        if key.startswith("GIT_"):
+            monkeypatch.delenv(key)
+    for key, value in env.items():
+        if key.startswith("GIT_"):
+            monkeypatch.setenv(key, value)
+
+
 def git(root, *args):
-    env = os.environ.copy()
-    env.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull)
     return subprocess.check_output(
         ["git", "-c", "user.name=Archive Test", "-c", "user.email=test@example.invalid",
          "-c", "commit.gpgsign=false", "-c", "core.autocrlf=false", "-c", "core.eol=lf",
          "-c", "core.hooksPath=" + os.devnull, *args],
-        cwd=root, env=env, stderr=subprocess.PIPE,
+        cwd=root, env=git_environment(), stderr=subprocess.PIPE,
     )
 
 
@@ -223,6 +242,21 @@ def test_real_objects_validate_only_recorded_scope(migration, history, capsys):
     assert result["full_migration_verification"].startswith("NOT_RUN")
 
 
+def test_synthetic_repository_is_independent(history, historical_repository, monkeypatch):
+    root, _, _ = history
+    original, _, _ = historical_repository
+    assert (root / ".git").is_dir()
+    assert not (root / ".git").samefile(original / ".git")
+    assert not (root / ".git/objects/info/alternates").exists()
+    assert git(root, "remote").strip() == b""
+    # A caller's Git variables must not redirect even read-only fixture commands.
+    monkeypatch.setenv("GIT_DIR", str(ROOT / ".git"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(ROOT))
+    monkeypatch.setenv("GIT_INDEX_FILE", str(ROOT / ".git/unused-test-index"))
+    actual = Path(git(root, "rev-parse", "--show-toplevel").decode().strip())
+    assert actual.resolve() == root.resolve()
+
+
 @pytest.mark.parametrize("field", ["main_base_commit", "source_commit", "cherry_pick_commit"])
 def test_missing_commit_is_not_success(migration, history, field, capsys):
     root, receipt, manifest = history
@@ -238,7 +272,7 @@ def test_missing_commit_is_not_success(migration, history, field, capsys):
 
 
 @pytest.mark.parametrize("missing", ["private_commit", "delivery_blob", "original_verifier"])
-def test_missing_original_objects_are_not_success(migration, history, missing):
+def test_missing_original_objects_are_not_success(migration, history, missing, capsys):
     root, receipt, manifest = history
     if missing == "private_commit":
         manifest["private_source_commit"] = "0" * 40
@@ -249,22 +283,28 @@ def test_missing_original_objects_are_not_success(migration, history, missing):
                        migration.VERIFIER).decode().strip()
         # Only this test's synthetic repository is modified.
         target = root / ".git" / "objects" / blob[:2] / blob[2:]
+        assert target.resolve().is_relative_to((root / ".git" / "objects").resolve())
         target.chmod(stat.S_IWRITE | stat.S_IREAD)
         target.unlink()
     with pytest.raises(migration.MissingGitObjects):
         migration.verify_recorded_migration(receipt, manifest)
+    write(root, PUB + "manifest.json", json.dumps(manifest).encode())
+    assert migration.main() == 1
+    assert json.loads(capsys.readouterr().out)["migration_consistency"].startswith("NOT_RUN")
 
 
-def test_shallow_checkout_is_not_success(migration, history, tmp_path, monkeypatch):
+def test_shallow_checkout_is_not_success(migration, history, tmp_path, monkeypatch, capsys):
     root, receipt, manifest = history
     shallow = tmp_path / "shallow"
     git(tmp_path, "clone", "--depth=1", "--no-local", root.as_uri(), str(shallow))
     monkeypatch.setattr(migration, "ROOT", shallow)
     with pytest.raises(migration.MissingGitObjects):
         migration.verify_recorded_migration(receipt, manifest)
+    assert migration.main() == 1
+    assert json.loads(capsys.readouterr().out)["migration_consistency"].startswith("NOT_RUN")
 
 
-@pytest.mark.parametrize("mutation", ["schema", "boundary", "duplicate", "hash", "blob",
+@pytest.mark.parametrize("mutation", ["schema", "boundary", "duplicate", "hash", "length", "blob",
                                     "protected_inventory", "unsafe_path", "parent"])
 def test_inconsistent_receipt_fails(migration, history, mutation):
     _, receipt, manifest = history
@@ -274,10 +314,11 @@ def test_inconsistent_receipt_fails(migration, history, mutation):
         receipt["formal_admission"] = True
     elif mutation == "duplicate":
         receipt["delivery_files"][-1] = receipt["delivery_files"][0]
-    elif mutation == "hash":
+    elif mutation in ("hash", "length"):
         item = receipt["delivery_files"][-1]
-        item["sha256"] = "0" * 64
-        next(p for p in manifest["files"] if p["path"] == item["path"])["original_sha256"] = item["sha256"]
+        field, original_field = ("sha256", "original_sha256") if mutation == "hash" else ("bytes", "original_bytes")
+        item[field] = "0" * 64 if mutation == "hash" else item[field] + 1
+        next(p for p in manifest["files"] if p["path"] == item["path"])[original_field] = item[field]
     elif mutation == "blob":
         receipt["delivery_files"][-1]["git_blob"] = receipt["delivery_files"][0]["git_blob"]
     elif mutation == "protected_inventory":
