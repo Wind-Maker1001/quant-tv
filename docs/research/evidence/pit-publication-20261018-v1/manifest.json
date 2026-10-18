@@ -394,8 +394,8 @@
       "path": "docs/research/evidence/pit-release-migration-20261018-v1/verify_migration.py",
       "original_sha256": "252ddb86123f048098596dc435ff0538550ec3be7657f0bf6aec401490e26108",
       "original_bytes": 4083,
-      "public_sha256": "cc17402544e8d8393b85a22c2bc722818be67cdba4d3767b3e7777d804de21eb",
-      "public_bytes": 9102,
+      "public_sha256": "5662c1704f133ca6619b98bbf726bdfb14ea9a6d9fe1d3d6e93f113260af62aa",
+      "public_bytes": 9361,
       "transformation": "EXPLICIT_PUBLIC_SCOPE_ADAPTER"
     }
   ],
@@ -412,8 +412,8 @@
     },
     {
       "path": "docs/research/evidence/pit-publication-20261018-v1/README.md",
-      "public_sha256": "0a96c976562d3b3997c5e400fe00237b035e7a584ee9f36f7f6af368b3a41680",
-      "public_bytes": 4996
+      "public_sha256": "e75c7a9ea91986c0667097191ece07f0180bd71da39a213e45dcacd020d3ae35",
+      "public_bytes": 6391
     },
     {
       "path": "docs/research/evidence/pit-publication-20261018-v1/verify_publication.py",

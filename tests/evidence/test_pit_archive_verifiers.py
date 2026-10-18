@@ -175,6 +175,7 @@ def commit(root, message):
 def historical_repository(tmp_path_factory):
     root = tmp_path_factory.mktemp("historical-git")
     git(root, "init", "-b", "main")
+    git(root, "commit", "--allow-empty", "-m", "repository start")
     protected = {".github/scripts", ".github/workflows", "qbot/research",
                  "configs/research", "tests/research"}
     for path in protected:
@@ -302,6 +303,45 @@ def test_shallow_checkout_is_not_success(migration, history, tmp_path, monkeypat
         migration.verify_recorded_migration(receipt, manifest)
     assert migration.main() == 1
     assert json.loads(capsys.readouterr().out)["migration_consistency"].startswith("NOT_RUN")
+
+
+@pytest.mark.parametrize("head_history", ["unrelated", "before_main"])
+def test_available_objects_with_inconsistent_history_fail(migration, history, head_history, capsys):
+    root, receipt, manifest = history
+    if head_history == "unrelated":
+        git(root, "checkout", "--orphan", "unrelated-history")
+        commit(root, "unrelated root retaining the recorded files")
+    else:
+        git(root, "checkout", "--detach", receipt["main_base_commit"] + "^")
+        write(root, migration.RECEIPT, json.dumps(receipt).encode())
+    # Neither failure mode is caused by a shallow checkout or missing objects.
+    assert git(root, "rev-parse", "--is-shallow-repository").strip() == b"false"
+    recorded_commits = [receipt[key] for key in
+                        ("main_base_commit", "source_commit", "cherry_pick_commit")]
+    for value in recorded_commits + [manifest["private_source_commit"]]:
+        assert git(root, "cat-file", "-t", value).strip() == b"commit"
+    with pytest.raises(ValueError, match="Publication is not based on recorded main"):
+        migration.verify_recorded_migration(receipt, manifest)
+    assert migration.main() == 1
+    result = json.loads(capsys.readouterr().out)
+    assert result["migration_consistency"] == "FAIL"
+    assert result["reason"] == "Publication is not based on recorded main"
+    assert result["formal_admission"] is False and result["no_live_money"] is True
+
+
+def test_missing_intermediate_history_remains_not_run(migration, history, capsys):
+    root, _, _ = history
+    intermediate = commit(root, "intermediate publication commit")
+    write(root, "publication-note.txt", b"synthetic history traversal\n")
+    commit(root, "publication with an intermediate parent")
+    target = root / ".git" / "objects" / intermediate[:2] / intermediate[2:]
+    assert target.resolve().is_relative_to((root / ".git" / "objects").resolve())
+    target.chmod(stat.S_IWRITE | stat.S_IREAD)
+    target.unlink()
+    assert migration.main() == 1
+    result = json.loads(capsys.readouterr().out)
+    assert result["migration_consistency"].startswith("NOT_RUN")
+    assert result["reason"].endswith("merge-base")
 
 
 @pytest.mark.parametrize("mutation", ["schema", "boundary", "duplicate", "hash", "length", "blob",

@@ -32,13 +32,13 @@ def require(condition, message):
         raise ValueError(message)
 
 
-def git(*args):
+def git(*args, allowed_returncodes=(0,)):
     environment = os.environ.copy()
     environment.update(GIT_NO_LAZY_FETCH="1", GIT_TERMINAL_PROMPT="0")
     result = subprocess.run(
         ["git", *args], cwd=ROOT, env=environment, capture_output=True, timeout=30,
     )
-    if result.returncode:
+    if result.returncode not in allowed_returncodes:
         raise MissingGitObjects("Required Git object or history unavailable: " + args[0])
     return result.stdout
 
@@ -113,7 +113,10 @@ def verify_recorded_migration(receipt, manifest):
     parents = [line.split()[1].decode() for line in headers["cherry_pick_commit"].splitlines()
                if line.startswith(b"parent ")]
     require(parents == [commits["main_base_commit"]], "Cherry-pick parent differs from recorded main")
-    require(git("merge-base", commits["main_base_commit"], "HEAD").decode().strip()
+    # No common ancestor (status 1) is a history mismatch, not a missing object.
+    # Other command errors still require the unavailable-history NOT_RUN result.
+    require(git("merge-base", commits["main_base_commit"], "HEAD",
+                allowed_returncodes=(0, 1)).decode().strip()
             == commits["main_base_commit"], "Publication is not based on recorded main")
 
     changed = set(git("diff", "--name-only", commits["main_base_commit"],
