@@ -315,6 +315,23 @@ def test_foreign_alternates_cannot_supply_missing_object(migration, history, tmp
     assert json.loads(capsys.readouterr().out)["migration_consistency"].startswith("NOT_RUN")
 
 
+@pytest.mark.parametrize("variable", ["GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM",
+                                     "GIT_CONFIG_NOSYSTEM"])
+def test_verifier_ignores_inherited_config_routing(migration, history, tmp_path,
+                                                  monkeypatch, capsys, variable):
+    root, _, _ = history
+    config = tmp_path / "foreign-config"
+    config.write_text("[core]\n    compression = invalid\n", encoding="utf-8")
+    for key in ("GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM", "GIT_CONFIG_NOSYSTEM"):
+        monkeypatch.delenv(key, raising=False)
+    value = "invalid-boolean" if variable == "GIT_CONFIG_NOSYSTEM" else str(config)
+    monkeypatch.setenv(variable, value)
+    actual = Path(migration.git("rev-parse", "--show-toplevel").decode().strip())
+    assert actual.resolve() == root.resolve()
+    assert migration.main() == 0
+    assert json.loads(capsys.readouterr().out)["migration_consistency"] == "PASS_RECORDED_GIT_OBJECTS_ONLY"
+
+
 @pytest.mark.parametrize("field", ["main_base_commit", "source_commit", "cherry_pick_commit"])
 def test_missing_commit_is_not_success(migration, history, field, capsys):
     root, receipt, manifest = history
