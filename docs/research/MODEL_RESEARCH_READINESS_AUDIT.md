@@ -1,5 +1,9 @@
 # 四模型软件就绪独立审计（NO LIVE MONEY）
 
+2026-10-19更正：原始源码字节与Git提交的绑定声明存在P1问题，已独立复现为34个文件的换行
+差异。V1原始证据保留；旧“raw字节匹配提交”声明撤回。完整证明、V2规范化合同和重新验证
+范围见[源码摘要更正记录](MODEL_READINESS_SOURCE_HASH_CORRECTION.md)。
+
 基线：2026-10-18 开始时最新已验证 main `39eecf869c9c2075ba3f6e3c76aeba3338c63432`。
 分支：`codex/model-research-readiness`。只新增独立诊断、独立测试和本文档。
 所有输入均为合成数据，软件成功不能作为五年中证500实证研究成功或金融数据资格。
@@ -180,8 +184,10 @@ Validation及所选模型的Train诊断/Test。WF总计包含上述子阶段，�
 - [PIT证据CI](https://github.com/Wind-Maker1001/quant-tv/actions/runs/39127052397)及
   [静态检查CI](https://github.com/Wind-Maker1001/quant-tv/actions/runs/39127052350)均通过。
 
-资源测量的研究代码字节SHA为`c4c5e400ff44abdd968be10c81cd66e10fc8312422987ff7009d1e8c884a00c5`，
-小/规模完全一致，并核对与`29a5af4`的研究源文件无diff。规模进程在代码提交前启动，故其
-环境中的git_commit仍是启动时main；该字段不是对工作区新增代码的单独身份证明，应同时核对
-source_sha256。独立测试文件另在index中绑定SHA，不把后来新增文档误认为重跑了性能基准。
+原始测量记录的Windows源码字节SHA为`c4c5e400ff44abdd968be10c81cd66e10fc8312422987ff7009d1e8c884a00c5`，
+小/规模相同，但与Git对象字节摘要`abad7e91…`不同；旧Git diff检查不足以证明原始字节一致。
+规模进程在代码提交前启动，环境git_commit仍是启动时main，不能单独作为新增源码身份。
+现已通过逐文件LF等价和精确换行映射重建，建立事后规范化内容等价证明；原运行结束快照未
+记录，不能补充声称运行期间未变动。详见更正记录。独立测试文件另在旧index绑定SHA，不把
+后来的身份复核或新验收误认为重跑了旧性能基准。
 原始预测Parquet保留在本地运行目录，以报告内SHA绑定；PR归档可读收据与JUnit，复跑入口可重建。

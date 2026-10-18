@@ -13,12 +13,15 @@ from qbot.research.backtest import (
     ExecutionBacktestConfig, FastBacktestConfig, run_execution_backtest, run_fast_backtest,
 )
 from qbot.research.metrics.robustness import RobustnessOptions, evaluate_model_robustness
-from qbot.research.reproducibility import git_commit, package_versions
+from qbot.research.reproducibility import package_versions
 from qbot.research.validation import diagnostic_frame_sha256
 import qbot.research.validation.walk_forward as wf
 
 from .checks import assert_folds, assert_labels, future_probes, observe_model_calls, require, statistical_probes
 from .profiling import Recorder
+from .source_identity import (
+    PROTOCOL, SourceIntegrityError, assert_source_unchanged, source_snapshot,
+)
 from .synthetic import (
     FEATURES, MODELS, TARGET, WARNING, build_dataset, generate_inputs, make_runner,
     model_options, split_options,
@@ -32,11 +35,8 @@ def save_json(path, value):
 
 
 def source_hash(root):
-    digest = hashlib.sha256()
-    for path in sorted((root / "qbot" / "research").rglob("*.py")):
-        digest.update(path.relative_to(root).as_posix().encode())
-        digest.update(path.read_bytes())
-    return digest.hexdigest()
+    """V2 canonical identity; old raw v1 digests are retained in source snapshots."""
+    return source_snapshot(root)["canonical_sha256"]
 
 
 def write_report(output, report, rows):
@@ -73,8 +73,10 @@ def run_acceptance(output, size="small", seed=42, probes=True):
     symbols, sessions = (12, 300) if size == "small" else (500, 1200)
     output.mkdir(parents=True, exist_ok=True)
     root = Path(__file__).resolve().parents[4]
+    source_start = source_snapshot(root)
+    save_json(output / "source-start.json", source_start)
     report = {
-        "schema_version": 1, "warning": WARNING, "synthetic": True,
+        "schema_version": 2, "warning": WARNING, "synthetic": True,
         "financial_data_qualified": False, "size": size, "seed": seed,
         "configuration": {
             "symbols": symbols, "sessions": sessions, "features": list(FEATURES),
@@ -83,7 +85,10 @@ def run_acceptance(output, size="small", seed=42, probes=True):
             "label": "t_close -> t+1_open -> t+6_open", "probes": probes,
             "warmup_sessions": 120, "regime_column": "MARKET_REGIME",
         },
-        "environment": {"git_commit": git_commit(root), "source_sha256": source_hash(root),
+        "environment": {"git_commit": source_start["git_commit"],
+                        "source_sha256": source_start["canonical_sha256"],
+                        "source_hash_protocol": PROTOCOL,
+                        "source_snapshot_start": "source-start.json",
                         "python": platform.python_version(), "platform": platform.platform(),
                         "packages": package_versions(),
                         "threads": {key: os.environ.get(key) for key in (
@@ -233,6 +238,19 @@ def run_acceptance(output, size="small", seed=42, probes=True):
                 row["reason"] = "前置验收未完成：%s；见failure及events.jsonl" % active_check
     finally:
         recorder.close()
+        try:
+            source_end = source_snapshot(root)
+            save_json(output / "source-end.json", source_end)
+            assert_source_unchanged(source_start, source_end)
+            report["source_verification"] = {
+                "status": "PASS", "protocol": PROTOCOL,
+                "start": "source-start.json", "end": "source-end.json",
+                "limits": "Start/end observations; cannot detect transient changes reverted between snapshots",
+            }
+        except (SourceIntegrityError, OSError) as exc:
+            set_row(report, "input_identity", "FAIL", str(exc))
+            report["source_verification"] = {"status": "FAIL", "reason": str(exc)}
+            save_json(output / "source-end-error.json", report["source_verification"])
         resource_ok = bool(recorder.rows) and not recorder.sampler_error and all(row["status"] == "PASS" for row in recorder.rows)
         set_row(report, "resources", "PASS" if resource_ok else "FAIL",
                 "阶段耗时、原生RSS采样峰值与OS累计峰值已记录；无性能SLA" if resource_ok else "存在失败阶段或RSS采样失败；见events.jsonl")
