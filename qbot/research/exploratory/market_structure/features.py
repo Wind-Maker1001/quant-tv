@@ -234,19 +234,25 @@ def compute_features(
             unmapped = market_amount - mapped_amount
             if not np.isclose(allocated, mapped_amount, atol=1e-8, rtol=1e-12):
                 raise ContractError("industry/concept amount conservation failed")
-            conservations.append(
-                dict(
-                    family=family,
-                    namespace=namespace,
-                    allocated_amount=allocated,
-                    mapped_amount=mapped_amount,
-                    unmapped_amount=unmapped,
-                    market_amount=market_amount,
-                    error=allocated - mapped_amount,
-                    frequency=request.frequency,
-                    observation_end=request.observation_end.isoformat(),
+            if "minute_amount" in needed:
+                conservations.append(
+                    dict(
+                        family=family,
+                        namespace=namespace,
+                        allocated_amount=allocated,
+                        mapped_amount=mapped_amount,
+                        unmapped_amount=unmapped,
+                        market_amount=market_amount,
+                        error=allocated - mapped_amount,
+                        frequency=request.frequency,
+                        observation_end=request.observation_end.isoformat(),
+                        status=(
+                            "VERIFIED"
+                            if amount_coverage == 1.0
+                            else "INCOMPLETE_AMOUNT_COVERAGE"
+                        ),
+                    )
                 )
-            )
             if family == "concept":
                 for security in request.universe:
                     count = local[local.security_id == security].group_id.nunique()
@@ -287,6 +293,22 @@ def compute_features(
         if needs_graph
         else []
     )
+    graph_identities = set()
+    for scope in scopes:
+        identity = (
+            scope.payload.get("namespace"),
+            scope.payload.get("taxonomy_version"),
+        )
+        if any(not isinstance(value, str) or not value.strip() for value in identity):
+            raise ContractError("explicit supply-chain namespace/version required")
+        graph_identities.add(identity)
+    if len(graph_identities) > 1:
+        raise ContractError("ambiguous supply-chain scope")
+    graph_namespace, graph_version = (
+        next(iter(graph_identities))
+        if graph_identities
+        else ("UNAVAILABLE_SUPPLY_SCOPE", None)
+    )
     needs_upstream = bool(set(wanted) & {"SC_UPSTREAM_COUNT", "SC_UPSTREAM_RET"})
     needs_downstream = "SC_DOWNSTREAM_COUNT" in wanted
     edges = (
@@ -306,6 +328,14 @@ def compute_features(
     qualified = set()
     for edge in edges:
         p = edge.payload
+        if "namespace" in p or "taxonomy_version" in p:
+            if not p.get("namespace") or not p.get("taxonomy_version"):
+                raise ContractError("explicit edge namespace/version required together")
+            if (p["namespace"], p["taxonomy_version"]) != (
+                graph_namespace,
+                graph_version,
+            ):
+                raise ContractError("edge does not match selected supply-chain scope")
         confidence = real_number(p["confidence"], "relationship confidence", True)
         if confidence > 1 or p["upstream"] == p["downstream"]:
             raise ContractError("invalid directed relationship/confidence")
@@ -324,7 +354,7 @@ def compute_features(
             emit(
                 name,
                 security,
-                "synthetic_supply",
+                graph_namespace,
                 float(len(neighbors)) if graph_complete else np.nan,
                 1.0 if graph_complete else 0.0,
                 "OK" if graph_complete else "INCOMPLETE_GRAPH_SCOPE",
@@ -339,7 +369,7 @@ def compute_features(
         emit(
             "SC_UPSTREAM_RET",
             security,
-            "synthetic_supply",
+            graph_namespace,
             ret,
             cov,
             (
