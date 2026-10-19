@@ -114,6 +114,13 @@ def memberships(store, family, request):
         for r in store.snapshot("scope", request.observation_end, request.as_of)
         if r.payload.get("family") == family
     ]
+    for scope in scopes:
+        if any(
+            not isinstance(scope.payload.get(key), str)
+            or not scope.payload[key].strip()
+            for key in ("namespace", "taxonomy_version")
+        ):
+            raise ContractError("explicit scope namespace/version strings required")
     if not scopes or len({r.payload["namespace"] for r in scopes}) != len(scopes):
         raise ContractError("explicit unique source scopes required")
     complete = {
