@@ -62,6 +62,8 @@ class Session:
     segments: tuple
 
     def __post_init__(self):
+        if not isinstance(self.session_id, str) or not self.session_id.strip():
+            raise ContractError("explicit nonempty session ID string required")
         parsed = tuple((instant(a), instant(b)) for a, b in self.segments)
         if not parsed or any(
             b <= a or (b - a) % pd.Timedelta(minutes=1) for a, b in parsed
@@ -121,6 +123,14 @@ def memberships(store, family, request):
             for key in ("namespace", "taxonomy_version")
         ):
             raise ContractError("explicit scope namespace/version strings required")
+        groups = scope.payload.get("group_ids")
+        if (
+            not isinstance(groups, (tuple, list))
+            or not groups
+            or any(not isinstance(g, str) or not g.strip() for g in groups)
+            or len(set(groups)) != len(groups)
+        ):
+            raise ContractError("unique nonempty taxonomy group IDs required")
     if not scopes or len({r.payload["namespace"] for r in scopes}) != len(scopes):
         raise ContractError("explicit unique source scopes required")
     complete = {

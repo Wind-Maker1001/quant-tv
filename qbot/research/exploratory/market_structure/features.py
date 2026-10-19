@@ -470,7 +470,16 @@ def compute_features(
         else (dict(status="MARKET_CONTEXT_NOT_REQUESTED"), ())
     )
     selected_hash = snapshot_digest(used)
-    context_hash = snapshot_digest(benchmark_records)
+    context_hash = (
+        digest(
+            dict(
+                benchmark_input_sha256=snapshot_digest(benchmark_records),
+                calendar_sha256=context["calendar_sha256"],
+            )
+        )
+        if include_market_context
+        else snapshot_digest(())
+    )
     identity = digest(
         dict(
             request=request.as_dict(),
@@ -508,6 +517,7 @@ def compute_features(
                 for r in benchmark_records
             ],
             context_input_sha256=context_hash,
+            context_calendar_sha256=context.get("calendar_sha256"),
             include_market_context=include_market_context,
         ),
     )

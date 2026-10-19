@@ -7,10 +7,12 @@ import pandas as pd
 
 from qbot.research.market.regime import build_market_regime_features
 
-from .contracts import ContractError, MARKERS, instant
+from .contracts import ContractError, MARKERS, digest, instant
+from .store import validate_calendar
 
 
 def market_context(store, sessions, request):
+    sessions = validate_calendar(sessions)
     records = store.snapshot("benchmark", request.as_of, request.as_of)
     complete = {s.session_id: s for s in sessions if s.segments[-1][1] <= request.as_of}
     selected = {}
@@ -32,7 +34,13 @@ def market_context(store, sessions, request):
                 raise ContractError("duplicate benchmark session")
             selected[day] = record
     if not selected:
-        return dict(status="MARKET_CONTEXT_UNAVAILABLE"), ()
+        return (
+            dict(
+                status="MARKET_CONTEXT_UNAVAILABLE",
+                calendar_sha256=calendar_digest(complete.values()),
+            ),
+            (),
+        )
     last = max(selected, key=lambda day: complete[day].segments[-1][1])
     ordered = sorted(
         (
@@ -66,9 +74,25 @@ def market_context(store, sessions, request):
         source_sha256=rec.sha256,
         age_seconds=(request.as_of - rec.observation_end).total_seconds(),
         missing_session_count=int(frame["adj_close"].isna().sum()),
+        calendar_sha256=calendar_digest(ordered),
     )
     result.update(computed.iloc[-1].drop(labels=["date"]).to_dict())
     return result, tuple(selected.values())
+
+
+def calendar_digest(sessions):
+    """Bind the applicable UTC calendar, independent of caller input ordering."""
+    return digest(
+        [
+            dict(
+                session_id=s.session_id,
+                segments=[(a.isoformat(), b.isoformat()) for a, b in s.segments],
+            )
+            for s in sorted(
+                sessions, key=lambda item: (item.segments[-1][1], item.session_id)
+            )
+        ]
+    )
 
 
 @dataclass(frozen=True)
