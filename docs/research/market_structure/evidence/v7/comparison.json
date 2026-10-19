@@ -1,0 +1,22 @@
+{
+  "catalog_sha256": "b5bcfd0340f3483d3ea71716f56a2d655a062d26b38329aa96719eea194202cb",
+  "changed_artifacts": {
+    "market_context.csv": {
+      "v6": "0d0520a9ed3ab3af3937b0851c9b888ae2cdc369ad5da048cf2a3fa733be011c",
+      "v7": "cfc71fe940bc9c47a593b9b09696c1a179723b750e8bc175ae1077a352decb8c"
+    },
+    "snapshots.csv": {
+      "v6": "63a2558d5ca8d25110364ad048489f0b8636ef11e541b8c33471a2f9f750998e",
+      "v7": "713c5ad761e6d1fbaa936ca5eb4b9d4df352b5029f31f65b1c70d6fccb2f9cee"
+    }
+  },
+  "changed_diagnostic_windows": 0,
+  "default_snapshots_equal": false,
+  "default_values_reasons_coverage_equal": true,
+  "diagnostic_windows": 1728,
+  "numeric_value_sha256": "a827c4d959c50174089d0c87731b6d339373e74b9129c211ec4b53e2b9bbf3e1",
+  "reason": "V7 validates taxonomy group IDs and binds context identity to the actually used canonical calendar. Feature values, missing reasons, coverage, feature-input hashes and diagnostic correlations remain identical. Full output and context/snapshot artifact hashes change because calendar identity is now bound; previous hashes remain immutable.",
+  "source_receipt_revision_note": "Runner retains its legacy V4 evidence_revision annotation; this new acceptance and directory explicitly bind the V7 execution and current source hashes. No previous receipt rewritten.",
+  "v6_output_value_sha256": "468d3e8f5e4a2b5b34a1a9c8d2474cfc9586a5ae1b56023a33edf957f3532f44",
+  "v7_output_value_sha256": "ec45396178ead61f6202476a1fb6db85817baabd1408aff3ccf2b448a2b5dc08"
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.478" timestamp="2026-10-19T20:06:24.493557+08:00" hostname="Desktop"><testcase classname="tests.market_structure.test_review_calendar_red" name="test_group_string_cannot_prove_complete_empty_taxonomy" time="0.014"><failure message="Failed: DID NOT RAISE &lt;class 'qbot.research.exploratory.market_structure.contracts.ContractError'&gt;">manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+
+    def test_group_string_cannot_prove_complete_empty_taxonomy(manual):
+        records = [replace(r, payload=dict(r.payload, group_ids="C0"))
+                   if r.fact_id == "scope-concept" else r for r in manual.records
+                   if not (r.kind == "membership" and r.payload["family"] == "concept")]
+        with pytest.raises(ContractError, match="taxonomy group IDs"):
+&gt;           compute_features(AsOfStore(records), manual.sessions, manual.request, ["THEME_MEMBERSHIP_COUNT"])
+E           Failed: DID NOT RAISE &lt;class 'qbot.research.exploratory.market_structure.contracts.ContractError'&gt;
+
+tests\market_structure\test_review_calendar_red.py:18: Failed</failure></testcase><testcase classname="tests.market_structure.test_review_calendar_red" name="test_different_used_calendar_grids_cannot_share_context_snapshot" time="0.186"><failure message="AssertionError: assert '0a988ce0289861dc906349f56b0ce86888396c1edf0081b96586fc1525caa288' != '0a988ce0289861dc906349f56b0ce86888396c1edf0081b96586fc1525caa288'">def test_different_used_calendar_grids_cannot_share_context_snapshot():
+        bundle = make_synthetic_data(stock_count=4, session_count=1)
+        missing = bundle.context_sessions[-4].session_id
+        records = [r for r in bundle.records() if not (r.kind == "benchmark" and r.payload["session_id"] == missing)]
+        request = next(window_requests(bundle.sessions, bundle.universe, 5))
+        store = AsOfStore(records)
+        before = compute_features(store, bundle.context_sessions, request, ["BREADTH_ADVANCE_RATIO"])
+        after = compute_features(store, [s for s in bundle.context_sessions if s.session_id != missing], request, ["BREADTH_ADVANCE_RATIO"])
+        assert before.context["missing_session_count"] != after.context["missing_session_count"]
+        assert before.selected_input_sha256 == after.selected_input_sha256
+&gt;       assert before.source_trace["context_input_sha256"] != after.source_trace["context_input_sha256"]
+E       AssertionError: assert '0a988ce0289861dc906349f56b0ce86888396c1edf0081b96586fc1525caa288' != '0a988ce0289861dc906349f56b0ce86888396c1edf0081b96586fc1525caa288'
+
+tests\market_structure\test_review_calendar_red.py:31: AssertionError</failure></testcase></testsuite></testsuites>

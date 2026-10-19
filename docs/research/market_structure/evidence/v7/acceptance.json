@@ -1,0 +1,57 @@
+{
+  "candidate_count": 32,
+  "coverage": {
+    "covered_branches": 374,
+    "covered_lines": 957,
+    "excluded_lines": 0,
+    "missing_branches": 48,
+    "missing_lines": 47,
+    "num_branches": 422,
+    "num_partial_branches": 48,
+    "num_statements": 1004,
+    "percent_covered": 93.33800841514727,
+    "percent_covered_display": "93"
+  },
+  "coverage_source_count": 10,
+  "evidence_revision": "V7",
+  "external_ci_and_review": "PENDING_FINAL_HEAD; actual remote records to be checked separately",
+  "formal_status": "BLOCKED",
+  "forward_status": "BLOCKED",
+  "frequencies": [
+    5,
+    15,
+    30
+  ],
+  "implementation_commit": "45fbf5650cd133138a26a3f6e3bff82c292c64ba",
+  "implemented_count": 14,
+  "independent_tests": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 221
+  },
+  "installation_package_status": "NOT_VALIDATED",
+  "new_review_findings": [
+    4313525755,
+    4313525762
+  ],
+  "no_live_money": true,
+  "original_tests_preserved": 55,
+  "prior_evidence_preserved": true,
+  "prior_v6_tests_preserved": 191,
+  "python": "3.9.25 (main, Nov  3 2025, 22:44:01) [MSC v.1929 64 bit (AMD64)]",
+  "real_research_status": "REAL_RESEARCH_BLOCKED",
+  "red_tests": {
+    "errors": 0,
+    "failures": 2,
+    "skipped": 0,
+    "tests": 2
+  },
+  "software_status": "SOFTWARE_MVP_SUCCESS",
+  "targeted_tests": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 159
+  }
+}
