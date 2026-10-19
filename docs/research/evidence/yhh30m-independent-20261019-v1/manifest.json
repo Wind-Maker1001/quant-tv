@@ -1,0 +1,163 @@
+{
+  "artifacts": [
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/.gitattributes",
+      "sha256": "730a35ae3d558080083c3103d9ac8100c3f6561678092abe341701dfa331eb1d"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/data-review.json",
+      "sha256": "b200fef7b9a6817c4974f9d0f5b350312b701e4f7abf80e952927843df964609"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/day-reproduction.json",
+      "sha256": "d4609e4dd7bea083ba49e4a488fa030834811a549e3ab76847a6bfe7dc8fa264"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/exception-groups.csv",
+      "sha256": "45f94bfc63b17878e887ed6e1361c9a709a5bae8e966119b4562ed41a1f0cca3"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/factor-neighborhood.json",
+      "sha256": "2dcdf6589b6cf1c8cf7b1deff1a6d8cc4ee91d0f5280d013ca85f224f8e1230a"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/invariants.json",
+      "sha256": "e76585f342d4ce4b63493f6651d3fac9ec926db800de529aff464de518c672f4"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/negative-forensics.json",
+      "sha256": "c413c207956ec7c7f0d920dbea39f858852c460eaf1f7697c75d7c825587883c"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/raw-exception-lexemes.json",
+      "sha256": "b4b547b089efb464dff1db62837e1ec90418aacd7334064d325295acb3cac02e"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/README.md",
+      "sha256": "a72d14c6da0c7e86fb7beee0fed13d626bf73a3b805ea060adb9f44113f9eb4e"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/sources.json",
+      "sha256": "c5e13ade11bf108a3a97ba98c7e7b2f8efe3788ed70ac1cf3bfa1acb6081f555"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/structure-boundary.json",
+      "sha256": "5372d5f052ccaa68c2d454e126b5c1d115721ac4ce9abd5f3ffd634de13a91aa"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/temporal-review.json",
+      "sha256": "0780590b894757dfe09c5540e418128dc697612f45f71a2418ec08269e673bea"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/test-results.json",
+      "sha256": "7e45ca89ae7fa9b0ef3bf5c86f85612279127c96f779c701e9f9e9b63b6adff4"
+    },
+    {
+      "hash_mode": "LF_CANONICAL_TEXT",
+      "path": "docs/research/YHH_30M_INDEPENDENT_ACCEPTANCE.md",
+      "sha256": "403e80d57e776c50d70177d00335ac1803db9948c512995568f8a5b6c5878f90"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/latest-main-review.json",
+      "sha256": "c34282a6c2dde1760964c3fe5221f120779806c7573f832ca479eef6771a3d41"
+    },
+    {
+      "hash_mode": "LF_CANONICAL_TEXT",
+      "path": "docs/research/YHH_30M_CURRENT_USAGE.md",
+      "sha256": "731804132532ff9c3688c7ad225589fc47433fbe165b9c82328d6b853b4b3f93"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/ci-remediation.json",
+      "sha256": "222f4dc9e18d5de624d64645b38a223ea690b7758a2616a8f6cb87d769cf0936"
+    },
+    {
+      "hash_mode": "EXACT_BYTES",
+      "path": "docs/research/evidence/yhh30m-independent-20261019-v1/minute-ci-contract.json",
+      "sha256": "4b8efaa98517682865c7bf19a6e337fec3bb7a86cc52814daec8871b20f696fa"
+    },
+    {
+      "hash_mode": "LF_CANONICAL_TEXT",
+      "path": ".github/workflows/minute-data-evidence.yml",
+      "sha256": "18216caf997ff2ef65bb41dc99e8780d85a9ab5a12733f949d0b6c328f6d6ecb"
+    }
+  ],
+  "candidate_reader_and_producer_digest": "1713ef810e84fd56cc054b548270e72638385aa776fe32082cbb0466edbbddc3",
+  "created_at_utc": "2026-10-18T16:43:52.263371+00:00",
+  "financial_conditions": [
+    "VENDOR_TIMESTAMP_INTERVAL_AND_TIMEZONE_CONTRACT",
+    "VENDOR_VOLUME_AMOUNT_AND_FACTOR_METHOD",
+    "EXCEPTION_EXPLANATIONS_OR_VERSIONED_CORRECTIONS",
+    "HISTORICAL_STABLE_SECURITY_IDENTITIES",
+    "QUALIFIED_HFQ_COMPANY_ACTIONS_AND_PIT_STATUS",
+    "SEPARATE_FORWARD_REGISTRATION_AND_ADMISSION"
+  ],
+  "formal_financial_data_admission": "FAIL",
+  "full_conversion_repeated": false,
+  "historical_producer_digest": "8e59c7058e9c96721cc376ba795a5e31da78671bfb05b89330653406650619c2",
+  "initial_main_base_commit": "39eecf869c9c2075ba3f6e3c76aeba3338c63432",
+  "main_base_commit": "5cb4225d6190bdf27b609a325e560421e4211922",
+  "market_structure_branch_merged": false,
+  "no_live_money": true,
+  "original_monthly_parquet_rewritten": false,
+  "overall_verdict": "CONDITIONAL_PASS",
+  "pre_namespace_reader_and_producer_digest": "ce629cf89a5398000e77c935428ad1fa2424d87187590a99851afbb7b780c9ca",
+  "review_date_local": "2026-10-19",
+  "reviewed_producer_commit": "129dbbd201fd640d58b0d787bd0089883c9dd402",
+  "runtime_namespace": "qbot.engineering.yhh30m",
+  "runtime_source_files": [
+    {
+      "path": "qbot/engineering/yhh30m/__init__.py",
+      "sha256": "cf2a062dd87420b13ea47d80d826621d809dfaff0d27fdb57175fdc43fcfbbb8"
+    },
+    {
+      "path": "qbot/engineering/yhh30m/__main__.py",
+      "sha256": "cb7503e67057c9892d37f190de51bd4fd2b7d1a803528103f52ea5df76db80dd"
+    },
+    {
+      "path": "qbot/engineering/yhh30m/contract.py",
+      "sha256": "5f6635b29180cc3af6da6732cd42facb4855d07feec7729f66be50a351bc59ca"
+    },
+    {
+      "path": "qbot/engineering/yhh30m/conversion.py",
+      "sha256": "2215c3c2c19f78be19507406b978242fef8b08eb771fa7a0663e5e996ede4940"
+    },
+    {
+      "path": "qbot/engineering/yhh30m/normalize.py",
+      "sha256": "f4c7817f3005302e1e53f8324cda710f9550c6ef6457f16c82700ab681458419"
+    },
+    {
+      "path": "qbot/engineering/yhh30m/provider.py",
+      "sha256": "20dfd46258893fb707bf90209837d0a387db5203e1d07d9789d72007047a4d29"
+    },
+    {
+      "path": "qbot/engineering/yhh30m/source.py",
+      "sha256": "0fb5b68acc425c12c3dd21e9c438784c54cee29283d2be929cc8034a06f056f7"
+    },
+    {
+      "path": "qbot/engineering/yhh30m/storage.py",
+      "sha256": "d7844f4b9d8e936d18b690623383261227c8aea1eb453baeafc175da379c3092"
+    },
+    {
+      "path": "qbot/engineering/yhh30m/validation.py",
+      "sha256": "e7d6cb5458949895089d21523e4f211410ab3cf7009c2eb7268b3a301269accc"
+    }
+  ],
+  "schema": "YHH_INDEPENDENT_ACCEPTANCE_RELEASE_V1",
+  "software_merge_eligibility": "PASS_ONLY_AFTER_LATEST_ORIGINAL_AND_MINUTE_CI_SUCCEED;ENGINEERING_AND_EXPLORATORY_ONLY",
+  "updated_at_utc": "2026-10-19T04:06:44.630011+00:00"
+}

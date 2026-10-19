@@ -1,0 +1,131 @@
+{
+  "all_partitions_output_roundtrip_verified": true,
+  "audit_evidence": {
+    "daily-counts.csv": "bc73a88d8f3c0a8a0214010ffa796ae15091164e40be1441400904a92995214a",
+    "final-verification.json": "7a4e174a27f6a478eb9795546aa33cf304de176e6edbfd316eeacd2f7b359e82",
+    "input-hashes.json": "9e36ce8f75fa40371974fa6464c99faf08480eb3ec515f3208c09dd7e9b1bb83",
+    "input-hashes.json:original_sha256": "14a9b74946168a234128bc9cf4bbc6fd38077e097fa17c65d5fe0553f9bb8f5b",
+    "publication_manifest_sha256": "a9ee513e0eed0f88cb6aa6c26bee81951a9de82167750c39410c78292c3b60ec",
+    "summary.json": "5b6853f006d7487822e030f2b935ee637ef375c17d1d30f95bc57577b4d01f2e",
+    "summary.json:original_sha256": "b4cd715e3c42517f3195021b15e6c6a8c585ddf0f697ca8aa0c150740e10d9f0"
+  },
+  "checks": {
+    "negative_amount_rows": 12,
+    "negative_volume_rows": 13,
+    "nonfinite_numeric_cells": 126,
+    "nonpositive_factor_rows": 0,
+    "nonpositive_price_rows": 0,
+    "null_cells": 126,
+    "ohlc_logic_rows": 0,
+    "outside_nine_label_rows": 189364,
+    "zero_amount_rows": 491974,
+    "zero_volume_rows": 491974
+  },
+  "conversion_elapsed_seconds": 676.2663772,
+  "conversion_finished_at_utc": "2026-10-18T12:43:41.085363+00:00",
+  "conversion_run_peak_rss_bytes": 2696474624,
+  "conversion_started_at_utc": "2026-10-18T12:32:24.822310+00:00",
+  "dataset_relative_root": "data/research/yhh30m/full-v1",
+  "dataset_selection_id": "41290301fce8030b96bcc35007101934dcf11d7b95258cf69cbe66c2b79da293",
+  "dataset_sha256": "2809a017e9b9cc1ba74386a5faa79650025e930056dc4e617db5114626c00f9a",
+  "days": 1393,
+  "evidence_tests_passed": 108,
+  "final_smoke": {
+    "adapter_read_rows": 9,
+    "implementation_matches_dataset": true,
+    "source_inventory_still_matches": true,
+    "tdx_files": 18743,
+    "tdx_metadata_unchanged": true
+  },
+  "first_date": "2021-01-04",
+  "flags": {
+    "invalid_ohlc": 0,
+    "missing_numeric": 126,
+    "negative_amount": 12,
+    "negative_volume": 13,
+    "nonfinite_numeric": 126,
+    "nonpositive_price": 0,
+    "outside_regular_session": 189364,
+    "unrecognized_time_label": 189364
+  },
+  "formal_admission": false,
+  "implementation_sha256": "8e59c7058e9c96721cc376ba795a5e31da78671bfb05b89330653406650619c2",
+  "last_date": "2026-09-30",
+  "loose_csv_files": 181,
+  "max_csv_batch_rows": 10805,
+  "max_process_peak_rss_bytes": 2653691904,
+  "missing": {
+    "adjustment_factor_vendor": 126,
+    "amount_vendor": 0,
+    "close": 0,
+    "high": 0,
+    "low": 0,
+    "open": 0,
+    "security_name": 0,
+    "symbol": 0,
+    "timestamp_local": 0,
+    "trade_date": 0,
+    "volume_vendor": 0
+  },
+  "no_live_money": true,
+  "parquet_bytes": 1856010631,
+  "partitions": 69,
+  "pilots": {
+    "day-v2": {
+      "days": 1,
+      "first_date": "2021-01-04",
+      "independent_pilot": {
+        "primary_keys_unique": true,
+        "selected_input_output_rows_equal": true,
+        "status": "PASS",
+        "stdlib_csv_samples_all_11_fields_equal": 5,
+        "whole_daily_input_one_shot_vs_streaming_equal": 1
+      },
+      "last_date": "2021-01-04",
+      "rows": 37143,
+      "verified_at_utc": "2026-10-18T12:31:37.744372+00:00"
+    },
+    "month-v2": {
+      "days": 14,
+      "first_date": "2026-02-02",
+      "independent_pilot": {
+        "primary_keys_unique": true,
+        "selected_input_output_rows_equal": true,
+        "status": "PASS",
+        "stdlib_csv_samples_all_11_fields_equal": 70,
+        "whole_daily_input_one_shot_vs_streaming_equal": 14
+      },
+      "last_date": "2026-02-27",
+      "rows": 690669,
+      "verified_at_utc": "2026-10-18T12:31:56.151820+00:00"
+    }
+  },
+  "primary_key_unique_all_days": true,
+  "rows": 64115523,
+  "schema": "FACTORLAB_YHH_ACCEPTANCE_V1",
+  "software_verification": {
+    "network_tests": "2_DESELECTED_BY_EXISTING_DEFAULT_NOT_NETWORK_POLICY",
+    "production_code_or_gate_changed_for_correction": false,
+    "research_unique_cases_with_passing_evidence": 3165,
+    "status": "PASS_AFTER_DOCUMENTED_WINDOWS_TEMP_LAYOUT_CORRECTION"
+  },
+  "source_containers": 186,
+  "source_days_complete_against_audit_selection": true,
+  "source_read_only_and_stat_checks": "PASS",
+  "source_roundtrip_samples": 6965,
+  "status": "ENGINEERING_CONVERSION_AND_ACCEPTANCE_COMPLETE",
+  "time_labels": {
+    "09:30:00": 7108991,
+    "10:00:00": 7095301,
+    "10:30:00": 7108991,
+    "11:00:00": 7095301,
+    "11:30:00": 7108991,
+    "13:30:00": 7095301,
+    "14:00:00": 7108991,
+    "14:30:00": 7095301,
+    "15:00:00": 7108991,
+    "15:30:00": 189364
+  },
+  "verified_at_utc": "2026-10-18T12:44:13.268549+00:00",
+  "zip_archives": 5
+}

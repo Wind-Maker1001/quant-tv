@@ -1,0 +1,121 @@
+{
+  "failed_run": {
+    "artifact_advertised_sha256": "30b7c81b046a3a253b17b098b6c7744bf8b7ac11932983600c8bbf446257c3ed",
+    "coverage_sha256": "1d5ee2e47ece244798760285c734e65cd3df6a35385615825fdbaa79f08ed7e0",
+    "failure": "Frozen test collection changed: all_ids",
+    "junit_sha256": "7d8477351f561db910248011514b972aa3580745687447fe2a9da2717b05ff8e",
+    "pytest_counts": {
+      "errors": 0,
+      "failures": 0,
+      "passed": 3175,
+      "skipped": 1,
+      "tests": 3176
+    },
+    "run_id": 39148081596,
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/39148081596",
+    "workflow_outcome": "FAILURE"
+  },
+  "formal_admission": false,
+  "full_new_source_inventory": 9,
+  "local_negative_validator_probes": {
+    "lost_required_coverage_hit": "PASS_EXPECTED_REJECTION",
+    "missing_test_case": "PASS_EXPECTED_REJECTION"
+  },
+  "new_coverage_policy": "EXACT_VALID_LINE_INVENTORY_AND_NO_LOSS_OF_PREVIOUS_PLATFORM_HITS",
+  "new_runtime_module": "qbot.engineering.yhh30m",
+  "new_suite": "tests/minute_data",
+  "new_suite_tests": 42,
+  "new_workflow": ".github/workflows/minute-data-evidence.yml",
+  "no_formal_factors_added": true,
+  "no_full_reconversion": true,
+  "no_live_money": true,
+  "old_production_reports_and_hashes_preserved": true,
+  "original_core_source_and_tests_changed": false,
+  "original_frozen_collection_exact_match": {
+    "all_ids": {
+      "count": 3144,
+      "sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b"
+    },
+    "deselected_ids": {
+      "count": 2,
+      "sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d"
+    },
+    "selected_ids": {
+      "count": 3142,
+      "sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+    }
+  },
+  "original_frozen_gate_files_changed": false,
+  "post_namespace_full_reader_verify": {
+    "formal_admission": false,
+    "implementation_sha256": "1713ef810e84fd56cc054b548270e72638385aa776fe32082cbb0466edbbddc3",
+    "partitions": 69,
+    "rows": 64115523,
+    "status": "VERIFIED"
+  },
+  "protected_files": [
+    "pytest.ini",
+    ".github/workflows/research-tests.yml",
+    ".github/scripts/ci/validate_execution.py",
+    "docs/research/evidence/ci-runtime-optimization-v1/baseline-collection.json"
+  ],
+  "runtime_relocation": [
+    {
+      "change": "BYTE_IDENTICAL",
+      "file": "__init__.py"
+    },
+    {
+      "change": "CLI_DOCSTRING_ONLY",
+      "file": "__main__.py"
+    },
+    {
+      "change": "BYTE_IDENTICAL",
+      "file": "contract.py"
+    },
+    {
+      "change": "BYTE_IDENTICAL",
+      "file": "conversion.py"
+    },
+    {
+      "change": "BYTE_IDENTICAL",
+      "file": "normalize.py"
+    },
+    {
+      "change": "BYTE_IDENTICAL",
+      "file": "provider.py"
+    },
+    {
+      "change": "BYTE_IDENTICAL",
+      "file": "source.py"
+    },
+    {
+      "change": "BYTE_IDENTICAL",
+      "file": "storage.py"
+    },
+    {
+      "change": "BYTE_IDENTICAL",
+      "file": "validation.py"
+    }
+  ],
+  "schema": "YHH_FROZEN_CI_COMPATIBILITY_REMEDIATION_V1",
+  "test_relocation": [
+    {
+      "assertions_preserved": true,
+      "change": "IMPORT_NAMESPACE_ONLY",
+      "current": "tests/minute_data/test_yhh30m.py",
+      "previous": "tests/research/test_yhh30m.py"
+    },
+    {
+      "assertions_preserved": true,
+      "change": "IMPORT_NAMESPACE_ONLY",
+      "current": "tests/minute_data/test_yhh30m_review.py",
+      "previous": "tests/research/test_yhh30m_review.py"
+    },
+    {
+      "assertions_preserved": true,
+      "change": "IMPORT_NAMESPACE_ONLY",
+      "current": "tests/minute_data/test_yhh30m_release_review.py",
+      "previous": "tests/evidence/test_yhh30m_release_review.py"
+    }
+  ]
+}

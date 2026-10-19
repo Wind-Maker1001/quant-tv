@@ -1,0 +1,36 @@
+{
+  "docx_download_attempts": "302_REDIRECT_LOOP;NOT_USED_AS_RAW_ORIGINAL_EVIDENCE",
+  "formal_admission": false,
+  "mapping_page": "JS/navigation-only representation; not used to certify security identities",
+  "raw_http_or_docx_bytes_verified": false,
+  "retrieval_surface": "FIRECRAWL_PARSED_OFFICIAL_PAGE_MARKDOWN",
+  "review_date_local": "2026-10-19",
+  "schema": "YHH_INDEPENDENT_OFFICIAL_SOURCE_INDEX_V1",
+  "source_pages": [
+    {
+      "publication_date": "2021-11-02",
+      "retrieved_markdown_sha256": "ad482cb5cd26952eb90e8fbc1b75d761c3a33d7f0d3544e744dbbf72da5ddfea",
+      "rule_general_effective_date": "2021-11-15",
+      "supported_scope": "Distinguishes auction sessions, block confirmation at 15:00-15:30, and block volume entering daily totals after completion. Does not define vendor CSV labels.",
+      "title": "北京证券交易所交易规则（试行）",
+      "url": "https://www.bse.cn/jygl_list/200010919.html"
+    },
+    {
+      "publication_date": "2026-04-24",
+      "retrieved_markdown_sha256": "379579f2c23f1ba4926604557e74dfd73e6c692e265a11a3b9b8f4b4874dc1a8",
+      "rule_general_effective_date": "2026-07-06",
+      "supported_scope": "Announcement explicitly defers clauses 3.7.1-3.7.10 to a separately notified effective date; general effective date does not certify vendor 15:30 bars.",
+      "title": "关于发布《北京证券交易所交易规则》的公告",
+      "url": "https://www.bse.cn/jygl_list/200028217.html"
+    },
+    {
+      "publication_date": "2024-04-19",
+      "retrieved_markdown_sha256": "1493fb0539e5ea00c5c28b2f67e4b451b399943c61762c1ae80f5f79b0c9817a",
+      "rule_general_effective_date": "2024-04-22",
+      "supported_scope": "920 code namespace launch; not a complete per-security historical identity mapping.",
+      "title": "北交所将于4月22日上线启用920代码号段功能",
+      "url": "https://www.bse.cn/important_news/200021629.html"
+    }
+  ],
+  "vendor_method_contract_available": false
+}
