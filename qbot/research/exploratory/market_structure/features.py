@@ -66,11 +66,15 @@ def compute_features(
         request,
         include_minutes=needs_minutes,
         include_flow=needs_flow,
+        include_prices="minute_ohlcv" in needed,
+        include_amounts="minute_amount" in needed,
     )
     bars = aggregated.frame.set_index("security_id")
     valid = bars.reason.eq("OK")
     market_coverage = float(valid.mean())
-    market_amount = float(bars.loc[valid, "amount"].sum())
+    amount_valid = bars.amount_reason.eq("OK")
+    amount_coverage = float(amount_valid.mean())
+    market_amount = float(bars.loc[amount_valid, "amount"].sum())
     used = list(aggregated.records)
     rows, conservations, industry_returns = [], [], {}
     industry_namespaces = set()
@@ -131,10 +135,15 @@ def compute_features(
                 weights = good.weight.astype(float)
                 total_weight = float(group.weight.astype(float).sum())
                 coverage = float(weights.sum() / total_weight) if total_weight else 0.0
+                amount_good = group[group.security_id.isin(bars.index[amount_valid])]
+                amount_weights = amount_good.weight.astype(float)
+                group_amount_coverage = (
+                    float(amount_weights.sum() / total_weight) if total_weight else 0.0
+                )
                 amount = float(
                     sum(
                         float(w) * bars.at[s, "amount"]
-                        for s, w in zip(good.security_id, weights)
+                        for s, w in zip(amount_good.security_id, amount_weights)
                     )
                 )
                 allocated += amount
@@ -169,7 +178,11 @@ def compute_features(
                     emit("IND_RET", group_id, namespace, ret, coverage, reason)
                     share = (
                         amount / market_amount
-                        if eligible and market_amount > 0 and market_coverage >= 0.8
+                        if len(amount_good) >= 2
+                        and group_amount_coverage >= 0.8
+                        and complete.get(namespace, False)
+                        and market_amount > 0
+                        and amount_coverage >= 0.8
                         else np.nan
                     )
                     emit(
@@ -177,14 +190,19 @@ def compute_features(
                         group_id,
                         namespace,
                         share,
-                        min(coverage, market_coverage),
+                        min(group_amount_coverage, amount_coverage),
                         (
-                            reason
-                            if reason != "OK"
+                            "OK"
+                            if np.isfinite(share)
                             else (
-                                "OK"
-                                if np.isfinite(share)
-                                else "ZERO_DENOMINATOR_OR_COVERAGE"
+                                "INCOMPLETE_SOURCE_SCOPE"
+                                if not complete.get(namespace, False)
+                                else (
+                                    "INSUFFICIENT_GROUP_COVERAGE"
+                                    if len(amount_good) < 2
+                                    or group_amount_coverage < 0.8
+                                    else "ZERO_DENOMINATOR_OR_COVERAGE"
+                                )
                             )
                         ),
                     )
@@ -211,7 +229,7 @@ def compute_features(
                         reason,
                     )
             mapped_amount = float(
-                bars.loc[bars.index.isin(mapped) & valid, "amount"].sum()
+                bars.loc[bars.index.isin(mapped) & amount_valid, "amount"].sum()
             )
             unmapped = market_amount - mapped_amount
             if not np.isclose(allocated, mapped_amount, atol=1e-8, rtol=1e-12):
@@ -387,8 +405,8 @@ def compute_features(
             "OK" if np.isfinite(ratio) else "UNKNOWN_LIMIT_STATE_OR_COVERAGE",
         )
     hhi = (
-        float(((bars.loc[valid, "amount"] / market_amount) ** 2).sum())
-        if market_amount > 0 and market_coverage >= 0.8
+        float(((bars.loc[amount_valid, "amount"] / market_amount) ** 2).sum())
+        if market_amount > 0 and amount_coverage >= 0.8
         else np.nan
     )
     emit(
@@ -396,7 +414,7 @@ def compute_features(
         "MARKET",
         "synthetic_market",
         hhi,
-        market_coverage,
+        amount_coverage,
         "OK" if np.isfinite(hhi) else "ZERO_DENOMINATOR_OR_COVERAGE",
     )
     for namespace in sorted(industry_namespaces):

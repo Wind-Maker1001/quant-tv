@@ -270,6 +270,7 @@ def build_default_registry():
     # MVP contracts name actual dependencies rather than every possible input in
     # their family. Contract-only research candidates retain the broader inputs.
     implemented_inputs = {
+        "IND_AMOUNT_SHARE": ("minute_amount",) + inputs["industry"][1:],
         "THEME_MEMBERSHIP_COUNT": inputs["concept"][1:],
         "SC_UPSTREAM_COUNT": inputs["supply_chain"][1:],
         "SC_DOWNSTREAM_COUNT": inputs["supply_chain"][1:],
@@ -305,7 +306,11 @@ def build_default_registry():
                 implemented,
                 unit="COUNT" if name.endswith("COUNT") else "RATIO",
                 lookback=lookback,
-                definition_version="v2-inputs" if name in implemented_inputs else "v1",
+                definition_version=(
+                    "v4-inputs"
+                    if name == "IND_AMOUNT_SHARE"
+                    else "v2-inputs" if name in implemented_inputs else "v1"
+                ),
             )
         )
     return MarketStructureRegistry(specs)

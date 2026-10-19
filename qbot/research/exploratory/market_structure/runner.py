@@ -258,7 +258,7 @@ def run_synthetic(output, frequencies=(5, 15, 30), seed=20261018):
         numeric_value_sha256=frame_hash(
             values.drop(columns=["selected_input_sha256", "snapshot_id"])
         ),
-        evidence_revision="MARKET_STRUCTURE_CORRECTIONS_V3",
+        evidence_revision="MARKET_STRUCTURE_CORRECTIONS_V4",
         input_sha256=digest(sorted(r.sha256 for r in bundle.records())),
         source_sha256=sources,
         catalog_sha256=digest(registry.catalog()),

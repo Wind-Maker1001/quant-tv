@@ -16,7 +16,14 @@ class AggregationResult:
 
 
 def aggregate_intraday(
-    store, sessions, request, *, include_minutes=True, include_flow=True
+    store,
+    sessions,
+    request,
+    *,
+    include_minutes=True,
+    include_flow=True,
+    include_prices=True,
+    include_amounts=True,
 ):
     sessions = validate_calendar(sessions)
     anchors = [
@@ -30,7 +37,7 @@ def aggregate_intraday(
         minutes=request.frequency
     ):
         raise ContractError("window not aligned/contained in explicit session")
-    if include_flow and not include_minutes:
+    if include_flow and (not include_minutes or not include_amounts):
         raise ContractError("cash classification requires minute observations")
     if request.observation_end > request.as_of or not include_minutes:
         records = ()
@@ -45,8 +52,16 @@ def aggregate_intraday(
         )
         missing_reason = "MISSING_OR_NOT_YET_AVAILABLE_MINUTES"
     records = tuple(r for r in records if r.payload["security_id"] in request.universe)
-    versions = {r.definition_version for r in records}
-    definition_ids = {r.payload.get("flow_definition") for r in records}
+    versions = {r.definition_version for r in records} if include_flow else set()
+    definition_ids = (
+        {
+            r.payload["flow_definition"]
+            for r in records
+            if isinstance(r.payload.get("flow_definition"), str)
+        }
+        if include_flow
+        else set()
+    )
     definitions = (
         tuple(
             r
@@ -101,6 +116,7 @@ def aggregate_intraday(
             unclassified=np.nan,
             unclassified_amount_ratio=np.nan,
             reason=missing_reason,
+            amount_reason=missing_reason,
             flow_reason=missing_reason,
             input_minute_coverage=len(selected) / request.frequency,
         )
@@ -119,37 +135,52 @@ def aggregate_intraday(
             rows.append(row)
             continue
         payloads = [r.payload for r in selected]
-        try:
-            numeric = {
-                k: [real_number(p[k], k, True) for p in payloads]
-                for k in ("open", "high", "low", "close", "volume", "amount")
-            }
-            if any(
-                p.get("unit") != "CNY" or p.get("price_basis") != "SYNTHETIC_RAW"
-                for p in payloads
-            ):
-                raise ContractError("bar unit/price basis mismatch")
-            for i in range(len(selected)):
-                if (
-                    numeric["low"][i] <= 0
-                    or numeric["low"][i] > min(numeric["open"][i], numeric["close"][i])
-                    or numeric["high"][i] < max(numeric["open"][i], numeric["close"][i])
+        if include_amounts:
+            try:
+                amounts = [real_number(p["amount"], "amount", True) for p in payloads]
+                if any(p.get("unit") != "CNY" for p in payloads):
+                    raise ContractError("amount unit mismatch")
+                row.update(
+                    amount=real_number(sum(amounts), "window amount", True),
+                    amount_reason="OK",
+                )
+            except (KeyError, ContractError):
+                row["amount_reason"] = "INVALID_AMOUNT_INPUT"
+        else:
+            row["amount_reason"] = "INPUT_NOT_REQUESTED"
+        if include_prices:
+            try:
+                numeric = {
+                    k: [real_number(p[k], k, True) for p in payloads]
+                    for k in ("open", "high", "low", "close", "volume")
+                }
+                if any(
+                    p.get("unit") != "CNY" or p.get("price_basis") != "SYNTHETIC_RAW"
+                    for p in payloads
                 ):
-                    raise ContractError("invalid OHLC relationship")
-        except (KeyError, ContractError):
-            row.update(reason="INVALID_BAR_INPUT", flow_reason="INVALID_BAR_INPUT")
-            rows.append(row)
-            continue
-        row.update(
-            open=numeric["open"][0],
-            high=max(numeric["high"]),
-            low=min(numeric["low"]),
-            close=numeric["close"][-1],
-            volume=sum(numeric["volume"]),
-            amount=sum(numeric["amount"]),
-            reason="OK",
-        )
-        row["return_value"] = row["close"] / row["open"] - 1
+                    raise ContractError("bar unit/price basis mismatch")
+                for i in range(len(selected)):
+                    if (
+                        numeric["low"][i] <= 0
+                        or numeric["low"][i]
+                        > min(numeric["open"][i], numeric["close"][i])
+                        or numeric["high"][i]
+                        < max(numeric["open"][i], numeric["close"][i])
+                    ):
+                        raise ContractError("invalid OHLC relationship")
+                row.update(
+                    open=numeric["open"][0],
+                    high=max(numeric["high"]),
+                    low=min(numeric["low"]),
+                    close=numeric["close"][-1],
+                    volume=real_number(sum(numeric["volume"]), "window volume", True),
+                    reason="OK",
+                )
+                row["return_value"] = row["close"] / row["open"] - 1
+            except (KeyError, ContractError):
+                row["reason"] = "INVALID_BAR_INPUT"
+        else:
+            row["reason"] = "INPUT_NOT_REQUESTED"
         last = payloads[-1]
         if last.get("limit_definition") == "SYNTHETIC_LIMIT_STATE_V1" and last.get(
             "limit_state"
@@ -159,10 +190,19 @@ def aggregate_intraday(
             row["flow_reason"] = "INPUT_NOT_REQUESTED"
             rows.append(row)
             continue
-        versions = {
-            (r.definition_version, p.get("flow_definition"), p.get("flow_unit"))
-            for r, p in zip(selected, payloads)
-        }
+        if row["amount_reason"] != "OK":
+            row["flow_reason"] = row["amount_reason"]
+            rows.append(row)
+            continue
+        try:
+            versions = {
+                (r.definition_version, p.get("flow_definition"), p.get("flow_unit"))
+                for r, p in zip(selected, payloads)
+            }
+        except TypeError:
+            row["flow_reason"] = "BLOCKED_SOURCE_DEFINITION"
+            rows.append(row)
+            continue
         if len(versions) != 1:
             row["flow_reason"] = "MIXED_SOURCE_DEFINITION"
         elif (
@@ -180,7 +220,7 @@ def aggregate_intraday(
                 if any(
                     not np.isclose(
                         cash["buy"][i] + cash["sell"][i] + cash["unclassified"][i],
-                        numeric["amount"][i],
+                        amounts[i],
                         rtol=1e-12,
                         atol=1e-8,
                     )

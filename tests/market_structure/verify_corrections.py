@@ -49,14 +49,19 @@ def junit(path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--artifacts", type=Path, required=True)
-    parser.add_argument("--revision", choices=("v2", "v3"), default="v2")
+    parser.add_argument("--revision", choices=("v2", "v3", "v4"), default="v2")
     args = parser.parse_args()
     artifacts = args.artifacts.resolve()
     target = ROOT / ("docs/research/market_structure/evidence/" + args.revision)
-    followup = args.revision == "v3"
-    reviewed = "f1a4eb3bfdd51d8f5deefb812de449c64e5d6a75" if followup else REVIEWED
-    immutable = (
-        (V1, "docs/research/market_structure/evidence/v2/") if followup else (V1,)
+    followup = args.revision != "v2"
+    reviewed = {
+        "v2": REVIEWED,
+        "v3": "f1a4eb3bfdd51d8f5deefb812de449c64e5d6a75",
+        "v4": "58dc13b363bd9c621a36a63084ae13167a32b13a",
+    }[args.revision]
+    immutable = tuple(
+        "docs/research/market_structure/evidence/v%d/" % n
+        for n in range(1, int(args.revision[1:]))
     )
     if target.exists():
         raise ValueError("fresh revision directory required; never overwrite evidence")
@@ -104,8 +109,8 @@ def main():
     _, old_cases = junit(ROOT / V1 / "new-tests.xml")
     if not old_cases.issubset(cases) or len(old_cases) != 55:
         raise ValueError("all original 55 independent tests must run")
-    if followup:
-        _, previous_cases = junit(ROOT / immutable[1] / "new-tests.xml")
+    for previous_directory in immutable[1:]:
+        _, previous_cases = junit(ROOT / previous_directory / "new-tests.xml")
         if not previous_cases.issubset(cases):
             raise ValueError("all earlier correction regressions must run")
     if counts["tests"] != len(cases) or any(
@@ -186,13 +191,24 @@ def main():
         reason="Pairwise-complete Spearman ranks; precise required_inputs; feature/context input hashes separated. V1 bytes retained.",
     )
     if followup:
-        comparison["v3_output_value_sha256"] = comparison.pop("v2_output_value_sha256")
-        comparison["v3_catalog_sha256"] = comparison.pop("v2_catalog_sha256")
-        previous = read(ROOT / immutable[1] / "synthetic/receipt.json")
-        comparison["v2_output_value_sha256"] = previous["output_value_sha256"]
+        comparison[args.revision + "_output_value_sha256"] = comparison.pop(
+            "v2_output_value_sha256"
+        )
+        comparison[args.revision + "_catalog_sha256"] = comparison.pop(
+            "v2_catalog_sha256"
+        )
+        for number, directory in enumerate(immutable[1:], 2):
+            previous = read(ROOT / directory / "synthetic/receipt.json")
+            comparison["v%d_output_value_sha256" % number] = previous[
+                "output_value_sha256"
+            ]
         comparison[
             "reason"
         ] += " V3 requires all matching cash definitions to agree and applies market window completeness; V2 also retained."
+        if args.revision == "v4":
+            comparison[
+                "reason"
+            ] += " V4 separates price, amount and cash validity, including mixed requests; all earlier evidence retained."
     target.mkdir(parents=True)
     shutil.copytree(artifacts / "red", target / "red")
     shutil.copytree(artifacts / "synthetic", target / "synthetic")
@@ -212,11 +228,16 @@ def main():
     ):
         shutil.copyfile(artifacts / name, target / name)
     (
-        target / ("v1-v2-preservation.json" if followup else "v1-preservation.json")
+        target
+        / (
+            "prior-preservation.json"
+            if args.revision == "v4"
+            else "v1-v2-preservation.json" if followup else "v1-preservation.json"
+        )
     ).write_bytes(json_bytes(preserved))
-    (
-        target / ("v1-v3-comparison.json" if followup else "v1-v2-comparison.json")
-    ).write_bytes(json_bytes(comparison))
+    (target / ("v1-" + args.revision + "-comparison.json")).write_bytes(
+        json_bytes(comparison)
+    )
     inventory = {
         k.replace("\\", "/"): dict(source_sha256=sha(ROOT / k), **v["summary"])
         for k, v in coverage["files"].items()
@@ -243,11 +264,13 @@ def main():
         frequencies=[5, 15, 30],
         v1_preserved=True,
         v2_preserved=followup,
+        v3_preserved=args.revision == "v4",
         comparison=comparison,
         external_ci_and_review="PENDING_FINAL_HEAD; recorded separately on PR #13",
         corrections=dict(
             {"P2-1": 4310212806, "P2-2": 4310212810, "P2-3": 4310212817},
             **({"P2-4": 4310349352, "P2-5": 4310349355} if followup else {}),
+            **({"P2-6": 4310399296} if args.revision == "v4" else {}),
         ),
     )
     (target / "acceptance.json").write_bytes(json_bytes(acceptance))
