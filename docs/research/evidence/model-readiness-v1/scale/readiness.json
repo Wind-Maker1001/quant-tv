@@ -1,0 +1,550 @@
+{
+  "configuration": {
+    "features": [
+      "REV1",
+      "REV5",
+      "MOM20",
+      "MOM60",
+      "VOL5",
+      "VOL20",
+      "VOL60",
+      "TURN5",
+      "TURN20",
+      "VOLUME_RATIO",
+      "AMIHU20",
+      "PRICE_MA20",
+      "MA5_MA20",
+      "MA20_MA60"
+    ],
+    "label": "t_close -> t+1_open -> t+6_open",
+    "minimum_cross_section": 8,
+    "models": {
+      "factor_score": {
+        "factor_weights": {
+          "AMIHU20": 1.0,
+          "MA20_MA60": 1.0,
+          "MA5_MA20": 1.0,
+          "MOM20": 1.0,
+          "MOM60": 1.0,
+          "PRICE_MA20": 1.0,
+          "REV1": 1.0,
+          "REV5": 1.0,
+          "TURN20": 1.0,
+          "TURN5": 1.0,
+          "VOL20": 1.0,
+          "VOL5": 1.0,
+          "VOL60": 1.0,
+          "VOLUME_RATIO": 1.0
+        }
+      },
+      "lightgbm": {
+        "lightgbm_candidates": [
+          {
+            "max_depth": 3,
+            "min_child_samples": 8,
+            "n_estimators": 8,
+            "num_leaves": 7
+          },
+          {
+            "max_depth": 3,
+            "min_child_samples": 8,
+            "n_estimators": 12,
+            "num_leaves": 7
+          }
+        ],
+        "lightgbm_n_jobs": 1
+      },
+      "ridge": {
+        "ridge_alphas": [
+          0.1,
+          10.0
+        ]
+      },
+      "xgboost": {
+        "xgboost_candidates": [
+          {
+            "max_depth": 2,
+            "n_estimators": 8
+          },
+          {
+            "max_depth": 2,
+            "n_estimators": 12
+          }
+        ],
+        "xgboost_n_jobs": 1
+      }
+    },
+    "probes": false,
+    "regime_column": "MARKET_REGIME",
+    "sessions": 1200,
+    "splitter": {
+      "embargo_days": 5,
+      "initial_train_months": 24,
+      "purge_days": 5,
+      "step_months": 3,
+      "test_months": 3,
+      "validation_months": 3
+    },
+    "symbols": 500,
+    "top_k": 20,
+    "warmup_sessions": 120
+  },
+  "environment": {
+    "git_commit": "39eecf869c9c2075ba3f6e3c76aeba3338c63432",
+    "packages": {
+      "PyYAML": "6.0.2",
+      "akshare": "1.18.88",
+      "baostock": "0.8.9",
+      "lightgbm": "4.5.0",
+      "matplotlib": "3.8.4",
+      "numpy": "1.26.4",
+      "pandas": "2.2.3",
+      "pyarrow": "17.0.0",
+      "pytest": "8.3.5",
+      "scikit-learn": "1.5.2",
+      "scipy": "1.13.1",
+      "tzdata": "2026.4",
+      "xgboost": "2.1.4"
+    },
+    "platform": "Windows-10-10.0.26340-SP0",
+    "python": "3.9.25",
+    "source_sha256": "c4c5e400ff44abdd968be10c81cd66e10fc8312422987ff7009d1e8c884a00c5",
+    "threads": {
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "financial_data_qualified": false,
+  "formal_experiment_readiness": "BLOCKED",
+  "input_sha256": {
+    "bars": "b858d6c8eaa5039178a9b887e9da08b29be12fb3331d1cda3f4047b8441b59cb",
+    "benchmark": "d19d4fa8985008a59ec9fe6ed7be3ce2ee2979668edb0469de560fa5e08c1265",
+    "calendar": "603430e617ec58db2f1cbc3f63f25394c86ef0b300e134b8da70df3a7e8a2699",
+    "dataset": "c9a977993bbe635890582784e471d3c6058a71d614e1ac0e6ceb35d2a28a400f",
+    "listings": "56583eb482d93c3722f65c3c2d40ef360134582e5416986ca41d68525f6491e9",
+    "membership": "f88636ee31bf5c54d09642ca8fb05fe6fedad6d4fc8d36892ef9bba291c571b2",
+    "status": "e00f43808534bf244490ddd7c37186ae6c445410a077cd6cfa7b53932c885da9"
+  },
+  "matrix": [
+    {
+      "category": "功能",
+      "check": "dataset_labels",
+      "reason": "既有14因子Dataset；独立验证t+1/t+6标签数值及未成熟尾部",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "fold_isolation",
+      "reason": "9个Fold；purge/embargo为0时实际标签exit边界仍隔离",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "pipeline/factor_score",
+      "reason": "真实fit/predict实参隔离、Validation选参、Test单次预测及两级回测通过",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "pipeline/ridge",
+      "reason": "真实fit/predict实参隔离、Validation选参、Test单次预测及两级回测通过",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "pipeline/lightgbm",
+      "reason": "真实fit/predict实参隔离、Validation选参、Test单次预测及两级回测通过",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "pipeline/xgboost",
+      "reason": "真实fit/predict实参隔离、Validation选参、Test单次预测及两级回测通过",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "four_model_cohort",
+      "reason": "四模型共享日期、证券、Fold、标签身份、Train来源及运行身份",
+      "status": "PASS"
+    },
+    {
+      "category": "功能",
+      "check": "future_causality",
+      "reason": "尚未执行",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "性能",
+      "check": "resources",
+      "reason": "阶段耗时、原生RSS采样峰值与OS累计峰值已记录；无性能SLA",
+      "status": "PASS"
+    },
+    {
+      "category": "性能",
+      "check": "scale_run",
+      "reason": "500证券×1200交易日，显式执行",
+      "status": "PASS"
+    },
+    {
+      "category": "性能",
+      "check": "formal_parameter_stress",
+      "reason": "诊断使用小候选配置；未执行正式YAML完整候选资源验收",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "可复现性",
+      "check": "input_identity",
+      "reason": "七类输入内容、源代码、依赖、参数和线程设置均绑定SHA或版本",
+      "status": "PASS"
+    },
+    {
+      "category": "可复现性",
+      "check": "repeat_predictions",
+      "reason": "尚未执行",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "统计合同",
+      "check": "historical_inference",
+      "reason": "调用既有配对RankIC/HAC/MBB/固定三项Holm；可用性状态单独保留，不评选模型",
+      "status": "PASS"
+    },
+    {
+      "category": "统计合同",
+      "check": "statistical_counterexamples",
+      "reason": "缺日/低coverage/不足60日/常数/序列相关/溢出及固定Holm反例通过",
+      "status": "PASS"
+    },
+    {
+      "category": "统计合同",
+      "check": "comparison_counterexamples",
+      "reason": "尚未执行",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "数据资格",
+      "check": "Formal",
+      "reason": "仅合成输入；未提供本实验可验收的五年PIT/HFQ/状态证据及Forward激活证据",
+      "status": "BLOCKED"
+    },
+    {
+      "category": "数据资格",
+      "check": "Forward",
+      "reason": "仅合成输入；未提供本实验可验收的五年PIT/HFQ/状态证据及Forward激活证据",
+      "status": "BLOCKED"
+    }
+  ],
+  "models": {
+    "factor_score": {
+      "backtests": {
+        "execution_backtest": {
+          "nav_sha256": "921a1c31b019806fc7d31b11dd1f41fd479a382c11555e9053d143a4f7596772",
+          "trades": 3377
+        },
+        "fast_backtest": {
+          "nav_sha256": "2508b1c10936d02b2b0c83c3ffa33352c034a6d3862c8009929f376223df0175",
+          "trades": 3868
+        }
+      },
+      "folds": 9,
+      "model_call_counts": {
+        "0": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        },
+        "1": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        },
+        "2": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        },
+        "3": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        },
+        "4": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        },
+        "5": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        },
+        "6": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        },
+        "7": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        },
+        "8": {
+          "fit": 1,
+          "test": 1,
+          "train": 1,
+          "validation": 1
+        }
+      },
+      "prediction_rows": 293500,
+      "prediction_sha256": "a7b84b146663729046bfff100eb2021cd5f1bce3fe4ef42dac18a1d00543475a",
+      "run_identity_sha256": "e6730052e5b8994aaff90afa91023c82d1cb797fd0db02b52fd7085f8ef61fd6"
+    },
+    "lightgbm": {
+      "backtests": {
+        "execution_backtest": {
+          "nav_sha256": "e60eaa623831b6b27886f5cc22cc49f352fd1e87ef573f4e05ff0d03b7feea72",
+          "trades": 3395
+        },
+        "fast_backtest": {
+          "nav_sha256": "cc85d183a89afa9b48dbce3ef48104644b943230511ad9c18239983b0436bec5",
+          "trades": 3975
+        }
+      },
+      "folds": 9,
+      "model_call_counts": {
+        "0": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "1": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "2": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "3": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "4": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "5": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "6": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "7": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "8": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        }
+      },
+      "prediction_rows": 293500,
+      "prediction_sha256": "3dcb292c4180721c8f96d609664d18f67d25bf64cc44788a189e238defc799db",
+      "run_identity_sha256": "e6730052e5b8994aaff90afa91023c82d1cb797fd0db02b52fd7085f8ef61fd6"
+    },
+    "ridge": {
+      "backtests": {
+        "execution_backtest": {
+          "nav_sha256": "d3ae5a2d94ef95d9095a9c3dce23f7ac28e03b7ec79dc75d0dd693c5485c46d6",
+          "trades": 3834
+        },
+        "fast_backtest": {
+          "nav_sha256": "6b7d50ae9c6df960a69dfa9005e59683f6710dfe53e86fafacbf5299f4245263",
+          "trades": 4218
+        }
+      },
+      "folds": 9,
+      "model_call_counts": {
+        "0": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "1": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "2": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "3": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "4": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "5": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "6": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "7": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "8": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        }
+      },
+      "prediction_rows": 293500,
+      "prediction_sha256": "06e6e265bed77218b27d0b393281f0676b1fb49028bba9dedd59defa947934a5",
+      "run_identity_sha256": "e6730052e5b8994aaff90afa91023c82d1cb797fd0db02b52fd7085f8ef61fd6"
+    },
+    "xgboost": {
+      "backtests": {
+        "execution_backtest": {
+          "nav_sha256": "ac8e272f7dc4b4454c4673b95e18a3bd2a6e7b86c5384b89bf6a0e9319d6bea7",
+          "trades": 3451
+        },
+        "fast_backtest": {
+          "nav_sha256": "1a4253a3f5bfcdb952669add0011585fa5e89920b699f84824e93941f2b70300",
+          "trades": 4021
+        }
+      },
+      "folds": 9,
+      "model_call_counts": {
+        "0": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "1": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "2": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "3": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "4": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "5": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "6": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "7": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        },
+        "8": {
+          "fit": 2,
+          "test": 1,
+          "train": 1,
+          "validation": 2
+        }
+      },
+      "prediction_rows": 293500,
+      "prediction_sha256": "37b120b9c70e126acca099687663ab345cd2866c82cd92ae3770acbcd2dad003",
+      "run_identity_sha256": "e6730052e5b8994aaff90afa91023c82d1cb797fd0db02b52fd7085f8ef61fd6"
+    }
+  },
+  "primary_inference_status": {
+    "lightgbm": "OK",
+    "ridge": "OK",
+    "xgboost": "OK"
+  },
+  "run_identity_sha256": "e6730052e5b8994aaff90afa91023c82d1cb797fd0db02b52fd7085f8ef61fd6",
+  "schema_version": 1,
+  "seed": 42,
+  "size": "scale",
+  "software_acceptance": "NOT_RUN",
+  "statistical_probes": {
+    "bootstrap_status": "OK",
+    "constant_status": "DEGENERATE_VARIANCE",
+    "extreme_inputs_rejected": 2,
+    "fixed_holm_family": 3,
+    "hac_to_iid_se_ratio": 4.219990458866133,
+    "missing_status": "INSUFFICIENT_COVERAGE",
+    "short_status": "INSUFFICIENT_DATES"
+  },
+  "synthetic": true,
+  "warning": "SYNTHETIC SOFTWARE ACCEPTANCE ONLY / NO LIVE MONEY / 非五年中证500研究结果"
+}

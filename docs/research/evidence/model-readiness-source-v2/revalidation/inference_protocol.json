@@ -1,0 +1,39 @@
+{
+  "adjustment": "holm_fixed_family",
+  "alternative": "two_sided",
+  "automatic_model_selection": false,
+  "baseline": "factor_score",
+  "bootstrap": "non_circular_overlapping_moving_blocks_percentile",
+  "bootstrap_min_valid_fraction": 0.95,
+  "hac_finite_sample_correction": false,
+  "hac_kernel": "bartlett",
+  "metrics": [
+    "prediction_rank_ic",
+    "prediction_ic",
+    "top_bottom_spread"
+  ],
+  "missing_policy": "preserve_calendar_slots_no_imputation",
+  "models": [
+    "factor_score",
+    "ridge",
+    "lightgbm",
+    "xgboost"
+  ],
+  "options": {
+    "bootstrap_block_days": 20,
+    "bootstrap_repetitions": 2000,
+    "confidence_level": 0.95,
+    "hac_lags": 20,
+    "holding_days": 5,
+    "min_coverage": 0.8,
+    "min_valid_days": 60,
+    "random_seed": 42
+  },
+  "primary_contrast": "PAIRED_MINUS_BASELINE",
+  "primary_family_size": 3,
+  "primary_metric": "prediction_rank_ic",
+  "primary_scope": "OVERALL",
+  "schema_version": 1,
+  "stage": "HISTORICAL_TEST",
+  "unit": "market_trading_day"
+}

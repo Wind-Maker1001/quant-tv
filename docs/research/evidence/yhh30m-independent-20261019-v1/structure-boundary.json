@@ -1,0 +1,38 @@
+{
+  "automatic_real_data_connection": "BLOCKED_AS_DESIGNED",
+  "boundary_probes": {
+    "naive_vendor_timestamp": {
+      "reason": "timezone-aware instant required",
+      "status": "PASS_REJECTION"
+    },
+    "real_compute_request": {
+      "reason": "REAL_RESEARCH_BLOCKED",
+      "status": "PASS_REJECTION"
+    },
+    "unverified_real_record": {
+      "reason": "synthetic identity, revision and evidence required",
+      "status": "PASS_REJECTION"
+    }
+  },
+  "branch_merged": false,
+  "contract_blob_sha256": "e76597bbe8917b16975f533874f0ab55a38b3ee418ab9939b784534032dd0ddd",
+  "contract_bytes_unchanged_since_previous_snapshot": true,
+  "contract_path": "qbot/research/exploratory/market_structure/contracts.py",
+  "features_added_or_computed": false,
+  "formal_admission": false,
+  "framework_commit": "b30256dd9e24c3db99be5d63d4b3b4d9113b0872",
+  "missing_prerequisites": [
+    "CERTIFIED_TIMEZONE_AND_INTERVALS",
+    "ONE_MINUTE_SOURCE_GRANULARITY",
+    "PUBLISHED_AVAILABLE_CAPTURED_CLOCKS",
+    "STABLE_HISTORICAL_SECURITY_IDENTITY",
+    "VERIFIED_PRICE_AND_VOLUME_UNITS",
+    "FLOW_AND_LIMIT_STATE_DEFINITIONS",
+    "SEPARATELY_REVIEWED_REAL_SOURCE_ADAPTER"
+  ],
+  "previous_framework_commit": "793014208507f817915d290d5d2aeab8be9e8edc",
+  "schema": "YHH_MARKET_STRUCTURE_COMPATIBILITY_REVIEW_V1",
+  "source_contract": "FACTORLAB_YHH_30M_OBSERVATIONS_V1",
+  "target_contract": "MARKET_STRUCTURE_EXPLORATORY_V1",
+  "verdict": "PASS_ISOLATION;DIRECT_REAL_INPUT_INCOMPATIBLE"
+}

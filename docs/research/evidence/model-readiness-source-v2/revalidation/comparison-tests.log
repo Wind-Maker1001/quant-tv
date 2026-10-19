@@ -1,0 +1,27 @@
+.............................................................            [100%]
+============================== warnings summary ===============================
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:88
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:88
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:88
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:88
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:88
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:88
+  D:\Code\量化TV\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:88: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    parse = parser.parseString(pattern)
+
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:92
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:92
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:92
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:92
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:92
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:92
+  D:\Code\量化TV\.venv-py39\lib\site-packages\matplotlib\_fontconfig_pattern.py:92: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    parser.resetCache()
+
+..\..\..\.venv-py39\lib\site-packages\matplotlib\_mathtext.py:45
+  D:\Code\量化TV\.venv-py39\lib\site-packages\matplotlib\_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+    ParserElement.enablePackrat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: D:\Code\量化TV\results\diagnostics\model-readiness-source-v2\clean-lf-revalidation-approved\comparison-tests.xml -
+61 passed, 13 warnings in 181.05s (0:03:01)

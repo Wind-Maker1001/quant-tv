@@ -1,0 +1,77 @@
+{
+  "late_year_coverage": {
+    "2021": {
+      "dates": 35,
+      "rows": 2863,
+      "first": "2021-11-15",
+      "last": "2021-12-31"
+    },
+    "2022": {
+      "dates": 242,
+      "rows": 25127,
+      "first": "2022-01-04",
+      "last": "2022-12-30"
+    },
+    "2023": {
+      "dates": 234,
+      "rows": 47505,
+      "first": "2023-01-03",
+      "last": "2023-12-29"
+    },
+    "2024": {
+      "dates": 241,
+      "rows": 60205,
+      "first": "2024-01-02",
+      "last": "2024-12-31"
+    },
+    "2025": {
+      "dates": 199,
+      "rows": 52625,
+      "first": "2025-01-02",
+      "last": "2025-10-30"
+    },
+    "2026": {
+      "dates": 3,
+      "rows": 1039,
+      "first": "2026-09-28",
+      "last": "2026-09-30"
+    }
+  },
+  "missing_late_label_runs_against_observed_BJ_days": [
+    {
+      "first": "2023-02-17",
+      "last": "2023-02-17",
+      "observed_dates": 1
+    },
+    {
+      "first": "2023-02-23",
+      "last": "2023-02-23",
+      "observed_dates": 1
+    },
+    {
+      "first": "2025-10-31",
+      "last": "2026-09-24",
+      "observed_dates": 222
+    }
+  ],
+  "volume_zero_amount_nonzero_rows": 0,
+  "volume_zero_amount_nonzero_all_positive": true,
+  "zero_volume_amount_abs_range": null,
+  "vendor_code_prefix_counts": {
+    "920": 188925,
+    "833": 331,
+    "832": 108
+  },
+  "vendor_codes_before_2024_04_22_with_920_prefix": 92388,
+  "supplier_semantics_and_cause": "UNKNOWN;NO_PRICE_OR_VOLUME_CORRECTION_AUTHORIZED",
+  "late_nonzero_source_contributions": {
+    "volume_vendor": 95363,
+    "amount_vendor": 95363
+  },
+  "late_amount_sign_counts": {
+    "negative": 12,
+    "zero": 94001,
+    "positive": 95351
+  },
+  "numeric_aggregation_note": "The exact pandas groupby amount sum changes 95,459 security-days; 95,363 have nonzero source contribution. The additional 96 are floating-point accumulation differences after adding zero-valued rows, not extra nonzero trades. No tolerance or input values changed."
+}

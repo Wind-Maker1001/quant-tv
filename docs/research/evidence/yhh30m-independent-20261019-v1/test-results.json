@@ -1,0 +1,109 @@
+{
+  "failed_ci_run_39148081596": {
+    "artifact_advertised_sha256": "30b7c81b046a3a253b17b098b6c7744bf8b7ac11932983600c8bbf446257c3ed",
+    "coverage_sha256": "1d5ee2e47ece244798760285c734e65cd3df6a35385615825fdbaa79f08ed7e0",
+    "failure": "Frozen test collection changed: all_ids",
+    "junit_sha256": "7d8477351f561db910248011514b972aa3580745687447fe2a9da2717b05ff8e",
+    "pytest_counts": {
+      "errors": 0,
+      "failures": 0,
+      "passed": 3175,
+      "skipped": 1,
+      "tests": 3176
+    },
+    "run_id": 39148081596,
+    "url": "https://github.com/Wind-Maker1001/quant-tv/actions/runs/39148081596",
+    "workflow_outcome": "FAILURE"
+  },
+  "final_ci_acceptance_scope": "ORIGINAL_FROZEN_SUITE_PLUS_SEPARATE_42_TEST_MINUTE_COVERAGE_WORKFLOW;SEE_LATEST_PR12_CHECKS_AND_FINAL_COMMENT",
+  "final_main_base": "5cb4225d6190bdf27b609a325e560421e4211922",
+  "frozen_core_collection_exact_match": {
+    "all_ids": {
+      "count": 3144,
+      "sha256": "939d4990560dd451755abb0fe5b9bc130d062004413231b5bc862a6759b6fb6b"
+    },
+    "deselected_ids": {
+      "count": 2,
+      "sha256": "4bdd45acea8c468d35c684b233cbd0c2866f40b0fd723d74cf59f429627b0e9d"
+    },
+    "selected_ids": {
+      "count": 3142,
+      "sha256": "218c1838040a3d0fe09e1f1b550059c4e2d0cf1640b203ddeab6c1732fee9183"
+    }
+  },
+  "full_offline_suite_before_ci_isolation": {
+    "artifact": "results/diagnostics/yhh30m-independent-full-research.xml",
+    "errors": 0,
+    "failures": 0,
+    "scope": "ACTUAL_WINDOWS_RUN_WITH_34_EXTENSION_TESTS_INSIDE_THE_THEN_COLLECTION;NOT_FINAL_FROZEN_CI_ACCEPTANCE",
+    "sha256": "a6c0b446c56246bb7e4a62f9df3e79740b2cc67c38a8194318efcdcd9556b5a2",
+    "skipped": 0,
+    "tests": 3176,
+    "time_seconds": 1263.3679999999881
+  },
+  "historical_failure_cause": "CROSS_WINDOWS_VOLUME_RELPATH_VALUEERROR_NOT_TIMEOUT",
+  "historical_path_cases_passed_in_full_run": [
+    "test_relative_import_paths_use_repository_root_from_another_cwd",
+    "test_read_only_relative_root_resolves_against_repository_not_cwd"
+  ],
+  "isolated_minute_suite_local": {
+    "artifact": "results/diagnostics/yhh30m-extension-local.xml",
+    "coverage_covered_lines": 572,
+    "coverage_line_rate": 0.9331,
+    "coverage_sha256": "e6861b3e87b151b5617f09053d8123c73889d13abcc51096305135df078755d9",
+    "coverage_sources": 9,
+    "coverage_valid_lines": 613,
+    "errors": 0,
+    "failures": 0,
+    "scope": "ALL_42_RELOCATED_MINUTE_AND_PUBLICATION_TESTS",
+    "sha256": "51c4a5335afdc1628ef11229e36781d782b7616dc31cbe2ba304a8ce221d3674",
+    "skipped": 0,
+    "tests": 42,
+    "time_seconds": 25.77
+  },
+  "latest_combined_tree_remote_result": "SEE_PR12_FINAL_CI_RECEIPTS;NOT_THE_OLD_BASE_RUN",
+  "local_run_head_before_main_advanced": "1105b4ecbb184e8979ce772e0cce17972024dce9",
+  "local_run_main_base": "39eecf869c9c2075ba3f6e3c76aeba3338c63432",
+  "minute_runtime_unchanged_after_main_update": "UNCHANGED_AT_MAIN_MERGE;LATER_RELOCATED_WITH_ONLY_CLI_DOCSTRING_CHANGE",
+  "network_tests_deselected_by_existing_default": 2,
+  "pre_fix_reproductions": {
+    "artifact": "results/diagnostics/yhh30m-review-before.xml",
+    "errors": 0,
+    "failures": 5,
+    "sha256": "c7a30ccb28a8bcbcc87c6a2510012c2d252e7352dec0b96561b796822f67edcb",
+    "skipped": 0,
+    "status": "EXPECTED_FAILURES_BEFORE_FIX",
+    "tests": 5,
+    "time_seconds": 2.852
+  },
+  "release_check_tests": {
+    "artifact": "results/diagnostics/yhh30m-release-tests-final.xml",
+    "errors": 0,
+    "failures": 0,
+    "sha256": "7ea1f81eaf7d1e2bac48a7de0c9e0416c68d21e165464adccb07f527680bd81a",
+    "skipped": 0,
+    "tests": 8,
+    "time_seconds": 4.324
+  },
+  "schema": "YHH_INDEPENDENT_SOFTWARE_TESTS_V1",
+  "status": "LOCAL_EXTENSION_PASS;FINAL_REMOTE_CHECKS_REQUIRED",
+  "targeted_converter_reader_tests": {
+    "artifact": "results/diagnostics/yhh30m-independent-targeted-final.xml",
+    "errors": 0,
+    "failures": 0,
+    "sha256": "c1311b3e04b5c114b0f005a9169e6ef229b3f847c8e9e5dcc11c014c3ce1c8d0",
+    "skipped": 0,
+    "tests": 34,
+    "time_seconds": 18.430999999999997
+  },
+  "temp_layout": "NEW_SAME_VOLUME_SIBLING_DIRECTORY",
+  "test_assertions_or_production_gates_relaxed": false,
+  "updated_reader_full_dataset_verify": {
+    "formal_admission": false,
+    "implementation_sha256": "1713ef810e84fd56cc054b548270e72638385aa776fe32082cbb0466edbbddc3",
+    "module": "qbot.engineering.yhh30m",
+    "partitions": 69,
+    "rows": 64115523,
+    "status": "VERIFIED"
+  }
+}
