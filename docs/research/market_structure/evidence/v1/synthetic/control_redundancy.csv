@@ -1,0 +1,7 @@
+scenario,frequency,grain,namespace,left,right,diagnostic_kind,valid_observation_windows,total_observation_windows,distinct_trading_sessions,minimum_entities,mean_pair_coverage,mean_abs_pearson,mean_abs_spearman,status
+historical_simulation,5,security,synthetic_supply,CONTROL_CONSTANT,CONTROL_COPY,INTRADAY_CROSS_SECTION,0,288,0,20,1.0,,,UNDETERMINED
+historical_simulation,5,security,synthetic_supply,CONTROL_CONSTANT,CONTROL_SCALED,INTRADAY_CROSS_SECTION,0,288,0,20,1.0,,,UNDETERMINED
+historical_simulation,5,security,synthetic_supply,CONTROL_CONSTANT,SC_UPSTREAM_COUNT,INTRADAY_CROSS_SECTION,0,288,0,20,1.0,,,UNDETERMINED
+historical_simulation,5,security,synthetic_supply,CONTROL_COPY,CONTROL_SCALED,INTRADAY_CROSS_SECTION,288,288,6,20,1.0,1.0,1.0,HIGHLY_REDUNDANT
+historical_simulation,5,security,synthetic_supply,CONTROL_COPY,SC_UPSTREAM_COUNT,INTRADAY_CROSS_SECTION,288,288,6,20,1.0,1.0,1.0,NUMERIC_DUPLICATE
+historical_simulation,5,security,synthetic_supply,CONTROL_SCALED,SC_UPSTREAM_COUNT,INTRADAY_CROSS_SECTION,288,288,6,20,1.0,1.0,1.0,HIGHLY_REDUNDANT

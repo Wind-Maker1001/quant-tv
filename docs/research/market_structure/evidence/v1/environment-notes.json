@@ -1,0 +1,22 @@
+{
+  "status": "CHECKOUT_ENVIRONMENT_CORRECTED_WITHOUT_GATE_CHANGES",
+  "first_attempt": {
+    "selected": 3142,
+    "passed": 3140,
+    "failed": 2,
+    "reason": "Windows C-drive temporary input cannot be relpath-resolved against D-drive repository"
+  },
+  "second_attempt": {
+    "selected": 3142,
+    "passed": 3142,
+    "failed": 0,
+    "gate": "rejected because Git autocrlf changed pytest.ini checkout bytes"
+  },
+  "correction": {
+    "explicit_same_drive_base_temp": true,
+    "pytest_ini_restored_from_baseline_git_blob": true,
+    "expected_pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+    "original_gate_and_baseline_files_unchanged": true
+  },
+  "final_validation": "recorded separately in frozen-validation.json; earlier records preserved in task artifact directories"
+}
