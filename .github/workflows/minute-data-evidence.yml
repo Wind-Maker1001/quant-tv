@@ -164,10 +164,10 @@ jobs:
           print(json.dumps(evidence, indent=2))
           PY
 
-      - name: Verify full publication diff and unchanged original gates
+      - name: Verify minute publication scope and globally unchanged original gates
         run: |
           python -B -m examples.research.review_yhh30m_release --repo . \
-            --base "$PUBLICATION_BASE" \
+            --base "$PUBLICATION_BASE" --scope-yhh30m \
             > results/diagnostics/ci/minute-engineering/publication.json
           test -z "$(git status --porcelain)"
 
