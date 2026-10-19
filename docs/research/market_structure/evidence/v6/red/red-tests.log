@@ -1,0 +1,43 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+_ test_empty_taxonomy_cannot_prove_complete_empty_membership[industry-IND_RET] _
+
+manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+family = 'industry', name = 'IND_RET'
+
+    @pytest.mark.parametrize("family,name", [("industry", "IND_RET"), ("concept", "THEME_MEMBERSHIP_COUNT")])
+    def test_empty_taxonomy_cannot_prove_complete_empty_membership(manual, family, name):
+        records = [
+            replace(r, payload=dict(r.payload, taxonomy_version=""))
+            if r.kind == "scope" and r.payload["family"] == family else r
+            for r in manual.records
+            if not (r.kind == "membership" and r.payload["family"] == family)
+        ]
+        with pytest.raises(ContractError, match="scope namespace/version"):
+>           compute_features(AsOfStore(records), manual.sessions, manual.request, [name])
+E           Failed: DID NOT RAISE <class 'qbot.research.exploratory.market_structure.contracts.ContractError'>
+
+tests\market_structure\test_review_taxonomy_red.py:21: Failed
+_ test_empty_taxonomy_cannot_prove_complete_empty_membership[concept-THEME_MEMBERSHIP_COUNT] _
+
+manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+family = 'concept', name = 'THEME_MEMBERSHIP_COUNT'
+
+    @pytest.mark.parametrize("family,name", [("industry", "IND_RET"), ("concept", "THEME_MEMBERSHIP_COUNT")])
+    def test_empty_taxonomy_cannot_prove_complete_empty_membership(manual, family, name):
+        records = [
+            replace(r, payload=dict(r.payload, taxonomy_version=""))
+            if r.kind == "scope" and r.payload["family"] == family else r
+            for r in manual.records
+            if not (r.kind == "membership" and r.payload["family"] == family)
+        ]
+        with pytest.raises(ContractError, match="scope namespace/version"):
+>           compute_features(AsOfStore(records), manual.sessions, manual.request, [name])
+E           Failed: DID NOT RAISE <class 'qbot.research.exploratory.market_structure.contracts.ContractError'>
+
+tests\market_structure\test_review_taxonomy_red.py:21: Failed
+- generated xml file: D:\Code\quant-tv-market-structure-p2-artifacts-20261019\v6\red\red-tests.xml -
+=========================== short test summary info ===========================
+FAILED tests/market_structure/test_review_taxonomy_red.py::test_empty_taxonomy_cannot_prove_complete_empty_membership[industry-IND_RET]
+FAILED tests/market_structure/test_review_taxonomy_red.py::test_empty_taxonomy_cannot_prove_complete_empty_membership[concept-THEME_MEMBERSHIP_COUNT]
+2 failed in 0.32s
