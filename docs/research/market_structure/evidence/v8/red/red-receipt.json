@@ -1,0 +1,22 @@
+{
+  "product_head": "a2fbfcaa8bde12a852969e5c7f97bdd1e9577acd",
+  "reviewed_commit": "a2fbfcaa8bde12a852969e5c7f97bdd1e9577acd",
+  "product_source_sha256": {
+    "qbot/research/exploratory/market_structure/contracts.py": "e76597bbe8917b16975f533874f0ab55a38b3ee418ab9939b784534032dd0ddd",
+    "qbot/research/exploratory/market_structure/features.py": "fc92def3326c457cbfaf82ad603828941628d975f7a3963f6f230d7517e39dce",
+    "qbot/research/exploratory/market_structure/adapters.py": "45ed864b1c65c9f4cd2af7673ee855dc7f617ee029b28a17c21fb2a0b902b8e6"
+  },
+  "test_sha256": "54ece6966c69ce16edce965c9de08e9d792bd330a5d4a02ad2c7b47610d50b80",
+  "exit_code": 1,
+  "argv": [
+    "D:/Environments/factorlab-ci-py39/Scripts/python.exe",
+    "-X",
+    "utf8",
+    "-m",
+    "pytest",
+    "tests/market_structure/test_review_identifiers_red.py",
+    "-q",
+    "--basetemp=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v8\\red-temp",
+    "--junitxml=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v8\\red\\red-tests.xml"
+  ]
+}
