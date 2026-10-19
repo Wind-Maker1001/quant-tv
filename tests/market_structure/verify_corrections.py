@@ -1,4 +1,4 @@
-"""Seal V2 evidence without changing V1; run explicitly from a Python 3.9 worktree."""
+"""Append correction evidence without changing earlier records; Python 3.9."""
 
 import argparse
 import hashlib
@@ -49,42 +49,54 @@ def junit(path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--artifacts", type=Path, required=True)
+    parser.add_argument("--revision", choices=("v2", "v3"), default="v2")
     args = parser.parse_args()
     artifacts = args.artifacts.resolve()
-    target = ROOT / "docs/research/market_structure/evidence/v2"
+    target = ROOT / ("docs/research/market_structure/evidence/" + args.revision)
+    followup = args.revision == "v3"
+    reviewed = "f1a4eb3bfdd51d8f5deefb812de449c64e5d6a75" if followup else REVIEWED
+    immutable = (
+        (V1, "docs/research/market_structure/evidence/v2/") if followup else (V1,)
+    )
     if target.exists():
-        raise ValueError("fresh V2 directory required; never overwrite evidence")
+        raise ValueError("fresh revision directory required; never overwrite evidence")
     preserved = {}
     paths = subprocess.check_output(
-        ["git", "ls-tree", "-r", "--name-only", REVIEWED, "--", V1],
+        ["git", "ls-tree", "-r", "--name-only", reviewed, "--"] + list(immutable),
         cwd=ROOT,
         text=True,
     ).splitlines()
     for name in paths:
-        old = subprocess.check_output(["git", "show", REVIEWED + ":" + name], cwd=ROOT)
+        old = subprocess.check_output(["git", "show", reviewed + ":" + name], cwd=ROOT)
         expected = hashlib.sha256(old).hexdigest()
         if sha(ROOT / name) != expected:
-            raise ValueError("V1 evidence changed: " + name)
+            raise ValueError("historical evidence changed: " + name)
         preserved[name] = expected
     changed = subprocess.check_output(
-        ["git", "diff", REVIEWED, "--name-only"],
+        ["git", "diff", reviewed, "--name-only"],
         cwd=ROOT,
         text=True,
     ).splitlines()
-    if any(not p.startswith(PREFIXES) or p.startswith(V1) for p in changed):
+    if any(not p.startswith(PREFIXES) or p.startswith(immutable) for p in changed):
         raise ValueError("protected path changed")
     red, _ = junit(artifacts / "red/red-tests.xml")
-    if red != dict(tests=3, failures=3, errors=0, skipped=0):
-        raise ValueError("three independent red counterexamples required")
+    red_count = 2 if followup else 3
+    if red != dict(tests=red_count, failures=red_count, errors=0, skipped=0):
+        raise ValueError("all independent red counterexamples must fail")
     red_receipt = read(artifacts / "red/red-receipt.json")
-    if red_receipt["product_head"] != REVIEWED or red_receipt["exit_code"] != 1:
+    if red_receipt["product_head"] != reviewed or red_receipt["exit_code"] != 1:
         raise ValueError("red execution subject/outcome mismatch")
     for name, expected in red_receipt["product_source_sha256"].items():
-        old = subprocess.check_output(["git", "show", REVIEWED + ":" + name], cwd=ROOT)
+        old = subprocess.check_output(["git", "show", reviewed + ":" + name], cwd=ROOT)
         if hashlib.sha256(old).hexdigest() != expected:
             raise ValueError("red product source mismatch")
     if (
-        sha(ROOT / "tests/market_structure/test_review_red_cases.py")
+        sha(
+            ROOT
+            / red_receipt.get(
+                "test_source_path", "tests/market_structure/test_review_red_cases.py"
+            )
+        )
         != red_receipt["test_source_sha256"]
     ):
         raise ValueError("minimal red counterexamples changed")
@@ -92,6 +104,10 @@ def main():
     _, old_cases = junit(ROOT / V1 / "new-tests.xml")
     if not old_cases.issubset(cases) or len(old_cases) != 55:
         raise ValueError("all original 55 independent tests must run")
+    if followup:
+        _, previous_cases = junit(ROOT / immutable[1] / "new-tests.xml")
+        if not previous_cases.issubset(cases):
+            raise ValueError("all earlier correction regressions must run")
     if counts["tests"] != len(cases) or any(
         counts[k] for k in ("failures", "errors", "skipped")
     ):
@@ -169,6 +185,14 @@ def main():
         changed_spearman_windows=int(difference.sum()),
         reason="Pairwise-complete Spearman ranks; precise required_inputs; feature/context input hashes separated. V1 bytes retained.",
     )
+    if followup:
+        comparison["v3_output_value_sha256"] = comparison.pop("v2_output_value_sha256")
+        comparison["v3_catalog_sha256"] = comparison.pop("v2_catalog_sha256")
+        previous = read(ROOT / immutable[1] / "synthetic/receipt.json")
+        comparison["v2_output_value_sha256"] = previous["output_value_sha256"]
+        comparison[
+            "reason"
+        ] += " V3 requires all matching cash definitions to agree and applies market window completeness; V2 also retained."
     target.mkdir(parents=True)
     shutil.copytree(artifacts / "red", target / "red")
     shutil.copytree(artifacts / "synthetic", target / "synthetic")
@@ -187,8 +211,12 @@ def main():
         "comparison-command.json",
     ):
         shutil.copyfile(artifacts / name, target / name)
-    (target / "v1-preservation.json").write_bytes(json_bytes(preserved))
-    (target / "v1-v2-comparison.json").write_bytes(json_bytes(comparison))
+    (
+        target / ("v1-v2-preservation.json" if followup else "v1-preservation.json")
+    ).write_bytes(json_bytes(preserved))
+    (
+        target / ("v1-v3-comparison.json" if followup else "v1-v2-comparison.json")
+    ).write_bytes(json_bytes(comparison))
     inventory = {
         k.replace("\\", "/"): dict(source_sha256=sha(ROOT / k), **v["summary"])
         for k, v in coverage["files"].items()
@@ -201,7 +229,7 @@ def main():
         formal_status="BLOCKED",
         forward_status="BLOCKED",
         installation_package_status="NOT_VALIDATED",
-        reviewed_commit=REVIEWED,
+        reviewed_commit=reviewed,
         implementation_commit=receipt["tested_commit"],
         python=sys.version,
         independent_tests=counts,
@@ -214,9 +242,13 @@ def main():
         implemented_count=14,
         frequencies=[5, 15, 30],
         v1_preserved=True,
+        v2_preserved=followup,
         comparison=comparison,
         external_ci_and_review="PENDING_FINAL_HEAD; recorded separately on PR #13",
-        corrections={"P2-1": 4310212806, "P2-2": 4310212810, "P2-3": 4310212817},
+        corrections=dict(
+            {"P2-1": 4310212806, "P2-2": 4310212810, "P2-3": 4310212817},
+            **({"P2-4": 4310349352, "P2-5": 4310349355} if followup else {}),
+        ),
     )
     (target / "acceptance.json").write_bytes(json_bytes(acceptance))
     manifest = {}

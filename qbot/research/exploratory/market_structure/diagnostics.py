@@ -189,7 +189,7 @@ def diagnose_features(values, policy=None):
                 enough = (
                     n >= policy.minimum_observation_windows
                     and session_count >= policy.minimum_trading_sessions
-                    and coverage >= policy.minimum_pair_coverage
+                    and coverage >= policy.minimum_window_coverage
                 )
                 pearson = float(paired.corr().iloc[0, 1]) if n > 1 else np.nan
                 spearman = float(paired.rank().corr().iloc[0, 1]) if n > 1 else np.nan

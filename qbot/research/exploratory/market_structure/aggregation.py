@@ -59,13 +59,21 @@ def aggregate_intraday(
         if include_flow
         else ()
     )
+    definition_groups = {}
+    for record in definitions:
+        if record.payload.get("definition_id") == FLOW_DEFINITION:
+            definition_groups.setdefault(record.definition_version, []).append(
+                record.payload
+            )
     approved = {
-        r.definition_version
-        for r in definitions
-        if r.payload.get("definition_id") == FLOW_DEFINITION
-        and r.payload.get("unit") == "CNY"
-        and r.payload.get("currency") == "CNY"
-        and r.payload.get("vendor") == "SYNTHETIC_TEST_ONLY"
+        version
+        for version, group in definition_groups.items()
+        if all(
+            p.get("unit") == "CNY"
+            and p.get("currency") == "CNY"
+            and p.get("vendor") == "SYNTHETIC_TEST_ONLY"
+            for p in group
+        )
     }
     by_security = {s: [] for s in request.universe}
     for record in records:
