@@ -7,8 +7,9 @@
 `39eecf869c9c2075ba3f6e3c76aeba3338c63432`；PR 创建后 main 更新至
 `5cb4225d6190bdf27b609a325e560421e4211922`，本分支已纳入该最新基点，补充审查如下。
 
-**总体 CONDITIONAL PASS；软件合并资格 PASS（仅隔离的工程与探索组件）；正式金融研究数据准入 FAIL。**
-完整离线研究套件单次运行 3,176 项通过、零失败；发现的清单校验和迭代器问题已修复。
+**总体 CONDITIONAL PASS；正式金融研究数据准入 FAIL。**
+软件合并资格仅在最新提交的原冻结研究 CI、新分钟工程 CI 及其他现有检查全部通过后为 PASS，范围限隔离的工程与探索组件。
+本地迁移前完整运行 3,176 项通过；新增组件迁移后 42 项全部通过。发现的清单校验和迭代器问题已修复。
 时间、单位、身份与复权等金融缺口仍阻断正式研究、Forward 和实盘，不能由本 PR 的软件验收替代。
 
 ## 独立方法与重放边界
@@ -23,11 +24,12 @@
 原生产源码从原提交的 Git blob 重建，组合摘要为
 `8e59c7058e9c96721cc376ba795a5e31da78671bfb05b89330653406650619c2`。
 新读取校验器允许读取该历史生产代；不会将当前软件 SHA 写回原收据。
+当前入口与导入示例见 [当前工程用法](YHH_30M_CURRENT_USAGE.md)，旧模块路径仅属于历史生产提交。
 新生产任务仍绑定当前实现并要求独立输出代。
 
 全部 139 条缺因子或负量额记录，加上分层 15:30 样本，共 163 条原始记录，
 均经独立标准库 CSV 解析器逐 11 字段复核。
-另用当前修复版本再生产 2021-01-04 的 37,143 行日样本，Schema、数值及 Parquet 字节
+另用修复版本（命名空间迁移前）再生产 2021-01-04 的 37,143 行日样本，Schema、数值及 Parquet 字节
 与原日样本完全一致；原 69 个完整月分区未重写。
 
 完整数据及含行情值的细节收据只保存在忽略目录。
@@ -112,7 +114,8 @@
 ## 市场结构框架接口
 
 对并行分支 `codex/market-structure-feature-foundation` 的
-`793014208507f817915d290d5d2aeab8be9e8edc` 做只读检查，未合并或修改该分支。
+`b30256dd9e24c3db99be5d63d4b3b4d9113b0872` 做只读检查，未合并或修改该分支。
+较初始快照 `793014208507f817915d290d5d2aeab8be9e8edc` 的契约字节不变，三个拒绝探针重新实际执行通过。
 `check_yhh30m_structure_boundary.py` 从该提交 Git blob 加载契约，实际验证：
 无时区时间戳拒绝、真实 ComputeRequest 拒绝、未验证真实 Record 拒绝。
 
@@ -123,32 +126,51 @@
 
 ## 测试与软件合并资格
 
-| 检查 | 本轮实际结果 |
+| 检查 | 本轮实际结果与边界 |
 | --- | --- |
-| 完整离线研究套件 | 3,176 passed、0 failed；2 个网络用例沿用原默认 deselected；耗时 1,272.42 秒 |
-| 转换/读取定向测试 | 34 passed，其中新增 11 个独立验收回归 |
-| 发布范围与隐私检查工具测试 | 8 passed，覆盖本机根目录、秘密形状值、原始 CSV/Parquet 拒绝及精确相对片段识别 |
-| 修复前故障复现 | 5 个测试全部按预期失败，原始 JUnit 保留 |
-| 新校验器读取原全量代 | VERIFIED，64,115,523 行、69 月分区；formal_admission=false |
+| 迁移前本地完整研究运行 | Windows 3,176 passed、0 failed；2 个网络用例沿用原默认 deselected；这是历史实际运行，不替代最终冻结 CI |
+| 原冻结研究集合 | 3,144 个总用例、3,142 个选中、2 个默认排除；三个身份摘要已精确恢复；测试及源码清单门禁未改 |
+| 新隔离分钟/发布回归 | 全部 42 passed，无失败或跳过；含原 23 个转换测试、新增 11 个验收回归及 8 个发布检查测试，断言保留 |
+| 新组件本地覆盖 | 九个运行源码、613 个可执行行，572 行命中，93.31%；新 CI 还逐行要求保留此前 Linux 命中 |
+| 修复前故障复现 | 五个测试全部按预期失败，原始 JUnit 保留 |
+| 新工程入口读取原全量代 | VERIFIED，64,115,523 行、69 月分区；formal_admission=false |
 
-此前两项失败属于跨 C/D 盘的 `os.path.relpath` 错误，不是超时。
-本轮使用同盘、仓库外的新临时目录运行完整原套件，两项均在完整单次运行中通过；
-没有改断言、跳过失败或降低门禁。记录见 [test-results.json](evidence/yhh30m-independent-20261019-v1/test-results.json)。
-相对 main 的关键门禁源码及原研究 CI 字节保持不变，比较模式与摘要见
-[invariants.json](evidence/yhh30m-independent-20261019-v1/invariants.json)。
+新 CI 同时核对精确用例身份、测试源码 SHA、九个运行源码 SHA、完整可执行行集合及已命中的行；
+不会只凭数量或百分比判定通过。其 Python 验收步骤已本地运行，并实际拒绝“少一个用例”和“丢失已命中行”的篡改副本。
+最终组合树的原研究、分钟工程、PIT、静态及工作流实际结果以 PR #12 最新检查和最终验收评论为准。
 
-完整 diff 的检查排除原始行情、Parquet、ZIP、缓存、秘密形状值及本机绝对路径。
-原历史测试收据含在 main 测试中已明确定义的合成绝对路径攻击向量；它们单独识别，
-不当作本机路径，也不允许新泄露路径借用该例外。新增发布检查器及其测试没有放宽旧 CI 或金融门禁。
+此前两项本地失败属于跨 C/D 盘的 `os.path.relpath` 错误，不是超时。
+本轮同盘、仓库外的新临时目录中，两项均在迁移前完整单次运行通过；未改断言或跳过失败。
+记录见 [test-results.json](evidence/yhh30m-independent-20261019-v1/test-results.json)。
+关键正式门禁及原研究 CI 的摘要见 [invariants.json](evidence/yhh30m-independent-20261019-v1/invariants.json)。
+
+完整 diff 的发布检查排除原始行情、Parquet、ZIP、缓存、秘密形状值及本机绝对路径。
+历史测试收据中仅允许在 main 已明确存在的合成路径攻击向量，不允许实际本机路径借用例外。
+
+## 已保留的远端失败与 CI 接入修复
+
+运行 [39148081596](https://github.com/Wind-Maker1001/quant-tv/actions/runs/39148081596) 的真实结果是工作流 FAIL：
+pytest 为 3,175 passed、一个既有 Linux 平台跳过、零失败，随后 `all_ids` 冻结校验拒绝新增用例。
+该门禁还冻结覆盖源码清单，因此仅移动测试仍不足以满足原契约。
+没有改旧清单、旧断言、原工作流、pytest 配置、执行验证器或覆盖约束来放行。
+
+完整分钟实现迁到独立 `qbot.engineering.yhh30m`，全部新增测试迁到 `tests/minute_data`，
+由新增 `minute-data-evidence.yml` 验收。九个运行文件中仅 CLI 的用法字符串改变，其余字节相同；
+测试只改导入命名空间，所有断言逐文件保留。当前实现摘要为
+`1713ef810e84fd56cc054b548270e72638385aa776fe32082cbb0466edbbddc3`。
+原生产报告、收据及摘要不改签。当前入口已实际验证原全量数据，未重转。
+失败原件哈希、迁移等价和冻结集合恢复证明见
+[ci-remediation.json](evidence/yhh30m-independent-20261019-v1/ci-remediation.json)，
+新用例与覆盖契约见 [minute-ci-contract.json](evidence/yhh30m-independent-20261019-v1/minute-ci-contract.json)。
 
 ## PR 创建后的 main 基点变更
 
 main 新增的 PR #11 仅包含模型软件就绪诊断、独立测试及其证据，与本 PR 原有 40 个文件无重叠。
 原正式数据、Forward、研究配置与 CI 文件均未改变；市场结构并行分支不在该更新中，也未被合并。
-本分支纳入最新 main 后，分钟运行源码的九个文件 SHA 及组合摘要完全不变，原数据未重写。
+仅纳入最新 main 的步骤没有改变分钟运行源码；后续命名空间与 CLI 说明调整见上节。原数据未重写。
 逐文件边界记录见 [latest-main-review.json](evidence/yhh30m-independent-20261019-v1/latest-main-review.json)。
 
-上表 3,176 项本地完整套件是 main 更新前实际执行的结果，不能冒充最新组合树的运行。
+迁移前 3,176 项本地完整套件是 main 更新前实际执行的结果，不能冒充最新组合树的运行。
 最新组合通过 [PR #12](https://github.com/Wind-Maker1001/quant-tv/pull/12) 的新一轮完整远端 CI 验收；
 实际结果及精确 subject/controller/tree 绑定记录在 PR 检查与最终验收评论中。
 旧基点运行 `39146637627` 不作为最新基点验收凭据。
@@ -156,10 +178,11 @@ main 新增的 PR #11 仅包含模型软件就绪诊断、独立测试及其证�
 ## 重放命令与使用限制
 
 ```text
-python -B -X utf8 -m qbot.research.data.yhh30m verify --dataset data/research/yhh30m/full-v1
+python -B -X utf8 -m qbot.engineering.yhh30m verify --dataset data/research/yhh30m/full-v1
 python -B -X utf8 -m examples.research.review_yhh30m --repo . --dataset data/research/yhh30m/full-v1 --source <EXTERNAL_MARKET> --audit docs/research/evidence/independent-data-review-20261017-v1 --output results/diagnostics/<NEW_REVIEW>
 python -B -X utf8 -m examples.research.check_yhh30m_structure_boundary --framework-root <READ_ONLY_PARALLEL_WORKTREE> --dataset data/research/yhh30m/full-v1 --output results/diagnostics/<NEW_RECEIPT>.json
 python -B -X utf8 -m pytest tests/research -q --basetemp <NEW_SAME_VOLUME_SIBLING_TEMP_DIRECTORY>
+python -B -X utf8 -m pytest tests/minute_data -q --cov=qbot.engineering.yhh30m
 ```
 
 精确重放原转换输出须使用记录的生产版本及依赖；修复后的校验器可验证历史生产代。

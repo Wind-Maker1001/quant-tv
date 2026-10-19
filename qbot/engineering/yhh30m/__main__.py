@@ -1,4 +1,4 @@
-"""Run with python -m qbot.research.data.yhh30m convert/verify."""
+"""Run with python -m qbot.engineering.yhh30m convert/verify."""
 
 import argparse
 import json

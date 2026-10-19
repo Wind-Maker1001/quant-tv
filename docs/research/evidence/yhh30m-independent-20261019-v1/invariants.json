@@ -2,7 +2,11 @@
   "dataset_and_69_partition_types": "PASS",
   "formal_admission": false,
   "full_dataset_sha256_unchanged": "2809a017e9b9cc1ba74386a5faa79650025e930056dc4e617db5114626c00f9a",
+  "minute_ci_separate_without_original_gate_relaxation": true,
+  "minute_runtime_namespace": "qbot.engineering.yhh30m",
   "no_market_structure_branch_merged": true,
+  "original_frozen_test_collection_exact_match": true,
+  "original_research_source_and_tests_changed_from_latest_main": false,
   "protected_gate_comparison": [
     {
       "mode": "LF_CANONICAL_TEXT",

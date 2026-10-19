@@ -4,12 +4,12 @@ import json
 
 import pytest
 
-from tests.research.test_yhh30m import fixture_bundle
-from qbot.research.data.yhh30m import IntradayDataError, IntradayParquetProvider
-from qbot.research.data.yhh30m.__main__ import main
-from qbot.research.data.yhh30m.contract import json_bytes
-from qbot.research.data.yhh30m.conversion import convert
-from qbot.research.data.yhh30m.source import file_sha
+from tests.minute_data.test_yhh30m import fixture_bundle
+from qbot.engineering.yhh30m import IntradayDataError, IntradayParquetProvider
+from qbot.engineering.yhh30m.__main__ import main
+from qbot.engineering.yhh30m.contract import json_bytes
+from qbot.engineering.yhh30m.conversion import convert
+from qbot.engineering.yhh30m.source import file_sha
 
 
 @pytest.mark.parametrize("mutation", ["rows", "parquet_hash", "audit_binding"])

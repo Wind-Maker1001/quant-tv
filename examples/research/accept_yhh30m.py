@@ -19,11 +19,11 @@ import pyarrow.compute as pc
 import pyarrow.csv as pacsv
 import pyarrow.parquet as pq
 
-from qbot.research.data.yhh30m import SCHEMA, IntradayParquetProvider
-from qbot.research.data.yhh30m.contract import RAW_COLUMNS, NUMERIC_COLUMNS
-from qbot.research.data.yhh30m.normalize import DayValidator
-from qbot.research.data.yhh30m.source import file_sha, load_inventory, open_source
-from qbot.research.data.yhh30m.storage import now, write_json
+from qbot.engineering.yhh30m import SCHEMA, IntradayParquetProvider
+from qbot.engineering.yhh30m.contract import RAW_COLUMNS, NUMERIC_COLUMNS
+from qbot.engineering.yhh30m.normalize import DayValidator
+from qbot.engineering.yhh30m.source import file_sha, load_inventory, open_source
+from qbot.engineering.yhh30m.storage import now, write_json
 
 
 def accept(dataset, output, *, source=None, audit=None):
