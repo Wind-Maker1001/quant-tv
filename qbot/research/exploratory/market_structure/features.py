@@ -45,6 +45,10 @@ def compute_features(store, sessions, request, feature_ids=None):
     def emit(name, entity, namespace, value, coverage, reason="OK", **extra):
         if name not in wanted:
             return
+        if request.observation_end > request.as_of:
+            value = np.nan
+            reason = "WINDOW_NOT_CLOSED"
+            coverage = 0.0
         if not np.isfinite(value):
             value = np.nan
             if reason == "OK":

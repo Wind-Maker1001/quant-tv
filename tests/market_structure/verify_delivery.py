@@ -123,6 +123,7 @@ def main():
         "frozen-validation.json",
         "environment-notes.json",
         "determinism.json",
+        "frozen-scope.json",
     ):
         shutil.copyfile(artifacts / filename, target / filename)
     shutil.copyfile(formal_reports / "research.xml", target / "frozen-tests.xml")
@@ -160,6 +161,7 @@ def main():
         static_scopes=[PREFIXES[0], PREFIXES[1]],
         source_cli_frequencies=[5, 15, 30],
         formal_validation=formal,
+        formal_scope=json.loads((artifacts / "frozen-scope.json").read_text()),
         contract_count=32,
         implemented_count=14,
         contract_only_count=18,

@@ -266,6 +266,10 @@ def test_unclosed_and_misaligned_windows(manual):
     )
     f = aggregate_intraday(manual.store(), manual.sessions, req).frame
     assert f.reason.eq("WINDOW_NOT_CLOSED").all()
+    result = compute_features(manual.store(), manual.sessions, req)
+    assert result.values.value.isna().all()
+    assert result.values.reason.eq("WINDOW_NOT_CLOSED").all()
+    assert result.values.input_coverage.eq(0).all()
     with pytest.raises(ContractError, match="decision_time"):
         replace(
             manual.request, as_of=manual.request.decision_time + pd.Timedelta(seconds=1)
