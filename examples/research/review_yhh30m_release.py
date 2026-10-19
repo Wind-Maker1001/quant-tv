@@ -66,7 +66,7 @@ def path_kind(token):
 
 
 def load_path_rules(repo, blocked):
-    """Authenticate the narrow rule list and its independent Git baseline."""
+    """Authenticate frozen provenance without requiring discarded Git objects."""
     path = repo / PATH_RULES
     if not path.exists():
         return {}
@@ -80,14 +80,17 @@ def load_path_rules(repo, blocked):
                 policy["evidence_manifest_sha256"] != PATH_AUDIT_SHA256):
             raise ValueError("baseline binding")
         manifest = (repo / PATH_AUDIT).read_bytes()
-        frozen = subprocess.check_output(
-            ["git", "show", PATH_AUDIT_BASELINE + ":" + PATH_AUDIT], cwd=repo,
-            stderr=subprocess.PIPE)
-        if (manifest != frozen or hashlib.sha256(manifest).hexdigest() != PATH_AUDIT_SHA256):
+        if hashlib.sha256(manifest).hexdigest() != PATH_AUDIT_SHA256:
             raise ValueError("evidence digest")
-        subprocess.run(["git", "merge-base", "--is-ancestor", PATH_AUDIT_BASELINE, "HEAD"],
-                       cwd=repo, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # The pinned rule bytes bind the historical version identifier to the
+        # pinned V9 manifest digest. That manifest authenticates file membership
+        # and published byte hashes even after a squash discards the old graph.
         published = json.loads(manifest)["git_blob_files"]
+        if (not isinstance(published, dict) or
+                any(not canonical_path(name) or not isinstance(digest, str) or
+                    not re.fullmatch(r"[0-9a-f]{64}", digest)
+                    for name, digest in published.items())):
+            raise ValueError("frozen source inventory")
         for name, rule in policy["files"].items():
             if (not canonical_path(name) or rule["sha256"] != published.get(name) or
                     not re.fullmatch(r"[0-9a-f]{64}", rule["sha256"]) or
@@ -98,17 +101,14 @@ def load_path_rules(repo, blocked):
                         for kind, count in rule["path_match_counts"].items())):
                 raise ValueError("noncanonical rule")
         return policy["files"]
-    except (OSError, ValueError, KeyError, TypeError, AttributeError, subprocess.CalledProcessError):
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
         blocked.append({"file": PATH_RULES, "reason": "PATH_AUDIT_MANIFEST_MISMATCH"})
         return {}
 
 
-def unchanged_baseline_file(repo, name, raw, rule):
-    if not rule or hashlib.sha256(raw).hexdigest() != rule["sha256"]:
-        return False
-    frozen = subprocess.run(["git", "show", PATH_AUDIT_BASELINE + ":" + name],
-                            cwd=repo, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return frozen.returncode == 0 and frozen.stdout == raw
+def matches_frozen_file(raw, rule):
+    """Rule membership was authenticated above; verify the current bytes."""
+    return bool(rule) and hashlib.sha256(raw).hexdigest() == rule["sha256"]
 
 
 def review(repo, base, scope_yhh30m=False):
@@ -140,7 +140,7 @@ def review(repo, base, scope_yhh30m=False):
             continue
         raw = path.read_bytes()
         rule = rules.get(name)
-        candidate = unchanged_baseline_file(repo, name, raw, rule)
+        candidate = matches_frozen_file(raw, rule)
         legacy_decoded = False
         if b"\x00" in raw or raw.startswith((b"\x89PNG\r\n\x1a\n", b"%PDF-", b"GIF8", b"\xff\xd8\xff")):
             blocked.append({"file": name, "reason": "BINARY_ARTIFACT_REQUIRES_REVIEW"})
@@ -238,6 +238,7 @@ def review(repo, base, scope_yhh30m=False):
             "audited_encoding_exceptions": encoding_exceptions,
             "exception_baseline_commit": PATH_AUDIT_BASELINE,
             "exception_rules_sha256": PATH_RULES_SHA256,
+            "exception_authentication": "PINNED_MANIFEST_SHA256",
             "historical_test_vectors_defined_in_main": dict(fixture_vectors),
             "status": "PASS" if not blocked and not gate_changes else "FAIL"}
 

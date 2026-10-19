@@ -41,6 +41,51 @@ def history(root, monkeypatch, names=(ARCHIVE, DOCUMENT)):
     return policy
 
 
+@pytest.mark.parametrize("topology", ["original", "squashed-retained", "squashed-discarded"])
+def test_frozen_publication_survives_real_git_topologies(publication_repo, monkeypatch, tmp_path, topology):
+    root, base = publication_repo
+    history(root, monkeypatch)
+    frozen = scanner.PATH_AUDIT_BASELINE
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "publication rules")
+    tip = git(root, "rev-parse", "HEAD")
+    tree = git(root, "rev-parse", "HEAD^{tree}")
+    subject = tip
+    if topology != "original":
+        subject = git(root, "commit-tree", tree, "-p", base, "-m", "publication squash")
+    git(root, "update-ref", "refs/heads/published", subject)
+    remote = tmp_path / "published.git"
+    git(tmp_path, "init", "--bare", str(remote))
+    refs = [base + ":refs/heads/main", "refs/heads/published:refs/heads/published"]
+    if topology == "squashed-retained":
+        refs.append(tip + ":refs/heads/retained")
+    git(remote, "fetch", "--no-tags", "--no-recurse-submodules", str(root), *refs)
+    checkout = tmp_path / "actions-checkout"
+    git(tmp_path, "init", str(checkout))
+    git(checkout, "remote", "add", "origin", str(remote))
+    git(checkout, "fetch", "--no-tags", "--no-recurse-submodules", "origin",
+        "+refs/heads/*:refs/remotes/origin/*", subject)
+    git(checkout, "checkout", "--detach", subject)
+    assert git(checkout, "status", "--porcelain") == ""
+    assert git(checkout, "rev-parse", "HEAD^{tree}") == tree
+    ancestor = subprocess.run(["git", "merge-base", "--is-ancestor", frozen, "HEAD"],
+                              cwd=checkout, capture_output=True).returncode
+    exists = subprocess.run(["git", "cat-file", "-e", frozen + "^{commit}"],
+                            cwd=checkout, capture_output=True).returncode
+    if topology == "original":
+        assert ancestor == exists == 0
+    elif topology == "squashed-retained":
+        assert ancestor == 1 and exists == 0
+    else:
+        assert ancestor != 0 and exists != 0
+    result = scanner.review(checkout, base)
+    assert result["status"] == "PASS", result["blocked_findings"]
+    assert result["publication_scope"] == result["safety_scope"] == "FULL_DIFF"
+    assert result["out_of_scope_files"] == []
+    assert result["audited_encoding_exceptions"] == [ARCHIVE]
+    assert git(checkout, "status", "--porcelain") == ""
+
+
 @pytest.mark.parametrize("scoped", [False, True])
 @pytest.mark.parametrize("directory", ["docs/research/other", "qbot/research/exploratory/other"])
 @pytest.mark.parametrize("kind,reason", [
@@ -108,14 +153,39 @@ def test_changed_utf8_document_loses_path_exception(publication_repo, monkeypatc
     assert any(row["file"] == DOCUMENT for row in result["blocked_findings"])
 
 
-def test_listed_hash_cannot_exempt_file_absent_from_baseline(publication_repo, monkeypatch):
+def test_new_path_cannot_claim_a_frozen_file_hash(publication_repo, monkeypatch):
     root, base = publication_repo
-    history(root, monkeypatch, names=(ARCHIVE,))
-    write(root, DOCUMENT, (ROOT / DOCUMENT).read_bytes())
+    policy = history(root, monkeypatch)
+    name = "docs/research/market_structure/evidence/new.md"
+    write(root, name, (ROOT / DOCUMENT).read_bytes())
+    policy["files"][name] = dict(policy["files"][DOCUMENT])
+    save_policy(root, monkeypatch, policy)
     result = scanner.review(root, base)
     assert result["status"] == "FAIL"
-    assert DOCUMENT not in result["audited_path_exceptions"]
-    assert any(row["file"] == DOCUMENT for row in result["blocked_findings"])
+    assert name not in result["audited_path_exceptions"]
+    assert {"file": scanner.PATH_RULES, "reason": "PATH_AUDIT_MANIFEST_MISMATCH"} in result["blocked_findings"]
+
+
+def test_frozen_manifest_digest_mismatch_is_blocked(publication_repo, monkeypatch):
+    root, base = publication_repo
+    history(root, monkeypatch)
+    manifest = root / scanner.PATH_AUDIT
+    manifest.write_bytes(manifest.read_bytes() + b"\n")
+    result = scanner.review(root, base)
+    assert result["status"] == "FAIL"
+    assert {"file": scanner.PATH_RULES, "reason": "PATH_AUDIT_MANIFEST_MISMATCH"} in result["blocked_findings"]
+
+
+def test_matching_current_hash_still_requires_frozen_source_membership(publication_repo, monkeypatch):
+    root, base = publication_repo
+    policy = history(root, monkeypatch)
+    raw = ("C:" + chr(47) + "new-private-location").encode()
+    write(root, DOCUMENT, raw)
+    policy["files"][DOCUMENT]["sha256"] = hashlib.sha256(raw).hexdigest()
+    save_policy(root, monkeypatch, policy)
+    result = scanner.review(root, base)
+    assert result["status"] == "FAIL"
+    assert {"file": scanner.PATH_RULES, "reason": "PATH_AUDIT_MANIFEST_MISMATCH"} in result["blocked_findings"]
 
 
 def test_new_file_under_archival_directory_is_not_exempt(publication_repo, monkeypatch):

@@ -164,7 +164,7 @@ jobs:
           print(json.dumps(evidence, indent=2))
           PY
 
-      - name: Check publication safety boundaries independently of the frozen minute contract
+      - name: Check frozen publication evidence across original and squashed histories
         run: >-
           python -B -m pytest tests/market_structure/test_publication_scope_audit.py
           tests/market_structure/test_minute_gate_compatibility.py --noconftest -q --tb=short
@@ -176,6 +176,21 @@ jobs:
           python -B -m examples.research.review_yhh30m_release --repo . \
             --base "$PUBLICATION_BASE" \
             > results/diagnostics/ci/minute-engineering/publication.json
+          python -B - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from examples.research.review_yhh30m_release import PATH_AUDIT_BASELINE, PATH_RULES_SHA256
+
+          report = json.loads(Path('results/diagnostics/ci/minute-engineering/publication.json').read_bytes())
+          assert report['head_commit'] == os.environ['EVIDENCE_SUBJECT_SHA']
+          assert report['publication_scope'] == report['safety_scope'] == 'FULL_DIFF'
+          assert report['out_of_scope_files'] == []
+          assert set(report['changed_files']) == set(report['safety_checked_files'])
+          assert report['exception_authentication'] == 'PINNED_MANIFEST_SHA256'
+          assert report['exception_baseline_commit'] == PATH_AUDIT_BASELINE
+          assert report['exception_rules_sha256'] == PATH_RULES_SHA256
+          PY
           test -z "$(git status --porcelain)"
 
       - name: Retain actual test, coverage and publication evidence
