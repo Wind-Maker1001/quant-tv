@@ -1,0 +1,115 @@
+{
+  "implementation_commit": "573e9527fa07012d6ff3ef2ad68549abb4ec4f19",
+  "python": "3.9.25 (main, Nov  3 2025, 22:44:01) [MSC v.1929 64 bit (AMD64)]",
+  "started_at": "2026-10-19T12:47:58.077908+00:00",
+  "finished_at": "2026-10-19T12:48:06.647421+00:00",
+  "exit_code": 0,
+  "compiled_sources": [
+    "qbot/research/exploratory/market_structure/__main__.py",
+    "qbot/research/exploratory/market_structure/adapters.py",
+    "qbot/research/exploratory/market_structure/aggregation.py",
+    "qbot/research/exploratory/market_structure/contracts.py",
+    "qbot/research/exploratory/market_structure/diagnostics.py",
+    "qbot/research/exploratory/market_structure/features.py",
+    "qbot/research/exploratory/market_structure/registry.py",
+    "qbot/research/exploratory/market_structure/runner.py",
+    "qbot/research/exploratory/market_structure/store.py",
+    "qbot/research/exploratory/market_structure/synthetic.py",
+    "tests/market_structure/conftest.py",
+    "tests/market_structure/test_delivery.py",
+    "tests/market_structure/test_diagnostics.py",
+    "tests/market_structure/test_features.py",
+    "tests/market_structure/test_minute_gate_compatibility.py",
+    "tests/market_structure/test_review_amount_fields.py",
+    "tests/market_structure/test_review_amount_red.py",
+    "tests/market_structure/test_review_broadcast.py",
+    "tests/market_structure/test_review_calendar.py",
+    "tests/market_structure/test_review_calendar_red.py",
+    "tests/market_structure/test_review_dependencies.py",
+    "tests/market_structure/test_review_followup.py",
+    "tests/market_structure/test_review_identifiers.py",
+    "tests/market_structure/test_review_identifiers_red.py",
+    "tests/market_structure/test_review_provenance.py",
+    "tests/market_structure/test_review_provenance_red.py",
+    "tests/market_structure/test_review_red_cases.py",
+    "tests/market_structure/test_review_scope.py",
+    "tests/market_structure/test_review_scope_red.py",
+    "tests/market_structure/test_review_source_policy.py",
+    "tests/market_structure/test_review_spearman.py",
+    "tests/market_structure/test_review_taxonomy.py",
+    "tests/market_structure/test_review_taxonomy_red.py",
+    "tests/market_structure/test_temporal.py",
+    "tests/market_structure/verify_corrections.py",
+    "tests/market_structure/verify_delivery.py"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "flake8",
+        "--select=E9,F63,F7,F82",
+        "qbot/research/exploratory/market_structure",
+        "tests/market_structure"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol",
+        "diff",
+        "--check",
+        "b30256d",
+        "HEAD",
+        "--",
+        "qbot/research/exploratory/market_structure",
+        "tests/market_structure"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        ".github/scripts/ci/research_checks.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "pytest",
+        "tests/market_structure/test_review_red_cases.py",
+        "tests/market_structure/test_review_spearman.py",
+        "tests/market_structure/test_review_dependencies.py",
+        "tests/market_structure/test_review_broadcast.py",
+        "tests/market_structure/test_review_followup.py",
+        "tests/market_structure/test_review_source_policy.py",
+        "tests/market_structure/test_review_amount_red.py",
+        "tests/market_structure/test_review_amount_fields.py",
+        "tests/market_structure/test_review_scope_red.py",
+        "tests/market_structure/test_review_scope.py",
+        "tests/market_structure/test_review_taxonomy_red.py",
+        "tests/market_structure/test_review_taxonomy.py",
+        "tests/market_structure/test_review_calendar_red.py",
+        "tests/market_structure/test_review_calendar.py",
+        "tests/market_structure/test_review_identifiers_red.py",
+        "tests/market_structure/test_review_identifiers.py",
+        "tests/market_structure/test_review_provenance_red.py",
+        "tests/market_structure/test_review_provenance.py",
+        "-q",
+        "--basetemp=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v9\\final\\targeted-temp",
+        "--junitxml=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v9\\final\\targeted-tests.xml"
+      ],
+      "exit_code": 0
+    }
+  ]
+}

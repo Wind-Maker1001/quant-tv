@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-m",
+    "pytest",
+    "tests/market_structure",
+    "-q",
+    "--basetemp=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v9\\final\\test-temp",
+    "--junitxml=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v9\\final\\new-tests.xml",
+    "--cov=qbot/research/exploratory/market_structure",
+    "--cov-branch",
+    "--cov-report=term-missing",
+    "--cov-report=xml:D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v9\\final\\coverage.xml",
+    "--cov-report=json:D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v9\\final\\coverage.json"
+  ],
+  "implementation_commit": "573e9527fa07012d6ff3ef2ad68549abb4ec4f19",
+  "python": "3.9.25 (main, Nov  3 2025, 22:44:01) [MSC v.1929 64 bit (AMD64)]",
+  "started_at": "2026-10-19T12:47:58.071392+00:00",
+  "finished_at": "2026-10-19T12:49:46.773805+00:00",
+  "exit_code": 0
+}
