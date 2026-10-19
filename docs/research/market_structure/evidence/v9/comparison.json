@@ -1,0 +1,13 @@
+{
+  "catalog_sha256": "b5bcfd0340f3483d3ea71716f56a2d655a062d26b38329aa96719eea194202cb",
+  "changed_artifacts": {},
+  "changed_diagnostic_windows": 0,
+  "default_snapshots_equal": true,
+  "default_values_reasons_coverage_equal": true,
+  "diagnostic_windows": 1728,
+  "numeric_value_sha256": "a827c4d959c50174089d0c87731b6d339373e74b9129c211ec4b53e2b9bbf3e1",
+  "reason": "V9 validates shared record provenance and scoped historical membership change dates against declared types and canonical actual dates. Default inputs already satisfied these requirements; all default numeric values, missing reasons, snapshots, context artifacts, correlations and complete output hashes are unchanged from V8. Earlier identity corrections and all previous hashes remain preserved.",
+  "source_receipt_revision_note": "Runner retains its legacy V4 evidence_revision annotation; this new acceptance and directory explicitly bind the V9 execution and current source hashes. No previous receipt rewritten.",
+  "v8_output_value_sha256": "ec45396178ead61f6202476a1fb6db85817baabd1408aff3ccf2b448a2b5dc08",
+  "v9_output_value_sha256": "ec45396178ead61f6202476a1fb6db85817baabd1408aff3ccf2b448a2b5dc08"
+}

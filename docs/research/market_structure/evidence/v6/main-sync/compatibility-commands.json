@@ -1,0 +1,55 @@
+{
+  "implementation_commit": "5db02fb6ae9c53007f61b1723d1a9a39e1bf1af4",
+  "commands": [
+    {
+      "argv": [
+        "D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "flake8",
+        "examples/research/review_yhh30m_release.py",
+        "tests/market_structure",
+        "qbot/research/exploratory/market_structure",
+        "tests/minute_data",
+        "--select=E9,F63,F7,F82"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-19T11:32:44.895980+00:00",
+      "finished_at": "2026-10-19T11:32:46.344377+00:00"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "origin/main",
+        "--",
+        ".github/workflows/minute-data-evidence.yml",
+        "examples/research/review_yhh30m_release.py",
+        "tests/market_structure",
+        "qbot/research/exploratory/market_structure"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-19T11:32:46.344377+00:00",
+      "finished_at": "2026-10-19T11:32:46.402104+00:00"
+    },
+    {
+      "argv": [
+        "D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "examples.research.review_yhh30m_release",
+        "--repo",
+        ".",
+        "--base",
+        "origin/main",
+        "--scope-yhh30m"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-19T11:32:46.402104+00:00",
+      "finished_at": "2026-10-19T11:32:46.702957+00:00"
+    }
+  ]
+}

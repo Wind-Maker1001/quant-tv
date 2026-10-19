@@ -1,0 +1,266 @@
+{
+  "base": "f1ad2d4f05d7676f9d49e23af9a8e0ec0615e19e",
+  "before_submission": {
+    "all_new_files_require_full_scan": true,
+    "full_scan_expected_files": 478,
+    "new_correction_files": 3,
+    "original_pr_files": 475
+  },
+  "correction": {
+    "candidate": {
+      "branch_moved": false,
+      "candidate": "46bd0889aa4e31786416a227cc90ddb32241b822",
+      "hashes": {
+        ".github/workflows/minute-data-evidence.yml": {
+          "after": "0b6f63911664c24df4a3dca3067c742a5c065bb2186ce544dcbc43a30ffd4469",
+          "before": "5b2351c5fa2d20c5230da68aad29c74bdedde9b2fbdddb62cfca673b74242a60"
+        },
+        "examples/research/review_yhh30m_release.py": {
+          "after": "d3aa89840707deef76a808eaf5209529c2345006ec15207a3e6b0d5224178a89",
+          "before": "da2d6607015fff3672062ba371fa4884d1b218890a74470c98a2a7f7ea4aebbd"
+        },
+        "tests/market_structure/test_publication_scope_audit.py": {
+          "after": "959f42191047af889f106b7dbf27594ce753b90f5275016925144cc1640619a7",
+          "before": "e63f7bfbe1c2303a78406e6be346b9f5feac9f61aa23aa12ff4b23fe9d2ca304"
+        }
+      },
+      "parent": "a80a50fe0a7f3f974fabccdaef1c4de3649a8121",
+      "pr_worktree_clean": true,
+      "tree": "d84ac13174f935499cc9390deefeccf84c76798e"
+    },
+    "cases": [
+      {
+        "ancestor_exit": 0,
+        "case": "original",
+        "changed_files": 475,
+        "checked_files": 475,
+        "clean": true,
+        "frozen_object_exit": 0,
+        "frozen_show_exit": 0,
+        "out_of_scope_files": 0,
+        "output_sha256": "c22a1b6c9b0b89d3dc788b5fb1974b5acf07358ea0ae0ab28249533a392ac611",
+        "parents": [
+          "a80a50fe0a7f3f974fabccdaef1c4de3649a8121"
+        ],
+        "reason_counts": {},
+        "scanner_exit": 0,
+        "source_sha256": "d3aa89840707deef76a808eaf5209529c2345006ec15207a3e6b0d5224178a89",
+        "status": "PASS",
+        "subject": "46bd0889aa4e31786416a227cc90ddb32241b822",
+        "tree": "d84ac13174f935499cc9390deefeccf84c76798e"
+      },
+      {
+        "ancestor_exit": 1,
+        "case": "squashed-retained",
+        "changed_files": 475,
+        "checked_files": 475,
+        "clean": true,
+        "frozen_object_exit": 0,
+        "frozen_show_exit": 0,
+        "out_of_scope_files": 0,
+        "output_sha256": "fd595542772debf97140a222d014d5b6c4371792e3054e6643e55004109f9a98",
+        "parents": [
+          "f1ad2d4f05d7676f9d49e23af9a8e0ec0615e19e"
+        ],
+        "reason_counts": {},
+        "scanner_exit": 0,
+        "source_sha256": "d3aa89840707deef76a808eaf5209529c2345006ec15207a3e6b0d5224178a89",
+        "status": "PASS",
+        "subject": "67b2d1061df125f541325b2d8a1f6040b328a55e",
+        "tree": "d84ac13174f935499cc9390deefeccf84c76798e"
+      },
+      {
+        "ancestor_exit": 128,
+        "case": "squashed-discarded",
+        "changed_files": 475,
+        "checked_files": 475,
+        "clean": true,
+        "frozen_object_exit": 128,
+        "frozen_show_exit": 128,
+        "out_of_scope_files": 0,
+        "output_sha256": "fd595542772debf97140a222d014d5b6c4371792e3054e6643e55004109f9a98",
+        "parents": [
+          "f1ad2d4f05d7676f9d49e23af9a8e0ec0615e19e"
+        ],
+        "reason_counts": {},
+        "scanner_exit": 0,
+        "source_sha256": "d3aa89840707deef76a808eaf5209529c2345006ec15207a3e6b0d5224178a89",
+        "status": "PASS",
+        "subject": "67b2d1061df125f541325b2d8a1f6040b328a55e",
+        "tree": "d84ac13174f935499cc9390deefeccf84c76798e"
+      }
+    ],
+    "command_log_sha256": "88ac445fb782dd8385cf290bf099d6ea9e4b43600e24af877fbcd75017fb0c50",
+    "encoding_exceptions": [
+      "docs/research/market_structure/evidence/v2/red/red-tests.log"
+    ],
+    "exception_authentication": "PINNED_MANIFEST_SHA256",
+    "harness_exit": 0,
+    "out_of_scope_files": [],
+    "path_exception_files": 168,
+    "path_match_count": 1045,
+    "protected_gate_changes": [],
+    "publication_scope": "FULL_DIFF",
+    "safety_scope": "FULL_DIFF"
+  },
+  "discussion": "discussion_r4316272907",
+  "frozen": {
+    "comparison_base": "f1ad2d4f05d7676f9d49e23af9a8e0ec0615e19e",
+    "evidence_files": 417,
+    "evidence_inventory_sha256": "af8e18ae797f84b15548186d7faa60f7c168b03916e7e949fb914e90902a4920",
+    "evidence_unchanged": true,
+    "market_structure_business_changes": [],
+    "original_pr": "a80a50fe0a7f3f974fabccdaef1c4de3649a8121",
+    "protected_changes": [],
+    "protected_paths": [
+      ".github/scripts/ci",
+      ".github/workflows/research-tests.yml",
+      ".github/workflows/pit-archive-evidence.yml",
+      "pytest.ini",
+      "dev",
+      "configs/research",
+      "qbot/research/data",
+      "qbot/research/forward",
+      "qbot/research/config",
+      "tests/research",
+      "qbot/engineering/yhh30m",
+      "tests/minute_data",
+      "docs/research/evidence/ci-runtime-optimization-v1",
+      "docs/research/evidence/yhh30m-independent-20261019-v1"
+    ],
+    "rules_sha256": "956cf7d1276857b9f65eeed2763c49bf02fab75efb09a12fb66aa672015db851",
+    "subject": "46bd0889aa4e31786416a227cc90ddb32241b822",
+    "v9_manifest_sha256": "63144f07169740b78f33873947f28fa8294d856ea028c53e7785f12daea2165a",
+    "workflow_python_blocks_compiled": [
+      "Record exact execution subject and source contract",
+      "Verify exact tests and full source coverage inventory without lost hits",
+      "Verify full diff safety, minute ownership and unchanged original gates"
+    ]
+  },
+  "frozen_baseline": "7300afdb92127aec83f03a5f5fa91b7f71fe94bb",
+  "frozen_command_log_sha256": "0190eb5a1e04d8cc58adbd20283ff62a018db30d624ef6bdf20d1d8989c8317f",
+  "large_research_rerun_locally": false,
+  "merge_policy": "Wait for exact new head CI and Codex Review; human merge only",
+  "no_live_money": true,
+  "original_pr_head": "a80a50fe0a7f3f974fabccdaef1c4de3649a8121",
+  "original_tree": "fa2bb75310139b54b0dbd8882150dbe973446d44",
+  "reproduction": {
+    "cases": [
+      {
+        "ancestor_exit": 0,
+        "case": "original",
+        "changed_files": 475,
+        "checked_files": 475,
+        "clean": true,
+        "frozen_object_exit": 0,
+        "frozen_show_exit": 0,
+        "out_of_scope_files": 0,
+        "output_sha256": "39d3bd489ee2cbc4fb5a91773a5e84010bf68149b1c9d35d0fd59d180582c5fe",
+        "parents": [
+          "7300afdb92127aec83f03a5f5fa91b7f71fe94bb"
+        ],
+        "reason_counts": {},
+        "scanner_exit": 0,
+        "source_sha256": "da2d6607015fff3672062ba371fa4884d1b218890a74470c98a2a7f7ea4aebbd",
+        "status": "PASS",
+        "subject": "a80a50fe0a7f3f974fabccdaef1c4de3649a8121",
+        "tree": "fa2bb75310139b54b0dbd8882150dbe973446d44"
+      },
+      {
+        "ancestor_exit": 1,
+        "case": "squashed-retained",
+        "changed_files": 475,
+        "checked_files": 475,
+        "clean": true,
+        "frozen_object_exit": 0,
+        "frozen_show_exit": 0,
+        "out_of_scope_files": 0,
+        "output_sha256": "ab1f2cbe08c9a6bc077c486da22cf882630154ed716e7f428bb87c937ecca3a1",
+        "parents": [
+          "f1ad2d4f05d7676f9d49e23af9a8e0ec0615e19e"
+        ],
+        "reason_counts": {
+          "NON_UTF8_CONTENT": 1,
+          "PATH_AUDIT_MANIFEST_MISMATCH": 1,
+          "UNEXPLAINED_ABSOLUTE_PATH": 1044
+        },
+        "scanner_exit": 1,
+        "source_sha256": "da2d6607015fff3672062ba371fa4884d1b218890a74470c98a2a7f7ea4aebbd",
+        "status": "FAIL",
+        "subject": "ae8ae420171528638f3fc56b3fac73bdcc24ce41",
+        "tree": "fa2bb75310139b54b0dbd8882150dbe973446d44"
+      },
+      {
+        "ancestor_exit": 128,
+        "case": "squashed-discarded",
+        "changed_files": 475,
+        "checked_files": 475,
+        "clean": true,
+        "frozen_object_exit": 128,
+        "frozen_show_exit": 128,
+        "out_of_scope_files": 0,
+        "output_sha256": "ab1f2cbe08c9a6bc077c486da22cf882630154ed716e7f428bb87c937ecca3a1",
+        "parents": [
+          "f1ad2d4f05d7676f9d49e23af9a8e0ec0615e19e"
+        ],
+        "reason_counts": {
+          "NON_UTF8_CONTENT": 1,
+          "PATH_AUDIT_MANIFEST_MISMATCH": 1,
+          "UNEXPLAINED_ABSOLUTE_PATH": 1044
+        },
+        "scanner_exit": 1,
+        "source_sha256": "da2d6607015fff3672062ba371fa4884d1b218890a74470c98a2a7f7ea4aebbd",
+        "status": "FAIL",
+        "subject": "ae8ae420171528638f3fc56b3fac73bdcc24ce41",
+        "tree": "fa2bb75310139b54b0dbd8882150dbe973446d44"
+      }
+    ],
+    "command_log_sha256": "0d9e564e645b702e1a14c101e7fef412b7a34391b7b61f1f0515b6ff4ea4fb4b",
+    "driver_sha256": "95fe16f4ed1e063055684cf1985cd6c64432ff16a5668a0c34401af588ec3417",
+    "harness_exit": 0,
+    "new_regression_against_old_auditor": {
+      "command_log_sha256": "cef072d098d4c71b39995aba19aa61db5f55b7865639c4d8eeb8714f8bf89921",
+      "exit_code": 1,
+      "failed": 2,
+      "output_sha256": "73081788f6fd20bdcd48cce0e9b517f408f963f4be42ba0aa9389a70405028d2",
+      "passed": 1
+    }
+  },
+  "schema": "PUBLICATION_P1_CORRECTION_V1",
+  "tests": {
+    "directed": {
+      "command_log_sha256": "bacbbaa9c8deba32003967b1525bffd295d6d978a2edc9337471ea53d025226f",
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 80
+      },
+      "exit_codes": [
+        0
+      ],
+      "junit_sha256": "d160e6d1c40aeebac5317db30863236d098a3989aeca63340bc6b1f502c6562c",
+      "output_sha256": "73d2f8f880542036abb896de8dabe0bd13c00e5e1c645197bbee82671101594b"
+    },
+    "minute_application": {
+      "command_log_sha256": "3e07150b9b1cfadda1a33eedec326141727e8a1539120704b5f5b6bdf6468158",
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 42
+      },
+      "exit_codes": [
+        0
+      ],
+      "junit_sha256": "d47773513b712f7829a346609eaaa72869f0337915771151af079a29804958a8",
+      "output_sha256": "fd90ee55b80f9f1ad561163b667ec3e35ef49ab48d72f5c5fb5b6cf0aa800f92"
+    },
+    "static": {
+      "command_log_sha256": "f7cad1c855041ec7ef9dfb4fa79bdec9925a1264ad373d729dc6e1e4f58862a1",
+      "exit_codes": [
+        0
+      ]
+    }
+  }
+}

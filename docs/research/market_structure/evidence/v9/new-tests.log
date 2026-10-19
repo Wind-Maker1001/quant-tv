@@ -1,0 +1,25 @@
+........................................................................ [ 25%]
+........................................................................ [ 50%]
+........................................................................ [ 75%]
+......................................................................   [100%]
+- generated xml file: D:\Code\quant-tv-market-structure-p2-artifacts-20261019\v9\final\new-tests.xml -
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.9.25-final-0 _______________
+
+Name                                                        Stmts   Miss Branch BrPart  Cover   Missing
+-------------------------------------------------------------------------------------------------------
+qbot\research\exploratory\market_structure\__main__.py         12      0      2      1    93%   24->exit
+qbot\research\exploratory\market_structure\adapters.py        124      7     62      8    92%   23->19, 34, 173, 195, 197, 202, 210, 237
+qbot\research\exploratory\market_structure\aggregation.py     104      7     46      6    91%   41, 79->78, 96->94, 126, 142, 185->189, 202-205
+qbot\research\exploratory\market_structure\contracts.py       148      5     54      5    95%   173, 176, 183, 224, 228
+qbot\research\exploratory\market_structure\diagnostics.py     132      3     50      3    97%   63, 93, 170
+qbot\research\exploratory\market_structure\features.py        182      5     80      6    96%   59, 92, 127, 129, 236, 500->503
+qbot\research\exploratory\market_structure\registry.py         23      3      4      1    85%   11, 16-17
+qbot\research\exploratory\market_structure\runner.py          100      2     30      2    97%   41, 57
+qbot\research\exploratory\market_structure\store.py           122     10     72     11    89%   24, 33->30, 50, 72, 74, 84, 94, 144, 161, 169, 183
+qbot\research\exploratory\market_structure\synthetic.py        80      1     30      1    98%   54
+-------------------------------------------------------------------------------------------------------
+TOTAL                                                        1027     43    430     44    94%
+Coverage XML written to file D:\Code\quant-tv-market-structure-p2-artifacts-20261019\v9\final\coverage.xml
+Coverage JSON written to file D:\Code\quant-tv-market-structure-p2-artifacts-20261019\v9\final\coverage.json
+286 passed in 106.56s (0:01:46)

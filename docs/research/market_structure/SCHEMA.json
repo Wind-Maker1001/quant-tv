@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MARKET_STRUCTURE_EXPLORATORY_V1",
+  "description": "SYNTHETIC_TEST_ONLY; structural interchange schema. Cross-record, clock, coverage and conservation constraints are enforced by Python validators and documented in DESIGN.md.",
+  "type": "object",
+  "required": ["fact_id", "revision", "kind", "payload", "valid_from", "published_at", "available_at", "captured_at", "evidence", "source", "definition_version", "historical_availability_proven", "withdrawn"],
+  "properties": {
+    "fact_id": {"type": "string", "minLength": 1},
+    "revision": {"type": "integer", "minimum": 1},
+    "kind": {"enum": ["source_definition", "scope", "membership", "edge", "minute", "benchmark"]},
+    "source": {"const": "SYNTHETIC_TEST_ONLY"},
+    "definition_version": {"type": "string", "minLength": 1},
+    "valid_from": {"$ref": "#/$defs/instant"},
+    "valid_to": {"anyOf": [{"$ref": "#/$defs/instant"}, {"type": "null"}]},
+    "observation_end": {"anyOf": [{"$ref": "#/$defs/instant"}, {"type": "null"}]},
+    "published_at": {"$ref": "#/$defs/instant"},
+    "available_at": {"$ref": "#/$defs/instant"},
+    "captured_at": {"$ref": "#/$defs/instant"},
+    "known_at": {"$ref": "#/$defs/instant", "readOnly": true},
+    "historical_availability_proven": {"type": "boolean"},
+    "withdrawn": {"type": "boolean"},
+    "evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "payload": {"type": "object"}
+  },
+  "allOf": [
+    {"if": {"properties": {"kind": {"const": "membership"}}}, "then": {"properties": {"payload": {"required": ["security_id", "family", "namespace", "taxonomy_version", "change_date", "group_id", "weight"], "properties": {"family": {"enum": ["industry", "concept"]}, "weight": {"type": ["number", "null"], "minimum": 0}, "change_date": {"type": "string", "format": "date"}}}}}},
+    {"if": {"properties": {"kind": {"const": "edge"}}}, "then": {"properties": {"payload": {"required": ["upstream", "downstream", "relation_type", "evidence_status", "confidence"], "properties": {"confidence": {"type": "number", "minimum": 0, "maximum": 1}, "evidence_status": {"enum": ["CONFIRMED_SYNTHETIC", "INFERRED", "UNVERIFIED", "DISPUTED"]}}}}}},
+    {"if": {"properties": {"kind": {"const": "minute"}}}, "then": {"required": ["observation_end"], "properties": {"observation_end": {"$ref": "#/$defs/instant"}, "payload": {"required": ["security_id", "open", "high", "low", "close", "volume", "amount", "unit", "price_basis", "buy", "sell", "unclassified", "flow_definition", "flow_unit", "limit_definition", "limit_state"]}}}},
+    {"if": {"properties": {"kind": {"const": "benchmark"}}}, "then": {"required": ["observation_end"], "properties": {"observation_end": {"$ref": "#/$defs/instant"}, "payload": {"required": ["session_id", "adj_close", "complete"], "properties": {"complete": {"type": "boolean"}, "adj_close": {"type": ["number", "null"]}}}}}},
+    {"if": {"properties": {"kind": {"const": "scope"}}}, "then": {"properties": {"payload": {"required": ["family", "namespace", "complete", "group_ids", "taxonomy_version"], "properties": {"complete": {"type": "boolean"}, "group_ids": {"type": "array", "uniqueItems": true}}}}}},
+    {"if": {"properties": {"kind": {"const": "source_definition"}}}, "then": {"properties": {"payload": {"required": ["definition_id", "vendor", "unit", "currency"]}}}}
+  ],
+  "$defs": {"instant": {"type": "string", "format": "date-time", "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"}}
+}

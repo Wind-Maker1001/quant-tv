@@ -1,0 +1,23 @@
+{
+  "status": "EXACT_REPLAY_MATCH",
+  "runs": [
+    "independent full pytest demo",
+    "Python 3.9 source CLI"
+  ],
+  "input_sha256": "eecfefb91cc753e61cdfff7fb7795fb51e03711ee13ca52100a9261cf45c24e6",
+  "output_value_sha256": "66aa8f0cf1d5e240da4b82444fc8c3ba57ba37eab62ac95549874df68751218f",
+  "source_sha256": {
+    "qbot/research/exploratory/market_structure/__main__.py": "863c7f190079547d42ae56ceddc9cbac3ab97d6e1461d0ce471706c5dfbfe1f6",
+    "qbot/research/exploratory/market_structure/adapters.py": "23c20330a06c4e4f8a7dbf6f1ab077cad0d108e8646909eb750604b8f5c9d77c",
+    "qbot/research/exploratory/market_structure/aggregation.py": "ca346011110e3369c460268bfc3ca78aa54c3462902889b6c3fd6b2be9b8428b",
+    "qbot/research/exploratory/market_structure/contracts.py": "e76597bbe8917b16975f533874f0ab55a38b3ee418ab9939b784534032dd0ddd",
+    "qbot/research/exploratory/market_structure/diagnostics.py": "617fdd9e4c51cbb56336711e1b37bfa0aa9c6c60930c37b0ac5cea068cf415f0",
+    "qbot/research/exploratory/market_structure/features.py": "0c70369c6ab6cdc02adf37f20e14df0f62d055fc7ceb14686b564acf77b94e18",
+    "qbot/research/exploratory/market_structure/registry.py": "e09badb2ae1baa328680d14f0bca7fa2c7a05e6d34c149637f88e11572d41275",
+    "qbot/research/exploratory/market_structure/runner.py": "89a50e02e2b57f1f73b5afef4897b760f1aae94aa1f8c474abc249eea1db0695",
+    "qbot/research/exploratory/market_structure/store.py": "261d699315613a53227fb890e76950ae540a0b4e68be38438b8c65fbb539ba68",
+    "qbot/research/exploratory/market_structure/synthetic.py": "9af23ecc6c711c31b300ebd62045ac082f90ac578bc72a68e43714c757aebe4a"
+  },
+  "pytest_receipt_sha256": "e256b685ba26f47280bcaeb83cf5ea183179e66b3f0ef987846064d37fa94cb9",
+  "cli_receipt_sha256": "e256b685ba26f47280bcaeb83cf5ea183179e66b3f0ef987846064d37fa94cb9"
+}

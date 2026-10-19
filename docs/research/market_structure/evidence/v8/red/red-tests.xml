@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.497" timestamp="2026-10-19T20:22:12.586367+08:00" hostname="Desktop"><testcase classname="tests.market_structure.test_review_identifiers_red" name="test_empty_endpoint_cannot_be_counted_as_confirmed_supplier" time="0.012"><failure message="Failed: DID NOT RAISE &lt;class 'qbot.research.exploratory.market_structure.contracts.ContractError'&gt;">manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+
+    def test_empty_endpoint_cannot_be_counted_as_confirmed_supplier(manual):
+        records = [replace(r, payload=dict(r.payload, upstream="")) if r.fact_id == "edge-0" else r for r in manual.records]
+        with pytest.raises(ContractError, match="endpoint"):
+&gt;           compute_features(AsOfStore(records), manual.sessions, manual.request, ["SC_UPSTREAM_COUNT"])
+E           Failed: DID NOT RAISE &lt;class 'qbot.research.exploratory.market_structure.contracts.ContractError'&gt;
+
+tests\market_structure\test_review_identifiers_red.py:16: Failed</failure></testcase><testcase classname="tests.market_structure.test_review_identifiers_red" name="test_opaque_session_ids_do_not_define_market_regime_dates" time="0.179"><failure message="pandas._libs.tslibs.parsing.DateParseError: Unknown datetime string format, unable to parse: session-0">def test_opaque_session_ids_do_not_define_market_regime_dates():
+        bundle = make_synthetic_data(stock_count=4, session_count=1)
+        names = {s.session_id: "session-%d" % i for i, s in enumerate(bundle.context_sessions)}
+        sessions = tuple(replace(s, session_id=names[s.session_id]) for s in bundle.context_sessions)
+        records = [replace(r, payload=dict(r.payload, session_id=names[r.payload["session_id"]])) if r.kind == "benchmark" else r for r in bundle.records()]
+        request = next(window_requests(bundle.sessions, bundle.universe, 5))
+&gt;       result = compute_features(AsOfStore(records), sessions, replace(request, session_id=names[request.session_id]), ["BREADTH_ADVANCE_RATIO"])
+
+tests\market_structure\test_review_identifiers_red.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+qbot\research\exploratory\market_structure\features.py:468: in compute_features
+    market_context(store, sessions, request)
+qbot\research\exploratory\market_structure\adapters.py:58: in market_context
+    date=pd.Timestamp(session.session_id),
+timestamps.pyx:1865: in pandas._libs.tslibs.timestamps.Timestamp.__new__
+    ???
+conversion.pyx:364: in pandas._libs.tslibs.conversion.convert_to_tsobject
+    ???
+conversion.pyx:641: in pandas._libs.tslibs.conversion.convert_str_to_tsobject
+    ???
+parsing.pyx:336: in pandas._libs.tslibs.parsing.parse_datetime_string
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+&gt;   ???
+E   pandas._libs.tslibs.parsing.DateParseError: Unknown datetime string format, unable to parse: session-0
+
+parsing.pyx:666: DateParseError</failure></testcase></testsuite></testsuites>

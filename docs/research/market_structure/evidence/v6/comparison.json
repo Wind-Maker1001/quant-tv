@@ -1,0 +1,12 @@
+{
+  "catalog_sha256": "b5bcfd0340f3483d3ea71716f56a2d655a062d26b38329aa96719eea194202cb",
+  "changed_artifacts": {},
+  "changed_diagnostic_windows": 0,
+  "default_values_reasons_coverage_and_snapshots_equal": true,
+  "diagnostic_windows": 1728,
+  "numeric_value_sha256": "a827c4d959c50174089d0c87731b6d339373e74b9129c211ec4b53e2b9bbf3e1",
+  "reason": "V6 rejects absent or invalid classification scope identifiers before complete empty memberships can be asserted. All default identified scopes are valid, so all default feature values, snapshot and artifact hashes remain equal.",
+  "source_receipt_revision_note": "Runner retains its legacy V4 evidence_revision annotation; this new acceptance and directory explicitly bind the V6 execution and current source hashes. No previous receipt rewritten.",
+  "v5_output_value_sha256": "468d3e8f5e4a2b5b34a1a9c8d2474cfc9586a5ae1b56023a33edf957f3532f44",
+  "v6_output_value_sha256": "468d3e8f5e4a2b5b34a1a9c8d2474cfc9586a5ae1b56023a33edf957f3532f44"
+}

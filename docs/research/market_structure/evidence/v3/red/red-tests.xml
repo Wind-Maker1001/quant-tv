@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.326" timestamp="2026-10-19T12:35:28.596835+08:00" hostname="Desktop"><testcase classname="tests.market_structure.test_review_followup" name="test_review_red_conflicting_flow_definitions_are_not_approved" time="0.028"><failure message="AssertionError: assert False&#10; +  where False = all()&#10; +    where all = 0    False\n1    False\n2    False\n3    False\nName: reason, dtype: bool.all&#10; +      where 0    False\n1    False\n2    False\n3    False\nName: reason, dtype: bool = eq('BLOCKED_SOURCE_DEFINITION')&#10; +        where eq = 0    OK\n1    OK\n2    OK\n3    OK\nName: reason, dtype: object.eq&#10; +          where 0    OK\n1    OK\n2    OK\n3    OK\nName: reason, dtype: object =               feature_id  ...                                        snapshot_id\n0  FLOW_NET_ACTIVE_RATIO  ...  a73570...c3b6239f6fff...\n3  FLOW_NET_ACTIVE_RATIO  ...  a735704265a4f912125695b984ecb4bb0dc3b6239f6fff...\n\n[4 rows x 20 columns].reason&#10; +            where               feature_id  ...                                        snapshot_id\n0  FLOW_NET_ACTIVE_RATIO  ...  a73570...c3b6239f6fff...\n3  FLOW_NET_ACTIVE_RATIO  ...  a735704265a4f912125695b984ecb4bb0dc3b6239f6fff...\n\n[4 rows x 20 columns] = FeatureResult(values=              feature_id  ...                                        snapshot_id\n0  FLOW_NET_ACTI...ext_input_sha256': '37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570', 'include_market_context': True}).values">manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+
+    def test_review_red_conflicting_flow_definitions_are_not_approved(manual):
+        conflict = replace(
+            manual.records[0], fact_id="conflicting-definition",
+            payload=dict(manual.records[0].payload, unit="UNKNOWN"),
+        )
+        result = compute_features(
+            AsOfStore(manual.records + [conflict]), manual.sessions, manual.request,
+            ["FLOW_NET_ACTIVE_RATIO"],
+        )
+&gt;       assert result.values.reason.eq("BLOCKED_SOURCE_DEFINITION").all()
+E       AssertionError: assert False
+E        +  where False = all()
+E        +    where all = 0    False\n1    False\n2    False\n3    False\nName: reason, dtype: bool.all
+E        +      where 0    False\n1    False\n2    False\n3    False\nName: reason, dtype: bool = eq('BLOCKED_SOURCE_DEFINITION')
+E        +        where eq = 0    OK\n1    OK\n2    OK\n3    OK\nName: reason, dtype: object.eq
+E        +          where 0    OK\n1    OK\n2    OK\n3    OK\nName: reason, dtype: object =               feature_id  ...                                        snapshot_id\n0  FLOW_NET_ACTIVE_RATIO  ...  a73570...c3b6239f6fff...\n3  FLOW_NET_ACTIVE_RATIO  ...  a735704265a4f912125695b984ecb4bb0dc3b6239f6fff...\n\n[4 rows x 20 columns].reason
+E        +            where               feature_id  ...                                        snapshot_id\n0  FLOW_NET_ACTIVE_RATIO  ...  a73570...c3b6239f6fff...\n3  FLOW_NET_ACTIVE_RATIO  ...  a735704265a4f912125695b984ecb4bb0dc3b6239f6fff...\n\n[4 rows x 20 columns] = FeatureResult(values=              feature_id  ...                                        snapshot_id\n0  FLOW_NET_ACTI...ext_input_sha256': '37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570', 'include_market_context': True}).values
+
+tests\market_structure\test_review_followup.py:24: AssertionError</failure></testcase><testcase classname="tests.market_structure.test_review_followup" name="test_review_red_market_window_coverage_is_independent_of_entity_pair_policy" time="0.021"><failure message="AssertionError: assert 'HIGHLY_REDUNDANT' == 'UNDETERMINED'&#10;  &#10;  - UNDETERMINED&#10;  + HIGHLY_REDUNDANT">def test_review_red_market_window_coverage_is_independent_of_entity_pair_policy():
+        values = panel(grain="market", entities=1, windows=20, sessions=3)
+        ends = values.observation_end.unique()
+        values.loc[(values.feature_id == "B") &amp; values.observation_end.isin(ends[-4:]), "value"] = np.nan
+        result = diagnose_features(values, RedundancyPolicy(
+            minimum_observation_windows=10, minimum_pair_coverage=0.5,
+            minimum_window_coverage=1.0,
+        ))
+&gt;       assert result["redundancy"].iloc[0].status == "UNDETERMINED"
+E       AssertionError: assert 'HIGHLY_REDUNDANT' == 'UNDETERMINED'
+E         
+E         - UNDETERMINED
+E         + HIGHLY_REDUNDANT
+
+tests\market_structure\test_review_followup.py:36: AssertionError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,4 @@
+["D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe", "-m", "flake8", "--select=E9,F63,F7,F82", "qbot/research/exploratory/market_structure", "tests/market_structure"]
+["git", "-c", "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol", "diff", "--check", "39eecf869c9c2075ba3f6e3c76aeba3338c63432", "HEAD", "--", "qbot/research/exploratory/market_structure", "tests/market_structure"]
+["D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe", ".github/scripts/ci/research_checks.py"]
+{"base": "39eecf869c9c2075ba3f6e3c76aeba3338c63432", "compiled_python_files": 304, "static_rules": "flake8 E9,F63,F7,F82", "scopes": ["qbot/research", "tests/research", "examples/research", ".github/scripts/ci"], "modifies_source": false, "full_pylint_analysis": false}

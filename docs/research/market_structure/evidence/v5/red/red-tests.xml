@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.309" timestamp="2026-10-19T19:33:52.732327+08:00" hostname="Desktop"><testcase classname="tests.market_structure.test_review_scope_red" name="test_no_amount_request_cannot_claim_zero_conservation" time="0.026"><failure message="AssertionError: assert False&#10; +  where False =     family namespace  ...  frequency            observation_end\n0  concept   concept  ...          5  2021-01-04T01:35:00+00:00\n\n[1 rows x 9 columns].empty&#10; +    where     family namespace  ...  frequency            observation_end\n0  concept   concept  ...          5  2021-01-04T01:35:00+00:00\n\n[1 rows x 9 columns] = FeatureResult(values=               feature_id  ...                                        snapshot_id\n0  THEME_MEMBER...ext_input_sha256': '37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570', 'include_market_context': True}).conservation">manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+
+    def test_no_amount_request_cannot_claim_zero_conservation(manual):
+        result = compute_features(
+            manual.store(), manual.sessions, manual.request, ["THEME_MEMBERSHIP_COUNT"]
+        )
+&gt;       assert result.conservation.empty
+E       AssertionError: assert False
+E        +  where False =     family namespace  ...  frequency            observation_end\n0  concept   concept  ...          5  2021-01-04T01:35:00+00:00\n\n[1 rows x 9 columns].empty
+E        +    where     family namespace  ...  frequency            observation_end\n0  concept   concept  ...          5  2021-01-04T01:35:00+00:00\n\n[1 rows x 9 columns] = FeatureResult(values=               feature_id  ...                                        snapshot_id\n0  THEME_MEMBER...ext_input_sha256': '37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570', 'include_market_context': True}).conservation
+
+tests\market_structure\test_review_scope_red.py:16: AssertionError</failure></testcase><testcase classname="tests.market_structure.test_review_scope_red" name="test_complete_graph_scopes_cannot_be_merged_implicitly" time="0.006"><failure message="Failed: DID NOT RAISE &lt;class 'qbot.research.exploratory.market_structure.contracts.ContractError'&gt;">manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+
+    def test_complete_graph_scopes_cannot_be_merged_implicitly(manual):
+        scope = next(
+            r for r in manual.records
+            if r.kind == "scope" and r.payload["family"] == "supply_chain"
+        )
+        other = replace(scope, fact_id="different-graph", payload=dict(scope.payload, namespace="other"))
+        with pytest.raises(ContractError, match="ambiguous supply-chain scope"):
+&gt;           compute_features(
+                AsOfStore(manual.records + [other]), manual.sessions, manual.request,
+                ["SC_UPSTREAM_COUNT"]
+            )
+E           Failed: DID NOT RAISE &lt;class 'qbot.research.exploratory.market_structure.contracts.ContractError'&gt;
+
+tests\market_structure\test_review_scope_red.py:26: Failed</failure></testcase></testsuite></testsuites>

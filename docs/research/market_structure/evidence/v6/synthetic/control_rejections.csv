@@ -1,0 +1,5 @@
+scenario,frequency,grain,namespace,feature_id,reason,observed,threshold,evidence,diagnostic_kind,distinct_trading_sessions,left,mean_abs_pearson,mean_abs_spearman,mean_pair_coverage,minimum_entities,right,status,total_observation_windows,valid_observation_windows
+historical_simulation,5,security,synthetic_supply,CONTROL_CONSTANT,CONSTANT,1.0,0.8,native-grain quality,,,,,,,,,,,
+historical_simulation,5,security,synthetic_supply,CONTROL_SCALED,HIGHLY_REDUNDANT,1.0,0.98,pairwise evidence; registry contract retained,INTRADAY_CROSS_SECTION,6.0,CONTROL_COPY,1.0,1.0,1.0,20.0,CONTROL_SCALED,HIGHLY_REDUNDANT,288.0,288.0
+historical_simulation,5,security,synthetic_supply,SC_UPSTREAM_COUNT,NUMERIC_DUPLICATE,1.0,0.98,pairwise evidence; registry contract retained,INTRADAY_CROSS_SECTION,6.0,CONTROL_COPY,1.0,1.0,1.0,20.0,SC_UPSTREAM_COUNT,NUMERIC_DUPLICATE,288.0,288.0
+historical_simulation,5,security,synthetic_supply,SC_UPSTREAM_COUNT,HIGHLY_REDUNDANT,1.0,0.98,pairwise evidence; registry contract retained,INTRADAY_CROSS_SECTION,6.0,CONTROL_SCALED,1.0,1.0,1.0,20.0,SC_UPSTREAM_COUNT,HIGHLY_REDUNDANT,288.0,288.0

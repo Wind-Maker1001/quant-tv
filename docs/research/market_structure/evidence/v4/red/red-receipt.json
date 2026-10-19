@@ -1,0 +1,30 @@
+{
+  "command": [
+    "D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-m",
+    "pytest",
+    "tests/market_structure/test_review_amount_red.py",
+    "-q",
+    "--basetemp=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v4\\red-temp",
+    "--junitxml=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v4\\red\\red-tests.xml"
+  ],
+  "exit_code": 1,
+  "product_head": "58dc13b363bd9c621a36a63084ae13167a32b13a",
+  "python": "3.9.25 (main, Nov  3 2025, 22:44:01) [MSC v.1929 64 bit (AMD64)]",
+  "product_source_sha256": {
+    "qbot/research/exploratory/market_structure/adapters.py": "221fa0992be96673437ffee7d2d5a95bc93eb0a86043435cd51912f814ab0727",
+    "qbot/research/exploratory/market_structure/aggregation.py": "dfacd1ba0c4e1d2e4b3f4578e649a131f4ea5c939cb4533ebc12d8f05a13f2a3",
+    "qbot/research/exploratory/market_structure/contracts.py": "e76597bbe8917b16975f533874f0ab55a38b3ee418ab9939b784534032dd0ddd",
+    "qbot/research/exploratory/market_structure/diagnostics.py": "36025d60f8407671b06398945f05fb2ae23d3a0d010d7b92c347bc7ba7a6d287",
+    "qbot/research/exploratory/market_structure/features.py": "06af0f6be0d455f91d3cce583e17abcac432cb13481a32165e1ffd726a69397d",
+    "qbot/research/exploratory/market_structure/registry.py": "4bcc83017d89766b05f0786146aa8cc1f887662a1b8a8a7fd8699c490936e291",
+    "qbot/research/exploratory/market_structure/runner.py": "ecf4ad0fa1447b4bed2a9a7d1f9ebc6aab33a89c66276879edaaef22a117bf4c",
+    "qbot/research/exploratory/market_structure/store.py": "261d699315613a53227fb890e76950ae540a0b4e68be38438b8c65fbb539ba68",
+    "qbot/research/exploratory/market_structure/synthetic.py": "9af23ecc6c711c31b300ebd62045ac082f90ac578bc72a68e43714c757aebe4a",
+    "qbot/research/exploratory/market_structure/__main__.py": "863c7f190079547d42ae56ceddc9cbac3ab97d6e1461d0ce471706c5dfbfe1f6"
+  },
+  "test_source_path": "tests/market_structure/test_review_amount_red.py",
+  "test_source_sha256": "081d6705aa95f21f158837d68144080cdd1a3902a66580c2a422488c1ddb12ef"
+}

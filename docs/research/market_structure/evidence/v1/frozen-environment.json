@@ -1,0 +1,345 @@
+{
+  "collect_only": false,
+  "command": [
+    "D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "tests/research",
+    "-q",
+    "-m",
+    "not network",
+    "--durations=40",
+    "--durations-min=0",
+    "--rootdir=.",
+    "-c",
+    "pytest.ini",
+    "-p",
+    "ci_resources",
+    "-p",
+    "ci_profile",
+    "--ci-evidence-dir=D:\\Code\\quant-tv-market-structure-artifacts-20261018\\release\\frozen",
+    "--basetemp=D:\\Code\\quant-tv-market-structure-artifacts-20261018\\release\\frozen-temp",
+    "--junitxml=D:\\Code\\quant-tv-market-structure-artifacts-20261018\\release\\frozen\\research.xml",
+    "--cov=qbot.research",
+    "--cov-report=term",
+    "--cov-report=xml:D:\\Code\\quant-tv-market-structure-artifacts-20261018\\release\\frozen\\coverage.xml"
+  ],
+  "controller_sha": "UNKNOWN",
+  "coverage": true,
+  "cpu_environment": "UNKNOWN",
+  "environment": {
+    "CI_PIP_CACHE": "UNSET",
+    "GITHUB_RUN_ATTEMPT": "UNSET",
+    "GITHUB_RUN_ID": "UNSET",
+    "ImageOS": "UNSET",
+    "ImageVersion": "UNSET",
+    "MKL_NUM_THREADS": "UNSET",
+    "NUMEXPR_NUM_THREADS": "UNSET",
+    "OMP_NUM_THREADS": "UNSET",
+    "OPENBLAS_NUM_THREADS": "UNSET",
+    "RUNNER_ARCH": "UNSET"
+  },
+  "execution_scope": "full_offline_suite",
+  "kind": "actual_ci_measurement_not_financial_certification",
+  "logical_cpu_count": 28,
+  "observer_sha256": "1eed4a116db85b7d1048f0686e06dc96fa27680f7aa8614fbeaecb42c392a944",
+  "packages": [
+    {
+      "name": "akshare",
+      "version": "1.18.88"
+    },
+    {
+      "name": "baostock",
+      "version": "0.8.9"
+    },
+    {
+      "name": "beautifulsoup4",
+      "version": "4.15.0"
+    },
+    {
+      "name": "black",
+      "version": "25.1.0"
+    },
+    {
+      "name": "certifi",
+      "version": "2026.7.22"
+    },
+    {
+      "name": "cffi",
+      "version": "2.0.0"
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.5.1"
+    },
+    {
+      "name": "click",
+      "version": "8.1.8"
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6"
+    },
+    {
+      "name": "contourpy",
+      "version": "1.3.0"
+    },
+    {
+      "name": "coverage",
+      "version": "7.10.6"
+    },
+    {
+      "name": "curl_cffi",
+      "version": "0.13.0"
+    },
+    {
+      "name": "cycler",
+      "version": "0.12.1"
+    },
+    {
+      "name": "decorator",
+      "version": "5.3.1"
+    },
+    {
+      "name": "et_xmlfile",
+      "version": "2.0.0"
+    },
+    {
+      "name": "exceptiongroup",
+      "version": "1.3.1"
+    },
+    {
+      "name": "execnet",
+      "version": "2.1.2"
+    },
+    {
+      "name": "flake8",
+      "version": "7.3.0"
+    },
+    {
+      "name": "fonttools",
+      "version": "4.60.2"
+    },
+    {
+      "name": "html5lib",
+      "version": "1.1"
+    },
+    {
+      "name": "idna",
+      "version": "3.19"
+    },
+    {
+      "name": "importlib_resources",
+      "version": "6.5.2"
+    },
+    {
+      "name": "iniconfig",
+      "version": "2.1.0"
+    },
+    {
+      "name": "joblib",
+      "version": "1.5.3"
+    },
+    {
+      "name": "jsonpath",
+      "version": "0.82.2"
+    },
+    {
+      "name": "kiwisolver",
+      "version": "1.4.7"
+    },
+    {
+      "name": "lightgbm",
+      "version": "4.5.0"
+    },
+    {
+      "name": "lxml",
+      "version": "6.1.3"
+    },
+    {
+      "name": "matplotlib",
+      "version": "3.8.4"
+    },
+    {
+      "name": "mccabe",
+      "version": "0.7.0"
+    },
+    {
+      "name": "mini-racer",
+      "version": "0.12.4"
+    },
+    {
+      "name": "mypy_extensions",
+      "version": "1.1.0"
+    },
+    {
+      "name": "numpy",
+      "version": "1.26.4"
+    },
+    {
+      "name": "openpyxl",
+      "version": "3.1.5"
+    },
+    {
+      "name": "packaging",
+      "version": "26.3"
+    },
+    {
+      "name": "pandas",
+      "version": "2.2.3"
+    },
+    {
+      "name": "pathspec",
+      "version": "1.1.1"
+    },
+    {
+      "name": "pillow",
+      "version": "11.3.0"
+    },
+    {
+      "name": "pip",
+      "version": "23.0.1"
+    },
+    {
+      "name": "platformdirs",
+      "version": "4.4.0"
+    },
+    {
+      "name": "pluggy",
+      "version": "1.6.0"
+    },
+    {
+      "name": "pyarrow",
+      "version": "17.0.0"
+    },
+    {
+      "name": "pycodestyle",
+      "version": "2.14.0"
+    },
+    {
+      "name": "pycparser",
+      "version": "2.23"
+    },
+    {
+      "name": "pyflakes",
+      "version": "3.4.0"
+    },
+    {
+      "name": "pyparsing",
+      "version": "3.3.2"
+    },
+    {
+      "name": "pypdf",
+      "version": "6.13.3"
+    },
+    {
+      "name": "pytest",
+      "version": "8.3.5"
+    },
+    {
+      "name": "pytest-cov",
+      "version": "6.2.1"
+    },
+    {
+      "name": "pytest-xdist",
+      "version": "3.8.0"
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0"
+    },
+    {
+      "name": "pytz",
+      "version": "2026.3.post1"
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.2"
+    },
+    {
+      "name": "requests",
+      "version": "2.32.5"
+    },
+    {
+      "name": "scikit-learn",
+      "version": "1.5.2"
+    },
+    {
+      "name": "scipy",
+      "version": "1.13.1"
+    },
+    {
+      "name": "setuptools",
+      "version": "79.0.1"
+    },
+    {
+      "name": "six",
+      "version": "1.17.0"
+    },
+    {
+      "name": "soupsieve",
+      "version": "2.8.4"
+    },
+    {
+      "name": "tabulate",
+      "version": "0.9.0"
+    },
+    {
+      "name": "threadpoolctl",
+      "version": "3.6.0"
+    },
+    {
+      "name": "tomli",
+      "version": "2.4.1"
+    },
+    {
+      "name": "tqdm",
+      "version": "4.70.1"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0"
+    },
+    {
+      "name": "tzdata",
+      "version": "2026.4"
+    },
+    {
+      "name": "urllib3",
+      "version": "2.6.3"
+    },
+    {
+      "name": "webencodings",
+      "version": "0.5.1"
+    },
+    {
+      "name": "wheel",
+      "version": "0.45.1"
+    },
+    {
+      "name": "xgboost",
+      "version": "2.1.4"
+    },
+    {
+      "name": "xlrd",
+      "version": "2.0.2"
+    },
+    {
+      "name": "zipp",
+      "version": "3.23.1"
+    }
+  ],
+  "platform": "Windows-10-10.0.26340-SP0",
+  "processor": "UNKNOWN",
+  "profiled": false,
+  "pytest_ini_sha256": "c4d33e385b2b9be3522cbc9b0cef167c8ec8573950f57c401fe1fc904d84ec63",
+  "python": "3.9.25 (main, Nov  3 2025, 22:44:01) [MSC v.1929 64 bit (AMD64)]",
+  "subject_dirty": false,
+  "subject_root": "D:\\Code\\quant-tv-market-structure-feature-foundation",
+  "subject_sha": "397b85120335c322798fe91b719af9675f07a303",
+  "subject_tree": "e919b4638445c166fc63380e79e93863c6bacde7",
+  "utc_started": "2026-10-18T16:52:08.666582+00:00",
+  "worker_resources_plugin_sha256": "81c47df76d36d7b2383137cd59f37d52a864ff4295585d893e96ae390ccf1cd8",
+  "worker_state_root": "D:\\Code\\quant-tv-market-structure-artifacts-20261018\\release\\frozen-worker-state",
+  "workers": 0
+}

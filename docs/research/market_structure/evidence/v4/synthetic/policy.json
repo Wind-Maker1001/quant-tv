@@ -1,0 +1,1 @@
+{"correlation_threshold":0.98,"max_diagnostic_records":500000,"minimum_group_entities":3,"minimum_observation_windows":20,"minimum_pair_coverage":0.8,"minimum_security_entities":20,"minimum_trading_sessions":3,"minimum_window_coverage":0.8}

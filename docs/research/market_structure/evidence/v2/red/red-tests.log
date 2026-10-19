@@ -1,0 +1,75 @@
+FFF                                                                      [100%]
+================================== FAILURES ===================================
+_________________ test_review_red_spearman_uses_paired_ranks __________________
+
+    def test_review_red_spearman_uses_paired_ranks():
+        frame = panel(entities=4, windows=1, sessions=1)
+        for name, values in (("A", [1, 2, 3, np.nan]), ("B", [1, 2, 100, 1.5])):
+            frame.loc[frame.feature_id == name, "value"] = values
+        result = diagnose_features(
+            frame,
+            RedundancyPolicy(
+                minimum_security_entities=3, minimum_observation_windows=1,
+                minimum_trading_sessions=1, minimum_pair_coverage=0.75,
+                correlation_threshold=0.99,
+            ),
+        )
+>       assert result["redundancy_windows"].iloc[0].spearman == pytest.approx(1.0)
+E       assert 0.9819805060619659 == 1.0 ¡À 1.0e-06
+E         
+E         comparison failed
+E         Obtained: 0.9819805060619659
+E         Expected: 1.0 ¡À 1.0e-06
+
+tests\market_structure\test_review_red_cases.py:40: AssertionError
+__________ test_review_red_breadth_does_not_require_classifications ___________
+
+manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+
+    def test_review_red_breadth_does_not_require_classifications(manual):
+        store = AsOfStore(r for r in manual.records if r.kind == "minute")
+>       result = compute_features(
+            store, manual.sessions, manual.request, ["BREADTH_ADVANCE_RATIO"]
+        )
+
+tests\market_structure\test_review_red_cases.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+qbot\research\exploratory\market_structure\features.py:78: in compute_features
+    members, complete, sources = memberships(store, family, request)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+store = <qbot.research.exploratory.market_structure.store.AsOfStore object at 0x000001885C3D3FD0>
+family = 'industry'
+request = ComputeRequest(observation_start=Timestamp('2021-01-04 01:30:00+0000', tz='UTC'), observation_end=Timestamp('2021-01-0...uency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True)
+
+    def memberships(store, family, request):
+        scopes = [
+            r
+            for r in store.snapshot("scope", request.observation_end, request.as_of)
+            if r.payload.get("family") == family
+        ]
+        if not scopes or len({r.payload["namespace"] for r in scopes}) != len(scopes):
+>           raise ContractError("explicit unique source scopes required")
+E           qbot.research.exploratory.market_structure.contracts.ContractError: explicit unique source scopes required
+
+qbot\research\exploratory\market_structure\store.py:118: ContractError
+__________ test_review_red_market_only_broadcast_keeps_target_stocks __________
+
+manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+
+    def test_review_red_market_only_broadcast_keeps_target_stocks(manual):
+        result = compute_features(manual.store(), manual.sessions, manual.request)
+        market = result.values[result.values.feature_id == "BREADTH_ADVANCE_RATIO"]
+>       view = ResearchFeatureAdapter().build_view(
+            market, ["BREADTH_ADVANCE_RATIO"], broadcast_market=True,
+            target_index=target_index(manual.request, manual.universe),
+        )
+E       TypeError: build_view() got an unexpected keyword argument 'target_index'
+
+tests\market_structure\test_review_red_cases.py:55: TypeError
+- generated xml file: D:\Code\quant-tv-market-structure-p2-artifacts-20261019\red\red-tests.xml -
+=========================== short test summary info ===========================
+FAILED tests/market_structure/test_review_red_cases.py::test_review_red_spearman_uses_paired_ranks
+FAILED tests/market_structure/test_review_red_cases.py::test_review_red_breadth_does_not_require_classifications
+FAILED tests/market_structure/test_review_red_cases.py::test_review_red_market_only_broadcast_keeps_target_stocks
+3 failed in 0.44s

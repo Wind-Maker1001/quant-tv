@@ -1,0 +1,20 @@
+{
+  "product_head": "83f42008426c5e6b6b184205790fb78794568835",
+  "reviewed_commit": "83f42008426c5e6b6b184205790fb78794568835",
+  "product_source_sha256": {
+    "qbot/research/exploratory/market_structure/store.py": "261d699315613a53227fb890e76950ae540a0b4e68be38438b8c65fbb539ba68"
+  },
+  "test_sha256": "08a556478e8c17c615eae26f3f3f1c47b8eb52076dd36cf36b170584835e9c0a",
+  "exit_code": 1,
+  "argv": [
+    "D:/Environments/factorlab-ci-py39/Scripts/python.exe",
+    "-X",
+    "utf8",
+    "-m",
+    "pytest",
+    "tests/market_structure/test_review_taxonomy_red.py",
+    "-q",
+    "--basetemp=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v6\\red-temp",
+    "--junitxml=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v6\\red\\red-tests.xml"
+  ]
+}

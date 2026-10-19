@@ -1,0 +1,120 @@
+FFFFF.F                                                                  [100%]
+================================== FAILURES ===================================
+___________ test_scoped_scan_preserves_unrelated_non_utf8_evidence ____________
+
+publication_repo = (WindowsPath('D:/Code/quant-tv-market-structure-p2-artifacts-20261019/main-sync/red-temp/test_scoped_scan_preserves_unr0/repository'), '2b791496a0c4a0c9f3c1559a1e6aaa61fb938f05')
+
+    def test_scoped_scan_preserves_unrelated_non_utf8_evidence(publication_repo):
+        root, base = publication_repo
+        name = "docs/research/market_structure/evidence/v2/red/red-tests.log"
+        path = write(root, name, b"original evidence: \xa1\xa1\n")
+        original = path.read_bytes()
+>       result = review(root, base, scope_yhh30m=True)
+E       TypeError: review() got an unexpected keyword argument 'scope_yhh30m'
+
+tests\market_structure\test_minute_gate_compatibility.py:40: TypeError
+____________ test_scoped_scan_still_rejects_owned_artifacts[path] _____________
+
+publication_repo = (WindowsPath('D:/Code/quant-tv-market-structure-p2-artifacts-20261019/main-sync/red-temp/test_scoped_scan_still_rejects0/repository'), 'b52d2b6fb01ae054032bba814fb900a5920b6e34')
+kind = 'path'
+
+    @pytest.mark.parametrize("kind", ["path", "token", "raw"])
+    def test_scoped_scan_still_rejects_owned_artifacts(publication_repo, kind):
+        root, base = publication_repo
+        if kind == "path":
+            content = json.dumps({"p": "C:" + chr(47) + "outside"}).encode()
+            name = "docs/research/evidence/yhh30m-test/receipt.json"
+        elif kind == "token":
+            content = json.dumps({"token": "ghp_" + "A" * 36}).encode()
+            name = "qbot/engineering/yhh30m/receipt.json"
+        else:
+            content = b"synthetic raw bytes"
+            name = "qbot/engineering/yhh30m/data.parquet"
+        write(root, name, content)
+>       result = review(root, base, scope_yhh30m=True)
+E       TypeError: review() got an unexpected keyword argument 'scope_yhh30m'
+
+tests\market_structure\test_minute_gate_compatibility.py:60: TypeError
+____________ test_scoped_scan_still_rejects_owned_artifacts[token] ____________
+
+publication_repo = (WindowsPath('D:/Code/quant-tv-market-structure-p2-artifacts-20261019/main-sync/red-temp/test_scoped_scan_still_rejects1/repository'), 'b52d2b6fb01ae054032bba814fb900a5920b6e34')
+kind = 'token'
+
+    @pytest.mark.parametrize("kind", ["path", "token", "raw"])
+    def test_scoped_scan_still_rejects_owned_artifacts(publication_repo, kind):
+        root, base = publication_repo
+        if kind == "path":
+            content = json.dumps({"p": "C:" + chr(47) + "outside"}).encode()
+            name = "docs/research/evidence/yhh30m-test/receipt.json"
+        elif kind == "token":
+            content = json.dumps({"token": "ghp_" + "A" * 36}).encode()
+            name = "qbot/engineering/yhh30m/receipt.json"
+        else:
+            content = b"synthetic raw bytes"
+            name = "qbot/engineering/yhh30m/data.parquet"
+        write(root, name, content)
+>       result = review(root, base, scope_yhh30m=True)
+E       TypeError: review() got an unexpected keyword argument 'scope_yhh30m'
+
+tests\market_structure\test_minute_gate_compatibility.py:60: TypeError
+_____________ test_scoped_scan_still_rejects_owned_artifacts[raw] _____________
+
+publication_repo = (WindowsPath('D:/Code/quant-tv-market-structure-p2-artifacts-20261019/main-sync/red-temp/test_scoped_scan_still_rejects2/repository'), 'b52d2b6fb01ae054032bba814fb900a5920b6e34')
+kind = 'raw'
+
+    @pytest.mark.parametrize("kind", ["path", "token", "raw"])
+    def test_scoped_scan_still_rejects_owned_artifacts(publication_repo, kind):
+        root, base = publication_repo
+        if kind == "path":
+            content = json.dumps({"p": "C:" + chr(47) + "outside"}).encode()
+            name = "docs/research/evidence/yhh30m-test/receipt.json"
+        elif kind == "token":
+            content = json.dumps({"token": "ghp_" + "A" * 36}).encode()
+            name = "qbot/engineering/yhh30m/receipt.json"
+        else:
+            content = b"synthetic raw bytes"
+            name = "qbot/engineering/yhh30m/data.parquet"
+        write(root, name, content)
+>       result = review(root, base, scope_yhh30m=True)
+E       TypeError: review() got an unexpected keyword argument 'scope_yhh30m'
+
+tests\market_structure\test_minute_gate_compatibility.py:60: TypeError
+_____________ test_global_gate_changes_cannot_hide_outside_scope ______________
+
+publication_repo = (WindowsPath('D:/Code/quant-tv-market-structure-p2-artifacts-20261019/main-sync/red-temp/test_global_gate_changes_canno0/repository'), 'b52d2b6fb01ae054032bba814fb900a5920b6e34')
+
+    def test_global_gate_changes_cannot_hide_outside_scope(publication_repo):
+        root, base = publication_repo
+        name = "qbot/research/data/schema.py"
+        write(root, name, b"# synthetic changed gate\n")
+>       result = review(root, base, scope_yhh30m=True)
+E       TypeError: review() got an unexpected keyword argument 'scope_yhh30m'
+
+tests\market_structure\test_minute_gate_compatibility.py:69: TypeError
+_________ test_scoped_scan_includes_minute_examples_and_documentation _________
+
+publication_repo = (WindowsPath('D:/Code/quant-tv-market-structure-p2-artifacts-20261019/main-sync/red-temp/test_scoped_scan_includes_minu0/repository'), 'd4d27856b9ea1f5770f046d4329fd8470bd7467b')
+
+    def test_scoped_scan_includes_minute_examples_and_documentation(publication_repo):
+        root, base = publication_repo
+        names = [
+            "examples/research/review_yhh30m_release.py",
+            "tests/minute_data/new_case.py",
+            "docs/research/YHH_30M_NEW.md",
+            ".github/workflows/minute-data-evidence.yml",
+        ]
+        for name in names:
+            write(root, name, b"# safe synthetic content\n")
+>       result = review(root, base, scope_yhh30m=True)
+E       TypeError: review() got an unexpected keyword argument 'scope_yhh30m'
+
+tests\market_structure\test_minute_gate_compatibility.py:90: TypeError
+- generated xml file: D:\Code\quant-tv-market-structure-p2-artifacts-20261019\main-sync\gate-red.xml -
+=========================== short test summary info ===========================
+FAILED tests/market_structure/test_minute_gate_compatibility.py::test_scoped_scan_preserves_unrelated_non_utf8_evidence
+FAILED tests/market_structure/test_minute_gate_compatibility.py::test_scoped_scan_still_rejects_owned_artifacts[path]
+FAILED tests/market_structure/test_minute_gate_compatibility.py::test_scoped_scan_still_rejects_owned_artifacts[token]
+FAILED tests/market_structure/test_minute_gate_compatibility.py::test_scoped_scan_still_rejects_owned_artifacts[raw]
+FAILED tests/market_structure/test_minute_gate_compatibility.py::test_global_gate_changes_cannot_hide_outside_scope
+FAILED tests/market_structure/test_minute_gate_compatibility.py::test_scoped_scan_includes_minute_examples_and_documentation
+6 failed, 1 passed in 2.10s

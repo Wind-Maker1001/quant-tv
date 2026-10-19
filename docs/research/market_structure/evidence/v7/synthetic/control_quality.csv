@@ -1,0 +1,5 @@
+scenario,frequency,grain,namespace,feature_id,expected_cells,finite_cells,completeness,mean_input_coverage,constant,duplicate_value_ratio,cross_section_constant_windows,cross_section_status,quality_status,reason_counts,rejection_reason
+historical_simulation,5,security,synthetic_supply,CONTROL_CONSTANT,6912,6912,1.0,1.0,True,0.9998553240740741,288,APPLICABLE,QUALITY_REJECTED,"{""OK"":6912}",CONSTANT
+historical_simulation,5,security,synthetic_supply,CONTROL_COPY,6912,6912,1.0,1.0,False,0.9995659722222222,0,APPLICABLE,QUALITY_DESCRIBED,"{""OK"":6912}",
+historical_simulation,5,security,synthetic_supply,CONTROL_SCALED,6912,6912,1.0,1.0,False,0.9995659722222222,0,APPLICABLE,QUALITY_DESCRIBED,"{""OK"":6912}",
+historical_simulation,5,security,synthetic_supply,SC_UPSTREAM_COUNT,6912,6912,1.0,1.0,False,0.9995659722222222,0,APPLICABLE,QUALITY_DESCRIBED,"{""OK"":6912}",
