@@ -27,7 +27,10 @@ class ContractError(ValueError):
 
 
 def instant(value):
-    result = pd.Timestamp(value)
+    try:
+        result = pd.Timestamp(value)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ContractError("valid timezone-aware instant required") from exc
     if pd.isna(result) or result.tzinfo is None:
         raise ContractError("timezone-aware instant required")
     return result.tz_convert("UTC")
@@ -89,7 +92,7 @@ class Record:
     sha256: str = field(init=False)
 
     def __post_init__(self):
-        if self.kind not in {
+        if not isinstance(self.kind, str) or self.kind not in {
             "scope",
             "source_definition",
             "membership",
@@ -99,10 +102,13 @@ class Record:
         }:
             raise ContractError("unknown record kind")
         if (
-            not self.fact_id
+            not isinstance(self.fact_id, str)
+            or not self.fact_id.strip()
             or type(self.revision) is not int
             or self.revision < 1
+            or not isinstance(self.evidence, (tuple, list))
             or not self.evidence
+            or not isinstance(self.source, str)
             or self.source != "SYNTHETIC_TEST_ONLY"
         ):
             raise ContractError("synthetic identity, revision and evidence required")
@@ -151,10 +157,14 @@ class Record:
             ),
             "benchmark": ("session_id", "adj_close", "complete"),
         }
-        if not set(required[self.kind]).issubset(self.payload):
+        if not isinstance(self.payload, Mapping) or not set(
+            required[self.kind]
+        ).issubset(self.payload):
             raise ContractError("record payload schema missing fields")
-        if not self.definition_version or any(
-            not isinstance(e, str) or not e for e in self.evidence
+        if (
+            not isinstance(self.definition_version, str)
+            or not self.definition_version.strip()
+            or any(not isinstance(e, str) or not e.strip() for e in self.evidence)
         ):
             raise ContractError(
                 "explicit definition version and evidence references required"
@@ -179,7 +189,13 @@ class Record:
         object.__setattr__(self, "known_at", max(clocks))
         object.__setattr__(self, "payload", freeze(self.payload))
         object.__setattr__(self, "evidence", tuple(self.evidence))
-        object.__setattr__(self, "sha256", digest(self.as_dict()))
+        try:
+            checksum = digest(self.as_dict())
+        except (TypeError, ValueError) as exc:
+            raise ContractError(
+                "record requires JSON-compatible finite evidence"
+            ) from exc
+        object.__setattr__(self, "sha256", checksum)
 
     def as_dict(self):
         return {k: primitive(v) for k, v in self.__dict__.items() if k != "sha256"}

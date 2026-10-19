@@ -1,6 +1,7 @@
 """Bitemporal selection: knowledge revision first, business interval second."""
 
 from dataclasses import dataclass
+from datetime import date
 
 import numpy as np
 import pandas as pd
@@ -141,6 +142,18 @@ def memberships(store, family, request):
         p = record.payload
         if p["family"] != family or p["security_id"] not in request.universe:
             continue
+        change_date = p.get("change_date")
+        try:
+            valid_change_date = (
+                isinstance(change_date, str)
+                and date.fromisoformat(change_date).isoformat() == change_date
+            )
+        except ValueError:
+            valid_change_date = False
+        if not valid_change_date:
+            raise ContractError(
+                "membership change_date requires a valid YYYY-MM-DD string"
+            )
         if not all(
             p.get(k)
             for k in ("namespace", "taxonomy_version", "change_date", "group_id")
