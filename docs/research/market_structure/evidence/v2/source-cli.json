@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-m",
+    "qbot.research.exploratory.market_structure",
+    "--output",
+    "D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\final\\synthetic",
+    "--frequencies",
+    "5",
+    "15",
+    "30"
+  ],
+  "implementation_commit": "b66ea5cc1ea238738fd3d21181cf4b2917a3e7a3",
+  "python": "3.9.25 (main, Nov  3 2025, 22:44:01) [MSC v.1929 64 bit (AMD64)]",
+  "started_at": "2026-10-19T04:19:32.230565+00:00",
+  "finished_at": "2026-10-19T04:20:15.882315+00:00",
+  "exit_code": 0
+}
