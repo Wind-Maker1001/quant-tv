@@ -267,6 +267,19 @@ def build_default_registry():
             "historical classifications for diffusion",
         ),
     }
+    # MVP contracts name actual dependencies rather than every possible input in
+    # their family. Contract-only research candidates retain the broader inputs.
+    implemented_inputs = {
+        "THEME_MEMBERSHIP_COUNT": inputs["concept"][1:],
+        "SC_UPSTREAM_COUNT": inputs["supply_chain"][1:],
+        "SC_DOWNSTREAM_COUNT": inputs["supply_chain"][1:],
+        "BREADTH_ADVANCE_RATIO": inputs["breadth"][:2],
+        "BREADTH_LIMIT_UP_RATIO": inputs["breadth"][:3],
+        "BREADTH_LIMIT_DOWN_RATIO": inputs["breadth"][:3],
+        "FLOW_NET_ACTIVE_RATIO": inputs["flow"][:3],
+        "SENTIMENT_AMOUNT_HHI": ("minute_amount", "explicit universe"),
+        "SENTIMENT_INDUSTRY_DIFFUSION": inputs["industry"] + ("explicit universe",),
+    }
     specs = []
     for name, family, grain, formula, implemented in rows:
         lookback = (
@@ -288,10 +301,11 @@ def build_default_registry():
                 family,
                 grain,
                 formula,
-                inputs[family],
+                implemented_inputs.get(name, inputs[family]),
                 implemented,
                 unit="COUNT" if name.endswith("COUNT") else "RATIO",
                 lookback=lookback,
+                definition_version="v2-inputs" if name in implemented_inputs else "v1",
             )
         )
     return MarketStructureRegistry(specs)

@@ -19,21 +19,54 @@ class FeatureResult:
     context: dict
     selected_input_sha256: str
     snapshot_id: str
+    source_trace: dict
 
 
-def compute_features(store, sessions, request, feature_ids=None):
+def compute_features(
+    store, sessions, request, feature_ids=None, *, include_market_context=True
+):
+    if type(include_market_context) is not bool:
+        raise ContractError("explicit market-context boolean required")
     registry = build_default_registry()
     wanted = (
         tuple(feature_ids)
         if feature_ids is not None
         else tuple(s.feature_id for s in registry.specs if s.implemented)
     )
-    if len(set(wanted)) != len(wanted):
-        raise ContractError("duplicate requested features")
+    if not wanted or len(set(wanted)) != len(wanted):
+        raise ContractError("explicit nonempty unique requested features required")
     for name in wanted:
         if not registry.get(name).implemented:
             raise ContractError("CONTRACT_ONLY: " + name)
-    aggregated = aggregate_intraday(store, sessions, request)
+    declared = {name: registry.get(name).required_inputs for name in wanted}
+    needed = {item for inputs in declared.values() for item in inputs}
+    known_inputs = {
+        "minute_ohlcv",
+        "minute_amount",
+        "explicit universe",
+        "historical industry membership",
+        "historical concept membership",
+        "taxonomy version",
+        "complete source scope",
+        "directed confirmed edges",
+        "evidence/type/confidence",
+        "complete graph scope",
+        "versioned limit-state definition",
+        "buy/sell/unclassified amounts",
+        "vendor definition/unit/currency/availability",
+    }
+    if needed - known_inputs:
+        raise ContractError("unresolved declared feature dependencies")
+    needs_minutes = bool(needed & {"minute_ohlcv", "minute_amount"})
+    needs_flow = "buy/sell/unclassified amounts" in needed
+    needs_graph = "directed confirmed edges" in needed
+    aggregated = aggregate_intraday(
+        store,
+        sessions,
+        request,
+        include_minutes=needs_minutes,
+        include_flow=needs_flow,
+    )
     bars = aggregated.frame.set_index("security_id")
     valid = bars.reason.eq("OK")
     market_coverage = float(valid.mean())
@@ -69,12 +102,14 @@ def compute_features(store, sessions, request, feature_ids=None):
                 observation_end=request.observation_end.isoformat(),
                 as_of=request.as_of.isoformat(),
                 decision_time=request.decision_time.isoformat(),
-                **extra
+                **extra,
             )
         )
 
     industry_projected = {s: [] for s in request.universe}
     for family in ("industry", "concept"):
+        if "historical %s membership" % family not in needed:
+            continue
         members, complete, sources = memberships(store, family, request)
         used.extend(sources)
         scope_records = [r for r in sources if r.kind == "scope"]
@@ -225,12 +260,27 @@ def compute_features(store, sessions, request, feature_ids=None):
                 "OK" if available else "MISSING_INDUSTRY_INPUT",
             )
 
-    scopes = [
-        r
-        for r in store.snapshot("scope", request.observation_end, request.as_of)
-        if r.payload.get("family") == "supply_chain"
-    ]
-    edges = store.snapshot("edge", request.observation_end, request.as_of)
+    scopes = (
+        [
+            r
+            for r in store.snapshot("scope", request.observation_end, request.as_of)
+            if r.payload.get("family") == "supply_chain"
+        ]
+        if needs_graph
+        else []
+    )
+    needs_upstream = bool(set(wanted) & {"SC_UPSTREAM_COUNT", "SC_UPSTREAM_RET"})
+    needs_downstream = "SC_DOWNSTREAM_COUNT" in wanted
+    edges = (
+        tuple(
+            r
+            for r in store.snapshot("edge", request.observation_end, request.as_of)
+            if (needs_upstream and r.payload["downstream"] in request.universe)
+            or (needs_downstream and r.payload["upstream"] in request.universe)
+        )
+        if needs_graph
+        else ()
+    )
     used.extend(scopes + list(edges))
     graph_complete = bool(scopes) and all(
         r.payload.get("complete") is True for r in scopes
@@ -284,22 +334,25 @@ def compute_features(store, sessions, request, feature_ids=None):
                 )
             ),
         )
-        cash = bars.loc[security]
-        flow = (
-            (cash.buy - cash.sell) / cash.amount if cash.flow_reason == "OK" else np.nan
-        )
-        emit(
-            "FLOW_NET_ACTIVE_RATIO",
-            security,
-            "synthetic_flow_v1",
-            flow,
-            cash.input_minute_coverage,
-            cash.flow_reason,
-            unclassified_amount=cash.unclassified,
-            unclassified_amount_ratio=cash.unclassified_amount_ratio,
-            classification_status=cash.flow_reason,
-            observed_amount=cash.amount,
-        )
+        if needs_flow:
+            cash = bars.loc[security]
+            flow = (
+                (cash.buy - cash.sell) / cash.amount
+                if cash.flow_reason == "OK"
+                else np.nan
+            )
+            emit(
+                "FLOW_NET_ACTIVE_RATIO",
+                security,
+                "synthetic_flow_v1",
+                flow,
+                cash.input_minute_coverage,
+                cash.flow_reason,
+                unclassified_amount=cash.unclassified,
+                unclassified_amount_ratio=cash.unclassified_amount_ratio,
+                classification_status=cash.flow_reason,
+                observed_amount=cash.amount,
+            )
 
     advance = (
         float((bars.loc[valid, "return_value"] > 0).mean())
@@ -363,14 +416,20 @@ def compute_features(store, sessions, request, feature_ids=None):
             cov,
             "OK" if np.isfinite(diffusion) else "INSUFFICIENT_INDUSTRY_COVERAGE",
         )
-    context, benchmark_records = market_context(store, sessions, request)
-    used.extend(benchmark_records)
+    context, benchmark_records = (
+        market_context(store, sessions, request)
+        if include_market_context
+        else (dict(status="MARKET_CONTEXT_NOT_REQUESTED"), ())
+    )
     selected_hash = snapshot_digest(used)
+    context_hash = snapshot_digest(benchmark_records)
     identity = digest(
         dict(
             request=request.as_dict(),
             selected_input_sha256=selected_hash,
             feature_ids=wanted,
+            context_input_sha256=context_hash,
+            include_market_context=include_market_context,
         )
     )
     values = pd.DataFrame(rows)
@@ -378,5 +437,29 @@ def compute_features(store, sessions, request, feature_ids=None):
         values["selected_input_sha256"] = selected_hash
         values["snapshot_id"] = identity
     return FeatureResult(
-        values, pd.DataFrame(conservations), context, selected_hash, identity
+        values,
+        pd.DataFrame(conservations),
+        context,
+        selected_hash,
+        identity,
+        dict(
+            declared_inputs=declared,
+            feature_records=[
+                dict(
+                    fact_id=r.fact_id, revision=r.revision, kind=r.kind, sha256=r.sha256
+                )
+                for r in sorted(
+                    {r.sha256: r for r in used}.values(),
+                    key=lambda r: (r.fact_id, r.revision),
+                )
+            ],
+            context_records=[
+                dict(
+                    fact_id=r.fact_id, revision=r.revision, kind=r.kind, sha256=r.sha256
+                )
+                for r in benchmark_records
+            ],
+            context_input_sha256=context_hash,
+            include_market_context=include_market_context,
+        ),
     )

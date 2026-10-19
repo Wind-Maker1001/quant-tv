@@ -15,7 +15,9 @@ class AggregationResult:
     records: tuple
 
 
-def aggregate_intraday(store, sessions, request):
+def aggregate_intraday(
+    store, sessions, request, *, include_minutes=True, include_flow=True
+):
     sessions = validate_calendar(sessions)
     anchors = [
         (a, b)
@@ -28,16 +30,34 @@ def aggregate_intraday(store, sessions, request):
         minutes=request.frequency
     ):
         raise ContractError("window not aligned/contained in explicit session")
-    if request.observation_end > request.as_of:
+    if include_flow and not include_minutes:
+        raise ContractError("cash classification requires minute observations")
+    if request.observation_end > request.as_of or not include_minutes:
         records = ()
-        missing_reason = "WINDOW_NOT_CLOSED"
+        missing_reason = (
+            "WINDOW_NOT_CLOSED"
+            if request.observation_end > request.as_of
+            else "INPUT_NOT_REQUESTED"
+        )
     else:
         records = store.snapshot(
             "minute", request.observation_end, request.as_of, request.observation_start
         )
         missing_reason = "MISSING_OR_NOT_YET_AVAILABLE_MINUTES"
-    definitions = store.snapshot(
-        "source_definition", request.observation_end, request.as_of
+    records = tuple(r for r in records if r.payload["security_id"] in request.universe)
+    versions = {r.definition_version for r in records}
+    definition_ids = {r.payload.get("flow_definition") for r in records}
+    definitions = (
+        tuple(
+            r
+            for r in store.snapshot(
+                "source_definition", request.observation_end, request.as_of
+            )
+            if r.definition_version in versions
+            and r.payload.get("definition_id") in definition_ids
+        )
+        if include_flow
+        else ()
     )
     approved = {
         r.definition_version
@@ -127,6 +147,10 @@ def aggregate_intraday(store, sessions, request):
             "limit_state"
         ) in ("UP", "DOWN", "NONE"):
             row["limit_state"] = last["limit_state"]
+        if not include_flow:
+            row["flow_reason"] = "INPUT_NOT_REQUESTED"
+            rows.append(row)
+            continue
         versions = {
             (r.definition_version, p.get("flow_definition"), p.get("flow_unit"))
             for r, p in zip(selected, payloads)

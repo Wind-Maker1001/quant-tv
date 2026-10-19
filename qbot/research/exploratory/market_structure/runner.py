@@ -83,7 +83,7 @@ def run_synthetic(output, frequencies=(5, 15, 30), seed=20261018):
                     observation_end=request.observation_end.isoformat(),
                     as_of=request.as_of.isoformat(),
                     decision_time=request.decision_time.isoformat(),
-                    **result.context
+                    **result.context,
                 )
             )
             snapshots.append(
@@ -94,6 +94,13 @@ def run_synthetic(output, frequencies=(5, 15, 30), seed=20261018):
                     decision_time=request.decision_time.isoformat(),
                     snapshot_id=result.snapshot_id,
                     selected_input_sha256=result.selected_input_sha256,
+                    context_input_sha256=result.source_trace["context_input_sha256"],
+                    feature_input_record_count=len(
+                        result.source_trace["feature_records"]
+                    ),
+                    context_input_record_count=len(
+                        result.source_trace["context_records"]
+                    ),
                 )
             )
     values = pd.concat(values, ignore_index=True)
@@ -248,6 +255,10 @@ def run_synthetic(output, frequencies=(5, 15, 30), seed=20261018):
         candidate_count=32,
         implemented_count=14,
         output_value_sha256=frame_hash(values),
+        numeric_value_sha256=frame_hash(
+            values.drop(columns=["selected_input_sha256", "snapshot_id"])
+        ),
+        evidence_revision="MARKET_STRUCTURE_CORRECTIONS_V2",
         input_sha256=digest(sorted(r.sha256 for r in bundle.records())),
         source_sha256=sources,
         catalog_sha256=digest(registry.catalog()),
@@ -263,7 +274,7 @@ def run_synthetic(output, frequencies=(5, 15, 30), seed=20261018):
             p.name: hashlib.sha256(p.read_bytes()).hexdigest()
             for p in sorted(output.iterdir())
             if p.is_file()
-        }
+        },
     )
     write_json(output / "receipt.json", receipt)
     return receipt, values

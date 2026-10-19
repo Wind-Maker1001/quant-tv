@@ -233,10 +233,19 @@ def diagnose_features(values, policy=None):
                 policy.max_diagnostic_records,
             )
             _, raw = diagnose_redundancy(wide, names, [], options)
-            ranked = wide.copy()
-            ranked[names] = ranked.groupby("date")[names].rank(method="average")
-            _, ranks = diagnose_redundancy(ranked, names, [], options)
-            ranks = ranks.rename(columns={"pearson": "spearman"})
+            rank_rows = []
+            for left, right in combinations(names, 2):
+                ranked = wide[["date", "symbol", left, right]].copy()
+                paired = np.isfinite(ranked[left]) & np.isfinite(ranked[right])
+                # Keep every original entity/window for coverage; rank only the
+                # intersection for THIS pair. Raw masks/counts remain in `raw`.
+                ranked[[left, right]] = ranked[[left, right]].where(paired, axis=0)
+                ranked[[left, right]] = ranked.groupby("date")[[left, right]].rank(
+                    method="average"
+                )
+                _, ranks = diagnose_redundancy(ranked, [left, right], [], options)
+                rank_rows.append(ranks.rename(columns={"pearson": "spearman"}))
+            ranks = pd.concat(rank_rows, ignore_index=True)
             evidence = raw.merge(
                 ranks[["date", "left", "right", "spearman"]],
                 on=["date", "left", "right"],
