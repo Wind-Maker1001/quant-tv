@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "D:/Environments/factorlab-ci-py39/Scripts/python.exe",
+    "-X",
+    "utf8",
+    "D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\replay_v1.py"
+  ],
+  "exit_code": 0,
+  "script_sha256": "3159d35ba6fe26487e02b8ec5870dda2c2ed2b5f2025d8b70d07c668c3145ce4",
+  "result_sha256": "284911bde57417b40723c5bfe26fd3114493f7227858c7a147f6280d9d21ee0f",
+  "v2_independent_replay": {
+    "status": "EXACT_REPLAY_MATCH",
+    "test_receipt_sha256": "12b4a36d4dc5578b7f8b4e351c302cd3fd15d0696a2308ae49f29221c7dcb99d",
+    "cli_receipt_sha256": "12b4a36d4dc5578b7f8b4e351c302cd3fd15d0696a2308ae49f29221c7dcb99d",
+    "output_value_sha256": "468d3e8f5e4a2b5b34a1a9c8d2474cfc9586a5ae1b56023a33edf957f3532f44",
+    "numeric_value_sha256": "a827c4d959c50174089d0c87731b6d339373e74b9129c211ec4b53e2b9bbf3e1"
+  },
+  "v3_independent_replay": {
+    "status": "EXACT_REPLAY_MATCH",
+    "test_receipt_sha256": "f020f3922729259c50acc57bca28e8ad3e3a2eb46b9e3eda0e3f0f5cfa15efab",
+    "cli_receipt_sha256": "f020f3922729259c50acc57bca28e8ad3e3a2eb46b9e3eda0e3f0f5cfa15efab",
+    "output_value_sha256": "468d3e8f5e4a2b5b34a1a9c8d2474cfc9586a5ae1b56023a33edf957f3532f44",
+    "numeric_value_sha256": "a827c4d959c50174089d0c87731b6d339373e74b9129c211ec4b53e2b9bbf3e1"
+  }
+}
