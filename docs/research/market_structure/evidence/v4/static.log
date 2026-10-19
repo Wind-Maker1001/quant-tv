@@ -1,0 +1,9 @@
+["D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe", "-X", "utf8", "-m", "flake8", "--select=E9,F63,F7,F82", "qbot/research/exploratory/market_structure", "tests/market_structure"]
+["git", "-c", "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol", "diff", "--check", "b30256d", "HEAD", "--", "qbot/research/exploratory/market_structure", "tests/market_structure"]
+["D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe", "-X", "utf8", ".github/scripts/ci/research_checks.py"]
+{"base": "39eecf869c9c2075ba3f6e3c76aeba3338c63432", "compiled_python_files": 304, "static_rules": "flake8 E9,F63,F7,F82", "scopes": ["qbot/research", "tests/research", "examples/research", ".github/scripts/ci"], "modifies_source": false, "full_pylint_analysis": false}
+["D:\\Environments\\factorlab-ci-py39\\Scripts\\python.exe", "-X", "utf8", "-m", "pytest", "tests/market_structure/test_review_red_cases.py", "tests/market_structure/test_review_spearman.py", "tests/market_structure/test_review_dependencies.py", "tests/market_structure/test_review_broadcast.py", "tests/market_structure/test_review_followup.py", "tests/market_structure/test_review_source_policy.py", "tests/market_structure/test_review_amount_red.py", "tests/market_structure/test_review_amount_fields.py", "-q", "--basetemp=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v4\\final\\targeted-temp", "--junitxml=D:\\Code\\quant-tv-market-structure-p2-artifacts-20261019\\v4\\final\\targeted-tests.xml"]
+........................................................................ [ 91%]
+.......                                                                  [100%]
+- generated xml file: D:\Code\quant-tv-market-structure-p2-artifacts-20261019\v4\final\targeted-tests.xml -
+79 passed in 1.51s

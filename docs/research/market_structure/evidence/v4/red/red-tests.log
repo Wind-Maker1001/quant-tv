@@ -1,0 +1,40 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+_____________ test_review_red_amount_only_ignores_invalid_prices ______________
+
+manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+
+    def test_review_red_amount_only_ignores_invalid_prices(manual):
+        result = compute_features(bad_prices(manual), manual.sessions, manual.request,
+                                  ["FLOW_NET_ACTIVE_RATIO", "SENTIMENT_AMOUNT_HHI"])
+>       assert result.values.value.notna().all()
+E       AssertionError: assert False
+E        +  where False = all()
+E        +    where all = 0    False\n1    False\n2    False\n3    False\n4    False\nName: value, dtype: bool.all
+E        +      where 0    False\n1    False\n2    False\n3    False\n4    False\nName: value, dtype: bool = notna()
+E        +        where notna = 0   NaN\n1   NaN\n2   NaN\n3   NaN\n4   NaN\nName: value, dtype: float64.notna
+E        +          where 0   NaN\n1   NaN\n2   NaN\n3   NaN\n4   NaN\nName: value, dtype: float64 =               feature_id  ...                                        snapshot_id\n0  FLOW_NET_ACTIVE_RATIO  ...  b1f41e...6b746a853baf...\n4   SENTIMENT_AMOUNT_HHI  ...  b1f41ee67d2d65f00969432010772808046b746a853baf...\n\n[5 rows x 20 columns].value
+E        +            where               feature_id  ...                                        snapshot_id\n0  FLOW_NET_ACTIVE_RATIO  ...  b1f41e...6b746a853baf...\n4   SENTIMENT_AMOUNT_HHI  ...  b1f41ee67d2d65f00969432010772808046b746a853baf...\n\n[5 rows x 20 columns] = FeatureResult(values=              feature_id  ...                                        snapshot_id\n0  FLOW_NET_ACTI...ext_input_sha256': '37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570', 'include_market_context': True}).values
+
+tests\market_structure\test_review_amount_red.py:21: AssertionError
+__________ test_review_red_mixed_request_retains_valid_amount_values __________
+
+manual = Manual(records=[Record(fact_id='def', revision=1, kind='source_definition', payload=mappingproxy({'definition_id': 'SY...ency=5, universe=('A', 'B', 'C', 'D'), session_id='2021-01-04', scenario='historical_simulation', synthetic_only=True))
+
+    def test_review_red_mixed_request_retains_valid_amount_values(manual):
+        result = compute_features(bad_prices(manual), manual.sessions, manual.request)
+        cash = result.values.query("feature_id=='FLOW_NET_ACTIVE_RATIO'")
+>       assert cash.value.notna().all()
+E       assert False
+E        +  where False = all()
+E        +    where all = 19    False\n23    False\n27    False\n31    False\nName: value, dtype: bool.all
+E        +      where 19    False\n23    False\n27    False\n31    False\nName: value, dtype: bool = notna()
+E        +        where notna = 19   NaN\n23   NaN\n27   NaN\n31   NaN\nName: value, dtype: float64.notna
+E        +          where 19   NaN\n23   NaN\n27   NaN\n31   NaN\nName: value, dtype: float64 =                feature_id  ...                                        snapshot_id\n19  FLOW_NET_ACTIVE_RATIO  ...  3e60...918326a1c61...\n31  FLOW_NET_ACTIVE_RATIO  ...  3e6024434e5b0eb10bfb92ed5245f3210af918326a1c61...\n\n[4 rows x 20 columns].value
+
+tests\market_structure\test_review_amount_red.py:28: AssertionError
+- generated xml file: D:\Code\quant-tv-market-structure-p2-artifacts-20261019\v4\red\red-tests.xml -
+=========================== short test summary info ===========================
+FAILED tests/market_structure/test_review_amount_red.py::test_review_red_amount_only_ignores_invalid_prices
+FAILED tests/market_structure/test_review_amount_red.py::test_review_red_mixed_request_retains_valid_amount_values
+2 failed in 0.38s
