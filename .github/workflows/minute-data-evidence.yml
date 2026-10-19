@@ -164,10 +164,17 @@ jobs:
           print(json.dumps(evidence, indent=2))
           PY
 
-      - name: Verify minute publication scope and globally unchanged original gates
+      - name: Check publication safety boundaries independently of the frozen minute contract
+        run: >-
+          python -B -m pytest tests/market_structure/test_publication_scope_audit.py
+          tests/market_structure/test_minute_gate_compatibility.py --noconftest -q --tb=short
+          --junitxml=results/diagnostics/ci/minute-engineering/publication-tests.xml
+          --basetemp="$RUNNER_TEMP/publication-safety-tests"
+
+      - name: Verify full diff safety, minute ownership and unchanged original gates
         run: |
           python -B -m examples.research.review_yhh30m_release --repo . \
-            --base "$PUBLICATION_BASE" --scope-yhh30m \
+            --base "$PUBLICATION_BASE" \
             > results/diagnostics/ci/minute-engineering/publication.json
           test -z "$(git status --porcelain)"
 

@@ -32,13 +32,14 @@ def write(root, name, content):
     return path
 
 
-def test_scoped_scan_preserves_unrelated_non_utf8_evidence(publication_repo):
+def test_scoped_scan_rejects_unaudited_non_utf8_without_rewriting(publication_repo):
     root, base = publication_repo
     name = "docs/research/market_structure/evidence/v2/red/red-tests.log"
     path = write(root, name, b"original evidence: \xa1\xa1\n")
     original = path.read_bytes()
     result = review(root, base, scope_yhh30m=True)
-    assert result["status"] == "PASS"
+    assert result["status"] == "FAIL"
+    assert result["blocked_findings"] == [{"file": name, "reason": "NON_UTF8_CONTENT"}]
     assert result["publication_scope"] == "YHH30M"
     assert result["out_of_scope_files"] == [name]
     assert path.read_bytes() == original
