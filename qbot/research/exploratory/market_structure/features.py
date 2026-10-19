@@ -328,6 +328,13 @@ def compute_features(
     qualified = set()
     for edge in edges:
         p = edge.payload
+        if any(
+            not isinstance(p.get(key), str) or not p[key].strip()
+            for key in ("upstream", "downstream")
+        ):
+            raise ContractError(
+                "directed relationship endpoints require nonempty string IDs"
+            )
         if "namespace" in p or "taxonomy_version" in p:
             if not p.get("namespace") or not p.get("taxonomy_version"):
                 raise ContractError("explicit edge namespace/version required together")

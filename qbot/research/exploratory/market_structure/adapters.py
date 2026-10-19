@@ -55,12 +55,14 @@ def market_context(store, sessions, request):
         rec = selected.get(session.session_id)
         rows.append(
             dict(
-                date=pd.Timestamp(session.session_id),
+                date=regime_date(session),
                 symbol="000905.SH",
                 adj_close=rec.payload.get("adj_close") if rec else None,
             )
         )
     frame = pd.DataFrame(rows)
+    if frame["date"].duplicated().any():
+        raise ContractError("market context requires distinct UTC regime dates")
     frame["adj_close"] = pd.to_numeric(frame["adj_close"], errors="raise")
     computed = build_market_regime_features(frame)
     rec = selected[last]
@@ -78,6 +80,15 @@ def market_context(store, sessions, request):
     )
     result.update(computed.iloc[-1].drop(labels=["date"]).to_dict())
     return result, tuple(selected.values())
+
+
+def regime_date(session):
+    """UTC date of the final observed instant; opaque IDs are identifiers only."""
+    return (
+        (session.segments[-1][1] - pd.Timedelta(nanoseconds=1))
+        .tz_localize(None)
+        .normalize()
+    )
 
 
 def calendar_digest(sessions):

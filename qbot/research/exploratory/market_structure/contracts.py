@@ -211,10 +211,20 @@ class ComputeRequest:
         ):
             raise ContractError("window duration/frequency mismatch")
         if (
+            not isinstance(self.universe, (tuple, list))
+            or not self.universe
+            or any(not isinstance(s, str) or not s.strip() for s in self.universe)
+        ):
+            raise ContractError(
+                "explicit universe requires nonempty string security IDs"
+            )
+        if (
             not self.universe
             or len(set(self.universe)) != len(self.universe)
-            or not self.session_id
-            or not self.scenario
+            or not isinstance(self.session_id, str)
+            or not self.session_id.strip()
+            or not isinstance(self.scenario, str)
+            or not self.scenario.strip()
         ):
             raise ContractError("explicit unique universe/session/scenario required")
         object.__setattr__(self, "universe", tuple(self.universe))
