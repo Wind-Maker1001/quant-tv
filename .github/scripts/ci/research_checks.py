@@ -1,14 +1,87 @@
 """Read-only Python 3.9 research checks; not a full Pylint analysis."""
 
+import hashlib
 import json
 import os
 from pathlib import Path
 import re
 import subprocess
 import sys
+from types import ModuleType
 
 ROOT = Path(__file__).resolve().parents[3]
 SCOPES = ("qbot/research", "tests/research", "examples/research", ".github/scripts/ci")
+SECURITY_CHECKER_PATH = ".github/scripts/ci/security_admission_revision.py"
+CHECKER_SHA256 = "1ce0b775debcb7961fda9acf3a1b9a329ab21f5d7029fd20d9fcf0fcd7cf219f"
+SECURITY_ANCHOR = "docs/research/evidence/unified-market-admission-v1/trust-anchor.json"
+SECURITY_WORKFLOW = ".github/workflows/market-admission.yml"
+SECURITY_CONTROL_FILES = frozenset(
+    (SECURITY_CHECKER_PATH, ".github/scripts/ci/research_checks.py")
+)
+
+
+def verified_security_control(root):
+    """Trust the reviewed CI workflow, never a candidate checker's own receipt."""
+    root = Path(root)
+    trusted_workflow = (ROOT / SECURITY_WORKFLOW).read_text(encoding="utf-8")
+    pin = re.findall(
+        r"SECURITY_TRUST_ANCHOR_SHA256: '([0-9a-f]{64})'", trusted_workflow
+    )
+    try:
+        if len(pin) != 1:
+            raise ValueError("missing independent workflow pin")
+        raw = (root / SECURITY_ANCHOR).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != pin[0]:
+            raise ValueError("trust anchor changed")
+        anchor = json.loads(raw)
+        if (
+            set(anchor) != {"schema", "files"}
+            or anchor["schema"] != "FACTORLAB_SECURITY_CONTROL_ANCHOR_V1"
+        ):
+            raise ValueError("trust anchor schema changed")
+        if set(anchor["files"]) != SECURITY_CONTROL_FILES:
+            raise ValueError("trust anchor scope changed")
+        bodies = {}
+        for name, digest in anchor["files"].items():
+            body = (root / name).read_bytes().replace(b"\r\n", b"\n")
+            if hashlib.sha256(body).hexdigest() != digest:
+                raise ValueError("control bytes changed: " + name)
+            bodies[name] = body
+        if hashlib.sha256(bodies[SECURITY_CHECKER_PATH]).hexdigest() != CHECKER_SHA256:
+            raise ValueError("checker changed")
+        return bodies[SECURITY_CHECKER_PATH]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise ValueError(
+            "Independent security checker pin mismatch: " + str(exc)
+        ) from exc
+
+
+def load_security_revision(root):
+    """Verify exact bytes before executing any candidate authorization code."""
+    root = Path(root)
+    # Original isolated CI fixtures contain neither a revision nor a checker.
+    candidate = (
+        root
+        if (
+            (root / SECURITY_CHECKER_PATH).exists()
+            or (
+                root
+                / "docs/research/evidence/unified-market-admission-v1/security-revision.json"
+            ).exists()
+        )
+        else ROOT
+    )
+    body = verified_security_control(candidate)
+    module = ModuleType("independently_verified_security_revision")
+    module.__file__ = str(candidate / SECURITY_CHECKER_PATH)
+    exec(compile(body, module.__file__, "exec"), module.__dict__)
+    if set(module.FILES) & (
+        SECURITY_CONTROL_FILES | {SECURITY_WORKFLOW, SECURITY_ANCHOR}
+    ):
+        raise ValueError(
+            "Security checker cannot authorize its independent trust controls"
+        )
+    return module
 
 
 def git(root, *arguments):
@@ -54,6 +127,7 @@ def check_whitespace(root, base, scopes):
 def main():
     if sys.version_info[:2] != (3, 9):
         raise RuntimeError("Research syntax checks require Python 3.9")
+    load_security_revision(ROOT).load_revision(ROOT)
     base = resolve_base(
         ROOT,
         os.environ.get("GITHUB_EVENT_NAME", "workflow_dispatch"),

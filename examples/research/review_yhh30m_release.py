@@ -127,9 +127,10 @@ def review(repo, base, scope_yhh30m=False):
     revision, security = None, None
     revision_checker = repo / ".github/scripts/ci/security_admission_revision.py"
     if revision_checker.exists():
-        spec = importlib.util.spec_from_file_location("security_revision", revision_checker)
-        security = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(security)
+        spec = importlib.util.spec_from_file_location("independent_control", repo / ".github/scripts/ci/research_checks.py")
+        controller = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(controller)
+        security = controller.load_security_revision(repo)
         revision = security.load_revision(repo)
     prefixes = [str(Path.home()).replace(chr(92), chr(47)).lower(),
                 str(repo.parent).replace(chr(92), chr(47)).lower()]

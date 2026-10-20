@@ -42,6 +42,13 @@ def _same_rows(actual, expected, keys, index, label):
         raise ProviderError(PREFIX + label + " differ from qualified source rows") from exc
 
 
+def _bind_scoped_rows(actual, expected, index, dates, symbols, label):
+    _same_rows(actual, expected, ["date", "symbol"], index, label)
+    scoped = actual.loc[actual.date.isin(dates) & actual.symbol.isin(symbols), ["date", "symbol"]]
+    if len(pd.MultiIndex.from_frame(scoped).difference(index)):
+        _reject(label + " contain rows outside qualified key scope")
+
+
 def assert_formal_market_admission(
     provider, *, membership, calendar, bars, benchmark, research_start,
     research_end, status=None, listings=None, require_execution=False,
@@ -109,10 +116,12 @@ def assert_formal_market_admission(
     symbols = sorted(set(membership.symbol)) if required_symbols is None else sorted(set(required_symbols))
     if not symbols or not set(symbols).issubset(set(membership.symbol)):
         _reject("requested securities are outside qualified PIT membership")
-    index = pd.MultiIndex.from_product([dates, symbols], names=["date", "symbol"])
-    if len(index.difference(pd.MultiIndex.from_frame(keys[["date", "symbol"]]))):
+    scoped_keys = keys.loc[keys.date.isin(dates) & keys.symbol.isin(symbols), ["date", "symbol"]]
+    index = pd.MultiIndex.from_frame(scoped_keys)
+    needed_pit = membership.loc[membership.symbol.isin(symbols), ["date", "symbol"]]
+    if index.empty or len(pd.MultiIndex.from_frame(needed_pit).difference(index)):
         _reject("qualification key coverage is incomplete")
-    _same_rows(bars, evidence.stocks, ["date", "symbol"], index, "cached prices")
+    _bind_scoped_rows(bars, evidence.stocks, index, dates, symbols, "cached prices")
     benchmark_index = pd.MultiIndex.from_product(
         [dates, evidence.benchmark.symbol.unique()], names=["date", "symbol"]
     )
@@ -120,7 +129,11 @@ def assert_formal_market_admission(
     if (status is None) != (listings is None):
         _reject("security status and listing inputs must be bound together")
     if status is not None:
-        _same_rows(status, inputs.status, ["date", "symbol"], index, "actual security status")
+        status_keys = inputs.status.loc[
+            inputs.status.date.isin(dates) & inputs.status.symbol.isin(symbols), ["date", "symbol"]
+        ]
+        _bind_scoped_rows(status, inputs.status, pd.MultiIndex.from_frame(status_keys),
+                          dates, symbols, "actual security status")
         listing_index = pd.MultiIndex.from_arrays([symbols], names=["symbol"])
         _same_rows(listings, inputs.listings, ["symbol"], listing_index, "actual listing dates")
     required_stages = {"RAW", "ADJUSTMENT", "STATUS", "PIT", "SOURCE_BINDING", "FORMAL"}

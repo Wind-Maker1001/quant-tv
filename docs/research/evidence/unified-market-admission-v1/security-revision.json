@@ -1668,49 +1668,49 @@
       41,
       42,
       45,
-      58,
-      59,
-      60,
-      61,
-      62,
-      63,
-      64,
+      46,
+      47,
+      48,
+      49,
+      52,
+      65,
+      66,
       67,
       68,
       69,
       70,
       71,
-      72,
-      73,
       74,
       75,
+      76,
+      77,
       78,
       79,
       80,
       81,
       82,
-      83,
-      84,
       85,
       86,
+      87,
+      88,
+      89,
+      90,
       91,
       92,
-      94,
-      95,
-      96,
-      100,
+      93,
+      98,
+      99,
       101,
-      104,
+      102,
+      103,
       107,
       108,
-      109,
-      110,
       111,
-      112,
-      113,
       114,
       115,
       116,
+      117,
+      118,
       119,
       120,
       121,
@@ -1718,14 +1718,22 @@
       123,
       124,
       125,
-      126,
-      127,
+      128,
+      129,
       130,
       131,
       132,
       135,
-      136,
-      137
+      137,
+      138,
+      139,
+      140,
+      143,
+      144,
+      145,
+      148,
+      149,
+      150
     ],
     "data/providers/base.py": [
       8,
@@ -2227,11 +2235,11 @@
   },
   "files": {
     ".github/scripts/ci/frozen_engineering_migration.py": {
-      "approved_blob": "0d17399a5996992b2b20f3d40299ffda61550c54",
+      "approved_blob": "da2bc70cf2c3dcdc32782ef2a659f4d26152ecaa",
       "before_blob": "8c349d062396c42fe77402aefae83da3d9417473"
     },
     ".github/scripts/ci/validate_execution.py": {
-      "approved_blob": "fc17dfb6133153e9f50f014328cff2a682aa39fe",
+      "approved_blob": "07d012c6f6ee13bbb23f25c6f2cfca03f6583761",
       "before_blob": "31cc2ff89f65d39fb1bbf92515569291940b5aa5"
     },
     ".github/workflows/pit-archive-evidence.yml": {
@@ -2239,7 +2247,7 @@
       "before_blob": "7d75c5d5c92a60d0c7dd8da8debe73770548ed2f"
     },
     "examples/research/review_yhh30m_release.py": {
-      "approved_blob": "b6e4cc742c1c930682d291b9534bdf14b7fefeeb",
+      "approved_blob": "04c5c66884ee2f05dd7b7bbd2a1dac5deb8c1a6c",
       "before_blob": "d1b9cea68142964a89a8874ce1c09f33c9e4c18c"
     },
     "qbot/research/cli.py": {
@@ -2247,7 +2255,7 @@
       "before_blob": "8061af1868c6c4432df6b9bc4e219f8e95c83087"
     },
     "qbot/research/data/admission.py": {
-      "approved_blob": "ccbd40d6b88b4780f0eda4980936b6ae31269aaa",
+      "approved_blob": "216357c0a06c26f3e8c446e2116d8acf5e388a91",
       "before_blob": null
     },
     "qbot/research/data/providers/base.py": {
@@ -2263,19 +2271,23 @@
       "before_blob": null
     },
     "tests/evidence/test_pit_archive_verifiers.py": {
-      "approved_blob": "f85798357b1156b01a0f4b4df696cca02eb4ed61",
+      "approved_blob": "08f237c2ae521b80b6b14772aecbbabd885d4bbd",
       "before_blob": "2c4af40be569534b41128fb61cd4a45eb6cd8bc2"
     },
     "tests/market_admission/test_admission.py": {
       "approved_blob": "0812f6f5ff95248735824cc9a57ac641f976f35e",
       "before_blob": null
     },
+    "tests/market_admission/test_p1_review.py": {
+      "approved_blob": "6c3071658911498812a84d77e0c1b1093940e400",
+      "before_blob": null
+    },
     "tests/market_admission/test_revision_contract.py": {
-      "approved_blob": "2ee0c42a9fb693fa4f2e11e4424adfae19214bb2",
+      "approved_blob": "f8c22ccc66e93450024f21165b31e21195a9d126",
       "before_blob": null
     },
     "tests/market_structure/test_delivery.py": {
-      "approved_blob": "5e9bd789078219b233431d7308d0ae759e802b87",
+      "approved_blob": "535e57a8869ad8309606dc7fe01a5a7ef2cab912",
       "before_blob": "cf1dccf3c1474fe3de7a952cfae1ad0755028fe7"
     },
     "tests/model_readiness/test_comparison_contract.py": {

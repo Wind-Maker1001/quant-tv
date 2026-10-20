@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 from benchmark import canonical_ids, write_json
 from validate_reports import validate as validate_reports
-from security_admission_revision import coverage_contract
+from research_checks import load_security_revision
 
 
 def load(path):
@@ -74,7 +74,9 @@ def validate(
     # exact P0 source postimages can update their executable-line inventory.
     result = load(directory / "result.json")
     environment = load(directory / "environment.json")
-    expected = coverage_contract(Path(environment["subject_root"]), expected)
+    expected = load_security_revision(
+        Path(environment["subject_root"])
+    ).coverage_contract(Path(environment["subject_root"]), expected)
     if environment["subject_dirty"]:
         raise ValueError("Measured subject was not clean")
     for key, wanted in (

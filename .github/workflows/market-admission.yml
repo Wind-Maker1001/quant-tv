@@ -57,6 +57,30 @@ jobs:
         run: |
           python -m pip install -r dev/requirements-research-ci.txt
           python -m pip check
+      - name: Verify independent security controls before importing repository code
+        env:
+          SECURITY_TRUST_ANCHOR_SHA256: 'cf009ff5b1d0f304f61a45aa61c36072c1469cae43c544c0e308f5b47182c0c3'
+        run: |
+          python -B - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          raw = Path('docs/research/evidence/unified-market-admission-v1/trust-anchor.json').read_bytes()
+          assert hashlib.sha256(raw).hexdigest() == os.environ['SECURITY_TRUST_ANCHOR_SHA256']
+          anchor = json.loads(raw)
+          assert set(anchor) == {'schema', 'files'}
+          assert anchor['schema'] == 'FACTORLAB_SECURITY_CONTROL_ANCHOR_V1'
+          assert set(anchor['files']) == {
+              '.github/scripts/ci/security_admission_revision.py',
+              '.github/scripts/ci/research_checks.py',
+          }
+          for name, expected in anchor['files'].items():
+              body = Path(name).read_bytes().replace(b'\r\n', b'\n')
+              assert hashlib.sha256(body).hexdigest() == expected, name
+          print('Independent control hashes verified before code execution')
+          PY
       - name: Verify actual admission counterexamples and synthetic compatibility
         run: >-
           python -B -m pytest tests/market_admission tests/model_readiness tests/market_structure

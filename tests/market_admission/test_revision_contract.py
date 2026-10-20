@@ -12,10 +12,11 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location(
-    "security_admission_contract", ROOT / ".github/scripts/ci/security_admission_revision.py"
+    "independent_admission_control", ROOT / ".github/scripts/ci/research_checks.py"
 )
-security = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(security)
+controller = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(controller)
+security = controller.load_security_revision(ROOT)
 
 
 @pytest.fixture
@@ -25,7 +26,7 @@ def revision_clone(tmp_path):
         ["git", "clone", "--shared", "--no-checkout", str(ROOT), str(root)],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
-    for name in security.FILES | {security.RECEIPT, ".gitattributes"}:
+    for name in security.FILES | {security.RECEIPT, ".gitattributes", controller.SECURITY_ANCHOR, controller.SECURITY_WORKFLOW} | set(controller.SECURITY_CONTROL_FILES):
         source = ROOT / name
         if source.is_file():
             destination = root / name

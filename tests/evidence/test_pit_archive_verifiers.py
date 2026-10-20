@@ -25,7 +25,8 @@ def load_module(name, path):
 
 @pytest.fixture(scope="module")
 def historical_contracts(tmp_path_factory):
-    security = load_module("pit_current_security", ROOT / ".github/scripts/ci/security_admission_revision.py")
+    controller = load_module("pit_independent_control", ROOT / ".github/scripts/ci/research_checks.py")
+    security = controller.load_security_revision(ROOT)
     return security.historical_protected_view(ROOT, tmp_path_factory.mktemp("pit-protected-preimages"))
 
 

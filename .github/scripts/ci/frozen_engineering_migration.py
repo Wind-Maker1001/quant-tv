@@ -66,11 +66,12 @@ def validate_migration(root, frozen, manifest_path, manifest_blob, receipt, dige
         raise ValueError("Historical baseline was replaced")
     entries = {entry["path"]: entry for entry in frozen["files"]}
     specification = importlib.util.spec_from_file_location(
-        "security_admission_revision",
-        Path(__file__).with_name("security_admission_revision.py"),
+        "independent_research_checks",
+        Path(__file__).with_name("research_checks.py"),
     )
-    security = importlib.util.module_from_spec(specification)
-    specification.loader.exec_module(security)
+    controller = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(controller)
+    security = controller.load_security_revision(root)
     revision = security.load_revision(root)
     approved = revision["files"] if revision else {}
     changes = set(
