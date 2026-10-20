@@ -10,6 +10,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
+# These tests verify orchestration, not the truth of synthetic market evidence.
+pytestmark = pytest.mark.usefixtures("synthetic_cli_admission")
+
 from qbot.research import cli
 from qbot.research.config import (
     DataConfig,

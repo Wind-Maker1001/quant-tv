@@ -23,9 +23,19 @@ def load_module(name, path):
     return module
 
 
+@pytest.fixture(scope="module")
+def historical_contracts(tmp_path_factory):
+    controller = load_module("pit_independent_control", ROOT / ".github/scripts/ci/research_checks.py")
+    security = controller.load_security_revision(ROOT)
+    return security.historical_protected_view(ROOT, tmp_path_factory.mktemp("pit-protected-preimages"))
+
+
 @pytest.fixture
-def publication():
-    return load_module("pit_publication", ROOT / PUB / "verify_publication.py")
+def publication(historical_contracts):
+    module = load_module("pit_publication", ROOT / PUB / "verify_publication.py")
+    current = module.local
+    module.local = lambda name: historical_contracts.get(name) or current(name)
+    return module
 
 
 @pytest.fixture

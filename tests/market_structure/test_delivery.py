@@ -134,7 +134,18 @@ def test_protected_tracked_content_is_unchanged():
         cwd=ROOT,
         text=True,
     ).splitlines()
-    assert not changed
+    # The user-authorized P0 repair has exact postimages; all other historical
+    # content retains the original prohibition. No blanket gate exception.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "independent_research_checks", ROOT / ".github/scripts/ci/research_checks.py"
+    )
+    controller = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(controller)
+    security = controller.load_security_revision(ROOT)
+    revision = security.load_revision(ROOT)
+    approved = (set(revision["files"]) | (set(controller.SECURITY_CONTROL_FILES) - {controller.SECURITY_CHECKER_PATH})) if revision else set()
+    assert set(changed) <= approved
     assert (
         json.loads(
             (

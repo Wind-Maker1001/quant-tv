@@ -41,8 +41,15 @@ def test_original_research_evidence_and_factor_parameters_are_frozen(tmp_path):
         ROOT / "docs/research/evidence/ci-runtime-optimization-v1/engineering-migration.json",
         "d08e34e905db5b0dee4750220cc5aff5b46b966796b2b554f74c5e5e2347ab9e",
     )
-    assert result["unchanged_financial_and_other_files"] == 466
-    assert protected.intersection(changed) == migration.ENGINEERING_PATHS
+    security_paths = {
+        "qbot/research/cli.py", "qbot/research/data/providers/base.py",
+        "qbot/research/data/providers/local.py", "tests/research/test_cli_phase2.py",
+        "tests/research/test_cli_forward_evaluation.py",
+        "tests/research/test_phase1_file_pipeline.py",
+    }
+    assert set(result["exact_security_postimages"]) == security_paths
+    assert result["unchanged_financial_and_other_files"] == 461
+    assert protected.intersection(changed) == migration.ENGINEERING_PATHS | security_paths
     environment = os.environ.copy()
     environment["PYTHONPATH"] = str(scripts) + os.pathsep + environment.get("PYTHONPATH", "")
     subprocess.run(

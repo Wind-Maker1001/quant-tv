@@ -1,0 +1,7 @@
+{
+  "files": {
+    ".github/scripts/ci/research_checks.py": "e2ae80d3a3346af7e5304179af49c98be1dad4c1429270db6aedca8a4a97f3ef",
+    ".github/scripts/ci/security_admission_revision.py": "1ce0b775debcb7961fda9acf3a1b9a329ab21f5d7029fd20d9fcf0fcd7cf219f"
+  },
+  "schema": "FACTORLAB_SECURITY_CONTROL_ANCHOR_V1"
+}

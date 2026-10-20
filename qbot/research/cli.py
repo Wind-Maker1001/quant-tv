@@ -28,6 +28,7 @@ from qbot.research.backtest import (
 )
 from qbot.research.config import ResearchConfig, load_config
 from qbot.research.data import AKShareProvider, ParquetBarCache, TradingCalendar
+from qbot.research.data.admission import assert_formal_market_admission
 from qbot.research.data.providers.base import MarketDataProvider
 from qbot.research.data.download_status import (
     assert_no_unresolved,
@@ -1194,6 +1195,17 @@ class _PinnedBarInputs(tuple):
         return result
 
 
+def _admit_bar_inputs(config, inputs, membership, calendar, *, status=None,
+                      listings=None, require_execution=False):
+    """Recheck even supplied snapshots; a tuple or receipt is not admission."""
+    return assert_formal_market_admission(
+        getattr(inputs, "provider", None), membership=membership, calendar=calendar,
+        bars=inputs[1], benchmark=inputs[0], research_start=config.data.start,
+        research_end=config.data.end, status=status, listings=listings,
+        require_execution=require_execution,
+    )
+
+
 def _load_bar_inputs(config: ResearchConfig, membership: pd.DataFrame, benchmark_snapshot=None) -> tuple:
     """Pin complete bar inputs, including absent PIT members, before research.
 
@@ -1227,15 +1239,13 @@ def _load_bar_inputs(config: ResearchConfig, membership: pd.DataFrame, benchmark
     if missing:
         LOGGER.warning("No cached bars for %d member securities", len(missing))
     bars = pd.concat(parts, ignore_index=True)
-    if isinstance(provider, LocalParquetProvider):
-        provider.assert_research_admission(
-            membership, TradingCalendar.from_benchmark_bars(benchmark).dates, bars,
-        )
     provenance = build_bar_data_provenance(
         config.data.benchmark, benchmark_snapshot, snapshots, identities,
         (source, provider.cache_source_version(config.data.benchmark, True)),
     )
-    return _PinnedBarInputs((benchmark, bars, provenance, bar_data_version(provenance)), provider)
+    pinned = _PinnedBarInputs((benchmark, bars, provenance, bar_data_version(provenance)), provider)
+    _admit_bar_inputs(config, pinned, membership, TradingCalendar.from_benchmark_bars(benchmark).dates)
+    return pinned
 
 
 def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
@@ -1257,10 +1267,10 @@ def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
         config, membership, benchmark_snapshot
     )
     benchmark, bars, bar_provenance, bar_version = bar_inputs
-    if isinstance(getattr(bar_inputs, "provider", None), LocalParquetProvider):
-        bar_inputs.provider.assert_security_binding(status, listings)
-        if bar_inputs.provider.qualification_report is not None:
-            run.payload["market_data_qualification"] = bar_inputs.provider.qualification_report
+    admission = _admit_bar_inputs(
+        config, bar_inputs, membership, calendar, status=status, listings=listings,
+    )
+    run.payload["market_admission"] = admission
     filter_config = UniverseFilterConfig(
         min_listed_days=config.universe.min_listed_days,
         exclude_st=config.universe.exclude_st,
@@ -1311,6 +1321,7 @@ def command_build_dataset(config: ResearchConfig, run: RunManifest) -> None:
             "data_start": config.data.start.isoformat(),
             "data_end": config.data.end.isoformat(),
             "dataset_contract": _dataset_contract(config),
+            "market_admission": admission,
             "producer_run_id": run.run_id,
             "producer_provenance": validate_provenance(run.payload),
         },
@@ -1367,6 +1378,7 @@ def _load_verified_dataset(
     *,
     full_calendar: Optional[pd.DatetimeIndex] = None,
     bar_inputs: Optional[tuple] = None,
+    require_execution: bool = False,
 ) -> tuple:
     assert_no_unresolved(_download_guard_root(config))
     membership = _load_verified_membership(config, research_calendar)
@@ -1392,8 +1404,13 @@ def _load_verified_dataset(
         universe_sha256=universe_version,
         expected_provider=config.universe.status_provider,
     )
-    if isinstance(getattr(bar_inputs, "provider", None), LocalParquetProvider):
-        bar_inputs.provider.assert_security_binding(security_status, security_listings)
+    admission = _admit_bar_inputs(
+        config, bar_inputs, membership, security_calendar,
+        status=security_status, listings=security_listings,
+        require_execution=require_execution,
+    )
+    if run is not None:
+        run.payload["market_admission"] = admission
     dataset_path = config.paths.processed_dir / "dataset.parquet"
     manifest_path = config.paths.processed_dir / "dataset_manifest.json"
     if not dataset_path.exists():
@@ -1834,12 +1851,11 @@ def command_walk_forward(
     research_calendar = _research_calendar(config, full_calendar)
     membership = _load_verified_membership(config, research_calendar)
     bar_inputs = _load_bar_inputs(config, membership)
-    if isinstance(getattr(bar_inputs, "provider", None), LocalParquetProvider):
-        bar_inputs.provider.assert_execution_admission()
     benchmark, pinned_stock_bars, _, _ = bar_inputs
     dataset, dataset_sha256, universe_version = _load_verified_dataset(
         config, research_calendar, run, full_calendar=full_calendar,
         bar_inputs=bar_inputs,
+        require_execution=True,
     )
     pinned_calendar = _research_calendar(
         config, TradingCalendar.from_benchmark_bars(benchmark).dates,
@@ -2702,6 +2718,15 @@ def command_compare_models(config: ResearchConfig, run: RunManifest) -> None:
         raise FactorLabError(
             "Model reports use different or unknown execution-bar inputs"
         )
+    # Historical successful manifests cannot authorize unqualified prices.
+    benchmark = _load_benchmark_with_warmup(config)
+    calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
+    _, admitted_dataset_sha, _ = _load_verified_dataset(
+        config, _research_calendar(config, calendar), run,
+        full_calendar=calendar, require_execution=True,
+    )
+    if dataset_versions != {admitted_dataset_sha}:
+        raise FactorLabError("Model reports differ from the currently admitted dataset")
     comparison = pd.DataFrame(
         [_comparison_record(name, outputs[name], artifacts=artifact_snapshots[name]) for name in model_names]
     )
@@ -3002,7 +3027,7 @@ def command_freeze_forward_model(
     full_calendar = TradingCalendar.from_benchmark_bars(benchmark).dates
     research_calendar = _research_calendar(config, full_calendar)
     dataset, dataset_sha256, universe_version = _load_verified_dataset(
-        config, research_calendar, run, full_calendar=full_calendar
+        config, research_calendar, run, full_calendar=full_calendar, require_execution=True
     )
     parameters = selected_forward_model_parameters(config)
     fitted = fit_final_model(
@@ -3174,7 +3199,7 @@ def _command_forward_signal_locked(
             "Benchmark data_asof does not reach exactly the requested signal date"
         )
     dataset, dataset_sha256, universe_version = _load_verified_dataset(
-        config, research_calendar, run, full_calendar=full_calendar
+        config, research_calendar, run, full_calendar=full_calendar, require_execution=True
     )
     cross_section = dataset.loc[dataset["date"].eq(normalized_day)].copy()
     if cross_section.empty:
@@ -3338,6 +3363,22 @@ def _snapshot_covers(snapshot, start: date, end: date, symbol: str) -> None:
     )
 
 
+def _admit_forward_evaluation(config, provider, benchmark, bars, calendar, first, as_of, symbols):
+    """Realised labels need financial qualification as well as cache coverage."""
+    dates = _research_calendar(config, calendar)
+    membership = _load_verified_membership(config, dates)
+    status, listings, _ = load_verified_security_data(
+        config.paths.universe_dir, calendar=calendar, membership=membership,
+        universe_sha256=dataframe_sha256(membership),
+        expected_provider=config.universe.status_provider,
+    )
+    return assert_formal_market_admission(
+        provider, membership=membership, calendar=calendar, bars=bars, benchmark=benchmark,
+        research_start=config.data.start, research_end=as_of, status=status, listings=listings,
+        require_execution=True, required_symbols=symbols,
+    )
+
+
 def command_evaluate_forward(
     config: ResearchConfig,
     run: RunManifest,
@@ -3425,9 +3466,13 @@ def command_evaluate_forward(
             config.data.benchmark, benchmark_snapshot, snapshots, identities,
             (provider_name, provider.cache_source_version(config.data.benchmark, True)),
         )
+        evaluation_bars = pd.concat([snapshot.frame for snapshot in snapshots.values()], ignore_index=True)
+        admission = _admit_forward_evaluation(
+            config, provider, benchmark, evaluation_bars, calendar, first, as_of, symbols,
+        )
         evaluation = evaluate_forward_predictions(
             predictions,
-            pd.concat([snapshot.frame for snapshot in snapshots.values()], ignore_index=True),
+            evaluation_bars,
             benchmark,
             as_of=as_of,
             holding_days=config.label.holding_days,
@@ -3440,6 +3485,7 @@ def command_evaluate_forward(
         missing_dates = expected_dates.difference(signal_dates)
         report_provenance = {
             **provenance,
+            "market_admission": admission,
             "source_sha256": source,
             "research_contract_sha256": contract,
             "activation_id": activation.activation_id,

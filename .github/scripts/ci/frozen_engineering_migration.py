@@ -2,6 +2,7 @@
 
 import ast
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
@@ -64,6 +65,15 @@ def validate_migration(root, frozen, manifest_path, manifest_blob, receipt, dige
     if migration["baseline_commit"] != frozen["baseline_commit"]:
         raise ValueError("Historical baseline was replaced")
     entries = {entry["path"]: entry for entry in frozen["files"]}
+    specification = importlib.util.spec_from_file_location(
+        "independent_research_checks",
+        Path(__file__).with_name("research_checks.py"),
+    )
+    controller = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(controller)
+    security = controller.load_security_revision(root)
+    revision = security.load_revision(root)
+    approved = revision["files"] if revision else {}
     changes = set(
         git(
             root,
@@ -75,7 +85,7 @@ def validate_migration(root, frozen, manifest_path, manifest_blob, receipt, dige
             frozen["baseline_commit"],
         ).splitlines()
     )
-    unexpected = set(entries).intersection(changes) - ENGINEERING_PATHS
+    unexpected = set(entries).intersection(changes) - ENGINEERING_PATHS - set(approved)
     if unexpected:
         raise ValueError(
             "Frozen research/Gates/Golden evidence changed: " + str(sorted(unexpected))
@@ -89,12 +99,17 @@ def validate_migration(root, frozen, manifest_path, manifest_blob, receipt, dige
         item = migration["files"][path]
         if item["original_blob"] != entries[path]["baseline_git_blob_sha1"]:
             raise ValueError("Original engineering preimage differs: " + path)
-        if worktree_blob(root, path) != item["approved_blob"]:
+        expected_blob = approved.get(path, {}).get(
+            "approved_blob", item["approved_blob"]
+        )
+        if worktree_blob(root, path) != expected_blob:
             raise ValueError("Unregistered engineering bytes: " + path)
     return {
         "historical_files": len(entries),
-        "unchanged_financial_and_other_files": len(entries) - len(ENGINEERING_PATHS),
+        "unchanged_financial_and_other_files": len(entries)
+        - len(ENGINEERING_PATHS | (set(approved) & set(entries))),
         "exact_engineering_postimages": sorted(ENGINEERING_PATHS),
+        "exact_security_postimages": sorted(set(approved) & set(entries)),
         "engineering_commit": anchor,
         "engineering_anchor_check_phase": "receipt_generation_and_independent_review",
     }

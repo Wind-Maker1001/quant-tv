@@ -39,7 +39,8 @@ jobs:
           printf '::add-mask::%s\n' "$auth_header"
           GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.$CHECKOUT_SERVER/.extraheader" \
             GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
-            git fetch --depth=1 --no-tags --no-recurse-submodules origin "$EVIDENCE_SUBJECT_SHA"
+            git fetch --no-tags --no-recurse-submodules origin "$EVIDENCE_SUBJECT_SHA" \
+            '657486f8ca928c1e66b430f471cfe5ce96a613ab'
           GIT_LFS_SKIP_SMUDGE=1 git checkout --detach "$EVIDENCE_SUBJECT_SHA"
           test "$(git rev-parse HEAD)" = "$EVIDENCE_SUBJECT_SHA"
           test -z "$(git status --porcelain)"

@@ -5,6 +5,8 @@ import copy
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.usefixtures("synthetic_cli_admission")
+
 from qbot.research import cli
 from qbot.research.errors import FactorLabError
 from qbot.research.diagnostics.model_readiness.synthetic import MODELS
@@ -109,3 +111,18 @@ def test_unsealed_prediction_bytes_rejected(comparison_bundle):
             cli.command_compare_models(config, _Run("counterexample-byte-tamper"))
     finally:
         path.write_bytes(saved)
+
+
+def test_successful_synthetic_producers_cannot_authorize_formal_comparison(
+    comparison_bundle, monkeypatch,
+):
+    from qbot.research.data.admission import assert_formal_market_admission
+
+    config, _, _ = comparison_bundle
+    # Restore the real boundary after software-only producer preparation.
+    monkeypatch.setattr(cli, "assert_formal_market_admission", assert_formal_market_admission)
+    run = _Run("unqualified-historical-comparison")
+    with pytest.raises(FactorLabError, match="MARKET DATA QUALIFICATION REQUIRED.*no qualification package"):
+        cli.command_compare_models(config, run)
+    assert run.outputs == {}
+    assert not (config.paths.report_dir / run.run_id).exists()

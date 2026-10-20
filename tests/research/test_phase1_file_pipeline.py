@@ -2,8 +2,8 @@
 
 This deliberately exercises the real importers, cache metadata contract,
 configuration loader, dataset builder, factor evaluator, report writer, and
-run manifests.  Only the market-data provider factory is replaced so a test
-run can never make a network request.
+run manifests. The provider factory and explicit financial boundary test
+double keep this synthetic software acceptance offline and unqualified.
 """
 
 import hashlib
@@ -12,7 +12,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 import yaml
+
+pytestmark = pytest.mark.usefixtures("synthetic_cli_admission")
 
 import qbot.research.cli as research_cli
 from qbot.research.data import ParquetBarCache
