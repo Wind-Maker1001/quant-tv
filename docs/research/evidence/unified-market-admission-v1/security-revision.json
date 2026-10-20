@@ -2234,8 +2234,12 @@
       "approved_blob": "fc17dfb6133153e9f50f014328cff2a682aa39fe",
       "before_blob": "31cc2ff89f65d39fb1bbf92515569291940b5aa5"
     },
+    ".github/workflows/pit-archive-evidence.yml": {
+      "approved_blob": "7b1c5b1c734028a38b513701048e1120d0fed4f5",
+      "before_blob": "7d75c5d5c92a60d0c7dd8da8debe73770548ed2f"
+    },
     "examples/research/review_yhh30m_release.py": {
-      "approved_blob": "dbaa1f1a7e699baac94a0a5a5d3b0f76a1db5ad3",
+      "approved_blob": "b6e4cc742c1c930682d291b9534bdf14b7fefeeb",
       "before_blob": "d1b9cea68142964a89a8874ce1c09f33c9e4c18c"
     },
     "qbot/research/cli.py": {

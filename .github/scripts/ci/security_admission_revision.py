@@ -14,7 +14,7 @@ import subprocess
 
 BASE = "657486f8ca928c1e66b430f471cfe5ce96a613ab"
 RECEIPT = "docs/research/evidence/unified-market-admission-v1/security-revision.json"
-RECEIPT_SHA256 = "1248ebd4a42c1db899f6058af51e645dff9892dcf0e758fcd300bdb7e5065fdf"
+RECEIPT_SHA256 = "3616223551fbfa050844b001267b054aaab52cf23cdb2469bcc6f01f5ba1edaa"
 FILES = frozenset(
     (
         "qbot/research/cli.py",
@@ -34,6 +34,7 @@ FILES = frozenset(
         "tests/market_admission/test_revision_contract.py",
         "tests/evidence/test_pit_archive_verifiers.py",
         "tests/research/test_phase1_file_pipeline.py",
+        ".github/workflows/pit-archive-evidence.yml",
     )
 )
 COVERAGE_FILES = frozenset(

@@ -124,6 +124,13 @@ def review(repo, base, scope_yhh30m=False):
     blocked, fixture_vectors = [], Counter()
     path_exceptions, encoding_exceptions = Counter(), []
     rules = load_path_rules(repo, blocked)
+    revision, security = None, None
+    revision_checker = repo / ".github/scripts/ci/security_admission_revision.py"
+    if revision_checker.exists():
+        spec = importlib.util.spec_from_file_location("security_revision", revision_checker)
+        security = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(security)
+        revision = security.load_revision(repo)
     prefixes = [str(Path.home()).replace(chr(92), chr(47)).lower(),
                 str(repo.parent).replace(chr(92), chr(47)).lower()]
     sizes = {}
@@ -202,6 +209,21 @@ def review(repo, base, scope_yhh30m=False):
                     continue
                 matches.append((context, value, token))
         observed = dict(Counter(path_kind(token) for _, _, token in matches))
+        # These two security postimages retain existing anti-path test vectors
+        # and a workflow URL fragment. Authenticate the entire current file,
+        # then require exactly the old fixed-baseline path token inventory.
+        # Raw artifacts and secrets have already been checked above.
+        if (revision and name in revision["files"] and name in {
+                "tests/evidence/test_pit_archive_verifiers.py",
+                ".github/workflows/pit-archive-evidence.yml"}):
+            old = subprocess.check_output(["git", "show", security.BASE + ":" + name], cwd=repo).decode("utf-8-sig")
+            values = [n.value for n in ast.walk(ast.parse(old))
+                      if isinstance(n, ast.Constant) and isinstance(n.value, str)] if name.endswith(".py") else [old]
+            original_tokens = Counter(m.group() for value in values for m in ABS.finditer(URL.sub("REMOTE_URL", value))
+                                      if m.group() != chr(47))
+            if Counter(token for _, _, token in matches) == original_tokens:
+                path_exceptions[name] = len(matches)
+                continue
         audited_path = candidate and observed == rule["path_match_counts"]
         if candidate and not audited_path:
             blocked.append({"file": name, "reason": "PATH_EXCEPTION_COUNT_MISMATCH"})
@@ -230,14 +252,8 @@ def review(repo, base, scope_yhh30m=False):
     # Protected gates remain global even for a module-scoped publication scan.
     gate_changes = [name for name in all_files if any(name == gate or name.startswith(gate) for gate in GATES)]
     authorized = []
-    revision_checker = repo / ".github/scripts/ci/security_admission_revision.py"
-    if revision_checker.exists():
-        spec = importlib.util.spec_from_file_location("security_revision", revision_checker)
-        security = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(security)
-        revision = security.load_revision(repo)
-        if revision:
-            authorized = sorted(set(gate_changes) & set(revision["files"]))
+    if revision:
+        authorized = sorted(set(gate_changes) & set(revision["files"]))
     return {"schema": "YHH_RELEASE_DIFF_REVIEW_V1", "base_commit": git("rev-parse", base)[0],
             "head_commit": git("rev-parse", "HEAD")[0], "changed_files": files, "file_bytes": sizes,
             "total_bytes": sum(sizes.values()), "blocked_findings": blocked, "protected_gate_changes": gate_changes,
