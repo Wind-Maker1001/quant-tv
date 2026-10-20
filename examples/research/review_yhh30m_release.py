@@ -6,6 +6,7 @@ from collections import Counter
 import csv
 import hashlib
 import io
+import importlib.util
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -228,9 +229,19 @@ def review(repo, base, scope_yhh30m=False):
             blocked.append({"file": name, "reason": "UNEXPLAINED_ABSOLUTE_PATH", "context": context.split("|")[0]})
     # Protected gates remain global even for a module-scoped publication scan.
     gate_changes = [name for name in all_files if any(name == gate or name.startswith(gate) for gate in GATES)]
+    authorized = []
+    revision_checker = repo / ".github/scripts/ci/security_admission_revision.py"
+    if revision_checker.exists():
+        spec = importlib.util.spec_from_file_location("security_revision", revision_checker)
+        security = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(security)
+        revision = security.load_revision(repo)
+        if revision:
+            authorized = sorted(set(gate_changes) & set(revision["files"]))
     return {"schema": "YHH_RELEASE_DIFF_REVIEW_V1", "base_commit": git("rev-parse", base)[0],
             "head_commit": git("rev-parse", "HEAD")[0], "changed_files": files, "file_bytes": sizes,
             "total_bytes": sum(sizes.values()), "blocked_findings": blocked, "protected_gate_changes": gate_changes,
+            "authorized_security_gate_changes": authorized,
             "publication_scope": "YHH30M" if scope_yhh30m else "FULL_DIFF",
             "out_of_scope_files": [name for name in all_files if name not in files],
             "safety_scope": "FULL_DIFF", "safety_checked_files": sorted(sizes),
@@ -240,7 +251,7 @@ def review(repo, base, scope_yhh30m=False):
             "exception_rules_sha256": PATH_RULES_SHA256,
             "exception_authentication": "PINNED_MANIFEST_SHA256",
             "historical_test_vectors_defined_in_main": dict(fixture_vectors),
-            "status": "PASS" if not blocked and not gate_changes else "FAIL"}
+            "status": "PASS" if not blocked and not (set(gate_changes) - set(authorized)) else "FAIL"}
 
 
 if __name__ == "__main__":

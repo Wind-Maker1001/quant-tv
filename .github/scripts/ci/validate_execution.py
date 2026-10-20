@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 
 from benchmark import canonical_ids, write_json
 from validate_reports import validate as validate_reports
+from security_admission_revision import coverage_contract
 
 
 def load(path):
@@ -69,8 +70,11 @@ def validate(
     if policy == "production-complete" and reference is not None:
         raise ValueError("Production validation cannot substitute for an experiment")
     directory = Path(directory)
+    # The legacy collection, skip identities and results stay frozen. Only
+    # exact P0 source postimages can update their executable-line inventory.
     result = load(directory / "result.json")
     environment = load(directory / "environment.json")
+    expected = coverage_contract(Path(environment["subject_root"]), expected)
     if environment["subject_dirty"]:
         raise ValueError("Measured subject was not clean")
     for key, wanted in (

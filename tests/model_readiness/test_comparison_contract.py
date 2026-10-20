@@ -5,6 +5,8 @@ import copy
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.usefixtures("synthetic_cli_admission")
+
 from qbot.research import cli
 from qbot.research.errors import FactorLabError
 from qbot.research.diagnostics.model_readiness.synthetic import MODELS

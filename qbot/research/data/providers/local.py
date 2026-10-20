@@ -546,28 +546,26 @@ class LocalParquetProvider(MarketDataProvider):
 
     def assert_research_admission(self, membership: pd.DataFrame, calendar: pd.DatetimeIndex,
                                   bars: pd.DataFrame) -> None:
+        """Compatibility entry; financial approval uses the shared replay gate."""
+        from qbot.research.data.admission import assert_formal_market_admission
+        self._ensure_loaded()
+        assert_formal_market_admission(
+            self, membership=membership, calendar=calendar, bars=bars,
+            benchmark=self._benchmark.loc[self._benchmark.date.isin(calendar)],
+            research_start=membership.date.min(), research_end=membership.date.max(),
+        )
+
+    def get_research_qualification(self):
+        """Expose the pinned recipe; only the common replay gate can admit it."""
+        from qbot.research.data.providers.base import MarketQualificationEvidence
         self._ensure_loaded()
         if self._qualification is None:
-            raise _fail("research requires replayable v2 qualification; schema-v1 bundles are diagnostic only")
-        report, inputs, keys, qualified_calendar, _ = self._qualification
-        if not report.formal_admission or report.synthetic_only:
-            raise _fail("v2 bundle is SOFTWARE_ONLY or lacks formal qualification")
-        if len(calendar.difference(qualified_calendar)):
-            raise _fail("research calendar exceeds qualified scope")
-        expected = inputs.membership.loc[inputs.membership.date.isin(membership.date), ["date", "symbol", "is_member"]]
-        actual = membership[["date", "symbol", "is_member"]]
-        expected = expected.sort_values(["date", "symbol"]).reset_index(drop=True)
-        actual = actual.sort_values(["date", "symbol"]).reset_index(drop=True)
-        if not actual.equals(expected):
-            raise _fail("actual PIT members differ from qualified effective membership")
-        needed = keys.loc[keys.date.isin(calendar) & keys.symbol.isin(membership.symbol)]
-        index = pd.MultiIndex.from_frame(needed)
-        cached = bars.set_index(["date", "symbol"]).reindex(index).reset_index()
-        qualified = self._stocks.set_index(["date", "symbol"]).reindex(index).reset_index()
-        try:
-            pd.testing.assert_frame_equal(cached, qualified, check_exact=True)
-        except AssertionError as exc:
-            raise _fail("cached prices differ from qualified source rows") from exc
+            return None
+        return MarketQualificationEvidence(
+            _artifact(self.root, self._manifest["qualification_dir"]) / "manifest.json",
+            self._manifest["qualification_manifest_sha256"],
+            self._manifest["source_version"], self._stocks, self._benchmark,
+        )
 
     def assert_security_binding(self, status: pd.DataFrame, listings: pd.DataFrame) -> None:
         self._ensure_loaded()
@@ -585,9 +583,17 @@ class LocalParquetProvider(MarketDataProvider):
             raise _fail("actual listing dates differ from qualification")
 
     def assert_execution_admission(self) -> None:
+        from qbot.research.data.admission import assert_formal_market_admission
         self._ensure_loaded()
-        if self._qualification is not None and not self._qualification[0].execution_admission:
-            raise _fail("corporate-action execution ledger/protocol remains unqualified")
+        if self._qualification is None:
+            raise _fail("execution requires replayable v2 qualification")
+        _, inputs, _, calendar, _ = self._qualification
+        assert_formal_market_admission(
+            self, membership=inputs.membership, calendar=calendar,
+            bars=self._stocks, benchmark=self._benchmark,
+            research_start=inputs.research_start, research_end=inputs.research_end,
+            status=inputs.status, listings=inputs.listings, require_execution=True,
+        )
 
     @property
     def bundle_version(self) -> str:

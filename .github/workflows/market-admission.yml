@@ -1,0 +1,74 @@
+name: FactorLab formal market admission evidence
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, edited]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: factorlab-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action == 'synchronize' }}
+
+jobs:
+  admission-evidence:
+    name: Python 3.9 formal market admission
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      MPLBACKEND: Agg
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - name: Check out exact integration commit without legacy submodules
+        env:
+          CHECKOUT_TOKEN: ${{ github.token }}
+          CHECKOUT_SHA: ${{ github.sha }}
+          CHECKOUT_SERVER: ${{ github.server_url }}
+          CHECKOUT_REPOSITORY: ${{ github.repository }}
+        run: |
+          [[ "$CHECKOUT_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git init .
+          git remote add origin "$CHECKOUT_SERVER/$CHECKOUT_REPOSITORY.git"
+          auth_header="$(printf 'x-access-token:%s' "$CHECKOUT_TOKEN" | base64 -w0)"
+          printf '::add-mask::%s\n' "$auth_header"
+          GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.$CHECKOUT_SERVER/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
+            git fetch --no-tags --no-recurse-submodules origin \
+            '+refs/heads/*:refs/remotes/origin/*' "$CHECKOUT_SHA"
+          GIT_LFS_SKIP_SMUDGE=1 git checkout --detach "$CHECKOUT_SHA"
+          test "$(git rev-parse HEAD)" = "$CHECKOUT_SHA"
+      - name: Set up pinned Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.9.25'
+          cache: pip
+          cache-dependency-path: dev/requirements-research-ci.txt
+      - name: Install unchanged isolated dependencies
+        run: |
+          python -m pip install -r dev/requirements-research-ci.txt
+          python -m pip check
+      - name: Verify actual admission counterexamples and synthetic compatibility
+        run: >-
+          python -B -m pytest tests/market_admission tests/model_readiness tests/market_structure
+          -q -p no:cacheprovider --tb=short --durations=15
+          --basetemp="${{ runner.temp }}/market-admission-tests"
+          --cov=qbot.research.data.admission
+          --cov-report=xml:results/diagnostics/ci/market-admission/coverage.xml
+          --junitxml=results/diagnostics/ci/market-admission/junit.xml
+      - name: Preserve actual software evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: market-admission-${{ github.run_id }}-${{ github.run_attempt }}
+          path: results/diagnostics/ci/market-admission/
+          retention-days: 90
+          if-no-files-found: error

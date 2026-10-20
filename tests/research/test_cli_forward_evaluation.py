@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.usefixtures("synthetic_cli_admission")
+
 from qbot.research import cli
 from qbot.research.config import (
     DataConfig, EvaluationConfig, ForwardConfig, PathsConfig,
