@@ -43,7 +43,8 @@ jobs:
           GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.$CHECKOUT_SERVER/.extraheader" \
             GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
             git fetch --no-tags --no-recurse-submodules origin \
-            '+refs/heads/*:refs/remotes/origin/*' "$CHECKOUT_SHA"
+            '+refs/heads/*:refs/remotes/origin/*' "$CHECKOUT_SHA" \
+            '8407a347e38bf65ef8e2d0e4d8aeed24bb494500'
           GIT_LFS_SKIP_SMUDGE=1 git checkout --detach "$CHECKOUT_SHA"
           test "$(git rev-parse HEAD)" = "$CHECKOUT_SHA"
       - name: Set up pinned Python

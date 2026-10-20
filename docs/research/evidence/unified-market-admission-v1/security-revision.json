@@ -2258,12 +2258,16 @@
       "approved_blob": "322d832da600f17e44af7a4d55d177bbe984be8c",
       "before_blob": null
     },
+    "tests/evidence/test_pit_archive_verifiers.py": {
+      "approved_blob": "f85798357b1156b01a0f4b4df696cca02eb4ed61",
+      "before_blob": "2c4af40be569534b41128fb61cd4a45eb6cd8bc2"
+    },
     "tests/market_admission/test_admission.py": {
       "approved_blob": "0812f6f5ff95248735824cc9a57ac641f976f35e",
       "before_blob": null
     },
     "tests/market_admission/test_revision_contract.py": {
-      "approved_blob": "2b8e865b87b340575d2f3085201bfaf39e704d5c",
+      "approved_blob": "2ee0c42a9fb693fa4f2e11e4424adfae19214bb2",
       "before_blob": null
     },
     "tests/market_structure/test_delivery.py": {
@@ -2283,8 +2287,12 @@
       "before_blob": "0e05d37a6cf45c9ccb51fc28c2fedd2bdc524605"
     },
     "tests/research/test_five_year_frozen_baseline.py": {
-      "approved_blob": "b95f0e35374a3d8e0b9688836a1053919ccd2e1c",
+      "approved_blob": "45a7207757a6fa40397b6f0e444471fdedf14135",
       "before_blob": "91a77235b0cd5e26b7fc1be4b249f5d101a8ec38"
+    },
+    "tests/research/test_phase1_file_pipeline.py": {
+      "approved_blob": "345b4a23a94e6aae6edf8a80e6abb2d4737144e4",
+      "before_blob": "45885d720d4c716a7de065b4b21a6d4d4f871b08"
     }
   },
   "schema": "FACTORLAB_SECURITY_ADMISSION_REVISION_V1"

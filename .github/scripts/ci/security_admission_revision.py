@@ -14,7 +14,7 @@ import subprocess
 
 BASE = "657486f8ca928c1e66b430f471cfe5ce96a613ab"
 RECEIPT = "docs/research/evidence/unified-market-admission-v1/security-revision.json"
-RECEIPT_SHA256 = "9b9a692c9f39c28453f8a3181505371a2a14371666663495cdfe7ae775aaf946"
+RECEIPT_SHA256 = "1248ebd4a42c1db899f6058af51e645dff9892dcf0e758fcd300bdb7e5065fdf"
 FILES = frozenset(
     (
         "qbot/research/cli.py",
@@ -32,6 +32,8 @@ FILES = frozenset(
         "tests/market_structure/test_delivery.py",
         "examples/research/review_yhh30m_release.py",
         "tests/market_admission/test_revision_contract.py",
+        "tests/evidence/test_pit_archive_verifiers.py",
+        "tests/research/test_phase1_file_pipeline.py",
     )
 )
 COVERAGE_FILES = frozenset(
@@ -91,3 +93,39 @@ def coverage_contract(root, expected):
     for contract in result["execution_by_platform"].values():
         contract["coverage_valid_lines"].update(revision["coverage_valid_lines"])
     return result
+
+
+def historical_protected_view(root, output):
+    """Replay archival text without pretending current security code is old.
+
+    The immutable archival verifier still checks its original hashes. First
+    verify every authorized current postimage, then materialize only approved
+    historical preimages. All other files retain the verifier's current reads.
+    No financial assertion or archival manifest is replaced.
+    """
+    root, output = Path(root), Path(output)
+    revision = load_revision(root)
+    if revision is None:
+        raise ValueError("Missing current security revision for archival view")
+    release = json.loads(
+        (
+            root
+            / "docs/research/evidence/audit-pit-release-20261018-v1/release-manifest.json"
+        ).read_bytes()
+    )
+    snapshots = {}
+    for item in release["protected_contracts"]:
+        name = item["path"]
+        if name not in revision["files"]:
+            continue
+        content = subprocess.check_output(["git", "show", BASE + ":" + name], cwd=root)
+        normalized = content.replace(b"\r\n", b"\n")
+        if hashlib.sha256(normalized).hexdigest() != item["normalized_text_sha256"]:
+            raise ValueError(
+                "Archived security preimage does not match publication: " + name
+            )
+        target = output / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(normalized)
+        snapshots[name] = target
+    return snapshots

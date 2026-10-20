@@ -74,3 +74,22 @@ def test_rewriting_the_receipt_cannot_self_authorize_changes(revision_clone, mut
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="receipt digest changed"):
         security.load_revision(revision_clone)
+
+
+@pytest.mark.parametrize("name", ["qbot/research/cli.py", "qbot/research/data/providers/base.py", "qbot/research/data/providers/local.py"])
+def test_archival_view_requires_exact_current_security_and_original_preimages(revision_clone, tmp_path, name):
+    release = "docs/research/evidence/audit-pit-release-20261018-v1/release-manifest.json"
+    destination = revision_clone / release
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(ROOT / release, destination)
+    snapshots = security.historical_protected_view(revision_clone, tmp_path / "originals")
+    import hashlib
+    expected = {item["path"]: item["normalized_text_sha256"]
+                for item in json.loads(destination.read_bytes())["protected_contracts"]}
+    assert set(snapshots) == {"qbot/research/cli.py", "qbot/research/data/providers/base.py", "qbot/research/data/providers/local.py"}
+    assert all(hashlib.sha256(path.read_bytes()).hexdigest() == expected[key]
+               for key, path in snapshots.items())
+    current = revision_clone / name
+    current.write_bytes(current.read_bytes() + b"\n# unauthorized current change\n")
+    with pytest.raises(ValueError, match="Unregistered security admission bytes"):
+        security.historical_protected_view(revision_clone, tmp_path / "untrusted")
