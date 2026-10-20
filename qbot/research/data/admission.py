@@ -58,7 +58,7 @@ def assert_formal_market_admission(
     method = getattr(provider, "get_research_qualification", None)
     evidence = method() if callable(method) else None
     if evidence is None:
-        _reject("research requires replayable v2 qualification; provider has no qualification package")
+        _reject("research requires replayable v2 qualification; provider has no qualification package; schema-v1 bundles are diagnostic only")
     if type(evidence) is not MarketQualificationEvidence:
         _reject("typed replayable qualification evidence required; approval flags are not evidence")
     if (not isinstance(evidence.manifest_sha256, str)

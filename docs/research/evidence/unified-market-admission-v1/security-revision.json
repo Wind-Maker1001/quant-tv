@@ -2243,7 +2243,7 @@
       "before_blob": "8061af1868c6c4432df6b9bc4e219f8e95c83087"
     },
     "qbot/research/data/admission.py": {
-      "approved_blob": "9c9d8eb5a4ef29335e0ab7be244ba09983d95182",
+      "approved_blob": "ccbd40d6b88b4780f0eda4980936b6ae31269aaa",
       "before_blob": null
     },
     "qbot/research/data/providers/base.py": {
@@ -2271,7 +2271,7 @@
       "before_blob": "cf1dccf3c1474fe3de7a952cfae1ad0755028fe7"
     },
     "tests/model_readiness/test_comparison_contract.py": {
-      "approved_blob": "1e617b4c9237c41afe9afcf20f61f2c1520b2940",
+      "approved_blob": "fadf1ef0d6fcf2003c50755f0d50ba606c26cd09",
       "before_blob": "9d7bbe2943fa7ed8ec9e809cdf208a2f1264c257"
     },
     "tests/research/test_cli_forward_evaluation.py": {

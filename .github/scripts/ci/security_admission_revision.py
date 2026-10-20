@@ -14,7 +14,7 @@ import subprocess
 
 BASE = "657486f8ca928c1e66b430f471cfe5ce96a613ab"
 RECEIPT = "docs/research/evidence/unified-market-admission-v1/security-revision.json"
-RECEIPT_SHA256 = "4c7ce29bfab736b953470dd2b9ffe5e49c3abcbb2189486ec03208fbabc93b34"
+RECEIPT_SHA256 = "9b9a692c9f39c28453f8a3181505371a2a14371666663495cdfe7ae775aaf946"
 FILES = frozenset(
     (
         "qbot/research/cli.py",
