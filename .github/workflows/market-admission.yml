@@ -61,7 +61,7 @@ jobs:
           python -B -m pytest tests/market_admission tests/model_readiness tests/market_structure
           -q -p no:cacheprovider --tb=short --durations=15
           --basetemp="${{ runner.temp }}/market-admission-tests"
-          --cov=qbot.research.data.admission
+          --cov=qbot/research/data
           --cov-report=xml:results/diagnostics/ci/market-admission/coverage.xml
           --junitxml=results/diagnostics/ci/market-admission/junit.xml
       - name: Preserve actual software evidence
