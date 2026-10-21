@@ -1,0 +1,209 @@
+{
+  "cases": [
+    {
+      "class": "tests.model_readiness.test_readiness",
+      "function": "test_complete_small_software_acceptance_and_data_separation",
+      "original_case_name_sha256": "0fb15eec4124cfe0cbba50a1286e498d331d246169baefc7af84e1d92c5f8b80",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "55.150"
+    },
+    {
+      "class": "tests.model_readiness.test_readiness",
+      "function": "test_native_resources_cover_every_stage",
+      "original_case_name_sha256": "42322ade5169bd071d9be5ad26ba4e8731ae832093b2b3363a01309ad991fb54",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.002"
+    },
+    {
+      "class": "tests.model_readiness.test_readiness",
+      "function": "test_label_windows_remove_unmatured_and_boundary_rows_even_without_gaps",
+      "original_case_name_sha256": "4862b25a8cb79036edd42c837f8638ddc24bd3bcc1727eacfa0df81c945ddbd8",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "3.306"
+    },
+    {
+      "class": "tests.model_readiness.test_readiness",
+      "function": "test_statistics_reuse_and_serial_dependence_counterexample",
+      "original_case_name_sha256": "bc91184a4fff13b64fd07870fe79376993fe74ffde7c422fc51797187b3e9628",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.002"
+    },
+    {
+      "class": "tests.model_readiness.test_readiness",
+      "function": "test_joint_missing_rankic_does_not_become_difference_of_unpaired_means",
+      "original_case_name_sha256": "ec16bafa6fcda7b9939648d4a9ed822eeac3238e6a120eccbaeff32e462f168a",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.166"
+    },
+    {
+      "class": "tests.model_readiness.test_readiness",
+      "function": "test_failure_receipt_keeps_exact_stage_and_exception",
+      "original_case_name_sha256": "275afe8b9408aadf73b5afc90d7700916d85402a178bd8c537fb826f845b2726",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.018"
+    },
+    {
+      "class": "tests.model_readiness.test_readiness",
+      "function": "test_reused_output_refused_to_prevent_stale_acceptance",
+      "original_case_name_sha256": "a8ecf1c80e2ae461a0226c962c68a51a93d51e2ea02ee4ae2c43bca0e942f634",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.001"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_independent_framed_reference_matches_git_and_crlf_worktree",
+      "original_case_name_sha256": "c9d59ed5a74ed1b0117b874b4c8c3ee594601819c331fe6322be9c0698f5f914",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.894"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_non_eol_edits_including_bom_whitespace_and_final_newline_fail",
+      "original_case_name_sha256": "8abb4a68c96a7bd265914c3dbf12e523103b3ddb5b34c4e4e7a44be599a5e640",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.513"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_non_eol_edits_including_bom_whitespace_and_final_newline_fail",
+      "original_case_name_sha256": "7347d0230571993bf9d79175c96c433bda3bc3c8e29a515567c5813a4f518512",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.544"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_non_eol_edits_including_bom_whitespace_and_final_newline_fail",
+      "original_case_name_sha256": "0d6a3a8f4d633deb29eeb25cbc4923f01ddfb54d35d17771df5bc67812e3db8d",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.510"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_non_eol_edits_including_bom_whitespace_and_final_newline_fail",
+      "original_case_name_sha256": "228555975915a0e40a0dadf5aa853ddfbb7efb66e97232355753904a153d171a",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.536"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_extra_untracked_or_ignored_source_cannot_be_silently_omitted",
+      "original_case_name_sha256": "fee5ed484664e643c1bb9891e1b52d889ea105895a3ac7f9d180c24e19e2340f",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.514"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_extra_untracked_or_ignored_source_cannot_be_silently_omitted",
+      "original_case_name_sha256": "0f873aad5406fc2df4d2429cf2b561a7ea9da7b7cc46b1b57bdbb3f275f21904",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.542"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_extra_untracked_or_ignored_source_cannot_be_silently_omitted",
+      "original_case_name_sha256": "2dc91fc44ad9cef71efa07184caac9331684a3d596a2216f36a3032a66f55ade",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.564"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_extra_untracked_or_ignored_source_cannot_be_silently_omitted",
+      "original_case_name_sha256": "b064543e8b9056048bdc848b381042a8cbf27eae60edd13d90961c8b7a40ad43",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.532"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_missing_source_fails",
+      "original_case_name_sha256": "1e1149cbefe9eb7513419a5beb4937f9ff8b87fff52c48ee2d70beda1dabfd9c",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.511"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_unsupported_source_encoding_or_bare_cr_is_rejected",
+      "original_case_name_sha256": "98407e4db8c72695b28f9b701ec48929522ff76d899007dad9844ff830b5dd16",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.543"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_unsupported_source_encoding_or_bare_cr_is_rejected",
+      "original_case_name_sha256": "dfa2b7df09cd082e18865028695c2cec4ac9578d21ccec0891875f9c11b52c41",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.530"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_raw_eol_change_during_run_fails_even_when_canonical_identity_matches",
+      "original_case_name_sha256": "f326176be87b32ec6067506a3345dbe9fe8038e34723876b665fb60ca88af1d1",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.756"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_commit_change_during_run_is_not_hidden_by_equal_source",
+      "original_case_name_sha256": "5df99b7cd730cfcced1bffdc3c1e17321d743ef57bea086a94c75d9bca6d6d7c",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.834"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_file_name_and_record_boundaries_are_part_of_contract",
+      "original_case_name_sha256": "644fac3674a366ddfcae1abea498b1ab93ea7db970acb7c16a30dafc5f89754c",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.000"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_inherited_git_routing_cannot_redirect_source_snapshot",
+      "original_case_name_sha256": "de5adb003cec43719244bacfc4ea1a10fac7126b95ea31659e98c21b3e9a2d08",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.838"
+    },
+    {
+      "class": "tests.model_readiness.test_source_identity",
+      "function": "test_historical_git_blobs_and_eol_map_reconstruct_original_raw_receipt",
+      "original_case_name_sha256": "35cc3096dc2ea92e4027bfc16228552eb392321987d4a090005296ca5b2abb44",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "7.619"
+    }
+  ],
+  "counts": {
+    "error": 0,
+    "failure": 0,
+    "passed": 24,
+    "skipped": 0,
+    "tests": 24
+  },
+  "is_original": false,
+  "original_blob": "d83ce90425c751ead69a1fc19dbe71b552d972f2",
+  "original_commit": "2198d393b75fbccfa05d49ada57cdf6703c12bb8",
+  "original_sha256": "2f80b36395ddacb009d7c47a3f7b5f959faf171ee7f2d21cf518f0701cf3b650",
+  "redaction": "Machine identity, failure payloads and parameter values are represented by SHA256; original outcomes are preserved. This is historical evidence, not current execution.",
+  "schema": "HISTORICAL_JUNIT_PUBLIC_PROJECTION_V1"
+}

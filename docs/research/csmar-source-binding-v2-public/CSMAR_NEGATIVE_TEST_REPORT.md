@@ -1,0 +1,34 @@
+Public derivative of historical report. Original SHA256: 83ca9043bad2026e75169b8392787fba8628a79fbe1a043f1dee78763d15b769. Local references are redacted; historical conclusions are retained. This is not the original file or current execution evidence.
+
+# CSMAR拒绝与篡改测试报告
+
+2026-10-21。NO LIVE MONEY。合成夹具全部由测试代码动态生成，带SYNTHETIC标识；不提交真实金融行，不授予金融资格。
+
+最终代码相关安全回归：464 passed、0 failed、0 skipped，191.72秒，包含全部62项新增适配器用例及现有资格、Provider、PIT、复权、准入边界。较早的独立适配器轮次62 passed、0 failed、0 skipped，6.68秒；原资格及来源边界另一轮125 passed，58.12秒，其中尚未包含后来3个并发字节篡改用例及最后的诊断快照加强。数字有重叠，不能相加当作唯一测试数。原JUnit保留，最终汇总/哈希见IMPLEMENTATION_MANIFEST。
+
+|场景|实际拒绝依据/自动化用例|
+|---|---|
+|ZIP字节篡改、ZIP成员SHA改变|test_reject_source_and_contract_tampering|
+|缺字典、未知字典、原生单位改为手|test_reject_source_and_contract_tampering；精确DES版本和单位行双检查|
+|代码丢前导零、非法日期、未知市场/状态、缺值、非法量价|test_reject_ambiguous_codes_dates_currency_fill_and_values|
+|日期选区倒置、工作表截断、缺sheet、重复主键|test_reject_source_and_contract_tampering|
+|填充价格被当真实成交|test_filled_prices_never_enter_raw_as_trades；RAW四价必须为空，native原价仍在|
+|000906或错误名称冒充000905|test_no_wrong_index_substitution|
+|币种指数后缀被剥除|test_native_currency_index_variants_are_excluded_without_stripping_suffix；完整扫描并计数排除|
+|原件与Parquet不一致，连同Parquet自哈希一起修改|test_candidate_adversarial_changes；仍须与原件重放一致|
+|只有Parquet、引用或旧资格，没有外部ZIP|test_candidate_adversarial_changes；test_complete_existing_qualification_recipe_copies_only_reference_and_rechecks_external_zip|
+|手写source_binding=PASS、formal_admission=true|test_candidate_adversarial_changes；候选不能假冒现有资格schema；原引擎重新计算报告|
+|synthetic原件冒充真实RAW|test_qualification_raw_reparse_and_all_other_roles_remain_unbound|
+|原价/因子冒充完整股票18列|test_diagnostic_uses_existing_provider_and_still_rejects_formal|
+|缺完整v2、Provider自行发资格|同上；复用原正式入口拒绝|
+|验证中原件字节真实改变|test_actual_original_bytes_change_while_native_rows_are_consumed|
+|验证中候选manifest或引用字节真实改变|test_actual_candidate_or_reference_changes_during_verification|
+|ZIP相对穿越、绝对路径、盘符、Windows反斜杠|test_reject_malicious_zip_paths；检查orig_filename，不能只看规范化后的filename|
+|嵌套XLSX公式、外部关系、ZIP重复项、压缩炸弹、非法文件类型|test_nested_zip_and_workbook_attack_surfaces|
+|XML实体、UTF16空字节绕过、超大成员、超预算选区|SafeXML拒绝DTD/ENTITY/空字节；test_xml_entity_formula_and_resource_limits及test_selected_byte_budget_and_unconfigured_operator_root；UTF16空字节分支由代码审查确认，未单列专门用例|
+|未配置操作员根、解析器/映射/依赖变化|test_selected_byte_budget_and_unconfigured_operator_root及版本篡改参数化用例|
+|当前成员回填历史、499伪装500、缺历史身份、因子缺事件/锚点|保留原test_universe_phase1、test_qualification_admission_boundaries、test_market_data_qualification、test_adjustment_foundation及tests/market_admission拒绝用例；相关453项回归已通过，最终广义回归另列重放报告|
+
+原有测试预期没有修改。_unbound_real_roles、assert_formal_market_admission及Provider准入条件未放宽。金融未知不能由软件夹具、手工review或哈希自声明升级。
+
+失败轮次保留：最初49/50通过时，Windows的ZipInfo在构造对象时规范化反斜杠，原始头名检查缺失；修复后拒绝恶意头名。真实首轮拒绝4.0状态枚举；第二轮解析期间代码变化导致独立重放版本检查拒绝；第三轮拒绝同工作簿中的非目标币种指数标识。均作为失败或合同发现记录，不改为PASS；最终重建输出采用固定代码SHA。
