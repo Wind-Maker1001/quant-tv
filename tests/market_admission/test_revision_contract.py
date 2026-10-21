@@ -26,7 +26,7 @@ def revision_clone(tmp_path):
         ["git", "clone", "--shared", "--no-checkout", str(ROOT), str(root)],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
-    for name in security.FILES | {security.RECEIPT, ".gitattributes", controller.SECURITY_ANCHOR, controller.SECURITY_WORKFLOW} | set(controller.SECURITY_CONTROL_FILES):
+    for name in security.PRESERVATION_FILES | {security.RECEIPT, ".gitattributes", controller.SECURITY_ANCHOR, controller.SECURITY_WORKFLOW} | set(controller.SECURITY_CONTROL_FILES):
         source = ROOT / name
         if source.is_file():
             destination = root / name
@@ -41,13 +41,18 @@ def test_revision_preserves_all_legacy_collection_and_outcome_requirements():
     adjusted = security.coverage_contract(ROOT, expected)
     assert expected == original
     assert adjusted.keys() == expected.keys()
-    for key in expected.keys() - {"execution_by_platform"}:
+    collection_keys = {part + suffix for part in ("all_ids", "selected_ids", "deselected_ids")
+                       for suffix in ("_count", "_sha256")}
+    for key in expected.keys() - {"execution_by_platform"} - collection_keys:
         assert adjusted[key] == expected[key]
+    delta = security.read_registry(ROOT)["execution_delta"]
+    for part in ("all_ids", "selected_ids", "deselected_ids"):
+        assert adjusted[part + "_count"] == expected[part + "_count"] + len(delta["added"][part])
     for family, contract in expected["execution_by_platform"].items():
-        for key in contract.keys() - {"coverage_valid_lines"}:
+        for key in contract.keys() - {"coverage_valid_lines", "outcomes_sha256"}:
             assert adjusted["execution_by_platform"][family][key] == contract[key]
         current = adjusted["execution_by_platform"][family]["coverage_valid_lines"]
-        for name in set(contract["coverage_valid_lines"]) - security.COVERAGE_FILES:
+        for name in set(contract["coverage_valid_lines"]) - security.COVERAGE_FILES - set(security.read_registry(ROOT)["coverage_valid_lines"]):
             assert current[name] == contract["coverage_valid_lines"][name]
     assert security.load_revision(ROOT)["base_commit"] == security.BASE
 
@@ -87,7 +92,7 @@ def test_archival_view_requires_exact_current_security_and_original_preimages(re
     import hashlib
     expected = {item["path"]: item["normalized_text_sha256"]
                 for item in json.loads(destination.read_bytes())["protected_contracts"]}
-    assert set(snapshots) == {"qbot/research/cli.py", "qbot/research/data/providers/base.py", "qbot/research/data/providers/local.py"}
+    assert set(snapshots) == {"qbot/research/cli.py", "qbot/research/data/providers/base.py", "qbot/research/data/providers/local.py", "qbot/research/data/market_qualification.py"}
     assert all(hashlib.sha256(path.read_bytes()).hexdigest() == expected[key]
                for key, path in snapshots.items())
     current = revision_clone / name
