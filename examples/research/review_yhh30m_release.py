@@ -136,7 +136,10 @@ def c01_literal_inventory(repo, name, revision, security, matches):
                            for m in ABS.finditer(URL.sub("REMOTE_URL", value))
                            if m.group() != chr(47))
         return Counter(token for _, _, token in matches) == original
-    if name == getattr(security, "REGISTRY", None):
+    if name in {
+        getattr(security, "REGISTRY", None),
+        "docs/research/evidence/c01-solo-v1/version-registry.json",
+    }:
         prefix = ("tests/research/test_csmar_source_binding.py::"
                   "test_reject_malicious_zip_paths[")
         values = {prefix + part + "evil]" for part in (chr(47), "C:" + chr(47))}

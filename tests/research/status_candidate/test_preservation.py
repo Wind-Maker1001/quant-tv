@@ -8,6 +8,8 @@ import pytest
 
 from qbot.research.diagnostics.model_readiness.source_identity import source_snapshot
 from tests.research.test_c01_preservation import candidate, control  # noqa: F401
+from tests.market_structure.test_c01_publication_safety import collected_attacks
+from examples.research.review_yhh30m_release import c01_literal_inventory
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -48,3 +50,14 @@ def test_status_or_historical_control_change_is_rejected(candidate, control, mut
 def test_old_version_cannot_be_selected_by_new_package(control):
     with pytest.raises(ValueError, match='Unregistered C01 version'):
         control.validate_preservation(ROOT, 'CSMAR_RAW_SOLO_PRESERVATION_V2')
+
+
+@pytest.mark.parametrize('version', ['current', 'predecessor'])
+def test_versioned_registry_literals_remain_finite(control, version):
+    name = (control.REGISTRY if version == 'current'
+            else 'docs/research/evidence/c01-solo-v1/version-registry.json')
+    revision = control.load_revision(ROOT)
+    attacks = collected_attacks()
+    assert c01_literal_inventory(ROOT, name, revision, control, attacks)
+    assert not c01_literal_inventory(ROOT, name, revision, control, attacks + [attacks[0]])
+    assert not c01_literal_inventory(ROOT, name+'-unregistered', revision, control, attacks)

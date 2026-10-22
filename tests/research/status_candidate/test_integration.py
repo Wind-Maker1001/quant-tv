@@ -13,6 +13,8 @@ from qbot.research.data.evidence import snapshot_file
 from qbot.research.data.market_qualification import qualify_market_data
 from qbot.research.errors import ProviderError, SecurityStatusDataError
 from qbot.research.universe.historical_status import HistoricalStatus
+from qbot.research.universe.identity import IdentitySnapshot, SecurityIdentity
+from qbot.research.errors import DataQualityError
 from qbot.research.universe.status import validate_security_data
 from qbot.research.universe.status_candidate import EvidenceError
 from qbot.research.universe.status_candidate.ingest import sha256
@@ -73,6 +75,8 @@ def test_announcement_effective_end_record_and_knowledge_are_distinct(make_bundl
     assert e['historical_known_at'] is None and e['first_available_at'] is None
     assert set(r['decision_status'].values()) == {'UNKNOWN'}
     assert r['historical_known_at'] == 'UNKNOWN'
+    assert r['source_recorded_at'] == 'UNKNOWN'
+    assert r['source_acquired_at'] != e['event_date']
     assert query(a, '2024-01-03')['facts']['st_risk_status'] == 'UNKNOWN'
 
 
@@ -159,3 +163,32 @@ def test_synthetic_layout_cannot_enter_real_loader(make_bundle):
     source = snapshot_file(f['path'], 'SYNTHETIC_STATUS', '2026-10-22T00:00:00+08:00')
     with pytest.raises(EvidenceError, match='SYNTHETIC_INPUT_NOT_REAL_ADMISSION'):
         HistoricalStatus.load(source)
+
+
+@pytest.mark.parametrize('case', ['valid', 'gap', 'future', 'altered', 'ambiguous'])
+def test_existing_identity_resolution_and_source_checks(make_bundle, tmp_path, case):
+    f = make_bundle(); source = snapshot_file(f['path'], 'SYNTHETIC_STATUS',
+                                               '2026-10-22T00:00:00+08:00')
+    p = tmp_path/'identity.json'; p.write_text('{"synthetic_identity":true}', encoding='utf-8')
+    artifact = snapshot_file(p, 'SYNTHETIC_IDENTITY', '2026-10-22T00:00:00+08:00')
+    item = SecurityIdentity('synthetic-stable-security', '000001.SZ',
+        '2024-01-03' if case == 'gap' else '2024-01-02', '2024-01-04',
+        '2020-01-01', '2024-01-03' if case == 'future' else '2023-12-31',
+        artifact.sha256, security_type='A_SHARE')
+    identity = IdentitySnapshot((item, item) if case == 'ambiguous' else (item,),
+                                (artifact,), synthetic_only=True)
+    if case == 'ambiguous':
+        with pytest.raises(DataQualityError, match='overlapping'):
+            HistoricalStatus.load(source, identity=identity, allow_synthetic=True)
+        return
+    a = HistoricalStatus.load(source, identity=identity, allow_synthetic=True)
+    if case == 'altered':
+        p.write_bytes(b'altered')
+    if case == 'valid':
+        result = query(a)
+        assert result['security_id'] == 'synthetic-stable-security'
+        assert result['role_statuses']['IDENTITY'] == 'PARTIAL'
+        assert set(result['decision_status'].values()) == {'UNKNOWN'}
+    else:
+        with pytest.raises(DataQualityError):
+            query(a)

@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 from qbot.research.data.evidence import SourceArtifact, timestamp
+from qbot.research.universe.identity import IdentitySnapshot
 from qbot.research.universe.status import STATUS_COLUMNS
 from qbot.research.universe.status_candidate import Adapter, EvidenceError
 from qbot.research.universe.status_candidate.adapter import ROLE_STATUS
@@ -24,23 +25,31 @@ class HistoricalStatus:
 
     source: SourceArtifact
     candidate: Adapter
+    identity: IdentitySnapshot = None
 
     @classmethod
-    def load(cls, source: SourceArtifact, *, allow_synthetic=False):
+    def load(cls, source: SourceArtifact, *, identity=None, allow_synthetic=False):
         if type(source) is not SourceArtifact:
             raise EvidenceError("TYPED_SOURCE_ARTIFACT_REQUIRED")
         source.read()
+        if identity is not None:
+            if type(identity) is not IdentitySnapshot:
+                raise EvidenceError("TYPED_IDENTITY_SNAPSHOT_REQUIRED")
+            identity.validate()
+            if identity.synthetic_only and not allow_synthetic:
+                raise EvidenceError("SYNTHETIC_IDENTITY_NOT_REAL_ADMISSION")
         candidate = Adapter.load(source.path, source.sha256,
                                  allow_synthetic=allow_synthetic)
         source.read()
-        return cls(source, candidate)
+        return cls(source, candidate, identity)
 
     def query(self, symbol, trading_date, *, decision_at):
         """Return field facts plus a conservative research-decision projection.
 
-        Announcement, effective interval, event/source record date, publication
+        Announcement, effective interval, event date, publication
         and retrieval dates remain distinct in ``facts.official_evidence``.
-        None substitutes for unsupported first-availability/vintage evidence.
+        Source record time is unavailable and remains UNKNOWN. None substitutes
+        for unsupported first-availability/vintage evidence.
         Conflicting facts remain UNKNOWN with explicit SOURCE_CONFLICT.
         """
         cutoff = timestamp(decision_at)
@@ -49,6 +58,12 @@ class HistoricalStatus:
         self.source.read()
         if self.source.sha256 != self.candidate.bundle_sha256:
             raise EvidenceError("SOURCE_ARTIFACT_BUNDLE_IDENTITY_MISMATCH")
+        security_id = "UNKNOWN"
+        if self.identity is not None:
+            date = pd.Timestamp(trading_date)
+            resolved = self.identity.resolve(
+                pd.DataFrame([{"date": date, "symbol": symbol}]), {date: decision_at})
+            security_id = resolved.iloc[0].security_id
         facts = self.candidate.evaluate(symbol, trading_date)
         self.source.read()
         return {
@@ -57,6 +72,9 @@ class HistoricalStatus:
             "source_id": self.source.source_id,
             "source_version": "historical-status-candidate:" + self.source.sha256,
             "source_sha256": self.source.sha256,
+            "source_acquired_at": self.source.acquired_at,
+            "source_recorded_at": "UNKNOWN",
+            "security_id": security_id,
             "facts": facts,
             "decision_status": {"listing_status": "UNKNOWN",
                                 "st_risk_status": "UNKNOWN",
