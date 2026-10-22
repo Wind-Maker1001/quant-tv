@@ -46,9 +46,10 @@ def test_original_research_evidence_and_factor_parameters_are_frozen(tmp_path):
         "qbot/research/data/providers/local.py", "tests/research/test_cli_phase2.py",
         "tests/research/test_cli_forward_evaluation.py",
         "tests/research/test_phase1_file_pipeline.py",
+        "qbot/research/data/market_qualification.py",
     }
     assert set(result["exact_security_postimages"]) == security_paths
-    assert result["unchanged_financial_and_other_files"] == 461
+    assert result["unchanged_financial_and_other_files"] == 460
     assert protected.intersection(changed) == migration.ENGINEERING_PATHS | security_paths
     environment = os.environ.copy()
     environment["PYTHONPATH"] = str(scripts) + os.pathsep + environment.get("PYTHONPATH", "")

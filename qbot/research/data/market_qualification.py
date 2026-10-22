@@ -2,7 +2,7 @@
 
 No arbitrary PASS input or verified boolean promotes a data source. Byte
 hashes and normalized table hashes alone do not bind one to the other. TDX
-DAY candidate RAW is reparsed; all remaining real source contracts currently
+DAY and scoped CSMAR ZIP candidate RAW are reparsed; remaining real contracts
 fail closed, even with complete local review declarations. Synthetic evidence
 is never research eligible.
 """
@@ -24,7 +24,8 @@ from qbot.research.data.adjustment.contracts import AdjustmentAnchor, SourceAdju
 from qbot.research.data.adjustment.engine import build_hfq
 from qbot.research.data.adjustment.validation import validate_adjustment
 from qbot.research.data.corporate_actions.contracts import CorporateAction, EventCoverage, EventView, SourceSnapshot
-from qbot.research.data.evidence import SourceArtifact, date, fail, implementation_sha256, json_bytes, require_text, sha256, table_sha256, timestamp
+from qbot.research.data.evidence import SourceArtifact, date, fail, json_bytes, require_text, sha256, table_sha256, timestamp
+from qbot.research.data.csmar.fingerprint import implementation_sha256
 from qbot.research.data.tdx import read_snapshot, safe_path
 from qbot.research.data.units import UnitContract
 from qbot.research.errors import DataQualityError
@@ -101,6 +102,13 @@ def _reparse_raw(inputs: QualificationInputs, synthetic: bool) -> bool:
     supported = True
     for artifact in inputs.raw_sources:
         content = artifact.read()
+        if artifact.source_id == "CSMAR_ZIP_REFERENCE_V1":
+            from qbot.research.data.csmar.binding import replay_artifact
+            frame = replay_artifact(artifact, synthetic=synthetic)
+            if not set(inputs.raw.columns).issubset(frame.columns):
+                fail("CSMAR RAW columns lack a reparsed source contract")
+            parsed.append(frame[list(inputs.raw.columns)])
+            continue
         if artifact.source_id != "TDX_DAY_BYTES_V1":
             supported = False
             continue
@@ -192,18 +200,7 @@ def qualify_market_data(inputs: QualificationInputs, required_keys: pd.DataFrame
                         calendar: pd.DatetimeIndex, *, stocks: pd.DataFrame,
                         benchmark: pd.DataFrame) -> QualificationReport:
     from qbot.research.data.assemble import assemble_market_data
-    import qbot.research.data.assemble as assembly_module
-    import qbot.research.data.adjustment.engine as engine_module
-    import qbot.research.data.adjustment.validation as adjustment_validation
-    import qbot.research.data.corporate_actions.validation as event_validation
-    import qbot.research.data.units as units_module
-    import qbot.research.universe.identity as identity_module
-    import qbot.research.data.evidence as evidence_module
-    import qbot.research.data.tdx as tdx_module
-    implementation = implementation_sha256([__file__, assembly_module.__file__, engine_module.__file__,
-                                             adjustment_validation.__file__, event_validation.__file__,
-                                             units_module.__file__, identity_module.__file__, evidence_module.__file__,
-                                             tdx_module.__file__])
+    implementation = implementation_sha256("qualification")
     stages = {name: "INCOMPLETE" for name in ("RAW", "ADJUSTMENT", "STATUS", "PIT", "SOURCE_BINDING", "FORMAL")}
     issues = []
     if not isinstance(inputs.synthetic_only, bool):

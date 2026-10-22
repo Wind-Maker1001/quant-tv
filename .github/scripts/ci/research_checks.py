@@ -13,10 +13,17 @@ ROOT = Path(__file__).resolve().parents[3]
 SCOPES = ("qbot/research", "tests/research", "examples/research", ".github/scripts/ci")
 SECURITY_CHECKER_PATH = ".github/scripts/ci/security_admission_revision.py"
 CHECKER_SHA256 = "1ce0b775debcb7961fda9acf3a1b9a329ab21f5d7029fd20d9fcf0fcd7cf219f"
-SECURITY_ANCHOR = "docs/research/evidence/unified-market-admission-v1/trust-anchor.json"
+SECURITY_ANCHOR = "docs/research/evidence/c01-solo-v1/trust-anchor.json"
 SECURITY_WORKFLOW = ".github/workflows/market-admission.yml"
+C01_CHECKER_PATH = ".github/scripts/ci/c01_preservation.py"
+C01_REGISTRY = "docs/research/evidence/c01-solo-v1/version-registry.json"
 SECURITY_CONTROL_FILES = frozenset(
-    (SECURITY_CHECKER_PATH, ".github/scripts/ci/research_checks.py")
+    (
+        SECURITY_CHECKER_PATH,
+        ".github/scripts/ci/research_checks.py",
+        C01_CHECKER_PATH,
+        C01_REGISTRY,
+    )
 )
 
 
@@ -36,7 +43,7 @@ def verified_security_control(root):
         anchor = json.loads(raw)
         if (
             set(anchor) != {"schema", "files"}
-            or anchor["schema"] != "FACTORLAB_SECURITY_CONTROL_ANCHOR_V1"
+            or anchor["schema"] != "FACTORLAB_C01_SOLO_CONTROL_ANCHOR_V1"
         ):
             raise ValueError("trust anchor schema changed")
         if set(anchor["files"]) != SECURITY_CONTROL_FILES:
@@ -49,7 +56,7 @@ def verified_security_control(root):
             bodies[name] = body
         if hashlib.sha256(bodies[SECURITY_CHECKER_PATH]).hexdigest() != CHECKER_SHA256:
             raise ValueError("checker changed")
-        return bodies[SECURITY_CHECKER_PATH]
+        return bodies
     except (OSError, ValueError, KeyError, TypeError) as exc:
         raise ValueError(
             "Independent security checker pin mismatch: " + str(exc)
@@ -71,10 +78,16 @@ def load_security_revision(root):
         )
         else ROOT
     )
-    body = verified_security_control(candidate)
+    bodies = verified_security_control(candidate)
     module = ModuleType("independently_verified_security_revision")
-    module.__file__ = str(candidate / SECURITY_CHECKER_PATH)
-    exec(compile(body, module.__file__, "exec"), module.__dict__)
+    module.__file__ = str(candidate / C01_CHECKER_PATH)
+    exec(compile(bodies[C01_CHECKER_PATH], module.__file__, "exec"), module.__dict__)
+    module.configure(
+        candidate,
+        hashlib.sha256(bodies[C01_REGISTRY]).hexdigest(),
+        {name: hashlib.sha256(body).hexdigest() for name, body in bodies.items()},
+        (ROOT / SECURITY_WORKFLOW).read_bytes().replace(b"\r\n", b"\n"),
+    )
     if set(module.FILES) & (
         SECURITY_CONTROL_FILES | {SECURITY_WORKFLOW, SECURITY_ANCHOR}
     ):

@@ -1,0 +1,3 @@
+# Preserve exact raw evidence bytes, including traceback and patch context spaces.
+market-qualification.diff whitespace=-blank-at-eol
+evidence/regression-junit.xml whitespace=-blank-at-eol

@@ -1,0 +1,3 @@
+# The workflow pin binds exact JSON bytes on Windows and Linux.
+trust-anchor.json text eol=lf
+version-registry.json text eol=lf

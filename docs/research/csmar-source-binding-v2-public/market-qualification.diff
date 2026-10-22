@@ -1,0 +1,43 @@
+diff --git a/qbot/research/data/market_qualification.py b/qbot/research/data/market_qualification.py
+index ae6d755..fae1a57 100644
+--- a/qbot/research/data/market_qualification.py
++++ b/qbot/research/data/market_qualification.py
+@@ -2,7 +2,7 @@
+ 
+ No arbitrary PASS input or verified boolean promotes a data source. Byte
+ hashes and normalized table hashes alone do not bind one to the other. TDX
+-DAY candidate RAW is reparsed; all remaining real source contracts currently
++DAY and scoped CSMAR ZIP candidate RAW are reparsed; remaining real contracts
+ fail closed, even with complete local review declarations. Synthetic evidence
+ is never research eligible.
+ """
+@@ -101,6 +101,13 @@ def _reparse_raw(inputs: QualificationInputs, synthetic: bool) -> bool:
+     supported = True
+     for artifact in inputs.raw_sources:
+         content = artifact.read()
++        if artifact.source_id == "CSMAR_ZIP_REFERENCE_V1":
++            from qbot.research.data.csmar.binding import replay_artifact
++            frame = replay_artifact(artifact, synthetic=synthetic)
++            if not set(inputs.raw.columns).issubset(frame.columns):
++                fail("CSMAR RAW columns lack a reparsed source contract")
++            parsed.append(frame[list(inputs.raw.columns)])
++            continue
+         if artifact.source_id != "TDX_DAY_BYTES_V1":
+             supported = False
+             continue
+@@ -200,10 +207,14 @@ def qualify_market_data(inputs: QualificationInputs, required_keys: pd.DataFrame
+     import qbot.research.universe.identity as identity_module
+     import qbot.research.data.evidence as evidence_module
+     import qbot.research.data.tdx as tdx_module
++    from qbot.research.data.csmar import binding as csmar_binding
++    from qbot.research.data.csmar import native as csmar_native
++    from qbot.research.data.csmar import profiles as csmar_profiles
+     implementation = implementation_sha256([__file__, assembly_module.__file__, engine_module.__file__,
+                                              adjustment_validation.__file__, event_validation.__file__,
+                                              units_module.__file__, identity_module.__file__, evidence_module.__file__,
+-                                             tdx_module.__file__])
++                                             tdx_module.__file__, csmar_binding.__file__,
++                                             csmar_native.__file__, csmar_profiles.__file__])
+     stages = {name: "INCOMPLETE" for name in ("RAW", "ADJUSTMENT", "STATUS", "PIT", "SOURCE_BINDING", "FORMAL")}
+     issues = []
+     if not isinstance(inputs.synthetic_only, bool):

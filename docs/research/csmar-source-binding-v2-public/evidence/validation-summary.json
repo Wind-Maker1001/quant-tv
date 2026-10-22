@@ -1,0 +1,753 @@
+{
+  "historical_claims_with_local_references_redacted": {
+    "audit_report_checks": {
+      "ADJUSTMENT_AUDIT.md": {
+        "delivery_manifest_sha256": "669c5e783ab4efa58d82d79db39a70528d50d9ea72dd332c5515a85e76e6df4f",
+        "sha256": "669c5e783ab4efa58d82d79db39a70528d50d9ea72dd332c5515a85e76e6df4f",
+        "status": "MATCH"
+      },
+      "ASSET_MANIFEST.json": {
+        "delivery_manifest_sha256": "e535ba287fcded49f2efe2565cda28f820af8999b7eb9c3329e5d69925615560",
+        "sha256": "e535ba287fcded49f2efe2565cda28f820af8999b7eb9c3329e5d69925615560",
+        "status": "MATCH"
+      },
+      "CANDIDATE_RECONSTRUCTION.json": {
+        "delivery_manifest_sha256": null,
+        "sha256": "8357863d8cb4cf714b888434e33c8b9ecbeae119faa0075ebb4a4d6481136e43",
+        "status": "NOT_BOUND_IN_DELIVERY"
+      },
+      "CSI500_MEMBERSHIP_COVERAGE.csv": {
+        "delivery_manifest_sha256": "6bb44262fb60f5b4bd1bb278e84b987f3329e7e4496598c5cb48c4faec3ec223",
+        "sha256": "6bb44262fb60f5b4bd1bb278e84b987f3329e7e4496598c5cb48c4faec3ec223",
+        "status": "MATCH"
+      },
+      "CSI500_OFFICIAL_EVENT_COMPARISON.csv": {
+        "delivery_manifest_sha256": null,
+        "sha256": "2d860e9690bea0e3950f5ff76e7cd82ea0500773a3c6ccde6f587bc709a9589d",
+        "status": "NOT_BOUND_IN_DELIVERY"
+      },
+      "DATA_COVERAGE_MATRIX.csv": {
+        "delivery_manifest_sha256": "37a05e7ded6abad9b628a851e50bc19f447dc35e2dcf48964128fe147758d97a",
+        "sha256": "37a05e7ded6abad9b628a851e50bc19f447dc35e2dcf48964128fe147758d97a",
+        "status": "MATCH"
+      },
+      "FORMAL_ADMISSION_MATRIX.json": {
+        "delivery_manifest_sha256": "2f11137eb1810006da37cfe071130f34c7bc9968865bfd17e5135b3cfcbb9c59",
+        "sha256": "2f11137eb1810006da37cfe071130f34c7bc9968865bfd17e5135b3cfcbb9c59",
+        "status": "MATCH"
+      },
+      "FULL_DATA_AUDIT_REPORT.md": {
+        "delivery_manifest_sha256": "47749a4cc323d568e787db1c60f100cc4d4ebf6d9e9d6252163f59b6cbc4e2fb",
+        "sha256": "47749a4cc323d568e787db1c60f100cc4d4ebf6d9e9d6252163f59b6cbc4e2fb",
+        "status": "MATCH"
+      },
+      "IDENTITY_STATUS_AUDIT.md": {
+        "delivery_manifest_sha256": "e626f84745419f09c54316afcceac08a0e6c4205dc95e5d23f4fd43013b16fe0",
+        "sha256": "e626f84745419f09c54316afcceac08a0e6c4205dc95e5d23f4fd43013b16fe0",
+        "status": "MATCH"
+      },
+      "MARKET_CHECKS.json": {
+        "delivery_manifest_sha256": null,
+        "sha256": "44e3643c6d6fe79518c6dfeb39c3ab75040b58b6a517e530e0a8fb8ff86af9c8",
+        "status": "NOT_BOUND_IN_DELIVERY"
+      },
+      "MISSING_DATA_REQUIREMENTS.md": {
+        "delivery_manifest_sha256": "59406240c6dfad9cd05bffec0da0a4e4cdeb29c906bd6a38f9e6f6440e8bbb42",
+        "sha256": "59406240c6dfad9cd05bffec0da0a4e4cdeb29c906bd6a38f9e6f6440e8bbb42",
+        "status": "MATCH"
+      },
+      "SOFTWARE_BOUNDARY_OBSERVATION.json": {
+        "delivery_manifest_sha256": null,
+        "sha256": "2d7c1d95adf82db11df8b00f063b625bd85f1dc7bfbe754f8cc72326addc3a19",
+        "status": "NOT_BOUND_IN_DELIVERY"
+      },
+      "TABLE_SCHEMA_INVENTORY.csv": {
+        "delivery_manifest_sha256": "a5310017e41ef2ae27be8ea39df06adfef7f7038e1bb2c0fecf9ee3512e3efdb",
+        "sha256": "a5310017e41ef2ae27be8ea39df06adfef7f7038e1bb2c0fecf9ee3512e3efdb",
+        "status": "MATCH"
+      }
+    },
+    "formal_status": "FORMAL_ADMISSION_BLOCKED",
+    "implementation_source_snapshot": {
+      "base_commit": "cc13795d144592b360e560a9b979e183d6b01907",
+      "files": {
+        "examples/research/csmar_source_binding_pilot.py": "450454b2135cc7ac491802e6f5ac1850e1b0a9cd5f8f9aef826e57a66e597baf",
+        "qbot/research/data/csmar/__init__.py": "7c758f10707f3559440340d9c8bcb805e982e6750469bb68c4f9b07513a3c373",
+        "qbot/research/data/csmar/__main__.py": "975a496d023dafc0f95989c2beb4795a70663e73c30a900f7413f44a7a15d7f9",
+        "qbot/research/data/csmar/binding.py": "eba4219cd42df98533ee823830356b7b548b59d29e6892e93670f9a3edca0119",
+        "qbot/research/data/csmar/native.py": "4676b593aaaf63b2076bfb1a5cc0b34b93e9e014667b1f0372b1c9d860f381e5",
+        "qbot/research/data/csmar/profiles.py": "3044d99b618fe9d5ba62945b83aede06f717ce71e1b544f407a70eca9d649570",
+        "qbot/research/data/market_qualification.py": "7f6ca67dcba2cca78669d63994b0b7204aceb19b6fbf4037485f81edf43d104c",
+        "tests/research/test_csmar_source_binding.py": "3e2c0b8be35d786d95d0f8b9447aa393d1a9f8c03cf870af5d78be9bd7c9cf87"
+      },
+      "scope": "final implementation and test source bytes; reports excluded"
+    },
+    "output_bytes": 702315,
+    "package_bytes": 28068,
+    "package_manifest_sha256": "691a9c55ea76083ce504471414095decbeec29a9b6ca99e4f00d36295cc01c17",
+    "qualification": {
+      "benchmark_sha256": "4df72b3bb071ad89b950b6ef86a4c050ee03678d47fffc5e84a2e16b7fd309da",
+      "execution_admission": false,
+      "formal_admission": false,
+      "implementation_sha256": "dd203e2a54aad6803c5b52f0db22fd3dbc1b4f31639e005ba722646cc9da2981",
+      "issues": [
+        "SOURCE_BINDING/PIT: deterministic upstream-to-normalized parser contract incomplete",
+        "SOURCE_BINDING/STATUS: deterministic upstream-to-normalized parser contract incomplete",
+        "SOURCE_BINDING/CALENDAR: deterministic upstream-to-normalized parser contract incomplete",
+        "SOURCE_BINDING/IDENTITY: deterministic upstream-to-normalized parser contract incomplete",
+        "SOURCE_BINDING/UNITS: deterministic upstream-to-normalized parser contract incomplete",
+        "SOURCE_BINDING/ADJUSTMENT: deterministic upstream-to-normalized parser contract incomplete",
+        "SOURCE_BINDING/REFERENCE: deterministic upstream-to-normalized parser contract incomplete",
+        "SOURCE_BINDING/BENCHMARK: deterministic upstream-to-normalized parser contract incomplete",
+        "SOURCE_BINDING/TURNOVER: deterministic upstream-to-normalized parser contract incomplete",
+        "SOURCE_BINDING/LISTINGS: deterministic upstream-to-normalized parser contract incomplete",
+        "SOURCE_BINDING/ANCHOR: deterministic upstream-to-normalized parser contract incomplete",
+        "ADJUSTMENT: MARKET DATA QUALIFICATION REQUIRED: adjustment recipes required",
+        "PIT: MARKET DATA QUALIFICATION REQUIRED: PIT membership required",
+        "STATUS: SECURITY STATUS DATA REQUIRED: point-in-time membership is empty",
+        "FORMAL: MARKET DATA QUALIFICATION REQUIRED: independent source time/coverage reviews are incomplete"
+      ],
+      "required_keys_sha256": "6e44f1d534d668348401495c254e0fa61f3c05d5c11756c3828c863b2aba69b6",
+      "schema": "FACTORLAB_MARKET_QUALIFICATION_V1",
+      "source_version": "local-csmar-snapshot:45676a0c928e5bb47e5a7c68b71d14afe2192928c326ebcf4ae8dfcc7d38299d",
+      "stages": {
+        "ADJUSTMENT": "INCOMPLETE",
+        "FORMAL": "INCOMPLETE",
+        "PIT": "INCOMPLETE",
+        "RAW": "PASS",
+        "SOURCE_BINDING": "INCOMPLETE",
+        "STATUS": "INCOMPLETE"
+      },
+      "stocks_sha256": "4d9ae93cc0efbcfc7c1fe9d9ef0f1765c06b4fe86bf5c87d9a0afa4f12ee5787",
+      "synthetic_only": false
+    },
+    "runtime": {
+      "pandas": "2.2.3",
+      "pyarrow": "17.0.0",
+      "python": "3.9.25"
+    },
+    "scope": "限定真实文件的软件来源重放；没有金融准入认证",
+    "scratch_remaining_files": 0,
+    "source_metadata_rechecked": 47,
+    "tables": [
+      {
+        "build_seconds": 148.3914879,
+        "dictionary_sha256": "12b4277c15ae5fa2f6b329480ff9e5df5cfe4903208bc84871751e5c29ad6a98",
+        "exact_replay": true,
+        "family": "TRDNEW_Dalyr",
+        "first_original_locator": {
+          "mapping_version": "csmar-native-candidate-v1",
+          "member": "TRDNEW_Dalyr.xlsx",
+          "member_sha256": "fb0d535a1c29820bd24f0f7a7a8dc451dfcc5b2e9ec5efc8c60789b770e62b3c",
+          "native_code": "000001",
+          "native_date": "2021-09-13",
+          "native_values_sha256": "ee985b07b2cab1043c0bb5989818b2d56fe63357a9eb8fed408f7c8ce5196c6e",
+          "row_number": 708,
+          "sheet": "sheet1",
+          "source_sha256": "45676a0c928e5bb47e5a7c68b71d14afe2192928c326ebcf4ae8dfcc7d38299d"
+        },
+        "lineage_sha256": "91b3a32a5c8764d0dbdd51896337f4998dc6f445a63986eba1e0f06e630e5cdd",
+        "maximum_numeric_difference": 0,
+        "member": "TRDNEW_Dalyr.xlsx",
+        "member_sha256": "fb0d535a1c29820bd24f0f7a7a8dc451dfcc5b2e9ec5efc8c60789b770e62b3c",
+        "native_sha256": "ed9ecfed82f4e37621f26b743620fbc950a6e63abe7b082d1ab16821ec0b34a2",
+        "parser_sha256": "6f8162caa5fa722133fc6b1292f20dd81b4ce49f0db98b90ecb2a657ae31cd6d",
+        "process_peak_bytes": 89706496,
+        "profile_sha256": "7e08bed13ec134a396704d2444d394664d6e8f7f3568dbc32546d6c769998c0f",
+        "raw_sha256": "4d9ae93cc0efbcfc7c1fe9d9ef0f1765c06b4fe86bf5c87d9a0afa4f12ee5787",
+        "replay_seconds": 128.701954,
+        "scanned_records": 1000000,
+        "scope": {
+          "codes": [
+            "000001"
+          ],
+          "end": "2021-09-17",
+          "start": "2021-09-13"
+        },
+        "selected_records": 5,
+        "source_bytes": 573864977,
+        "source_name": "日个股回报率文件231033555(仅供广东金融学院使用).zip",
+        "source_sha256": "45676a0c928e5bb47e5a7c68b71d14afe2192928c326ebcf4ae8dfcc7d38299d",
+        "supplier_acquired_at": null,
+        "supplier_version": "UNKNOWN"
+      },
+      {
+        "build_seconds": 58.8467707,
+        "dictionary_sha256": "c5ab3870f72ca2ca1740b85477c9e15276f379774b0ecb1f3ac62a343c340e34",
+        "exact_replay": true,
+        "family": "IDX_Idxtrd",
+        "first_original_locator": {
+          "mapping_version": "csmar-native-candidate-v1",
+          "member": "IDX_Idxtrd.xlsx",
+          "member_sha256": "27eebea0a3cb4dc32540dde04ff93f3d09db2a432978819afc66ffe7c7735d80",
+          "native_code": "000905",
+          "native_date": "2021-09-13",
+          "native_values_sha256": "a855fcdfb1fd73cdc629714a4ced333b2d377f46ca5baae81d3bd4f115bc4e91",
+          "row_number": 226618,
+          "sheet": "sheet1",
+          "source_sha256": "8dfe31501d16e9a561d6b0ae449adb680e5b6e9d7f5afd913db36178e43e2864"
+        },
+        "lineage_sha256": "38e40f15a642a92921c440b48f8ce39efe989f22dde6d639e9dd067599109dd1",
+        "maximum_numeric_difference": 0,
+        "member": "IDX_Idxtrd.xlsx",
+        "member_sha256": "27eebea0a3cb4dc32540dde04ff93f3d09db2a432978819afc66ffe7c7735d80",
+        "native_sha256": "990ffca0bb3bd9b1d066c6a345e3ceedf28b6f974a4f7cdd68e55d38cfeb256d",
+        "parser_sha256": "6f8162caa5fa722133fc6b1292f20dd81b4ce49f0db98b90ecb2a657ae31cd6d",
+        "process_peak_bytes": 89640960,
+        "profile_sha256": "7e08bed13ec134a396704d2444d394664d6e8f7f3568dbc32546d6c769998c0f",
+        "raw_sha256": "4df72b3bb071ad89b950b6ef86a4c050ee03678d47fffc5e84a2e16b7fd309da",
+        "replay_seconds": 62.9353526,
+        "scanned_records": 1000000,
+        "scope": {
+          "codes": [
+            "000905"
+          ],
+          "end": "2021-09-17",
+          "start": "2021-09-13"
+        },
+        "selected_records": 5,
+        "source_bytes": 186886052,
+        "source_name": "国内指数日行情文件185133137(仅供广东金融学院使用).zip",
+        "source_sha256": "8dfe31501d16e9a561d6b0ae449adb680e5b6e9d7f5afd913db36178e43e2864",
+        "supplier_acquired_at": null,
+        "supplier_version": "UNKNOWN"
+      },
+      {
+        "build_seconds": 1.3260146000000002,
+        "dictionary_sha256": "9b6559259c6ad56b96074da198da3a003f7624f4056842158f3248454b5d532a",
+        "exact_replay": true,
+        "family": "TRD_AdjustFactor",
+        "first_original_locator": {
+          "mapping_version": "csmar-native-candidate-v1",
+          "member": "TRD_AdjustFactor.xlsx",
+          "member_sha256": "785d72a7107179e1b54ee2383191918534b7f79fbaed62f3ef6f5a30ea1ad361",
+          "native_code": "000001",
+          "native_date": "2021-05-14",
+          "native_values_sha256": "bde708f1ad229df9cbd4aa935f0ab6aea5bdbe1da76d5d696ebb7e2d9dab0bf4",
+          "row_number": 27,
+          "sheet": "sheet1",
+          "source_sha256": "0446d79a45f58da58c13c9343e71df66496c13a0d5a073c411449fca98e969ea"
+        },
+        "lineage_sha256": "c28770193834ce9c08bcd7837eee4dfe422ae2c8f7480ed0599eddcb51bb8c05",
+        "maximum_numeric_difference": 0,
+        "member": "TRD_AdjustFactor.xlsx",
+        "member_sha256": "785d72a7107179e1b54ee2383191918534b7f79fbaed62f3ef6f5a30ea1ad361",
+        "native_sha256": "e5b83d3099e3c461e139f27bebded2f3a9016c6a9d02d443592b2d1718278e86",
+        "parser_sha256": "6f8162caa5fa722133fc6b1292f20dd81b4ce49f0db98b90ecb2a657ae31cd6d",
+        "process_peak_bytes": 88764416,
+        "profile_sha256": "7e08bed13ec134a396704d2444d394664d6e8f7f3568dbc32546d6c769998c0f",
+        "raw_sha256": "f6f1bd2ced12341e2fe7c3b557cc9e38084836f6b818cba7220cb2042fbf1b4c",
+        "replay_seconds": 1.3187092000000002,
+        "scanned_records": 62523,
+        "scope": {
+          "codes": [
+            "000001"
+          ],
+          "end": "2026-10-20",
+          "start": "2021-01-01"
+        },
+        "selected_records": 9,
+        "source_bytes": 2770124,
+        "source_name": "股票价格复权因子表(日)230731995(仅供广东金融学院使用).zip",
+        "source_sha256": "0446d79a45f58da58c13c9343e71df66496c13a0d5a073c411449fca98e969ea",
+        "supplier_acquired_at": null,
+        "supplier_version": "UNKNOWN"
+      },
+      {
+        "build_seconds": 0.7791718000000001,
+        "dictionary_sha256": "7b1bb88ef3c02f9075f57095dfe343882b30f9a426a7bf39611f7ae0a677093d",
+        "exact_replay": true,
+        "family": "TRDNEW_Co",
+        "first_original_locator": {
+          "mapping_version": "csmar-native-candidate-v1",
+          "member": "TRDNEW_Co.xlsx",
+          "member_sha256": "8900579ef9d88c298cf5222903af8585d64436386d6e8bdc03f8814b87b40a37",
+          "native_code": "000001",
+          "native_date": "1991-04-03",
+          "native_values_sha256": "783e937413fe90b75590ff2e7e0783220adb11b82f1dbb059e2ff6a3373ced5a",
+          "row_number": 4,
+          "sheet": "sheet1",
+          "source_sha256": "68cb134de65aee76298428bf9ab048b8e36800548fc96f689342998729375ea3"
+        },
+        "lineage_sha256": "90fbfee4a58449d31f82dbfc7e51da885ee555dc8d36247c051fb38a9ec08c1b",
+        "maximum_numeric_difference": 0,
+        "member": "TRDNEW_Co.xlsx",
+        "member_sha256": "8900579ef9d88c298cf5222903af8585d64436386d6e8bdc03f8814b87b40a37",
+        "native_sha256": "012dce0e6044d0261dc437b17e4253963c55a09d9d3fa96170510d5af08f917b",
+        "parser_sha256": "6f8162caa5fa722133fc6b1292f20dd81b4ce49f0db98b90ecb2a657ae31cd6d",
+        "process_peak_bytes": 86851584,
+        "profile_sha256": "7e08bed13ec134a396704d2444d394664d6e8f7f3568dbc32546d6c769998c0f",
+        "raw_sha256": "f6f1bd2ced12341e2fe7c3b557cc9e38084836f6b818cba7220cb2042fbf1b4c",
+        "replay_seconds": 0.7741131,
+        "scanned_records": 6025,
+        "scope": {
+          "codes": [
+            "000001"
+          ],
+          "end": "2026-10-20",
+          "start": "1991-01-01"
+        },
+        "selected_records": 1,
+        "source_bytes": 1512331,
+        "source_name": "公司文件233546920(仅供广东金融学院使用).zip",
+        "source_sha256": "68cb134de65aee76298428bf9ab048b8e36800548fc96f689342998729375ea3",
+        "supplier_acquired_at": null,
+        "supplier_version": "UNKNOWN"
+      },
+      {
+        "build_seconds": 2.0913931,
+        "dictionary_sha256": "5b05b41e3a9a5b9ce3a80943c866741e09f98a993d7a9bb166880e663d353020",
+        "exact_replay": true,
+        "family": "TRDNEW_Cptl",
+        "first_original_locator": {
+          "mapping_version": "csmar-native-candidate-v1",
+          "member": "TRDNEW_Cptl.xlsx",
+          "member_sha256": "4ece5e0ce28382f06d9ee1c9aee8073b3e3380579b16708e1330102b5b8f8b15",
+          "native_code": "000001",
+          "native_date": "2021-05-14",
+          "native_values_sha256": "d3827165b29ed76d5ffa25bcd5434cafb5b95135efc7d8e7979161bbdc68df03",
+          "row_number": 40,
+          "sheet": "sheet1",
+          "source_sha256": "e13d7f2306888889892ae8b74a238904f0af99c78eddefa6396427f9d272baef"
+        },
+        "lineage_sha256": "1043c429fdcbd0ee2a2aca3fa95d83a13806a27ae0e0192cf0f94b5ffdc2a610",
+        "maximum_numeric_difference": 0,
+        "member": "TRDNEW_Cptl.xlsx",
+        "member_sha256": "4ece5e0ce28382f06d9ee1c9aee8073b3e3380579b16708e1330102b5b8f8b15",
+        "native_sha256": "074eb9aded21ebfcd27facc5bce91889bb8630b17f277cc62baa9f69cc2256e9",
+        "parser_sha256": "6f8162caa5fa722133fc6b1292f20dd81b4ce49f0db98b90ecb2a657ae31cd6d",
+        "process_peak_bytes": 87683072,
+        "profile_sha256": "7e08bed13ec134a396704d2444d394664d6e8f7f3568dbc32546d6c769998c0f",
+        "raw_sha256": "f6f1bd2ced12341e2fe7c3b557cc9e38084836f6b818cba7220cb2042fbf1b4c",
+        "replay_seconds": 2.2105513,
+        "scanned_records": 72305,
+        "scope": {
+          "codes": [
+            "000001"
+          ],
+          "end": "2026-10-20",
+          "start": "2021-01-01"
+        },
+        "selected_records": 9,
+        "source_bytes": 2236737,
+        "source_name": "分配文件233507526(仅供广东金融学院使用).zip",
+        "source_sha256": "e13d7f2306888889892ae8b74a238904f0af99c78eddefa6396427f9d272baef",
+        "supplier_acquired_at": null,
+        "supplier_version": "UNKNOWN"
+      },
+      {
+        "build_seconds": 14.8871693,
+        "dictionary_sha256": "17114ff76bba86fde94d937d735810dbd4e7e13f19ad582e00bd0ffacdeef9c4",
+        "exact_replay": true,
+        "family": "TRDNEW_Capchg",
+        "first_original_locator": {
+          "mapping_version": "csmar-native-candidate-v1",
+          "member": "TRDNEW_Capchg.xlsx",
+          "member_sha256": "49e3924dbb6409f41d1b41118badb5bd917993fb69d1ad3cec06b81e482b0b92",
+          "native_code": "000001",
+          "native_date": "2021-12-31",
+          "native_values_sha256": "e5e0782ab596a9d539084f4c2edcb34926b3a63baaa59c573c8062bc013de1fd",
+          "row_number": 55,
+          "sheet": "sheet1",
+          "source_sha256": "96852947b5a1dc5d563923903da842d40784a7e20f0bc6c8f5a3e6c3516c4f2c"
+        },
+        "lineage_sha256": "4534eb93f8e41635d5c229de6b74e57b86397cd21361b7d8e82b17807bc1208b",
+        "maximum_numeric_difference": 0,
+        "member": "TRDNEW_Capchg.xlsx",
+        "member_sha256": "49e3924dbb6409f41d1b41118badb5bd917993fb69d1ad3cec06b81e482b0b92",
+        "native_sha256": "f6962467dcc589cde987e6a687558ddf318ef9556304b299fd483e112e5b2ff9",
+        "parser_sha256": "6f8162caa5fa722133fc6b1292f20dd81b4ce49f0db98b90ecb2a657ae31cd6d",
+        "process_peak_bytes": 89587712,
+        "profile_sha256": "7e08bed13ec134a396704d2444d394664d6e8f7f3568dbc32546d6c769998c0f",
+        "raw_sha256": "f6f1bd2ced12341e2fe7c3b557cc9e38084836f6b818cba7220cb2042fbf1b4c",
+        "replay_seconds": 14.704683300000001,
+        "scanned_records": 144074,
+        "scope": {
+          "codes": [
+            "000001"
+          ],
+          "end": "2026-10-20",
+          "start": "2021-01-01"
+        },
+        "selected_records": 6,
+        "source_bytes": 8951994,
+        "source_name": "股本变动文件233535982(仅供广东金融学院使用).zip",
+        "source_sha256": "96852947b5a1dc5d563923903da842d40784a7e20f0bc6c8f5a3e6c3516c4f2c",
+        "supplier_acquired_at": null,
+        "supplier_version": "UNKNOWN"
+      },
+      {
+        "build_seconds": 0.039267700000000016,
+        "dictionary_sha256": "7e761223a49aa9f34887b5472f4a5e3a6a787686c637406da2bc25edb2b2ec82",
+        "exact_replay": true,
+        "family": "IDX_Chgsmp",
+        "first_original_locator": {
+          "mapping_version": "csmar-native-candidate-v1",
+          "member": "IDX_Chgsmp.xlsx",
+          "member_sha256": "5c4646fd71de083213687365dcce9c19375995ebccafcd3229297f068ecddb33",
+          "native_code": "000905",
+          "native_date": "2021-03-15",
+          "native_values_sha256": "164102bfd6ec1d5de0563d06a4098f4025ba8c45cb483d8e1037a3b6dd1f00fa",
+          "row_number": 206,
+          "sheet": "sheet1",
+          "source_sha256": "8869a2610e5bb22ba4b54695b97adddccc3f2b616b4d96ef16a9c84429d96bb1"
+        },
+        "lineage_sha256": "8d0390042ab0d157e52ed1684deee07470defb9c02f06ccd0ceb8ec53fb4def6",
+        "maximum_numeric_difference": 0,
+        "member": "IDX_Chgsmp.xlsx",
+        "member_sha256": "5c4646fd71de083213687365dcce9c19375995ebccafcd3229297f068ecddb33",
+        "native_sha256": "8990b797abeb652d0d44331f8f164e8e986e947d82c6f2306b75c48e4f0af214",
+        "parser_sha256": "6f8162caa5fa722133fc6b1292f20dd81b4ce49f0db98b90ecb2a657ae31cd6d",
+        "process_peak_bytes": 86093824,
+        "profile_sha256": "7e08bed13ec134a396704d2444d394664d6e8f7f3568dbc32546d6c769998c0f",
+        "raw_sha256": "f6f1bd2ced12341e2fe7c3b557cc9e38084836f6b818cba7220cb2042fbf1b4c",
+        "replay_seconds": 0.03587819999999997,
+        "scanned_records": 610,
+        "scope": {
+          "codes": [
+            "000905"
+          ],
+          "end": "2026-10-20",
+          "start": "2021-01-01"
+        },
+        "selected_records": 408,
+        "source_bytes": 239635,
+        "source_name": "指数取样变更文件182702149(仅供广东金融学院使用).zip",
+        "source_sha256": "8869a2610e5bb22ba4b54695b97adddccc3f2b616b4d96ef16a9c84429d96bb1",
+        "supplier_acquired_at": null,
+        "supplier_version": "UNKNOWN"
+      },
+      {
+        "build_seconds": 41.9702093,
+        "dictionary_sha256": "e1cb312e7421a2f4ef8c2a830b128744541b4d45cc16d032681f78c1cdffe236",
+        "exact_replay": true,
+        "family": "IDX_Smprat",
+        "first_original_locator": {
+          "mapping_version": "csmar-native-candidate-v1",
+          "member": "IDX_Smprat.xlsx",
+          "member_sha256": "55ae23bbf82820d40fa1342878f0a7127e9f651e711d5f68074dd0631e56f68b",
+          "native_code": "000906",
+          "native_date": "2021-09-13",
+          "native_values_sha256": "5f7e18dd2bece6e629aacd79fa9140d0b78ae18dcfbb30993a1b4d17492a1a93",
+          "row_number": 786680,
+          "sheet": "sheet1",
+          "source_sha256": "cf85386e7f31549ac0b04aa9f697c44a83d2a4127e47165e231a25ed78cef809"
+        },
+        "lineage_sha256": "5a207454be1e4f3b1ba2e9b1e1917e3c2d73ffce6730d4289e8b5a7eb9d8a9f8",
+        "maximum_numeric_difference": 0,
+        "member": "IDX_Smprat.xlsx",
+        "member_sha256": "55ae23bbf82820d40fa1342878f0a7127e9f651e711d5f68074dd0631e56f68b",
+        "native_sha256": "cf25eb1fb27b7e4772fbe18c6392dc05c7743e47b1176537468decf7ae624899",
+        "parser_sha256": "6f8162caa5fa722133fc6b1292f20dd81b4ce49f0db98b90ecb2a657ae31cd6d",
+        "process_peak_bytes": 94203904,
+        "profile_sha256": "7e08bed13ec134a396704d2444d394664d6e8f7f3568dbc32546d6c769998c0f",
+        "raw_sha256": "f6f1bd2ced12341e2fe7c3b557cc9e38084836f6b818cba7220cb2042fbf1b4c",
+        "replay_seconds": 43.584792900000004,
+        "scanned_records": 1000000,
+        "scope": {
+          "codes": [
+            "000906"
+          ],
+          "end": "2021-09-17",
+          "start": "2021-09-13"
+        },
+        "selected_records": 4000,
+        "source_bytes": 30999945,
+        "source_name": "指数成分股权重文件183523104(仅供广东金融学院使用).zip",
+        "source_sha256": "cf85386e7f31549ac0b04aa9f697c44a83d2a4127e47165e231a25ed78cef809",
+        "supplier_acquired_at": null,
+        "supplier_version": "UNKNOWN"
+      }
+    ],
+    "tests": {
+      "baseline-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_market_data_qualification.py tests/research/test_qualification_admission_boundaries.py tests/market_admission -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_5f8d088e8812 --junitxml=LOCAL_REFERENCE_398c764b3797",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 162,
+        "seconds": 92.507,
+        "sha256": "fa0a3fd4968021babac041bba202c4b4b86962f00e664bbfaeec743042690645",
+        "skipped": 0,
+        "tests": 162
+      },
+      "binding-final-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_csmar_source_binding.py tests/research/test_market_data_qualification.py tests/research/test_qualification_admission_boundaries.py -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_7b8f33b2306a --junitxml=LOCAL_REFERENCE_70fa730fe5a4 --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_1d98a6fbc66c",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 125,
+        "seconds": 58.009,
+        "sha256": "56b1ee71a53d230901334f7ac9da3bfb86db5f9d1c959c36169c77adf84e22a9",
+        "skipped": 0,
+        "tests": 125
+      },
+      "committed-readiness-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/model_readiness/test_readiness.py tests/model_readiness/test_source_identity.py -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_6d9fc92433de --junitxml=LOCAL_REFERENCE_ce3b3e634598 --tb=short",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 24,
+        "seconds": 84.636,
+        "sha256": "2f80b36395ddacb009d7c47a3f7b5f959faf171ee7f2d21cf518f0701cf3b650",
+        "skipped": 0,
+        "tests": 24
+      },
+      "csmar-sealed-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_csmar_source_binding.py -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_7f4240f29764 --junitxml=LOCAL_REFERENCE_3c7f4b7bc044 --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_8a9391b4d827",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 62,
+        "seconds": 6.612,
+        "sha256": "1b4ec3c3919598007a186321da74eed62f64474bd3c4c122852f58328c7534af",
+        "skipped": 0,
+        "tests": 62
+      },
+      "delivery-safety-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_csmar_source_binding.py tests/research/test_market_data_qualification.py tests/research/test_qualification_admission_boundaries.py tests/research/test_local_market_provider.py tests/research/test_local_admission_boundaries.py tests/research/test_adjustment_foundation.py tests/research/test_universe_phase1.py tests/research/test_pit_generation_publication.py tests/market_admission -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_e60f43f22746 --junitxml=LOCAL_REFERENCE_b1ef528e9d54 --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_51d663b69293 --tb=short",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 464,
+        "seconds": 191.461,
+        "sha256": "df46a8072f77b52ef7c1117450cb89fb0a00a3fee45502d1a6c5c83cee198b30",
+        "skipped": 0,
+        "tests": 464
+      },
+      "final-safety-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_csmar_source_binding.py tests/research/test_market_data_qualification.py tests/research/test_qualification_admission_boundaries.py tests/research/test_local_market_provider.py tests/research/test_local_admission_boundaries.py tests/research/test_adjustment_foundation.py tests/research/test_universe_phase1.py tests/research/test_pit_generation_publication.py tests/market_admission -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_4e074d5001e7 --junitxml=LOCAL_REFERENCE_d127a6217876 --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_e8af32748b88",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 464,
+        "seconds": 192.321,
+        "sha256": "ceec00e851552d6b09397c666ab6a0201c963d445d9151f394f0451b7f93f1a2",
+        "skipped": 0,
+        "tests": 464
+      },
+      "focused-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_csmar_source_binding.py tests/research/test_market_data_qualification.py tests/research/test_qualification_admission_boundaries.py tests/research/test_local_market_provider.py tests/research/test_local_admission_boundaries.py tests/research/test_adjustment_foundation.py tests/research/test_universe_phase1.py tests/research/test_pit_generation_publication.py tests/market_admission -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_92b18e846820 --junitxml=LOCAL_REFERENCE_6b4dc976247c --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_0bc228949aee",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 453,
+        "seconds": 169.052,
+        "sha256": "d0a84d631dedc2163c2bd9f11a97125c4ec7c30a10bd969a18a05efc2c173c7e",
+        "skipped": 0,
+        "tests": 453
+      },
+      "freeze-diagnosis-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_five_year_frozen_baseline.py -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_24bec7d602c0 --junitxml=LOCAL_REFERENCE_05b2b9b00edd --tb=short",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 1,
+        "failures_detail": [
+          {
+            "message": "ValueError: Frozen research/Gates/Golden evidence changed: ['qbot/research/data/market_qualification.py']",
+            "test": "tests.research.test_five_year_frozen_baseline::test_original_research_evidence_and_factor_parameters_are_frozen"
+          }
+        ],
+        "passed": 0,
+        "seconds": 2.028,
+        "sha256": "4d6279f291d99b4209186ed1d4e7c8234cbe8dc1b553cadb2ec0db5814f9d90e",
+        "skipped": 0,
+        "tests": 1
+      },
+      "pit-archive-diagnosis-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/evidence/test_pit_archive_verifiers.py -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_90ae589d2217 --junitxml=LOCAL_REFERENCE_d964405feab6 --tb=short",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 17,
+        "failures_detail": [
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[https://example.org/workspace/alice?date=2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[http://example.org:8080/tmp/build]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[ftp://example.org/root/archive]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[wss://example.org/unknown/mount]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[custom+v2://example.org/root/resource]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[s3://research-bucket/2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[ssh://git@example.org/workspace/repo]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[docs/research/evidence.json]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[./tmp/build]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[../root/secret]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[<REPO>/data/research]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[${QBOT_DATA_DIR}/tdx]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[**/__pycache__/]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2026-10-18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2021/01/01\\u20132026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[Formal/Forward BLOCKED; NO LIVE MONEY]"
+          }
+        ],
+        "passed": 91,
+        "seconds": 365.361,
+        "sha256": "bfe72f008128aa01621b5961e6f56f77b2ce2d2d153d007b2b546da5a3738708",
+        "skipped": 0,
+        "tests": 108
+      },
+      "regression-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research tests/market_admission tests/model_readiness tests/market_structure tests/minute_data tests/evidence -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_bff5293554ac --junitxml=LOCAL_REFERENCE_71f71e8eb3b9 --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_d966ac5f4ce0 --tb=short",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 3,
+        "failures": 19,
+        "failures_detail": [
+          {
+            "message": "ValueError: Frozen research/Gates/Golden evidence changed: ['qbot/research/data/market_qualification.py']",
+            "test": "tests.research.test_five_year_frozen_baseline::test_original_research_evidence_and_factor_parameters_are_frozen"
+          },
+          {
+            "message": "failed on setup with \"qbot.research.diagnostics.model_readiness.source_identity.SourceIntegrityError: source inventory differs; missing=[] extra=['qbot/research/data/csmar/__init__.py', 'qbot/research/data/csmar/__main__.py', 'qbot/research/data/csmar/binding.py', 'qbot/research/data/csmar/native.py', 'qbot/research/data/csmar/profiles.py']\"",
+            "test": "tests.model_readiness.test_readiness::test_complete_small_software_acceptance_and_data_separation"
+          },
+          {
+            "message": "failed on setup with \"qbot.research.diagnostics.model_readiness.source_identity.SourceIntegrityError: source inventory differs; missing=[] extra=['qbot/research/data/csmar/__init__.py', 'qbot/research/data/csmar/__main__.py', 'qbot/research/data/csmar/binding.py', 'qbot/research/data/csmar/native.py', 'qbot/research/data/csmar/profiles.py']\"",
+            "test": "tests.model_readiness.test_readiness::test_native_resources_cover_every_stage"
+          },
+          {
+            "message": "failed on setup with \"qbot.research.diagnostics.model_readiness.source_identity.SourceIntegrityError: source inventory differs; missing=[] extra=['qbot/research/data/csmar/__init__.py', 'qbot/research/data/csmar/__main__.py', 'qbot/research/data/csmar/binding.py', 'qbot/research/data/csmar/native.py', 'qbot/research/data/csmar/profiles.py']\"",
+            "test": "tests.model_readiness.test_readiness::test_reused_output_refused_to_prevent_stale_acceptance"
+          },
+          {
+            "message": "AssertionError: assert {'.github/scr...tion.py', ...} <= {'.github/scr.../cli.py', ...}\n  \n  Extra items in the left set:\n  'qbot/research/data/market_qualification.py'",
+            "test": "tests.market_structure.test_delivery::test_protected_tracked_content_is_unchanged"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[https://example.org/workspace/alice?date=2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[http://example.org:8080/tmp/build]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[ftp://example.org/root/archive]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[wss://example.org/unknown/mount]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[custom+v2://example.org/root/resource]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[s3://research-bucket/2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[ssh://git@example.org/workspace/repo]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[docs/research/evidence.json]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[./tmp/build]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[../root/secret]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[<REPO>/data/research]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[${QBOT_DATA_DIR}/tdx]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[**/__pycache__/]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2026-10-18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2021/01/01\\u20132026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[Formal/Forward BLOCKED; NO LIVE MONEY]"
+          }
+        ],
+        "passed": 3854,
+        "seconds": 2333.327,
+        "sha256": "9d1b27537368113d59324469fd1a70aeb294f5373db901d4fe43a46b8e24dac9",
+        "skipped": 0,
+        "tests": 3876
+      }
+    }
+  },
+  "is_original": false,
+  "original_commit": "2198d393b75fbccfa05d49ada57cdf6703c12bb8",
+  "original_path": "docs/research/csmar-source-binding-v2/evidence/validation-summary.json",
+  "original_sha256": "745f7e3896531bb824896fa40805651c8ef78f6a17f9c09c8752b76858802dcb",
+  "schema": "HISTORICAL_REPORT_PUBLIC_DERIVATIVE_V1"
+}

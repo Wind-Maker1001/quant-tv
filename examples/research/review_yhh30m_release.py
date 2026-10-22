@@ -112,6 +112,42 @@ def matches_frozen_file(raw, rule):
     return bool(rule) and hashlib.sha256(raw).hexdigest() == rule["sha256"]
 
 
+def c01_literal_inventory(repo, name, revision, security, matches):
+    """Exact authenticated source literals, never arbitrary path exemptions.
+
+    The three implementation fragments and the synthetic rejection fixture
+    are unchanged bytes from the finite C01 source snapshot. Registry entries
+    are the same two collected adversarial node IDs, in the two collection
+    lists only. A path elsewhere in the registry or any added token fails.
+    """
+    if not revision or not security or name not in revision["files"]:
+        return False
+    source_files = {
+        "qbot/research/data/csmar/binding.py",
+        "qbot/research/data/csmar/fingerprint.py",
+        "qbot/research/data/csmar/native.py",
+        "tests/research/test_csmar_source_binding.py",
+    }
+    if name in source_files:
+        old = security.source_content(repo, name).decode("utf-8-sig")
+        values = [n.value for n in ast.walk(ast.parse(old))
+                  if isinstance(n, ast.Constant) and isinstance(n.value, str)]
+        original = Counter(m.group() for value in values
+                           for m in ABS.finditer(URL.sub("REMOTE_URL", value))
+                           if m.group() != chr(47))
+        return Counter(token for _, _, token in matches) == original
+    if name == getattr(security, "REGISTRY", None):
+        prefix = ("tests/research/test_csmar_source_binding.py::"
+                  "test_reject_malicious_zip_paths[")
+        values = {prefix + part + "evil]" for part in (chr(47), "C:" + chr(47))}
+        contexts = {"|execution_delta|added|" + key
+                    for key in ("all_ids", "selected_ids")}
+        return (len(matches) == 4 and
+                Counter((context, value) for context, value, _ in matches) ==
+                Counter((context, value) for context in contexts for value in values))
+    return False
+
+
 def review(repo, base, scope_yhh30m=False):
     def git(*args):
         return subprocess.check_output(["git", *args], cwd=repo, text=True, encoding="utf-8").splitlines()
@@ -210,6 +246,9 @@ def review(repo, base, scope_yhh30m=False):
                     continue
                 matches.append((context, value, token))
         observed = dict(Counter(path_kind(token) for _, _, token in matches))
+        if matches and c01_literal_inventory(repo, name, revision, security, matches):
+            path_exceptions[name] = len(matches)
+            continue
         # These two security postimages retain existing anti-path test vectors
         # and a workflow URL fragment. Authenticate the entire current file,
         # then require exactly the old fixed-baseline path token inventory.

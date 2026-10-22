@@ -1,0 +1,26 @@
+{
+  "historical_claims_with_local_references_redacted": {
+    "files": {
+      "configs/research/csi500_5y.yaml": "cbd0bc0ac8ed16fe9f7245a4d2e43180d5a9503a724bb1cbe8ce80dc46e40dde",
+      "qbot/research/data/admission.py": "3c614b2a0fc32c4c3af6055bee79c26a9f9e18d6cb4baad7d94c3e0e33994417",
+      "qbot/research/data/evidence.py": "30d69b89860773bc6293e879b522f8b2c1c0d3711446c8ae4d76cc46de660375",
+      "qbot/research/data/market_qualification.py": "58f6079398e67751fce41bc1c324be2e01393705dbc5eba4e7052983996bb5bc",
+      "qbot/research/data/providers/local.py": "6e4a4ab33a16c21291b2c7fb9a6c8dc2203a3b7f670cfaa40696fd011458962c",
+      "qbot/research/data/schema.py": "b84f46c3f86a655b5e218dec9d87b5e068046bb067bb2a11b4c6086e7f4aaad1"
+    },
+    "head": "cc13795d144592b360e560a9b979e183d6b01907",
+    "no_live_money": true,
+    "remote_ci_run_ids": [
+      39377979285,
+      39377979300,
+      39377979202,
+      39377979476
+    ],
+    "status": ""
+  },
+  "is_original": false,
+  "original_commit": "2198d393b75fbccfa05d49ada57cdf6703c12bb8",
+  "original_path": "docs/research/csmar-source-binding-v2/baseline.json",
+  "original_sha256": "b9297b679a74ac7176a01d5294b62a071e74be954cf4eb0fab3ba36567354c09",
+  "schema": "HISTORICAL_REPORT_PUBLIC_DERIVATIVE_V1"
+}

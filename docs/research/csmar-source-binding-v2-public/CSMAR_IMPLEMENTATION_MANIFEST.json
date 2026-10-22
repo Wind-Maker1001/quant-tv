@@ -1,0 +1,481 @@
+{
+  "historical_claims_with_local_references_redacted": {
+    "base_commit": "cc13795d144592b360e560a9b979e183d6b01907",
+    "branch": "codex/csmar-source-binding-v2",
+    "byte_replay_scope": "VERIFIED_FOR_DECLARED_SCOPE",
+    "dependencies_added": [],
+    "files": {
+      "docs/research/csmar-source-binding-v2/.gitattributes": {
+        "bytes": 189,
+        "lines": 3,
+        "sha256": "36fc7b6faf5d59807ca9f7230c5494ede2e7cdf6d28b82f56ce78b5323ba02d0"
+      },
+      "docs/research/csmar-source-binding-v2/CSMAR_FORMAL_ADMISSION_GAPS.md": {
+        "bytes": 4467,
+        "lines": 23,
+        "sha256": "a966542db30bd024d343a561a960fd9df793b41c2615dec46ce7c7b4e416c16e"
+      },
+      "docs/research/csmar-source-binding-v2/CSMAR_NATIVE_SCHEMA_MAPPING.md": {
+        "bytes": 3548,
+        "lines": 33,
+        "sha256": "797ffee4dd8524cb82cc700015698c93b4a4d0631f7f45f11d7b3dd3dd11ed45"
+      },
+      "docs/research/csmar-source-binding-v2/CSMAR_NEGATIVE_TEST_REPORT.md": {
+        "bytes": 4160,
+        "lines": 32,
+        "sha256": "83ca9043bad2026e75169b8392787fba8628a79fbe1a043f1dee78763d15b769"
+      },
+      "docs/research/csmar-source-binding-v2/CSMAR_PERFORMANCE_REPORT.md": {
+        "bytes": 2294,
+        "lines": 22,
+        "sha256": "320c80b808300c9dc9ddf6ccbb0715dffcfbb5454e0e69178abb78ac75f35521"
+      },
+      "docs/research/csmar-source-binding-v2/CSMAR_REPLAY_TEST_REPORT.md": {
+        "bytes": 3476,
+        "lines": 34,
+        "sha256": "8eaebd851ea202d750c097fce47fb00f5506dea41f431ba81c546d0984f56fc1"
+      },
+      "docs/research/csmar-source-binding-v2/CSMAR_SOURCE_BINDING_IMPLEMENTATION.md": {
+        "bytes": 5473,
+        "lines": 31,
+        "sha256": "e5fdf36f493172c24ae3e8865ccd7d20ef4c9616ae15fae20d792aff5acd389c"
+      },
+      "docs/research/csmar-source-binding-v2/CSMAR_SOURCE_CHANGE_REVIEW.json": {
+        "bytes": 1088,
+        "lines": 33,
+        "sha256": "c5c6a7f2ea6310dd38e0c551184c50a10b103bd81e8e6f8fd3674aa3ee36d847"
+      },
+      "docs/research/csmar-source-binding-v2/CSMAR_SOURCE_ROLE_MATRIX.md": {
+        "bytes": 2214,
+        "lines": 22,
+        "sha256": "93c549791da5cd79c03cfc917f4df7a8a080f49e481381730fee3ca061dcf5b7"
+      },
+      "docs/research/csmar-source-binding-v2/baseline.json": {
+        "bytes": 886,
+        "lines": 19,
+        "sha256": "63d6cfda11e17f631d42214ddd6aab642dd38954114713580c33d65132421f52"
+      },
+      "docs/research/csmar-source-binding-v2/evidence/baseline-junit.xml": {
+        "bytes": 27329,
+        "lines": 1,
+        "sha256": "fa0a3fd4968021babac041bba202c4b4b86962f00e664bbfaeec743042690645"
+      },
+      "docs/research/csmar-source-binding-v2/evidence/committed-readiness-junit.xml": {
+        "bytes": 3954,
+        "lines": 1,
+        "sha256": "2f80b36395ddacb009d7c47a3f7b5f959faf171ee7f2d21cf518f0701cf3b650"
+      },
+      "docs/research/csmar-source-binding-v2/evidence/delivery-safety-junit.xml": {
+        "bytes": 72005,
+        "lines": 1,
+        "sha256": "df46a8072f77b52ef7c1117450cb89fb0a00a3fee45502d1a6c5c83cee198b30"
+      },
+      "docs/research/csmar-source-binding-v2/evidence/regression-junit.xml": {
+        "bytes": 625699,
+        "lines": 130,
+        "sha256": "9d1b27537368113d59324469fd1a70aeb294f5373db901d4fe43a46b8e24dac9"
+      },
+      "docs/research/csmar-source-binding-v2/evidence/validation-summary.json": {
+        "bytes": 43593,
+        "lines": 746,
+        "sha256": "8dcc41a3476a58e06bec9b1cb4b0376cdb339e7528c61ab758e5a7a98902969c"
+      },
+      "docs/research/csmar-source-binding-v2/market-qualification.diff": {
+        "bytes": 2680,
+        "lines": 43,
+        "sha256": "79d032125b80504524ca1a6cdbd1a890b15f3b67b5ac1803b3593e2dbd2d5a82"
+      },
+      "examples/research/csmar_source_binding_pilot.py": {
+        "bytes": 10710,
+        "lines": 161,
+        "sha256": "450454b2135cc7ac491802e6f5ac1850e1b0a9cd5f8f9aef826e57a66e597baf"
+      },
+      "qbot/research/data/csmar/__init__.py": {
+        "bytes": 225,
+        "lines": 5,
+        "sha256": "7c758f10707f3559440340d9c8bcb805e982e6750469bb68c4f9b07513a3c373"
+      },
+      "qbot/research/data/csmar/__main__.py": {
+        "bytes": 1253,
+        "lines": 33,
+        "sha256": "975a496d023dafc0f95989c2beb4795a70663e73c30a900f7413f44a7a15d7f9"
+      },
+      "qbot/research/data/csmar/binding.py": {
+        "bytes": 22377,
+        "lines": 397,
+        "sha256": "eba4219cd42df98533ee823830356b7b548b59d29e6892e93670f9a3edca0119"
+      },
+      "qbot/research/data/csmar/native.py": {
+        "bytes": 10171,
+        "lines": 251,
+        "sha256": "4676b593aaaf63b2076bfb1a5cc0b34b93e9e014667b1f0372b1c9d860f381e5"
+      },
+      "qbot/research/data/csmar/profiles.py": {
+        "bytes": 2811,
+        "lines": 54,
+        "sha256": "3044d99b618fe9d5ba62945b83aede06f717ce71e1b544f407a70eca9d649570"
+      },
+      "qbot/research/data/market_qualification.py": {
+        "bytes": 29389,
+        "lines": 536,
+        "sha256": "7f6ca67dcba2cca78669d63994b0b7204aceb19b6fbf4037485f81edf43d104c"
+      },
+      "tests/research/test_csmar_source_binding.py": {
+        "bytes": 22366,
+        "lines": 436,
+        "sha256": "3e2c0b8be35d786d95d0f8b9447aa393d1a9f8c03cf870af5d78be9bd7c9cf87"
+      }
+    },
+    "financial_evidence": "UNKNOWN",
+    "formal_status": "FORMAL_ADMISSION_BLOCKED",
+    "implementation_commit": "26bb47261816c56becfc0a91d7b31fc79af80246",
+    "no_live_money": true,
+    "parser_sha256": "6f8162caa5fa722133fc6b1292f20dd81b4ce49f0db98b90ecb2a657ae31cd6d",
+    "private_environment_sha256": "1c8edbad4d095cc8638ed1a224002ff016067effe115ba3dcce589349b48b78a",
+    "private_evidence_root": "LOCAL_REFERENCE_733cda539121",
+    "private_pilot_receipt_sha256": "ae6a748a23377a72bcb6393ddb611ea37256cd524b490056f49877088ad37104",
+    "private_source_register_sha256": "f82974e9805d78a34905ffe90b7d01b3462bea6ab3cac5e73217c9cf3f829b41",
+    "remote_actions": "未推送、未创建PR、未合并",
+    "runtime": {
+      "pandas": "2.2.3",
+      "pyarrow": "17.0.0",
+      "python": "3.9.25"
+    },
+    "software_status": "PARTIAL",
+    "source_lines": {
+      "examples/research/csmar_source_binding_pilot.py": 161,
+      "qbot/research/data/csmar/__init__.py": 5,
+      "qbot/research/data/csmar/__main__.py": 33,
+      "qbot/research/data/csmar/binding.py": 397,
+      "qbot/research/data/csmar/native.py": 251,
+      "qbot/research/data/csmar/profiles.py": 54,
+      "qbot/research/data/market_qualification.py": 536,
+      "tests/research/test_csmar_source_binding.py": 436
+    },
+    "tables": [
+      "TRDNEW_Dalyr",
+      "IDX_Idxtrd",
+      "TRD_AdjustFactor",
+      "TRDNEW_Co",
+      "TRDNEW_Cptl",
+      "TRDNEW_Capchg",
+      "IDX_Chgsmp",
+      "IDX_Smprat"
+    ],
+    "tests": {
+      "baseline-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_market_data_qualification.py tests/research/test_qualification_admission_boundaries.py tests/market_admission -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_5f8d088e8812 --junitxml=LOCAL_REFERENCE_398c764b3797",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 162,
+        "seconds": 92.507,
+        "sha256": "fa0a3fd4968021babac041bba202c4b4b86962f00e664bbfaeec743042690645",
+        "skipped": 0,
+        "tests": 162
+      },
+      "binding-final-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_csmar_source_binding.py tests/research/test_market_data_qualification.py tests/research/test_qualification_admission_boundaries.py -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_7b8f33b2306a --junitxml=LOCAL_REFERENCE_70fa730fe5a4 --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_1d98a6fbc66c",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 125,
+        "seconds": 58.009,
+        "sha256": "56b1ee71a53d230901334f7ac9da3bfb86db5f9d1c959c36169c77adf84e22a9",
+        "skipped": 0,
+        "tests": 125
+      },
+      "committed-readiness-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/model_readiness/test_readiness.py tests/model_readiness/test_source_identity.py -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_6d9fc92433de --junitxml=LOCAL_REFERENCE_ce3b3e634598 --tb=short",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 24,
+        "seconds": 84.636,
+        "sha256": "2f80b36395ddacb009d7c47a3f7b5f959faf171ee7f2d21cf518f0701cf3b650",
+        "skipped": 0,
+        "tests": 24
+      },
+      "csmar-sealed-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_csmar_source_binding.py -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_7f4240f29764 --junitxml=LOCAL_REFERENCE_3c7f4b7bc044 --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_8a9391b4d827",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 62,
+        "seconds": 6.612,
+        "sha256": "1b4ec3c3919598007a186321da74eed62f64474bd3c4c122852f58328c7534af",
+        "skipped": 0,
+        "tests": 62
+      },
+      "delivery-safety-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_csmar_source_binding.py tests/research/test_market_data_qualification.py tests/research/test_qualification_admission_boundaries.py tests/research/test_local_market_provider.py tests/research/test_local_admission_boundaries.py tests/research/test_adjustment_foundation.py tests/research/test_universe_phase1.py tests/research/test_pit_generation_publication.py tests/market_admission -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_e60f43f22746 --junitxml=LOCAL_REFERENCE_b1ef528e9d54 --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_51d663b69293 --tb=short",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 464,
+        "seconds": 191.461,
+        "sha256": "df46a8072f77b52ef7c1117450cb89fb0a00a3fee45502d1a6c5c83cee198b30",
+        "skipped": 0,
+        "tests": 464
+      },
+      "final-safety-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_csmar_source_binding.py tests/research/test_market_data_qualification.py tests/research/test_qualification_admission_boundaries.py tests/research/test_local_market_provider.py tests/research/test_local_admission_boundaries.py tests/research/test_adjustment_foundation.py tests/research/test_universe_phase1.py tests/research/test_pit_generation_publication.py tests/market_admission -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_4e074d5001e7 --junitxml=LOCAL_REFERENCE_d127a6217876 --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_e8af32748b88",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 464,
+        "seconds": 192.321,
+        "sha256": "ceec00e851552d6b09397c666ab6a0201c963d445d9151f394f0451b7f93f1a2",
+        "skipped": 0,
+        "tests": 464
+      },
+      "focused-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_csmar_source_binding.py tests/research/test_market_data_qualification.py tests/research/test_qualification_admission_boundaries.py tests/research/test_local_market_provider.py tests/research/test_local_admission_boundaries.py tests/research/test_adjustment_foundation.py tests/research/test_universe_phase1.py tests/research/test_pit_generation_publication.py tests/market_admission -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_92b18e846820 --junitxml=LOCAL_REFERENCE_6b4dc976247c --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_0bc228949aee",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 0,
+        "failures_detail": [],
+        "passed": 453,
+        "seconds": 169.052,
+        "sha256": "d0a84d631dedc2163c2bd9f11a97125c4ec7c30a10bd969a18a05efc2c173c7e",
+        "skipped": 0,
+        "tests": 453
+      },
+      "freeze-diagnosis-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research/test_five_year_frozen_baseline.py -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_24bec7d602c0 --junitxml=LOCAL_REFERENCE_05b2b9b00edd --tb=short",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 1,
+        "failures_detail": [
+          {
+            "message": "ValueError: Frozen research/Gates/Golden evidence changed: ['qbot/research/data/market_qualification.py']",
+            "test": "tests.research.test_five_year_frozen_baseline::test_original_research_evidence_and_factor_parameters_are_frozen"
+          }
+        ],
+        "passed": 0,
+        "seconds": 2.028,
+        "sha256": "4d6279f291d99b4209186ed1d4e7c8234cbe8dc1b553cadb2ec0db5814f9d90e",
+        "skipped": 0,
+        "tests": 1
+      },
+      "pit-archive-diagnosis-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/evidence/test_pit_archive_verifiers.py -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_90ae589d2217 --junitxml=LOCAL_REFERENCE_d964405feab6 --tb=short",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 0,
+        "failures": 17,
+        "failures_detail": [
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[https://example.org/workspace/alice?date=2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[http://example.org:8080/tmp/build]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[ftp://example.org/root/archive]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[wss://example.org/unknown/mount]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[custom+v2://example.org/root/resource]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[s3://research-bucket/2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[ssh://git@example.org/workspace/repo]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[docs/research/evidence.json]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[./tmp/build]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[../root/secret]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[<REPO>/data/research]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[${QBOT_DATA_DIR}/tdx]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[**/__pycache__/]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2026-10-18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2021/01/01\\u20132026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[Formal/Forward BLOCKED; NO LIVE MONEY]"
+          }
+        ],
+        "passed": 91,
+        "seconds": 365.361,
+        "sha256": "bfe72f008128aa01621b5961e6f56f77b2ce2d2d153d007b2b546da5a3738708",
+        "skipped": 0,
+        "tests": 108
+      },
+      "regression-junit.xml": {
+        "command": "LOCAL_REFERENCE_b22cfad6ee12 -B -m pytest tests/research tests/market_admission tests/model_readiness tests/market_structure tests/minute_data tests/evidence -q -p no:cacheprovider --basetemp=LOCAL_REFERENCE_bff5293554ac --junitxml=LOCAL_REFERENCE_71f71e8eb3b9 --cov=qbot/research/data/csmar --cov-report=json:LOCAL_REFERENCE_d966ac5f4ce0 --tb=short",
+        "environment": "Windows / Python 3.9.25 / 既有研究依赖；版本见execution-environment.json",
+        "errors": 3,
+        "failures": 19,
+        "failures_detail": [
+          {
+            "message": "ValueError: Frozen research/Gates/Golden evidence changed: ['qbot/research/data/market_qualification.py']",
+            "test": "tests.research.test_five_year_frozen_baseline::test_original_research_evidence_and_factor_parameters_are_frozen"
+          },
+          {
+            "message": "failed on setup with \"qbot.research.diagnostics.model_readiness.source_identity.SourceIntegrityError: source inventory differs; missing=[] extra=['qbot/research/data/csmar/__init__.py', 'qbot/research/data/csmar/__main__.py', 'qbot/research/data/csmar/binding.py', 'qbot/research/data/csmar/native.py', 'qbot/research/data/csmar/profiles.py']\"",
+            "test": "tests.model_readiness.test_readiness::test_complete_small_software_acceptance_and_data_separation"
+          },
+          {
+            "message": "failed on setup with \"qbot.research.diagnostics.model_readiness.source_identity.SourceIntegrityError: source inventory differs; missing=[] extra=['qbot/research/data/csmar/__init__.py', 'qbot/research/data/csmar/__main__.py', 'qbot/research/data/csmar/binding.py', 'qbot/research/data/csmar/native.py', 'qbot/research/data/csmar/profiles.py']\"",
+            "test": "tests.model_readiness.test_readiness::test_native_resources_cover_every_stage"
+          },
+          {
+            "message": "failed on setup with \"qbot.research.diagnostics.model_readiness.source_identity.SourceIntegrityError: source inventory differs; missing=[] extra=['qbot/research/data/csmar/__init__.py', 'qbot/research/data/csmar/__main__.py', 'qbot/research/data/csmar/binding.py', 'qbot/research/data/csmar/native.py', 'qbot/research/data/csmar/profiles.py']\"",
+            "test": "tests.model_readiness.test_readiness::test_reused_output_refused_to_prevent_stale_acceptance"
+          },
+          {
+            "message": "AssertionError: assert {'.github/scr...tion.py', ...} <= {'.github/scr.../cli.py', ...}\n  \n  Extra items in the left set:\n  'qbot/research/data/market_qualification.py'",
+            "test": "tests.market_structure.test_delivery::test_protected_tracked_content_is_unchanged"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[https://example.org/workspace/alice?date=2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[http://example.org:8080/tmp/build]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[ftp://example.org/root/archive]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[wss://example.org/unknown/mount]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[custom+v2://example.org/root/resource]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[s3://research-bucket/2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[ssh://git@example.org/workspace/repo]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[docs/research/evidence.json]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[./tmp/build]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[../root/secret]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[<REPO>/data/research]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[${QBOT_DATA_DIR}/tdx]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[**/__pycache__/]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2026-10-18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[2021/01/01\\u20132026/10/18]"
+          },
+          {
+            "message": "ValueError: Historical research text changed: qbot/research/data/market_qualification.py",
+            "test": "tests.evidence.test_pit_archive_verifiers::test_urls_relative_paths_and_dates_pass[Formal/Forward BLOCKED; NO LIVE MONEY]"
+          }
+        ],
+        "passed": 3854,
+        "seconds": 2333.327,
+        "sha256": "9d1b27537368113d59324469fd1a70aeb294f5373db901d4fe43a46b8e24dac9",
+        "skipped": 0,
+        "tests": 3876
+      }
+    },
+    "verification_limits": [
+      "最终464项及真实重放绑定最终源码",
+      "广义回归在开发中版本启动，不能声称最终HEAD全量通过",
+      "旧冻结/历史发布检查待独立登记新代码版本",
+      "本清单自身不参与递归哈希；最终Git提交在私有delivery-head.json及最终回复记录"
+    ],
+    "已绑定角色": [
+      "RAW技术重放，限声明范围"
+    ],
+    "日期": "2026-10-21",
+    "未绑定金融角色": [
+      "PIT",
+      "STATUS",
+      "CALENDAR",
+      "IDENTITY",
+      "UNITS",
+      "ADJUSTMENT",
+      "REFERENCE",
+      "BENCHMARK",
+      "TURNOVER",
+      "LISTINGS",
+      "ANCHOR"
+    ],
+    "模块": "FactorLab CSMAR来源绑定",
+    "项目": "Wind-Maker1001/quant-tv"
+  },
+  "is_original": false,
+  "original_commit": "2198d393b75fbccfa05d49ada57cdf6703c12bb8",
+  "original_path": "docs/research/csmar-source-binding-v2/CSMAR_IMPLEMENTATION_MANIFEST.json",
+  "original_sha256": "7e8651d2f2ed55019723f3c5443b1b7eaec0f9206699be8188c86f959d5c80e2",
+  "schema": "HISTORICAL_REPORT_PUBLIC_DERIVATIVE_V1"
+}

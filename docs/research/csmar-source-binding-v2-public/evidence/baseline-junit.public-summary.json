@@ -1,0 +1,1313 @@
+{
+  "cases": [
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_all_software_stages_never_imply_real_admission",
+      "original_case_name_sha256": "9381b75aa65963e0570e1ec0bc29b8f470180c7ba9c3e9c74b5f34f9817e6ad5",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.519"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "f3ce45980e0aca135d823926cc05dd3329fc76d16b7aef1d48af666831a6a4ca",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.111"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "c34bb882e1242b663ca27bfc1689fb9f4a9ba051d13e32979ee66aa0dce6d293",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.120"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "13a0b2f7b87a6cebd700ac0dd752fac28da6610757bf9196a73045826677354e",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.110"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "f68658b725e1879936771907223f3f4ef1bc7b556104d4204d16424dfd42ab72",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.186"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "25d2e75b762cf10a1a47971489e5d06ce855d6e2780e5eeb9cc55e749b4d93c9",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.187"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "5b3fd6d692baa849637048ab155f57abea5fdc7d251b6b7e8aca06237ac7b8fd",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.167"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "50e77dd7b893ad11db3d33c618f578ad43579e6e5e746be69988e4eac39b0909",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.183"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "16e797386d15662f7e3396eea73f90527d3fa8bb37d7fc3998b288e2557693ed",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.173"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "e0d7f859048c4d3b8009aaeb903ed9f202249faba69edc3dddfe056bd1e0a088",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.131"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "ba6446c4a3564b9d30260301fc54d368e1414ec48880d2c8398e1a627bba2c24",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.176"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_incomplete_stage_is_not_promoted",
+      "original_case_name_sha256": "51e8b3cb4889bb0025c5cecf34e824667b225edcdb6a87c1a9f0843e33de7678",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.241"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_qualification_package_replays_and_reimports_idempotently",
+      "original_case_name_sha256": "07b5e7df6f1104dd673c28262a6bb538c34428e23168a7049491f390cca7748a",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.530"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_tampered_qualification_is_rejected",
+      "original_case_name_sha256": "485833de34f3d24178f3eae5458a13123f9061eabe0301c025014f0677afc2db",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.545"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_tampered_qualification_is_rejected",
+      "original_case_name_sha256": "a3d82c359f31d0a214cd1373e176453cf11c7ebf5b9cbbe1ad34c8fbb3827838",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.515"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_tampered_qualification_is_rejected",
+      "original_case_name_sha256": "05495de1c1cbd446f185720e3c574da4dc86ae75b36b2bb3bb5a156261dd2cd4",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.491"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_tampered_qualification_is_rejected",
+      "original_case_name_sha256": "28769dee957149ec8a12785db2f6b70b0b881b7662fdc16b704eec6232f93ce7",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.493"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_editing_report_and_rehashing_manifest_still_cannot_forge_pass",
+      "original_case_name_sha256": "bea368a0a790e7111a3e942506c588333888f48201fcf7927f54864418434fcd",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.805"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_implementation_change_requires_new_qualification_generation",
+      "original_case_name_sha256": "ada36782c7735bdbebd15da717b548a4f0d487154d5a5b9ddbaf84effee323c8",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.708"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_v2_is_self_contained_pinned_and_source_version_changes",
+      "original_case_name_sha256": "f10dc88ff5b1a117fdb32160daa7e64e5dfd97bf7a11f1f1fb795ccca8bf3c95",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.995"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_failed_v2_publish_keeps_previous_pointer",
+      "original_case_name_sha256": "e647bdd7a7b30c00166d5dcb805f7392f88ba6bd7b305161bb74bd2f05e3b429",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "2.051"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_changed_qualification_contract_invalidates_old_cache_even_with_same_prices",
+      "original_case_name_sha256": "f95fa3ed9efdec27cfa5594f38514768669df13abc666ecf2c44d49a24b74d22",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "3.013"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_v1_tdx_declaration_cannot_promote_staging",
+      "original_case_name_sha256": "6214d77d8e3ce8a067c387358bafb4221f1a566caef7a76bf163bcca8cc4e0c9",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.148"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_synthetic_v2_is_rejected_by_formal_market_input_loader",
+      "original_case_name_sha256": "b2132ab1d999eba8ce0237a4a1d0e845261c37cc1b1bdaea69ec074d51b6d4d3",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "3.043"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_identity_change_is_explicit_and_different_entity_not_concatenated",
+      "original_case_name_sha256": "fb9c79d1764940d9dcb0d1fa26b1ae974c19ab71276d86c32cd5672a411229e2",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.094"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_unknown_or_wrong_unit_scope_does_not_use_hardcoded_tdx_multiplier",
+      "original_case_name_sha256": "98f1660f259a445282e84e7e7f76e0c889934aafd9a364b46aa0619ff50fd6ac",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.083"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_sentinel_cannot_be_promoted_to_a_historical_security_anchor",
+      "original_case_name_sha256": "724e6b0fd50c7dbb565eede1605b88a1bbf94e1fb4c61b67e0485c2cc404be84",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.130"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_factor_payload_is_never_executed_or_coerced",
+      "original_case_name_sha256": "0e78542295a53966d0c6ab725d2b23ccb4875853c9ed08353c8a6d8bbad0c34c",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.001"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_factor_payload_is_never_executed_or_coerced",
+      "original_case_name_sha256": "08171db0f4b623925db9428ff9bec8a75ae471d43b8fa9fbd14019abf3bc08d7",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.000"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_factor_payload_is_never_executed_or_coerced",
+      "original_case_name_sha256": "16ff9043de127ec2acefd05097096a3f1d5c7b5aceda2270fde1cdaab9e29b73",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.000"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_factor_payload_is_never_executed_or_coerced",
+      "original_case_name_sha256": "4ca6247ee7fac88ee9b9205c3e5f44f54a6fcb243755c77fb9273b14a4b17251",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.000"
+    },
+    {
+      "class": "tests.research.test_market_data_qualification",
+      "function": "test_factor_sentinel_is_retained_as_observation_only",
+      "original_case_name_sha256": "834527757f2d225b1235550e77b022e33b6627115b950d74c3d57cc52bad7073",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.000"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_unchanged_source_bytes_cannot_certify_changed_normalized_facts",
+      "original_case_name_sha256": "9e48b2987c8361df86976c59c772f907fcd065705b39985df7c2e80a621e08a5",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.365"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_unchanged_source_bytes_cannot_certify_changed_normalized_facts",
+      "original_case_name_sha256": "51dac0a1660e5ee8bc28439c4365391f8e929777e17bb0a5ba5c2c14080bff3b",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.405"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_unchanged_source_bytes_cannot_certify_changed_normalized_facts",
+      "original_case_name_sha256": "18b38b3516c7826f5ecd6f3cc907eb262ede85ee0a8bdd855c6cd48ec0f91585",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.384"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_unchanged_source_bytes_cannot_certify_changed_normalized_facts",
+      "original_case_name_sha256": "e9a52ea2b1866c4fc8ae34de426b8f659905f03abe1ba9fed23c9b54664aac1f",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.424"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_unchanged_source_bytes_cannot_certify_changed_normalized_facts",
+      "original_case_name_sha256": "8d0f24c3e53a86374578908fb87fb9c3b89ea51094177bdf06865c27eeaa3437",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.415"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_unchanged_source_bytes_cannot_certify_changed_normalized_facts",
+      "original_case_name_sha256": "e448f0ae33419452303a13e16e3e5271484bfd423f7cd123d18aa685ce7c2d39",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.423"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_unchanged_source_bytes_cannot_certify_changed_normalized_facts",
+      "original_case_name_sha256": "5f678f27a439db0c200cba77065a1d3c56ed70d077fbb2c35ca9bde518712d3c",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.450"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_unchanged_source_bytes_cannot_certify_changed_normalized_facts",
+      "original_case_name_sha256": "26e185b77b01f9f78b2c599d2c6eb7020a393ae031745e3b07f63a2cc9abb627",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.459"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_unchanged_source_bytes_cannot_certify_changed_normalized_facts",
+      "original_case_name_sha256": "16efd3c3126237bc9d87e0cfb8e1a0d0564901dd2c6214cd1aac7854c703259d",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.489"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_pit_requires_both_boundaries_and_internal_days",
+      "original_case_name_sha256": "ab3478adf3a8e27c1c121da9f53ecf146d726745fcc6a5095025b20f2d6f5c66",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.419"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_pit_requires_both_boundaries_and_internal_days",
+      "original_case_name_sha256": "cfe71930207b5aa90626fab7e8aa68e70de6a84f7bfcd80ec0d174d7fb078882",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.382"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_pit_requires_both_boundaries_and_internal_days",
+      "original_case_name_sha256": "221fb13f03416781a1e2061537a8bc04ef3fc203feb10b83bec94177cea00775",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.376"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_warmup_is_separate_from_the_declared_research_window",
+      "original_case_name_sha256": "8eeb709db3a333ceec0176172120f380af67d01445da5435e8716ec4b6d588a0",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.372"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_warmup_is_separate_from_the_declared_research_window",
+      "original_case_name_sha256": "a0ce2992b84d9ac4434ff941073e2818a75845a2706add0ba4d791658afe95ab",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.383"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_warmup_is_separate_from_the_declared_research_window",
+      "original_case_name_sha256": "721177392f282e41fa2f8506b3544884b0da1c8b63e03408ddc1da64c45f3747",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.388"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_pit_window_must_not_be_inferred_when_not_declared",
+      "original_case_name_sha256": "b42897265f3d777700fabc73779ce84cd10a3131fe20f4c0cda9298d1ce52fbb",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.346"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_tdx_raw_is_reparsed_even_when_products_are_consistently_rehashed",
+      "original_case_name_sha256": "5cb66fcf2c394bd478c86b5235d1ded2da954c206688b56a090d6373f4bb9e70",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.817"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_tdx_binding_compares_all_rows_fields_and_sources",
+      "original_case_name_sha256": "7e6aac3b4398180493320ee20880d7937f43573717fa88e3682c7c19885c120a",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.289"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_tdx_binding_compares_all_rows_fields_and_sources",
+      "original_case_name_sha256": "9f268451c400e3ff36b469a15fbcff5f729a93f2f3c92f53e29bf9e1965ffba5",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.263"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_tdx_binding_compares_all_rows_fields_and_sources",
+      "original_case_name_sha256": "2405b2b768caf067035d82c7d373ba113c7afe4d091fbb7621dd652a00ad87b0",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.273"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_tdx_binding_compares_all_rows_fields_and_sources",
+      "original_case_name_sha256": "2262cbefb753fb1200eb82c4405655dfb5a7293388f7c7648faa7889641e3def",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.380"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_tdx_binding_compares_all_rows_fields_and_sources",
+      "original_case_name_sha256": "3a1d3ce543a77f9cc211d9bcb8ac096b4126efe6686310faa5cbd7e489ac0627",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.403"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_tdx_binding_compares_all_rows_fields_and_sources",
+      "original_case_name_sha256": "fff8487498b2a714f70f484545e50de78708251394d001473a27206cb115aebc",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.387"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_rehashing_corrupt_tdx_bytes_does_not_make_them_parseable",
+      "original_case_name_sha256": "e9e96f659a7c3f9d2d76c4c3e7bc01d3a8e9fdca400456d385660b603b22de79",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.411"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_rehashing_corrupt_tdx_bytes_does_not_make_them_parseable",
+      "original_case_name_sha256": "bc878e90f1024f2fad9c9f3f7d3ff00ccf0370cae72b0b843ef7449624a1e36d",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.416"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_rehashing_corrupt_tdx_bytes_does_not_make_them_parseable",
+      "original_case_name_sha256": "3fdaa8311d57323488fca2e292762f6899dfe2bfe938d2e1c3369781564819d9",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.454"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_tdx_replay_reads_packaged_bytes_without_reopening_original_locator",
+      "original_case_name_sha256": "0b2bdb24a51ffd674905aa25e975552522fbe65abb95a9f029911183f198aceb",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.762"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_independent_window_requires_calendar_boundaries",
+      "original_case_name_sha256": "13bdd162a5b3e3fb550b6b5685d7a6936167a73d327059bf79f626ea4ae0d8b2",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.336"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_independent_window_requires_calendar_boundaries",
+      "original_case_name_sha256": "ac713d8b1794b8042964beee77fcaa57e0172b4cc7e1246c636d33d963227464",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.351"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_independent_window_requires_calendar_boundaries",
+      "original_case_name_sha256": "7d9902421176529ea9411184d5b0c0a08c7d6b9b13a02880ad0bc7ad7bbcca39",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.356"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_independent_window_requires_calendar_boundaries",
+      "original_case_name_sha256": "febcde6d0dce6332861d537cb7f1670fc8a0cfcc10e01a8b28a6463fc0cd170f",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.367"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_warmup_members_cannot_expand_the_formal_window",
+      "original_case_name_sha256": "98d68fbf3589c10eb131bfae4634d45ec07e75f8ed47b1e975ff7356b33c9db1",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.414"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_real_declaration_cannot_lower_csi500_member_count",
+      "original_case_name_sha256": "2f6445bfd3d05979a2ce3d4c2fd56bf7ae9959a00dce403612f7001b92345564",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.622"
+    },
+    {
+      "class": "tests.research.test_qualification_admission_boundaries",
+      "function": "test_complete_500_member_window_is_checked_on_every_day",
+      "original_case_name_sha256": "8ba7b7b0281e9f8756f53980ae2d1de953bc896eb35bad3bca88f32823412aad",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.321"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_provider_flags_and_empty_packages_never_grant_admission",
+      "original_case_name_sha256": "69bf97b01f4f04c639d5fcbba98409ecc6a9f05097b581edb41efa0cc00aa601",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.085"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_provider_flags_and_empty_packages_never_grant_admission",
+      "original_case_name_sha256": "efe2ecff4ec7eab7992b7b8f44e46bfffbf89d191d2447d3a289cf69ec4dd31f",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.001"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_provider_flags_and_empty_packages_never_grant_admission",
+      "original_case_name_sha256": "38cd423aacb6d820dd5e24049050be7f583771c2d0948e9e0ed7cdd03fc8be25",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.001"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_provider_flags_and_empty_packages_never_grant_admission",
+      "original_case_name_sha256": "726fd6019e39f7dac0ae7e5b842f56dce3a335196e612ac73765e7451a17b6f6",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.001"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_provider_flags_and_empty_packages_never_grant_admission",
+      "original_case_name_sha256": "cbb44bb231273ed16ea1176596e0c263bcaf1b1724e44340f54f78284c584738",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.000"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_unknown_nonlocal_provider_fails_closed",
+      "original_case_name_sha256": "efbd65e41b0129537ba2f63ab0371e4ab53728ff7157c989930098f9f7e01a0f",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.001"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_provider_name_and_old_approval_method_are_not_an_authority",
+      "original_case_name_sha256": "492ded1a64ae6d5dea0b907395b5f9b561f30cfaa68eb00f8461d69977b42e19",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.001"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_incomplete_or_identity_mismatched_nonlocal_evidence_is_rejected",
+      "original_case_name_sha256": "652678699958944bf5f6cba13434d05cd52191a294f5da24702cd759eeea8592",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.020"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_incomplete_or_identity_mismatched_nonlocal_evidence_is_rejected",
+      "original_case_name_sha256": "3dc19e61c2a516b668309f8f9215f36e96a6c8234a5ca7765f991a430fb3da01",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.552"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_incomplete_or_identity_mismatched_nonlocal_evidence_is_rejected",
+      "original_case_name_sha256": "49e366ba1a2b063e622fd124226b972508e3579b7988598f85355b3e62091da2",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.540"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_incomplete_or_identity_mismatched_nonlocal_evidence_is_rejected",
+      "original_case_name_sha256": "900610f765ca212bd39e3bb80a63d46070fb9967a3a23b53bd02604e6b2e73b4",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.473"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_incomplete_or_identity_mismatched_nonlocal_evidence_is_rejected",
+      "original_case_name_sha256": "143e9bd09b69811bcdae53069db5917991cb910d087df8af7279bb793c2051f9",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.011"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_incomplete_or_identity_mismatched_nonlocal_evidence_is_rejected",
+      "original_case_name_sha256": "9f689ebb99c061b73480452939c1d95a9882260436a56b5da811cbea823425ef",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.027"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_complete_synthetic_recipe_is_never_a_financial_positive_control",
+      "original_case_name_sha256": "b00b64d50abfb7d06e646f7bec3a2bf7594575513b1ab45d09344c6c50000630",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.592"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_complete_synthetic_recipe_is_never_a_financial_positive_control",
+      "original_case_name_sha256": "7efd80c128c9158eabce643d84e1c612683a3b862dcace40538415638ec90f17",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.577"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_actual_gate_binds_requested_scope_before_rejecting_synthetic_qualification",
+      "original_case_name_sha256": "e7e893f56d5afebcdc8e38fb2323048f157f898e75682a36a887d91013f3451e",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.552"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_actual_gate_binds_requested_scope_before_rejecting_synthetic_qualification",
+      "original_case_name_sha256": "d27a90c4cd64c25a7bb2d74d5feb2a5dac252f05b2c758e2eb92c28f5fc2b520",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.571"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_actual_gate_binds_requested_scope_before_rejecting_synthetic_qualification",
+      "original_case_name_sha256": "3f156525a73add63343e0ea817a7d33c21bb2820fe7125f2ddf1efec98edc65b",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.549"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_actual_gate_binds_requested_scope_before_rejecting_synthetic_qualification",
+      "original_case_name_sha256": "1b4a1cdb4a38099c972efeb0279cad176cbefa91b39ce914641a237a2b4f5d60",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.640"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_actual_gate_binds_requested_scope_before_rejecting_synthetic_qualification",
+      "original_case_name_sha256": "975187412828d1a70addd73f3897bb1ee465c29292be642a8a961225c5f03455",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.551"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_actual_gate_binds_requested_scope_before_rejecting_synthetic_qualification",
+      "original_case_name_sha256": "dbdd9b704f668f48322b8f35d7dbad85559f678ac0f07e86e33d74dce49495bb",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.598"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_actual_gate_binds_requested_scope_before_rejecting_synthetic_qualification",
+      "original_case_name_sha256": "d60f652873cd759a09855eb6eb0c09eb3c251cfd03575e864b4b38602cd28ba4",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.600"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_actual_gate_binds_requested_scope_before_rejecting_synthetic_qualification",
+      "original_case_name_sha256": "5fd34304f6a53cc39dde0dd939765038293df04c10dca3a60b69ff759224f02b",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.501"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_actual_gate_binds_requested_scope_before_rejecting_synthetic_qualification",
+      "original_case_name_sha256": "47b845bec9b414c43c208af8baecd47d79bb615f3a6f39c0a93bc8b4d79a9eba",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.363"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_actual_gate_binds_requested_scope_before_rejecting_synthetic_qualification",
+      "original_case_name_sha256": "a18550789bdfc175dc7345d5f2bb9e2834642cdbdb16d4c20d84e8b184ac9c5e",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.296"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_resealed_pass_flag_cannot_override_financial_replay",
+      "original_case_name_sha256": "83ea84c8173d0c050c6b8840282b7b5cf80a9258b488ca2e2a6454b3ae26a4db",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.463"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_unqualified_local_engineering_reads_remain_usable",
+      "original_case_name_sha256": "210707bf33d1edc1f2bcd86006f42252eaf290df9641e60973d0fb62a032322f",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.104"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_explicit_exploratory_contract_remains_nonfinancial",
+      "original_case_name_sha256": "80f03c767ba314a64f937dcdc55b6faac812f6307c7e6584bf91f42c293fd9e1",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.000"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "f48c991e31f553a095f5cfa160a4d4be096d5160f1f5ed310a6d9f23640169fa",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.007"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "413b489dc2cca6183acd2d12fd05b95a304d05973ad81316cbe39615c2a30033",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.007"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "76f9b1571d599cac160bc61de159bd0f2266731f6a2f64a5a183a0d207dd33a0",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.007"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "7e7bf34f66667b43f5afd34b0045476a69978bb8374db5afd46fd12e160f437d",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.005"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "51bfea2c0c02b51fff2fc78cc2222cd040cc3573349430eb5e63d33743000ccb",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.005"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "0317385fb2fc56cd07b20cb1234b6f81283394186a2c864ddf84a9c7390ea808",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.006"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "13bedd02cf07715fecb42eb1abb6fafce72fe8663c0b0b6a7191de0a38a42634",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.005"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "4431ce283020d1bf5459e3ecb0328ef5dc700de2f5a630d099f91d2365b377f5",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.002"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "75a92f09dab9b7c720a3bd5328ea2dc157c56a24cf6430dd733a0053eb0da238",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.004"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "0e3a869f696ca1d7b0bc654b3d71fd5d9a12eab301222a19b4a98650f621bbba",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.005"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "552bfe4e9f30d7bbc9a74b144df552bc36af882832138badeb98da520ec92a9c",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.004"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_exact_request_binding_rejects_changed_or_missing_rows_without_faking_qualification",
+      "original_case_name_sha256": "a47e6ba07bfcbc56ae2d5ec1117ff96b525cbb897199c9636898980adb38aca0",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.002"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_original_3900_row_probe_is_rejected",
+      "original_case_name_sha256": "b881a6922ea6900f44d97a26d3af6b8ce7f522fb48acf645bc61a36fef033d3b",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "2.444"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_dataset_consumption_cannot_trust_supplied_bar_snapshots",
+      "original_case_name_sha256": "b62cd54ab91ecae4fa6f84d8a5a2f38bf8814b9373d051b9988f35c56a76863c",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.265"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_dataset_consumption_cannot_trust_supplied_bar_snapshots",
+      "original_case_name_sha256": "6fb6a55eb0bc1b2970305a8e1caa386d09abb4cd5c0d3d4b73eee10c8ef9a6dc",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.360"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_rejected_formal_commands_do_not_publish_successful_artifacts",
+      "original_case_name_sha256": "f500c3a2974d7b56e31e371472bd84b61a5be5aed2567ae64fd55e2a99f9e3fa",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.348"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_rejected_formal_commands_do_not_publish_successful_artifacts",
+      "original_case_name_sha256": "9237a566152823ca52e491296171914d464756a76f8eb935b9ab6a7b255fe951",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.318"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_rejected_formal_commands_do_not_publish_successful_artifacts",
+      "original_case_name_sha256": "1f49212edd1a925b38887c8503c14fd91796aefd39f53dd9a4753dfee2857feb",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.296"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_rejected_formal_commands_do_not_publish_successful_artifacts",
+      "original_case_name_sha256": "ad9669060b0f34f5a881b0d4792431ce1d8502e23c38ed0a773e84ea509b3a12",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.304"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_rejected_formal_commands_do_not_publish_successful_artifacts",
+      "original_case_name_sha256": "b242c523824d48854ae43cd8da78b46063e0aefaecba6103b51f375245548616",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.300"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_rejected_formal_commands_do_not_publish_successful_artifacts",
+      "original_case_name_sha256": "6ea0387015355d41872013746abf1c7bc3115dce3e2a427966e8a6f8cf7577fd",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.344"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_cli_failure_manifest_is_failed_and_has_no_success_outputs",
+      "original_case_name_sha256": "4ea9ee4de12f292182b791076b0aefff9560cb79a38fdfa2f9d30906a7ba78d1",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.644"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_forward_consumers_reject_before_fitting_or_predicting",
+      "original_case_name_sha256": "8286d2cc36440271f19c11c34b7389be3bfef5e3f7b99479a23556f07cbd23f6",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.255"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_forward_consumers_reject_before_fitting_or_predicting",
+      "original_case_name_sha256": "7d60fab25b1309c45108dbc6afb0a2535e78f158ad709101e6079d864b2bc165",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.284"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_forward_realised_price_evaluation_cannot_skip_qualification",
+      "original_case_name_sha256": "6fd767b37c94067250af169cc0c731baa3709448bdd78d1d91717140dbea7ead",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.281"
+    },
+    {
+      "class": "tests.market_admission.test_admission",
+      "function": "test_default_five_year_protocol_keeps_pit_blocked",
+      "original_case_name_sha256": "9b441b8438035801bf065a0066dff082f34c75ab91d0fe8a3986d26785a6c188",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.013"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_mid_calendar_listing_and_pit_change_reach_financial_gate_without_fabricated_rows",
+      "original_case_name_sha256": "58ee1025ec44b79afe364a126a82ed70f4e301bd37e1c8ad0be5664878ec38bc",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.328"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_sparse_qualified_keys_still_reject_missing_changed_and_prelisting_rows",
+      "original_case_name_sha256": "8b676f8407ba010604c74fed434699de16f5f692b91964845af6206286c302db",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.333"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_sparse_qualified_keys_still_reject_missing_changed_and_prelisting_rows",
+      "original_case_name_sha256": "a76f45cde06b5df54a3098e34598521f3fcfbda8d859e944bd34e18d1fbe299b",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.354"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_sparse_qualified_keys_still_reject_missing_changed_and_prelisting_rows",
+      "original_case_name_sha256": "d1cd00828d4917f62ee5c03f4e61504f1740b55bc0b8297649a003ca3b14c614",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.382"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_sparse_qualified_keys_still_reject_missing_changed_and_prelisting_rows",
+      "original_case_name_sha256": "89b1ba1cbcf22170f0663a4f9179c187db5e7b9e014118f4298b5a8c22455c47",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.328"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_sparse_qualified_keys_still_reject_missing_changed_and_prelisting_rows",
+      "original_case_name_sha256": "ebfef3616f1ad917ac6ad4fce0719db9cb45d13b833c48b9e6b3c0f088bc3ed1",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.324"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_sparse_qualified_keys_still_reject_missing_changed_and_prelisting_rows",
+      "original_case_name_sha256": "2d76e4f53929747762dfa0a91fe868592369d6b1973a2232b095420ce330b3a7",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.342"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_sparse_qualified_keys_still_reject_missing_changed_and_prelisting_rows",
+      "original_case_name_sha256": "d0e52a2524c1f414be1160de0d6a03835b2c1b802d8376c5df4d3e9673179f2a",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.325"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_checker_and_receipt_cannot_jointly_self_authorize",
+      "original_case_name_sha256": "bc6960af450c19c88ef183ebf41ab9e49f0548a83ee809dd5186e17e90ff0263",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.273"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_changed_checker_is_rejected_before_any_candidate_code_executes",
+      "original_case_name_sha256": "142d861093b448f02d8363ba9c8cd86f7bb8f891863aa0fde085e2bf550fb9d2",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.233"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_changed_checker_is_rejected_before_any_candidate_code_executes",
+      "original_case_name_sha256": "18642e7d96cd7570273884866ece7ec9238b57f73cf7c009b188bc7984ca61bd",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.245"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_changed_checker_is_rejected_before_any_candidate_code_executes",
+      "original_case_name_sha256": "3f7003f75fb55b6dafd72f6f158996cf9876fef77762165d24649d364aaa3377",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.256"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_independent_controls_cannot_be_authorized_by_resealing_the_candidate",
+      "original_case_name_sha256": "04eb2235b35dcd10c1188874071b1a85402cb66b87e1c61e8c2c8f7295b2cf5a",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.246"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_independent_controls_cannot_be_authorized_by_resealing_the_candidate",
+      "original_case_name_sha256": "10ed89248b38bc1dd493247c37bcb6ae9c2f6a7e5cd865fb455d33d3bcd8f07d",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.252"
+    },
+    {
+      "class": "tests.market_admission.test_p1_review",
+      "function": "test_independent_controls_cannot_be_authorized_by_resealing_the_candidate",
+      "original_case_name_sha256": "ad299018b4f17ccfc4d9104b29bf9f73c386f9023aa4057ae42913c546fdbffb",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.242"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_revision_preserves_all_legacy_collection_and_outcome_requirements",
+      "original_case_name_sha256": "9d494e7c53b6bb27fc7a620ea69e3e09a04b63e052b8b8c4ca3799149646f88e",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "3.262"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "023bedcb299612b4f1d92d9b0482310db2168b444c14d60e5bb405dd2dfb9736",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.303"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "c65ef94af2a327c7defffdf0dc145f2e5588fa4d494deab95ecfec523bda02aa",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.384"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "9234f8363ef67f30cb1f38e4d50b28916fe5d9d44e8e49e384882d79c23e78d8",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.492"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "87ed8f99b8f714396e0f097701c586c0054fb0435bf53f544b8b7770b053f147",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.532"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "98e94708024fc4818beb97301843bad0baa5aa4163a8bb71fb18fa38e0591243",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.638"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "e73266684fe03cf144c4c5c581439a55f2e28c7ad4b4ba69545e78a66a0a554c",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.775"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "0864416ac95fc937eac761739ba9dd8b5bf99b3fef3da3e3ce2640e4be3df382",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.913"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "2dc44255342dd3dc17e703be50ee0d5b073cf58bef5b8ec316b91953c51d845c",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.919"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "8ba28e498297a6cda7a670668ad388f57c8d997af55c38304c68e0525357c05e",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.037"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "79b20e5e88df759db96d9be916f963d8c97e42473a8874953085e4f72511eea1",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.087"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "e2eed7040032dd8ed65798ab5ecd18b5b86221a66cabb45eb50a80e5cb3b2c15",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.226"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "4ffaa5b6ebfb60e110b4ceeb05f290b8cdaeb75eff683434cbae283aec1771e1",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.285"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "58b9831c8752e92a71d18c0c374e1ab30f3dca5c4c1eb7f0375d3e99ab84eb06",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.359"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "4fa9e888c40f8502aacb8197613181d50d00d4780c3fc2a8147163843b928ad0",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.518"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "32dac5da8f968f51a00984110a3a0d55d2341b99aa46a368517d554effda81bb",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.585"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "b5770b299bd7dde130ffb4b5e4953fbb1b9497e3169385bb27d9c22993777eeb",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.587"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "4d7596c531144a43474bad2109addfee16b5eac1796bf5d519f89c0d5bb74fab",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.700"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "5a4c9f05ef2bc5733194dbd02b7467e0e57b554d08ddacf710d1a0488f76dbe8",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "1.829"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_every_authorized_file_still_rejects_unregistered_bytes",
+      "original_case_name_sha256": "686d60f5f551880c53b74f1646426368df0ae48780e309ac941360018010656b",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "2.007"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_rewriting_the_receipt_cannot_self_authorize_changes",
+      "original_case_name_sha256": "f925194f57d5914c353d053c11938cc4d780b2de88961eb5a5b7fcca642c1cb6",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.228"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_rewriting_the_receipt_cannot_self_authorize_changes",
+      "original_case_name_sha256": "1c94160a629b95501d016f5d21be35667b3b0921b6fdb14d31e5f0d441f25d5d",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.211"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_rewriting_the_receipt_cannot_self_authorize_changes",
+      "original_case_name_sha256": "a2f36ec19fa3475cb40e05ef06c04ba44adb042a494e12c3cc2a3689df8bc05d",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.214"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_rewriting_the_receipt_cannot_self_authorize_changes",
+      "original_case_name_sha256": "96b2451f18f9dea3c4ef55ae019bddfe523df0c465d44032519334ad5e92d627",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "0.220"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_archival_view_requires_exact_current_security_and_original_preimages",
+      "original_case_name_sha256": "a3d87693c9f2c1f536c0b0960d7dfab0ed3684f48f318297b36582f8a08fc648",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "2.853"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_archival_view_requires_exact_current_security_and_original_preimages",
+      "original_case_name_sha256": "5e28d1782e818b690897cb31d8f184871aaf036a550912302dddb598be7c01d7",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "3.447"
+    },
+    {
+      "class": "tests.market_admission.test_revision_contract",
+      "function": "test_archival_view_requires_exact_current_security_and_original_preimages",
+      "original_case_name_sha256": "3511a997dc53617344274a56dcbbccca832fc28ab1fc6bb9ba2459674aa4afd9",
+      "outcome": "passed",
+      "payload_sha256": {},
+      "seconds": "3.160"
+    }
+  ],
+  "counts": {
+    "error": 0,
+    "failure": 0,
+    "passed": 162,
+    "skipped": 0,
+    "tests": 162
+  },
+  "is_original": false,
+  "original_blob": "1a1723e26d7adeed59a94cbb35fa56c52c3a2737",
+  "original_commit": "2198d393b75fbccfa05d49ada57cdf6703c12bb8",
+  "original_sha256": "fa0a3fd4968021babac041bba202c4b4b86962f00e664bbfaeec743042690645",
+  "redaction": "Machine identity, failure payloads and parameter values are represented by SHA256; original outcomes are preserved. This is historical evidence, not current execution.",
+  "schema": "HISTORICAL_JUNIT_PUBLIC_PROJECTION_V1"
+}
