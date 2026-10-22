@@ -107,3 +107,19 @@ a separate bare repository, then makes a fresh clone without alternates or
 development refs. It requires the source commit object to be absent while
 controller initialization, historical preservation, publication safety and
 real qualification replay pass; incomplete PIT still refuses formal admission.
+
+STATUS integration version (2026-10-22): STATUS_ADAPTER_SOLO_PRESERVATION_V1
+uses a new c01-status-v1 registry and workflow-pinned anchor. The c01-solo-v1
+registry and anchor remain byte-identical predecessor evidence. Original 29
+CSMAR postimages, 35 runtime identities, 470-object freeze, Golden and financial
+receipts remain unchanged. A finite migration inventory binds the new STATUS
+modules, synthetic tests, entry point, current control tests and this ADR.
+The original independently reviewed candidate is identified by raw source SHA;
+Git migration normalizes CRLF to LF only, preserving its AST and refusal rules.
+STATUS runtime source bytes are also pinned and checked on every platform.
+New collected tests and coverage line inventories append to the prior contract;
+no old node or covered-line requirement is removed. The independently reviewed
+workflow pin authenticates the new anchor, loader, verifier and registry.
+Rehashing registry and anchor alone still fails. The V2 source reconstruction
+continues to require only reachable LEGACY ancestry and authenticated finite
+postimages; STATUS adds no private Git-object dependency or financial authority.

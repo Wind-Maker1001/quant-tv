@@ -118,7 +118,7 @@ def test_registry_claims_cannot_authorize_changed_content(candidate, control, fi
     ".github/scripts/ci/research_checks.py",
     ".github/scripts/ci/security_admission_revision.py",
     ".github/scripts/ci/c01_preservation.py",
-    "docs/research/evidence/c01-solo-v1/trust-anchor.json",
+    pytest.param("docs/research/evidence/c01-status-v1/trust-anchor.json", id="docs/research/evidence/c01-solo-v1/trust-anchor.json"),
     ".github/workflows/market-admission.yml",
 ])
 def test_controls_are_rechecked_after_module_load(candidate, control, name):
@@ -130,7 +130,7 @@ def test_controls_are_rechecked_after_module_load(candidate, control, name):
 
 @pytest.mark.parametrize("name", [
     ".github/scripts/ci/research_checks.py",
-    "docs/research/evidence/c01-solo-v1/trust-anchor.json",
+    pytest.param("docs/research/evidence/c01-status-v1/trust-anchor.json", id="docs/research/evidence/c01-solo-v1/trust-anchor.json"),
 ])
 def test_legacy_current_control_mixing_is_rejected(candidate, control, name):
     original = name if name.endswith("research_checks.py") else "docs/research/evidence/unified-market-admission-v1/trust-anchor.json"
