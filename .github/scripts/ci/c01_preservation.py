@@ -21,9 +21,9 @@ from types import ModuleType
 LEGACY = "cc13795d144592b360e560a9b979e183d6b01907"
 SOURCE = "dabdc87b80d3c88ccf56034981a3c5cf0710ed63"
 REVIEWED_SOURCE = "2198d393b75fbccfa05d49ada57cdf6703c12bb8"
-VERSION = "CSMAR_RAW_SOLO_PRESERVATION_V2"
-REGISTRY = "docs/research/evidence/c01-solo-v1/version-registry.json"
-ANCHOR = "docs/research/evidence/c01-solo-v1/trust-anchor.json"
+VERSION = "STATUS_ADAPTER_SOLO_PRESERVATION_V1"
+REGISTRY = "docs/research/evidence/c01-status-v1/version-registry.json"
+ANCHOR = "docs/research/evidence/c01-status-v1/trust-anchor.json"
 OLD_CHECKER = ".github/scripts/ci/security_admission_revision.py"
 SCOPES = (
     "qbot/research",
@@ -46,10 +46,33 @@ SCOPES = (
 )
 # These are finite control/test deltas, not directory exemptions. The anchor
 # separately authenticates the loader, this module, registry and legacy checker.
-MIGRATION_FILES = frozenset(
+STATUS_FILES = frozenset(
+    (
+        "docs/research/evidence/c01-solo-v1/.gitattributes",
+        "docs/research/evidence/c01-solo-v1/trust-anchor.json",
+        "docs/research/evidence/c01-solo-v1/version-registry.json",
+        "docs/research/evidence/c01-status-v1/.gitattributes",
+        "qbot/research/universe/historical_status.py",
+        "qbot/research/universe/.gitattributes",
+        "qbot/research/universe/status_candidate/.gitattributes",
+        "examples/research/diagnose_historical_status.py",
+        "qbot/research/universe/status_candidate/adapter.py",
+        "qbot/research/universe/status_candidate/ingest.py",
+        "qbot/research/universe/status_candidate/model.py",
+        "qbot/research/universe/status_candidate/__init__.py",
+        "qbot/research/universe/status_candidate/__main__.py",
+        "tests/research/status_candidate/conftest.py",
+        "tests/research/status_candidate/test_integration.py",
+        "tests/research/status_candidate/test_preservation.py",
+        "tests/research/status_candidate/test_toctou.py",
+        "tests/research/status_candidate/__init__.py",
+    )
+)
+
+MIGRATION_FILES = STATUS_FILES | frozenset(
     (
         "qbot/research/data/csmar/.gitattributes",
-        "docs/research/evidence/c01-solo-v1/.gitattributes",
+        "docs/research/evidence/c01-status-v1/.gitattributes",
         "tests/research/test_five_year_frozen_baseline.py",
         "tests/research/test_c01_source_reachability.py",
         "docs/architecture/decisions/ADR-C01-SOLO-MAINTAINER.md",
@@ -317,8 +340,9 @@ def read_registry(root, version=VERSION):
             "coverage_valid_lines",
             "financial_recertification",
             "publication_derivatives",
+            "status_increment",
         }
-        or value["schema"] != "FACTORLAB_C01_SOLO_REGISTRY_V2"
+        or value["schema"] != "FACTORLAB_C01_STATUS_REGISTRY_V1"
         or value["version"] != VERSION
         or value["governance"] != "ADR-C01-SOLO-MAINTAINER"
         or value["legacy_commit"] != LEGACY
@@ -327,6 +351,43 @@ def read_registry(root, version=VERSION):
         or set(value["migration_postimages"]) != MIGRATION_FILES
     ):
         raise ValueError("C01 version registry schema/scope changed")
+    increment = value["status_increment"]
+    if (
+        set(increment)
+        != {
+            "predecessor_registry_sha256",
+            "predecessor_anchor_sha256",
+            "source_files",
+            "migration_origin",
+        }
+        or digest(
+            normalized(
+                safe_file(
+                    root, "docs/research/evidence/c01-solo-v1/version-registry.json"
+                ).read_bytes()
+            )
+        )
+        != increment["predecessor_registry_sha256"]
+        or digest(
+            normalized(
+                safe_file(
+                    root, "docs/research/evidence/c01-solo-v1/trust-anchor.json"
+                ).read_bytes()
+            )
+        )
+        != increment["predecessor_anchor_sha256"]
+    ):
+        raise ValueError("C01 STATUS predecessor identity changed")
+    sources = {
+        name
+        for name in STATUS_FILES
+        if name.startswith("qbot/") and name.endswith(".py")
+    }
+    if set(increment["source_files"]) != sources:
+        raise ValueError("C01 STATUS source closure changed")
+    for name, wanted in increment["source_files"].items():
+        if digest(safe_file(root, name).read_bytes()) != wanted:
+            raise ValueError("C01 STATUS runtime bytes changed: " + name)
     return value
 
 

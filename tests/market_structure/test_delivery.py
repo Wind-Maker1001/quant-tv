@@ -144,7 +144,9 @@ def test_protected_tracked_content_is_unchanged():
     spec.loader.exec_module(controller)
     security = controller.load_security_revision(ROOT)
     revision = security.load_revision(ROOT)
-    assert security.read_registry(ROOT)["version"] == "CSMAR_RAW_SOLO_PRESERVATION_V2"
+    assert security.read_registry(ROOT)["version"] == "STATUS_ADAPTER_SOLO_PRESERVATION_V1"
+    predecessor = ROOT / "docs/research/evidence/c01-solo-v1/version-registry.json"
+    assert json.loads(predecessor.read_bytes())["version"] == "CSMAR_RAW_SOLO_PRESERVATION_V2"
     approved = (set(revision["files"]) | (set(controller.SECURITY_CONTROL_FILES) - {controller.SECURITY_CHECKER_PATH})) if revision else set()
     assert set(changed) <= approved
     assert (

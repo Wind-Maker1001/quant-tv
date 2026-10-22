@@ -59,7 +59,7 @@ jobs:
           python -m pip check
       - name: Verify Solo preservation controls before importing repository code
         env:
-          SECURITY_TRUST_ANCHOR_SHA256: '5517487ca6524429b9eb5c6ca581dc1df6d5f14ddcfd7f167d46c8f6d9535c7f'
+          SECURITY_TRUST_ANCHOR_SHA256: '3a594469a9436f653f2a1fbffc9cc197c8cbc66ccc1120dd25252afc038a559d'
         run: |
           python -B - <<'PY'
           import hashlib
@@ -67,7 +67,7 @@ jobs:
           import os
           from pathlib import Path
 
-          raw = Path('docs/research/evidence/c01-solo-v1/trust-anchor.json').read_bytes()
+          raw = Path('docs/research/evidence/c01-status-v1/trust-anchor.json').read_bytes()
           assert hashlib.sha256(raw).hexdigest() == os.environ['SECURITY_TRUST_ANCHOR_SHA256']
           anchor = json.loads(raw)
           assert set(anchor) == {'schema', 'files'}
@@ -76,7 +76,7 @@ jobs:
               '.github/scripts/ci/security_admission_revision.py',
               '.github/scripts/ci/research_checks.py',
               '.github/scripts/ci/c01_preservation.py',
-              'docs/research/evidence/c01-solo-v1/version-registry.json',
+              'docs/research/evidence/c01-status-v1/version-registry.json',
           }
           for name, expected in anchor['files'].items():
               body = Path(name).read_bytes().replace(b'\r\n', b'\n')

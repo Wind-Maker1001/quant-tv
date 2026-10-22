@@ -342,7 +342,7 @@ def test_source_content_rejects_unregistered_or_changed_source(candidate, contro
     [
         ".github/scripts/ci/c01_preservation.py",
         ".github/workflows/market-admission.yml",
-        "docs/research/evidence/c01-solo-v1/trust-anchor.json",
+        pytest.param("docs/research/evidence/c01-status-v1/trust-anchor.json", id="docs/research/evidence/c01-solo-v1/trust-anchor.json"),
     ],
 )
 def test_control_file_modes_are_authenticated(candidate, control, name):

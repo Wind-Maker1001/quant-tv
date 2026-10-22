@@ -1,0 +1,3 @@
+# Independent workflow pins authenticate exact JSON bytes on every platform.
+trust-anchor.json text eol=lf
+version-registry.json text eol=lf

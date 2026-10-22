@@ -13,10 +13,10 @@ ROOT = Path(__file__).resolve().parents[3]
 SCOPES = ("qbot/research", "tests/research", "examples/research", ".github/scripts/ci")
 SECURITY_CHECKER_PATH = ".github/scripts/ci/security_admission_revision.py"
 CHECKER_SHA256 = "1ce0b775debcb7961fda9acf3a1b9a329ab21f5d7029fd20d9fcf0fcd7cf219f"
-SECURITY_ANCHOR = "docs/research/evidence/c01-solo-v1/trust-anchor.json"
+SECURITY_ANCHOR = "docs/research/evidence/c01-status-v1/trust-anchor.json"
 SECURITY_WORKFLOW = ".github/workflows/market-admission.yml"
 C01_CHECKER_PATH = ".github/scripts/ci/c01_preservation.py"
-C01_REGISTRY = "docs/research/evidence/c01-solo-v1/version-registry.json"
+C01_REGISTRY = "docs/research/evidence/c01-status-v1/version-registry.json"
 SECURITY_CONTROL_FILES = frozenset(
     (
         SECURITY_CHECKER_PATH,

@@ -1,0 +1,9 @@
+{
+  "files": {
+    ".github/scripts/ci/c01_preservation.py": "a506d076dfd369a47617e891631e044e31762e23e90f559cd7d2296bf95702cc",
+    ".github/scripts/ci/research_checks.py": "e966e44007402f99f2e45551e8ca394b8225e5a3610fc0329126089be11f0a10",
+    ".github/scripts/ci/security_admission_revision.py": "1ce0b775debcb7961fda9acf3a1b9a329ab21f5d7029fd20d9fcf0fcd7cf219f",
+    "docs/research/evidence/c01-status-v1/version-registry.json": "69d6f7d6b7f2f5dd34a7000f9c44b4307a1ecf73fe6fb537de772e4639a23433"
+  },
+  "schema": "FACTORLAB_C01_SOLO_CONTROL_ANCHOR_V1"
+}
