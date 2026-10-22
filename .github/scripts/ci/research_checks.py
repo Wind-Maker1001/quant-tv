@@ -18,8 +18,12 @@ SECURITY_WORKFLOW = ".github/workflows/market-admission.yml"
 C01_CHECKER_PATH = ".github/scripts/ci/c01_preservation.py"
 C01_REGISTRY = "docs/research/evidence/c01-solo-v1/version-registry.json"
 SECURITY_CONTROL_FILES = frozenset(
-    (SECURITY_CHECKER_PATH, ".github/scripts/ci/research_checks.py",
-     C01_CHECKER_PATH, C01_REGISTRY)
+    (
+        SECURITY_CHECKER_PATH,
+        ".github/scripts/ci/research_checks.py",
+        C01_CHECKER_PATH,
+        C01_REGISTRY,
+    )
 )
 
 
@@ -79,7 +83,8 @@ def load_security_revision(root):
     module.__file__ = str(candidate / C01_CHECKER_PATH)
     exec(compile(bodies[C01_CHECKER_PATH], module.__file__, "exec"), module.__dict__)
     module.configure(
-        candidate, hashlib.sha256(bodies[C01_REGISTRY]).hexdigest(),
+        candidate,
+        hashlib.sha256(bodies[C01_REGISTRY]).hexdigest(),
         {name: hashlib.sha256(body).hexdigest() for name, body in bodies.items()},
         (ROOT / SECURITY_WORKFLOW).read_bytes().replace(b"\r\n", b"\n"),
     )

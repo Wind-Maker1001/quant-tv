@@ -1,7 +1,7 @@
 {
   "files": {
-    ".github/scripts/ci/c01_preservation.py": "2772c336addc27ca5791a28db0b0332bd4d2c2738149d46699f6ebf2a5be8916",
-    ".github/scripts/ci/research_checks.py": "1b57cb921ed5d1cf941f38fc3878260b05eda49d35932fc9c12fc6784a5762bc",
+    ".github/scripts/ci/c01_preservation.py": "8c3106efff88edb1d7dffacb6039cd66b2c1fff2e3ad1ffef7f2d626ac5cbd0c",
+    ".github/scripts/ci/research_checks.py": "3a4c03fdb8173cdaec09f9218ef1aba647b670411972021002d84662af1c840c",
     ".github/scripts/ci/security_admission_revision.py": "1ce0b775debcb7961fda9acf3a1b9a329ab21f5d7029fd20d9fcf0fcd7cf219f",
     "docs/research/evidence/c01-solo-v1/version-registry.json": "1499587b42483bb10f5b6adaf9bac7cdf94418dd95017e7142d2b6a595053d62"
   },

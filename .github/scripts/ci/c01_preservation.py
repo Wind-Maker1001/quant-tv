@@ -24,29 +24,46 @@ REGISTRY = "docs/research/evidence/c01-solo-v1/version-registry.json"
 ANCHOR = "docs/research/evidence/c01-solo-v1/trust-anchor.json"
 OLD_CHECKER = ".github/scripts/ci/security_admission_revision.py"
 SCOPES = (
-    "qbot/research", "tests/research", "tests/market_admission",
-    "tests/model_readiness", "tests/market_structure", "tests/evidence",
-    "tests/minute_data", "tests/conftest.py", "docs/research",
-    "configs/research", "examples/research", ".github/scripts/ci",
-    ".github/workflows", "pytest.ini", "dev/requirements-research.txt",
-    "dev/requirements-research-ci.txt", "dev/requirements-evidence-ci.txt",
+    "qbot/research",
+    "tests/research",
+    "tests/market_admission",
+    "tests/model_readiness",
+    "tests/market_structure",
+    "tests/evidence",
+    "tests/minute_data",
+    "tests/conftest.py",
+    "docs/research",
+    "configs/research",
+    "examples/research",
+    ".github/scripts/ci",
+    ".github/workflows",
+    "pytest.ini",
+    "dev/requirements-research.txt",
+    "dev/requirements-research-ci.txt",
+    "dev/requirements-evidence-ci.txt",
 )
 # These are finite control/test deltas, not directory exemptions. The anchor
 # separately authenticates the loader, this module, registry and legacy checker.
-MIGRATION_FILES = frozenset((
-    "qbot/research/data/csmar/.gitattributes",
-    "docs/research/evidence/c01-solo-v1/.gitattributes",
-    "tests/research/test_five_year_frozen_baseline.py",
-    "tests/market_structure/test_delivery.py",
-    "tests/market_admission/test_revision_contract.py",
-    "tests/research/test_c01_preservation.py",
-    "examples/research/review_yhh30m_release.py",
-    "tests/market_structure/test_c01_publication_safety.py",
-))
-CONTROL_FILES = frozenset((
-    ".github/scripts/ci/research_checks.py", OLD_CHECKER,
-    ".github/scripts/ci/c01_preservation.py", REGISTRY,
-))
+MIGRATION_FILES = frozenset(
+    (
+        "qbot/research/data/csmar/.gitattributes",
+        "docs/research/evidence/c01-solo-v1/.gitattributes",
+        "tests/research/test_five_year_frozen_baseline.py",
+        "tests/market_structure/test_delivery.py",
+        "tests/market_admission/test_revision_contract.py",
+        "tests/research/test_c01_preservation.py",
+        "examples/research/review_yhh30m_release.py",
+        "tests/market_structure/test_c01_publication_safety.py",
+    )
+)
+CONTROL_FILES = frozenset(
+    (
+        ".github/scripts/ci/research_checks.py",
+        OLD_CHECKER,
+        ".github/scripts/ci/c01_preservation.py",
+        REGISTRY,
+    )
+)
 WORKFLOW = ".github/workflows/market-admission.yml"
 
 
@@ -78,8 +95,14 @@ def git(root, *args):
 
 def safe_file(root, name):
     path = PurePosixPath(name)
-    if (not isinstance(name, str) or str(path) != name or path.is_absolute()
-            or ".." in path.parts or "\\" in name or ":" in name):
+    if (
+        not isinstance(name, str)
+        or str(path) != name
+        or path.is_absolute()
+        or ".." in path.parts
+        or "\\" in name
+        or ":" in name
+    ):
         raise ValueError("Noncanonical C01 path")
     target = root / name
     current = target
@@ -97,7 +120,14 @@ def object_files(common, commit):
     """Cache only exact immutable Git objects, never observed working bytes."""
     if commit not in (LEGACY, SOURCE):
         raise ValueError("C01 arbitrary Git ref forbidden")
-    freeze = json.loads(git(common, "show", LEGACY + ":docs/research/evidence/five-year-data-feasibility-v1/frozen-baseline.json"))
+    freeze = json.loads(
+        git(
+            common,
+            "show",
+            LEGACY
+            + ":docs/research/evidence/five-year-data-feasibility-v1/frozen-baseline.json",
+        )
+    )
     frozen_paths = tuple(item["path"] for item in freeze["files"])
     if len(frozen_paths) != 470 or len(set(frozen_paths)) != 470:
         raise ValueError("C01 predecessor freeze inventory changed")
@@ -118,14 +148,20 @@ def object_files(common, commit):
         if key.startswith("GIT_"):
             env.pop(key)
     env["GIT_NO_REPLACE_OBJECTS"] = "1"
-    result = subprocess.run(["git", "cat-file", "--batch"], cwd=common,
-                            input=request, stdout=subprocess.PIPE, env=env, check=True)
+    result = subprocess.run(
+        ["git", "cat-file", "--batch"],
+        cwd=common,
+        input=request,
+        stdout=subprocess.PIPE,
+        env=env,
+        check=True,
+    )
     payload, cursor, files = result.stdout, 0, {}
     for name in ordered:
         end = payload.index(b"\n", cursor)
         oid, kind, length = payload[cursor:end].decode().split()
         length = int(length)
-        body = payload[end + 1:end + 1 + length]
+        body = payload[end + 1 : end + 1 + length]
         if oid != objects[name] or kind != "blob" or len(body) != length:
             raise ValueError("C01 Git object stream mismatch")
         files[name] = {"blob": oid, "sha256": digest(normalized(body))}
@@ -145,14 +181,25 @@ def configure(root, registry_sha256, control_hashes, workflow_body):
     _anchor_body = normalized((Path(root) / ANCHOR).read_bytes())
     _legacy = ModuleType("c01_immutable_legacy_checker")
     _legacy.__file__ = str(Path(root) / OLD_CHECKER)
-    exec(compile((Path(root) / OLD_CHECKER).read_bytes(), _legacy.__file__, "exec"),
-         _legacy.__dict__)
+    exec(
+        compile((Path(root) / OLD_CHECKER).read_bytes(), _legacy.__file__, "exec"),
+        _legacy.__dict__,
+    )
     BASE, FILES = _legacy.BASE, _legacy.FILES
     RECEIPT, RECEIPT_SHA256 = _legacy.RECEIPT, _legacy.RECEIPT_SHA256
     COVERAGE_FILES = _legacy.COVERAGE_FILES
-    common = git(root, "rev-parse", "--path-format=absolute", "--git-common-dir").decode().strip()
-    PRESERVATION_FILES = frozenset(object_files(common, LEGACY)) | frozenset(
-        object_files(common, SOURCE)) | MIGRATION_FILES | CONTROL_FILES | {ANCHOR}
+    common = (
+        git(root, "rev-parse", "--path-format=absolute", "--git-common-dir")
+        .decode()
+        .strip()
+    )
+    PRESERVATION_FILES = (
+        frozenset(object_files(common, LEGACY))
+        | frozenset(object_files(common, SOURCE))
+        | MIGRATION_FILES
+        | CONTROL_FILES
+        | {ANCHOR}
+    )
 
 
 def read_registry(root, version=VERSION):
@@ -162,17 +209,31 @@ def read_registry(root, version=VERSION):
     if digest(normalized(raw)) != _registry_sha256:
         raise ValueError("C01 version registry digest changed")
     value = json.loads(raw, object_pairs_hook=unique_object)
-    if (set(value) != {"schema", "version", "governance", "legacy_commit",
-                       "source_commit", "source_changes", "migration_postimages",
-                       "source_closure", "legacy_qualification_identity",
-                       "execution_delta", "coverage_valid_lines",
-                       "financial_recertification", "publication_derivatives"}
-            or value["schema"] != "FACTORLAB_C01_SOLO_REGISTRY_V1"
-            or value["version"] != VERSION
-            or value["governance"] != "ADR-C01-SOLO-MAINTAINER"
-            or value["legacy_commit"] != LEGACY or value["source_commit"] != SOURCE
-            or value["financial_recertification"] is not False
-            or set(value["migration_postimages"]) != MIGRATION_FILES):
+    if (
+        set(value)
+        != {
+            "schema",
+            "version",
+            "governance",
+            "legacy_commit",
+            "source_commit",
+            "source_changes",
+            "migration_postimages",
+            "source_closure",
+            "legacy_qualification_identity",
+            "execution_delta",
+            "coverage_valid_lines",
+            "financial_recertification",
+            "publication_derivatives",
+        }
+        or value["schema"] != "FACTORLAB_C01_SOLO_REGISTRY_V1"
+        or value["version"] != VERSION
+        or value["governance"] != "ADR-C01-SOLO-MAINTAINER"
+        or value["legacy_commit"] != LEGACY
+        or value["source_commit"] != SOURCE
+        or value["financial_recertification"] is not False
+        or set(value["migration_postimages"]) != MIGRATION_FILES
+    ):
         raise ValueError("C01 version registry schema/scope changed")
     return value
 
@@ -187,7 +248,11 @@ def validate_preservation(root, version=VERSION):
             raise ValueError("C01 control bytes changed: " + name)
     if normalized(safe_file(root, WORKFLOW).read_bytes()) != _workflow_body:
         raise ValueError("C01 workflow differs from trusted controller")
-    common = git(root, "rev-parse", "--path-format=absolute", "--git-common-dir").decode().strip()
+    common = (
+        git(root, "rev-parse", "--path-format=absolute", "--git-common-dir")
+        .decode()
+        .strip()
+    )
     before, after = object_files(common, LEGACY), object_files(common, SOURCE)
     changes = {name: item for name, item in after.items() if before.get(name) != item}
     if value["source_changes"] != changes:
@@ -195,20 +260,28 @@ def validate_preservation(root, version=VERSION):
     if len(changes) != 29 or set(before) - set(after):
         raise ValueError("C01 source change inventory changed")
     publication = value["publication_derivatives"]
-    if (set(publication) != {"reviewed_source_commit", "accepted_c01_commit", "files"}
-            or publication["reviewed_source_commit"] != REVIEWED_SOURCE
-            or publication["accepted_c01_commit"] != "f7a4490f5ecd6c64fda96794d343b51e1caa307c"
-            or len(publication["files"]) != 17):
+    if (
+        set(publication) != {"reviewed_source_commit", "accepted_c01_commit", "files"}
+        or publication["reviewed_source_commit"] != REVIEWED_SOURCE
+        or publication["accepted_c01_commit"]
+        != "f7a4490f5ecd6c64fda96794d343b51e1caa307c"
+        or len(publication["files"]) != 17
+    ):
         raise ValueError("C01 publication origin changed")
     originals, copies = set(), set()
     for item in publication["files"]:
         original, public = item["original_path"], item["public_path"]
-        if (original in originals or public in copies or original in before
-                or original in after or original in value["source_closure"]
-                or item["original_commit"] != REVIEWED_SOURCE
-                or not original.startswith("docs/research/csmar-source-binding-v2/")
-                or not public.startswith("docs/research/csmar-source-binding-v2-public/")
-                or after.get(public, {}).get("sha256") != item["public_sha256"]):
+        if (
+            original in originals
+            or public in copies
+            or original in before
+            or original in after
+            or original in value["source_closure"]
+            or item["original_commit"] != REVIEWED_SOURCE
+            or not original.startswith("docs/research/csmar-source-binding-v2/")
+            or not public.startswith("docs/research/csmar-source-binding-v2-public/")
+            or after.get(public, {}).get("sha256") != item["public_sha256"]
+        ):
             raise ValueError("C01 publication derivative mismatch")
         originals.add(original)
         copies.add(public)
@@ -253,10 +326,16 @@ def legacy_revision(root):
         raise ValueError("Security admission receipt digest changed")
     value = validate_preservation(root)
     original_blob = _legacy.blob
-    common = git(root, "rev-parse", "--path-format=absolute", "--git-common-dir").decode().strip()
+    common = (
+        git(root, "rev-parse", "--path-format=absolute", "--git-common-dir")
+        .decode()
+        .strip()
+    )
     before = object_files(common, LEGACY)
     overrides = set(value["migration_postimages"]) & FILES
-    _legacy.blob = lambda r, name: before[name]["blob"] if name in overrides else original_blob(r, name)
+    _legacy.blob = lambda r, name: (
+        before[name]["blob"] if name in overrides else original_blob(r, name)
+    )
     try:
         return _legacy.load_revision(root)
     finally:
@@ -274,11 +353,16 @@ def load_revision(root):
         raise ValueError("Missing C01 predecessor receipt")
     result = copy.deepcopy(revision)
     value = read_registry(root)
-    for name, item in {**value["source_changes"], **value["migration_postimages"]}.items():
+    for name, item in {
+        **value["source_changes"],
+        **value["migration_postimages"],
+    }.items():
         result["files"][name] = {"approved_blob": item["blob"]}
     for name in CONTROL_FILES | {WORKFLOW, ANCHOR}:
         body = normalized((root / name).read_bytes())
-        oid = hashlib.sha1(b"blob " + str(len(body)).encode() + b"\0" + body).hexdigest()
+        oid = hashlib.sha1(
+            b"blob " + str(len(body)).encode() + b"\0" + body
+        ).hexdigest()
         result["files"][name] = {"approved_blob": oid}
     return result
 
@@ -287,7 +371,12 @@ def historical_protected_view(root, output):
     """Archival text only, including the exact original qualification source."""
     root, output = Path(root), Path(output)
     revision = legacy_revision(root)
-    release = json.loads((root / "docs/research/evidence/audit-pit-release-20261018-v1/release-manifest.json").read_bytes())
+    release = json.loads(
+        (
+            root
+            / "docs/research/evidence/audit-pit-release-20261018-v1/release-manifest.json"
+        ).read_bytes()
+    )
     names = set(revision["files"]) | {"qbot/research/data/market_qualification.py"}
     snapshots = {}
     for item in release["protected_contracts"]:
@@ -314,11 +403,17 @@ def coverage_contract(root, expected):
     result = copy.deepcopy(expected)
     delta = value["execution_delta"]
     for key in ("all_ids", "selected_ids", "deselected_ids"):
-        if (expected[key + "_sha256"] != delta["legacy"][key + "_sha256"]
-                or expected[key + "_count"] != delta["legacy"][key + "_count"]):
+        if (
+            expected[key + "_sha256"] != delta["legacy"][key + "_sha256"]
+            or expected[key + "_count"] != delta["legacy"][key + "_count"]
+        ):
             raise ValueError("C01 collection predecessor mismatch")
         added = delta["added"][key]
-        old_path = Path(root) / "docs/research/evidence/ci-runtime-optimization-v1" / (key + ".txt")
+        old_path = (
+            Path(root)
+            / "docs/research/evidence/ci-runtime-optimization-v1"
+            / (key + ".txt")
+        )
         old = old_path.read_text(encoding="utf-8").splitlines()
         combined = sorted(old + added)
         if set(old) & set(added) or len(combined) != len(set(combined)):
@@ -326,12 +421,25 @@ def coverage_contract(root, expected):
         result[key + "_count"] = len(combined)
         result[key + "_sha256"] = digest(("\n".join(combined) + "\n").encode())
     for contract in result["execution_by_platform"].values():
-        contract["coverage_valid_lines"].update(json.loads((Path(root) / RECEIPT).read_bytes())["coverage_valid_lines"])
+        contract["coverage_valid_lines"].update(
+            json.loads((Path(root) / RECEIPT).read_bytes())["coverage_valid_lines"]
+        )
         contract["coverage_valid_lines"].update(value["coverage_valid_lines"])
-        outcomes = {node: "passed" for node in (
-            (Path(root) / "docs/research/evidence/ci-runtime-optimization-v1/selected_ids.txt").read_text(encoding="utf-8").splitlines()
-            + delta["added"]["selected_ids"])}
+        outcomes = {
+            node: "passed"
+            for node in (
+                (
+                    Path(root)
+                    / "docs/research/evidence/ci-runtime-optimization-v1/selected_ids.txt"
+                )
+                .read_text(encoding="utf-8")
+                .splitlines()
+                + delta["added"]["selected_ids"]
+            )
+        }
         for node in contract["skipped_nodeids"]:
             outcomes[node] = "skipped"
-        contract["outcomes_sha256"] = digest(json.dumps(outcomes, sort_keys=True).encode())
+        contract["outcomes_sha256"] = digest(
+            json.dumps(outcomes, sort_keys=True).encode()
+        )
     return result
