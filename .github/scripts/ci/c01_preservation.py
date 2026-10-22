@@ -12,6 +12,8 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import platform
+import re
+import stat
 import subprocess
 from types import ModuleType
 
@@ -19,7 +21,7 @@ from types import ModuleType
 LEGACY = "cc13795d144592b360e560a9b979e183d6b01907"
 SOURCE = "dabdc87b80d3c88ccf56034981a3c5cf0710ed63"
 REVIEWED_SOURCE = "2198d393b75fbccfa05d49ada57cdf6703c12bb8"
-VERSION = "CSMAR_RAW_SOLO_PRESERVATION_V1"
+VERSION = "CSMAR_RAW_SOLO_PRESERVATION_V2"
 REGISTRY = "docs/research/evidence/c01-solo-v1/version-registry.json"
 ANCHOR = "docs/research/evidence/c01-solo-v1/trust-anchor.json"
 OLD_CHECKER = ".github/scripts/ci/security_admission_revision.py"
@@ -49,6 +51,8 @@ MIGRATION_FILES = frozenset(
         "qbot/research/data/csmar/.gitattributes",
         "docs/research/evidence/c01-solo-v1/.gitattributes",
         "tests/research/test_five_year_frozen_baseline.py",
+        "tests/research/test_c01_source_reachability.py",
+        "docs/architecture/decisions/ADR-C01-SOLO-MAINTAINER.md",
         "tests/market_structure/test_delivery.py",
         "tests/market_admission/test_revision_contract.py",
         "tests/research/test_c01_preservation.py",
@@ -75,6 +79,44 @@ def normalized(body):
     return body.replace(b"\r\n", b"\n")
 
 
+def blob_identity(body):
+    return hashlib.sha1(b"blob " + str(len(body)).encode() + b"\0" + body).hexdigest()
+
+
+def canonical_name(name):
+    return (
+        isinstance(name, str)
+        and name not in ("", ".")
+        and PurePosixPath(name).as_posix() == name
+        and not PurePosixPath(name).is_absolute()
+        and not any(part in ("", ".", "..") for part in name.split("/"))
+        and not any(char in name for char in ("\\", ":", "\0", "\n", "\r"))
+    )
+
+
+def checked_entry(name, item):
+    if (
+        not canonical_name(name)
+        or not isinstance(item, dict)
+        or set(item) != {"blob", "sha256", "mode"}
+        or not isinstance(item["blob"], str)
+        or re.fullmatch(r"[0-9a-f]{40}", item["blob"]) is None
+        or not isinstance(item["sha256"], str)
+        or re.fullmatch(r"[0-9a-f]{64}", item["sha256"]) is None
+        or item["mode"] not in ("100644", "100755")
+    ):
+        raise ValueError("Invalid C01 authenticated file entry: " + str(name))
+
+
+def checked_mode(path, name, wanted, index):
+    if index.get(name) != wanted:
+        raise ValueError("C01 registered Git file mode mismatch: " + name)
+    if os.name != "nt" and (
+        path.stat().st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    ) != (0o111 if wanted == "100755" else 0):
+        raise ValueError("C01 runtime file mode mismatch: " + name)
+
+
 def unique_object(pairs):
     result = {}
     for name, value in pairs:
@@ -94,16 +136,9 @@ def git(root, *args):
 
 
 def safe_file(root, name):
-    path = PurePosixPath(name)
-    if (
-        not isinstance(name, str)
-        or str(path) != name
-        or path.is_absolute()
-        or ".." in path.parts
-        or "\\" in name
-        or ":" in name
-    ):
+    if not canonical_name(name):
         raise ValueError("Noncanonical C01 path")
+    path = PurePosixPath(name)
     target = root / name
     current = target
     while current != root:
@@ -118,7 +153,7 @@ def safe_file(root, name):
 @lru_cache(maxsize=16)
 def object_files(common, commit):
     """Cache only exact immutable Git objects, never observed working bytes."""
-    if commit not in (LEGACY, SOURCE):
+    if commit != LEGACY:
         raise ValueError("C01 arbitrary Git ref forbidden")
     freeze = json.loads(
         git(
@@ -140,9 +175,9 @@ def object_files(common, commit):
         mode, kind, oid = metadata.decode().split()
         if kind != "blob" or mode not in ("100644", "100755"):
             raise ValueError("Unsupported C01 Git entry")
-        objects[name.decode("utf-8")] = oid
+        objects[name.decode("utf-8")] = {"blob": oid, "mode": mode}
     ordered = sorted(objects)
-    request = "".join(objects[p] + "\n" for p in ordered).encode()
+    request = "".join(objects[p]["blob"] + "\n" for p in ordered).encode()
     env = os.environ.copy()
     for key in list(env):
         if key.startswith("GIT_"):
@@ -162,13 +197,73 @@ def object_files(common, commit):
         oid, kind, length = payload[cursor:end].decode().split()
         length = int(length)
         body = payload[end + 1 : end + 1 + length]
-        if oid != objects[name] or kind != "blob" or len(body) != length:
+        if (
+            oid != objects[name]["blob"]
+            or kind != "blob"
+            or len(body) != length
+            or blob_identity(body) != oid
+        ):
             raise ValueError("C01 Git object stream mismatch")
-        files[name] = {"blob": oid, "sha256": digest(normalized(body))}
+        files[name] = {
+            "blob": oid,
+            "sha256": digest(normalized(body)),
+            "mode": objects[name]["mode"],
+        }
         cursor = end + length + 2
     if cursor != len(payload):
         raise ValueError("Trailing C01 Git object data")
     return files
+
+
+def source_inventory(root, value):
+    """Authenticate LEGACY objects and overlay the reviewed finite manifest.
+
+    SOURCE is provenance metadata, not a required or replayed Git object. The
+    independent workflow pin authenticates this manifest and controller. This
+    proves registered content preservation, not the missing commit's ancestry.
+    """
+    common = (
+        git(root, "rev-parse", "--path-format=absolute", "--git-common-dir")
+        .decode()
+        .strip()
+    )
+    before = object_files(common, LEGACY)
+    changes = value["source_changes"]
+    if not isinstance(changes, dict) or len(changes) != 29:
+        raise ValueError("C01 source change inventory changed")
+    for name, item in changes.items():
+        checked_entry(name, item)
+        if (
+            not any(name == scope or name.startswith(scope + "/") for scope in SCOPES)
+            or before.get(name) == item
+        ):
+            raise ValueError("C01 source change scope changed")
+    after = {**before, **changes}
+    authentication = value["source_authentication"]
+    if authentication != {
+        "scheme": "WORKFLOW_PINNED_LEGACY_PLUS_29_POSTIMAGES_V2",
+        "source_commit_role": "PROVENANCE_METADATA_NOT_REPLAYED",
+        "git_object_replay_required": False,
+        "inventory_sha256": digest(
+            json.dumps(after, sort_keys=True, separators=(",", ":")).encode()
+        ),
+    }:
+        raise ValueError("C01 authenticated source inventory mismatch")
+    return before, after
+
+
+def source_content(root, name):
+    """Return actual content only after matching its authenticated source entry."""
+    _, after = source_inventory(root, read_registry(root))
+    if name not in after:
+        raise ValueError("Unknown C01 source path")
+    body = normalized(safe_file(Path(root), name).read_bytes())
+    if (
+        digest(body) != after[name]["sha256"]
+        or blob_identity(body) != after[name]["blob"]
+    ):
+        raise ValueError("C01 source content identity mismatch")
+    return body
 
 
 def configure(root, registry_sha256, control_hashes, workflow_body):
@@ -188,14 +283,10 @@ def configure(root, registry_sha256, control_hashes, workflow_body):
     BASE, FILES = _legacy.BASE, _legacy.FILES
     RECEIPT, RECEIPT_SHA256 = _legacy.RECEIPT, _legacy.RECEIPT_SHA256
     COVERAGE_FILES = _legacy.COVERAGE_FILES
-    common = (
-        git(root, "rev-parse", "--path-format=absolute", "--git-common-dir")
-        .decode()
-        .strip()
-    )
+    before, after = source_inventory(root, read_registry(root))
     PRESERVATION_FILES = (
-        frozenset(object_files(common, LEGACY))
-        | frozenset(object_files(common, SOURCE))
+        frozenset(before)
+        | frozenset(after)
         | MIGRATION_FILES
         | CONTROL_FILES
         | {ANCHOR}
@@ -218,6 +309,7 @@ def read_registry(root, version=VERSION):
             "legacy_commit",
             "source_commit",
             "source_changes",
+            "source_authentication",
             "migration_postimages",
             "source_closure",
             "legacy_qualification_identity",
@@ -226,7 +318,7 @@ def read_registry(root, version=VERSION):
             "financial_recertification",
             "publication_derivatives",
         }
-        or value["schema"] != "FACTORLAB_C01_SOLO_REGISTRY_V1"
+        or value["schema"] != "FACTORLAB_C01_SOLO_REGISTRY_V2"
         or value["version"] != VERSION
         or value["governance"] != "ADR-C01-SOLO-MAINTAINER"
         or value["legacy_commit"] != LEGACY
@@ -248,17 +340,7 @@ def validate_preservation(root, version=VERSION):
             raise ValueError("C01 control bytes changed: " + name)
     if normalized(safe_file(root, WORKFLOW).read_bytes()) != _workflow_body:
         raise ValueError("C01 workflow differs from trusted controller")
-    common = (
-        git(root, "rev-parse", "--path-format=absolute", "--git-common-dir")
-        .decode()
-        .strip()
-    )
-    before, after = object_files(common, LEGACY), object_files(common, SOURCE)
-    changes = {name: item for name, item in after.items() if before.get(name) != item}
-    if value["source_changes"] != changes:
-        raise ValueError("C01 source commit/postimage mismatch")
-    if len(changes) != 29 or set(before) - set(after):
-        raise ValueError("C01 source change inventory changed")
+    before, after = source_inventory(root, value)
     publication = value["publication_derivatives"]
     if (
         set(publication) != {"reviewed_source_commit", "accepted_c01_commit", "files"}
@@ -286,14 +368,32 @@ def validate_preservation(root, version=VERSION):
         originals.add(original)
         copies.add(public)
     expected = dict(after)
+    for name, item in value["migration_postimages"].items():
+        checked_entry(name, item)
     expected.update(value["migration_postimages"])
     # Anchor/loader/registry are authenticated as a chain; never self-hashed in
     # the registry. All predecessor anchors and receipts remain in expected.
     for name in CONTROL_FILES | {WORKFLOW}:
         expected.pop(name, None)
+    index = {}
+    for row in git(root, "ls-files", "--stage", "-z").split(b"\0"):
+        if row:
+            metadata, name = row.split(b"\t", 1)
+            mode, _, stage = metadata.decode().split()
+            if stage != "0":
+                raise ValueError("C01 unmerged Git index is forbidden")
+            index[name.decode("utf-8")] = mode
     for name, item in expected.items():
-        if digest(normalized(safe_file(root, name).read_bytes())) != item["sha256"]:
+        path = safe_file(root, name)
+        body = normalized(path.read_bytes())
+        if digest(body) != item["sha256"]:
             raise ValueError("Unregistered security admission bytes: " + name)
+        if name in value["source_changes"] or name in value["migration_postimages"]:
+            if blob_identity(body) != item["blob"]:
+                raise ValueError("C01 registered blob identity mismatch: " + name)
+        checked_mode(path, name, item["mode"], index)
+    for name in CONTROL_FILES | {WORKFLOW, ANCHOR}:
+        checked_mode(safe_file(root, name), name, "100644", index)
     # New protected files require finite registration too. Git ignore rules do
     # not hide unknown files; only Python bytecode/cache files are non-source.
     allowed = set(expected) | CONTROL_FILES | {WORKFLOW, ANCHOR}
@@ -312,7 +412,9 @@ def validate_preservation(root, version=VERSION):
     if len(closure) != 35 or len(set(closure)) != 35:
         raise ValueError("C01 source closure scope changed")
     for name, item in closure.items():
-        if after.get(name) != {key: item[key] for key in ("blob", "sha256")}:
+        if {key: after.get(name, {}).get(key) for key in ("blob", "sha256")} != {
+            key: item[key] for key in ("blob", "sha256")
+        }:
             raise ValueError("C01 source closure object mismatch")
         wanted = item["runtime_sha256"].get(platform.system())
         if not wanted or digest(safe_file(root, name).read_bytes()) != wanted:

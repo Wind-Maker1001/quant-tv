@@ -38,6 +38,9 @@ def candidate(tmp_path, control):
     root = tmp_path / "candidate"
     subprocess.run(["git", "clone", "--shared", "--no-checkout", str(ROOT), str(root)],
                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    entries = subprocess.check_output(["git", "ls-files", "--stage", "-z"], cwd=ROOT)
+    subprocess.run(["git", "update-index", "-z", "--index-info"],
+                   input=entries, cwd=root, check=True)
     for name in control.PRESERVATION_FILES | {".gitattributes"}:
         source = ROOT / name
         if source.is_file():

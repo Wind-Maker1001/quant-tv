@@ -1058,6 +1058,33 @@
         "tests/research/test_c01_preservation.py::test_unregistered_source_receipt_and_test_changes_are_rejected[qbot/research/data/market_qualification.py]",
         "tests/research/test_c01_preservation.py::test_unregistered_source_receipt_and_test_changes_are_rejected[qbot/research/factors/registry.py]",
         "tests/research/test_c01_preservation.py::test_unregistered_source_receipt_and_test_changes_are_rejected[tests/research/test_five_year_frozen_baseline.py]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[content]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[delete]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[git_mode]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[migration]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[rename]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[runtime_bytes]",
+        "tests/research/test_c01_source_reachability.py::test_control_file_modes_are_authenticated[.github/scripts/ci/c01_preservation.py]",
+        "tests/research/test_c01_source_reachability.py::test_control_file_modes_are_authenticated[.github/workflows/market-admission.yml]",
+        "tests/research/test_c01_source_reachability.py::test_control_file_modes_are_authenticated[docs/research/evidence/c01-solo-v1/trust-anchor.json]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[blob]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[count]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[inventory]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[mode]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[noop]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[path]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[sha256]",
+        "tests/research/test_c01_source_reachability.py::test_registry_and_anchor_rehash_cannot_replace_trusted_workflow_pin",
+        "tests/research/test_c01_source_reachability.py::test_source_content_rejects_unregistered_or_changed_source",
+        "tests/research/test_c01_source_reachability.py::test_squash_fresh_clone_without_source_objects_preserves_and_refuses_finance",
+        "tests/research/test_c01_source_reachability.py::test_tracked_symlink_mode_is_rejected_without_following_target",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[blob]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[mode]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[path]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[sha256]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[source_changes]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[source_closure]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[source_commit]",
         "tests/research/test_csmar_date_precheck_traceability.py::test_direct_invalid_date_without_provenance_does_not_invent_coordinates[IDX_Idxtrd]",
         "tests/research/test_csmar_date_precheck_traceability.py::test_direct_invalid_date_without_provenance_does_not_invent_coordinates[TRDNEW_Dalyr]",
         "tests/research/test_csmar_date_precheck_traceability.py::test_excluded_rows_keep_original_parse_and_filter_order[currency_variant-IDX_Idxtrd]",
@@ -1317,6 +1344,33 @@
         "tests/research/test_c01_preservation.py::test_unregistered_source_receipt_and_test_changes_are_rejected[qbot/research/data/market_qualification.py]",
         "tests/research/test_c01_preservation.py::test_unregistered_source_receipt_and_test_changes_are_rejected[qbot/research/factors/registry.py]",
         "tests/research/test_c01_preservation.py::test_unregistered_source_receipt_and_test_changes_are_rejected[tests/research/test_five_year_frozen_baseline.py]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[content]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[delete]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[git_mode]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[migration]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[rename]",
+        "tests/research/test_c01_source_reachability.py::test_actual_file_and_mode_changes_are_rejected[runtime_bytes]",
+        "tests/research/test_c01_source_reachability.py::test_control_file_modes_are_authenticated[.github/scripts/ci/c01_preservation.py]",
+        "tests/research/test_c01_source_reachability.py::test_control_file_modes_are_authenticated[.github/workflows/market-admission.yml]",
+        "tests/research/test_c01_source_reachability.py::test_control_file_modes_are_authenticated[docs/research/evidence/c01-solo-v1/trust-anchor.json]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[blob]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[count]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[inventory]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[mode]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[noop]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[path]",
+        "tests/research/test_c01_source_reachability.py::test_manifest_reconstruction_requires_exact_finite_consistent_entries[sha256]",
+        "tests/research/test_c01_source_reachability.py::test_registry_and_anchor_rehash_cannot_replace_trusted_workflow_pin",
+        "tests/research/test_c01_source_reachability.py::test_source_content_rejects_unregistered_or_changed_source",
+        "tests/research/test_c01_source_reachability.py::test_squash_fresh_clone_without_source_objects_preserves_and_refuses_finance",
+        "tests/research/test_c01_source_reachability.py::test_tracked_symlink_mode_is_rejected_without_following_target",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[blob]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[mode]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[path]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[sha256]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[source_changes]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[source_closure]",
+        "tests/research/test_c01_source_reachability.py::test_untrusted_source_manifest_changes_are_rejected[source_commit]",
         "tests/research/test_csmar_date_precheck_traceability.py::test_direct_invalid_date_without_provenance_does_not_invent_coordinates[IDX_Idxtrd]",
         "tests/research/test_csmar_date_precheck_traceability.py::test_direct_invalid_date_without_provenance_does_not_invent_coordinates[TRDNEW_Dalyr]",
         "tests/research/test_csmar_date_precheck_traceability.py::test_excluded_rows_keep_original_parse_and_filter_order[currency_variant-IDX_Idxtrd]",
@@ -1562,36 +1616,54 @@
     "scope": "isolated original-main reproduction only; not a historical financial receipt certification"
   },
   "migration_postimages": {
+    "docs/architecture/decisions/ADR-C01-SOLO-MAINTAINER.md": {
+      "blob": "345ea4b047e5800b6dd824683a08777f97c9607b",
+      "mode": "100644",
+      "sha256": "55b940b413a6690fed7be5a1d92cae158c5a5809ba66513c050e1880eb84f227"
+    },
     "docs/research/evidence/c01-solo-v1/.gitattributes": {
       "blob": "c5839c15eaad0a1c2371b574f2848df77a8fb49a",
+      "mode": "100644",
       "sha256": "05d5d17c4bc94012b5bf812eeb67b2e24a59f19297a3b6fe428495207e619d8f"
     },
     "examples/research/review_yhh30m_release.py": {
-      "blob": "7638fc10b1c45dfd166f8c72740f26d0fc0fd562",
-      "sha256": "507266989e80b6bdd2f365065c3a9c0559d11f793c5990117bf6096645ced95a"
+      "blob": "6ee09eb0f825d77daf1a9c3b6599ac1f2963322e",
+      "mode": "100644",
+      "sha256": "72141ae2166a5403238e4bc9eade2e74f587e203f933c4cd528577d6c5b57ba7"
     },
     "qbot/research/data/csmar/.gitattributes": {
       "blob": "ce852dcc18e5c017b0610523935590b23c5d745a",
+      "mode": "100644",
       "sha256": "0605eacab66a155f761b75f1f0cacf8bbfd7b67eb99851829837adf4082f91fe"
     },
     "tests/market_admission/test_revision_contract.py": {
-      "blob": "e4df2dc39181971b77984a33b0fa1d23875a8695",
-      "sha256": "074a73f26aef93d63289a9d1be51a78a22b0dc71d53d90f633f66810bf31d300"
+      "blob": "79b5e8d39fdf9c94fcee19ddae8e8b1b85594c85",
+      "mode": "100644",
+      "sha256": "6228f8a974fbb9f2f0a1d5d8e64f7cc3097d492c04da1ff0c6917889ad7f0d2d"
     },
     "tests/market_structure/test_c01_publication_safety.py": {
       "blob": "4f27fb6bdb9e6893beb6660eabc5da54a073cd79",
+      "mode": "100644",
       "sha256": "0bf77de220eba7733b3d4e9a9671d3a7ab70b8af0b625ddd7fd2987b19f2513f"
     },
     "tests/market_structure/test_delivery.py": {
-      "blob": "61f1a22dc05ed1cd7a7518661ce047a26b21c710",
-      "sha256": "c63c662c1fc6298f8ad2b10cac14274e5d6b9948be42411a725ff5ab37f22553"
+      "blob": "539ca4018966966723ae7fbddeae6efacbcbf44c",
+      "mode": "100644",
+      "sha256": "564e9766cda78006a512cfdaaae6c260120e049b8cbaf2b5f4e70b186488f6df"
     },
     "tests/research/test_c01_preservation.py": {
-      "blob": "00df9134c5290575ba37eab7838c01be7464f5c0",
-      "sha256": "3834bc32132b68cbafbb68980f60e3ae51ea7223d283a19742ef4e773f2f8481"
+      "blob": "ac306e26050ad8a1d1903ca2edb2381fd07f6656",
+      "mode": "100644",
+      "sha256": "c9fa138b2613a22f85d5a0ab964548c34703df786a1a320f0759bddb314813b1"
+    },
+    "tests/research/test_c01_source_reachability.py": {
+      "blob": "d0e5b28e1838a042c0204f70fb3f18995f70b00b",
+      "mode": "100644",
+      "sha256": "6ceda4341965f7a72de42f5ed2a921c7a226ff8b9d73829c523fc6c0b7de1f9c"
     },
     "tests/research/test_five_year_frozen_baseline.py": {
       "blob": "f4b7dd97824ffdde6028fc114affe4f304dadf92",
+      "mode": "100644",
       "sha256": "a32950465c185231b19ff71b5fc8790b64e9a0e1ccd0d28d08ffa6805b1bf274"
     }
   },
@@ -1754,122 +1826,157 @@
     ],
     "reviewed_source_commit": "2198d393b75fbccfa05d49ada57cdf6703c12bb8"
   },
-  "schema": "FACTORLAB_C01_SOLO_REGISTRY_V1",
+  "schema": "FACTORLAB_C01_SOLO_REGISTRY_V2",
+  "source_authentication": {
+    "git_object_replay_required": false,
+    "inventory_sha256": "fc398a12e9183728615431a6dc71b819f025e522056020dbba6325f1e4033118",
+    "scheme": "WORKFLOW_PINNED_LEGACY_PLUS_29_POSTIMAGES_V2",
+    "source_commit_role": "PROVENANCE_METADATA_NOT_REPLAYED"
+  },
   "source_changes": {
     "docs/research/csmar-source-binding-v2-public/.gitattributes": {
       "blob": "a6f96792c2f36760033ed0927cef29e5ac78595d",
+      "mode": "100644",
       "sha256": "36fc7b6faf5d59807ca9f7230c5494ede2e7cdf6d28b82f56ce78b5323ba02d0"
     },
     "docs/research/csmar-source-binding-v2-public/CSMAR_FORMAL_ADMISSION_GAPS.md": {
       "blob": "59860fcf724870924d07fddb7da72c94702ca3ed",
+      "mode": "100644",
       "sha256": "745804c59891d9e46fcc4d130dda8af737d84d866dc8cb2032fc90e97c181997"
     },
     "docs/research/csmar-source-binding-v2-public/CSMAR_IMPLEMENTATION_MANIFEST.json": {
       "blob": "d5cf48270f4315fbe567866975f48747a882cde6",
+      "mode": "100644",
       "sha256": "1bafa90548f4e37ca9cb2380120b6a8700d1248b910785c7aeda15c08b0c838d"
     },
     "docs/research/csmar-source-binding-v2-public/CSMAR_NATIVE_SCHEMA_MAPPING.md": {
       "blob": "05ed42fb39d584df5abbe6b3c9e6061df206048e",
+      "mode": "100644",
       "sha256": "1e8d7a5fc789b5ae5b1967064dafec7e88c46592763ee705bea686ebbf0e0cbb"
     },
     "docs/research/csmar-source-binding-v2-public/CSMAR_NEGATIVE_TEST_REPORT.md": {
       "blob": "030df1427718302801cee11265bc2e9906499bf6",
+      "mode": "100644",
       "sha256": "5080b01bb943ee7064a5e1ee2d1da6c2a2222ba38cda3bc2deb141837ba8ef9a"
     },
     "docs/research/csmar-source-binding-v2-public/CSMAR_PERFORMANCE_REPORT.md": {
       "blob": "1562d9d19aa15cefbc21f955a2e779445d8f40d4",
+      "mode": "100644",
       "sha256": "2235e93f653f14a939b10a8c85a228e3122911243b39f253cf81c8f56c5f8bdf"
     },
     "docs/research/csmar-source-binding-v2-public/CSMAR_REPLAY_TEST_REPORT.md": {
       "blob": "7ac58a1f272604f5ee1d61688e04145505218cce",
+      "mode": "100644",
       "sha256": "4f1f16cdf3ac7173dedd1e70c669fd3f9e6de121c14db8ad47c2668cac194dac"
     },
     "docs/research/csmar-source-binding-v2-public/CSMAR_SOURCE_BINDING_IMPLEMENTATION.md": {
       "blob": "26491db2324b32bd27cbf84d90401cfa35777b80",
+      "mode": "100644",
       "sha256": "9a15607fba4e93144dc8597d9fe62466513a6ecf32640bfdc35f57003e7bcd52"
     },
     "docs/research/csmar-source-binding-v2-public/CSMAR_SOURCE_CHANGE_REVIEW.json": {
       "blob": "aff97bda4c3d7936fe973af5552f7148cf9a687b",
+      "mode": "100644",
       "sha256": "8f406fbee6e56c1bf11363a797e2a6fd5675751331bc0b6cfd1437fffdd444ed"
     },
     "docs/research/csmar-source-binding-v2-public/CSMAR_SOURCE_ROLE_MATRIX.md": {
       "blob": "a666dbe265e2cc76c93b28fd30ee6de758f08c17",
+      "mode": "100644",
       "sha256": "ba65e8fc498bc6a075524fcd7c08904715598a569455443dd5a48ae8d4f865c6"
     },
     "docs/research/csmar-source-binding-v2-public/baseline.json": {
       "blob": "30148d5df2c24e019b34d2e2a6b82799451df07d",
+      "mode": "100644",
       "sha256": "f4429f4c157d8c5ccb8738907fec701bb9c3b7a872de7c2b8cc9c4cf5a24d681"
     },
     "docs/research/csmar-source-binding-v2-public/evidence/baseline-junit.public-summary.json": {
       "blob": "687350da103df5fdb7059280d6d0ecf9b731ef6d",
+      "mode": "100644",
       "sha256": "e159eb13f055ae33d5177341d282d9dac15c3724e596eeffabecf67ca17283b2"
     },
     "docs/research/csmar-source-binding-v2-public/evidence/committed-readiness-junit.public-summary.json": {
       "blob": "3e166b0acdc504c78785b5f2392cbe607a4419f5",
+      "mode": "100644",
       "sha256": "fc338f4596912ddade25cd8dc5ee84e129f5ce620d6eb0e647d7fbd8783ff3ab"
     },
     "docs/research/csmar-source-binding-v2-public/evidence/delivery-safety-junit.public-summary.json": {
       "blob": "a9e3dd56e72a1cf45af6a601752bfc1ec59e7651",
+      "mode": "100644",
       "sha256": "26df1b8ea8c46c636840145d4155d072ef45f9fabe22e8fd4fae818360248bf4"
     },
     "docs/research/csmar-source-binding-v2-public/evidence/regression-junit.public-summary.json": {
       "blob": "9fff5c81c95d6e138c738058f61f2e75b487a80b",
+      "mode": "100644",
       "sha256": "f31e6f091b90b543d490670db2052782b3211afdac63db254e87a1986caf25bf"
     },
     "docs/research/csmar-source-binding-v2-public/evidence/validation-summary.json": {
       "blob": "ce0d0403396a1a741c8344dc18332facb19924a8",
+      "mode": "100644",
       "sha256": "1e75bf2fc70e55e9fc4704cafeec09cf5b7114c4dda80724f24d50a223ffbd30"
     },
     "docs/research/csmar-source-binding-v2-public/market-qualification.diff": {
       "blob": "0bad3ff09b0d40607310258d661ee3377d6571cf",
+      "mode": "100644",
       "sha256": "be4cfef1677fb75228675edb30ac62ae4fe69675a40d49832c2443361becd880"
     },
     "examples/research/csmar_source_binding_pilot.py": {
       "blob": "8c4f098d3616e1117a5d1b8b899057b4559956f8",
+      "mode": "100644",
       "sha256": "450454b2135cc7ac491802e6f5ac1850e1b0a9cd5f8f9aef826e57a66e597baf"
     },
     "qbot/research/data/csmar/__init__.py": {
       "blob": "e90dbd927d63bd9e65c0d45734410a67c58506d7",
+      "mode": "100644",
       "sha256": "7c758f10707f3559440340d9c8bcb805e982e6750469bb68c4f9b07513a3c373"
     },
     "qbot/research/data/csmar/__main__.py": {
       "blob": "da24d997148900d31082b92c897c2f9656e09ee2",
+      "mode": "100644",
       "sha256": "975a496d023dafc0f95989c2beb4795a70663e73c30a900f7413f44a7a15d7f9"
     },
     "qbot/research/data/csmar/binding.py": {
       "blob": "c7f169a9352c1ed06b37a588b34a83a24a80b27b",
+      "mode": "100644",
       "sha256": "8905e7694b33dde81f74df7d752e371f77a1c10f28fc8b54390f8d8f39c5074f"
     },
     "qbot/research/data/csmar/fingerprint.py": {
       "blob": "dbb20e31d2e3141ed9804ee15358c402740b1d25",
+      "mode": "100644",
       "sha256": "2fd2f2cfebb58993ef541ce8c9e325e750260687ff752719f72f1d1185edd7ab"
     },
     "qbot/research/data/csmar/native.py": {
       "blob": "36b1b19ff90fabc59548f9c7624b38f1bbe2ce8a",
+      "mode": "100644",
       "sha256": "4676b593aaaf63b2076bfb1a5cc0b34b93e9e014667b1f0372b1c9d860f381e5"
     },
     "qbot/research/data/csmar/profiles.py": {
       "blob": "fe98e1c74825d4d30ffe09700e5d1872d6c80837",
+      "mode": "100644",
       "sha256": "d0a1d4f6480fbb217a8759bfe86272d33fb05a6402bd51767965e98ccf6d1045"
     },
     "qbot/research/data/market_qualification.py": {
       "blob": "e8b9de8e172dd4a5bd20aa7d49face2099b39d65",
+      "mode": "100644",
       "sha256": "c676db73b1abc5ac664417510aeeb375c7e80e0457edb67efbc135086add1a5b"
     },
     "tests/research/test_csmar_date_precheck_traceability.py": {
       "blob": "2c94ac8de02079b5529977f30d5fe35ab7fde74f",
+      "mode": "100644",
       "sha256": "93aeb4d2dab6353d9c592069f3b681f5cda66b4dca58be0845a1a4df6d105adb"
     },
     "tests/research/test_csmar_rejection_coordinates.py": {
       "blob": "6bf3e20dc0fb5ae83a949e4118cb6ca4edab8ddc",
+      "mode": "100644",
       "sha256": "b7fff8689db5162c89f2a2ab6a8cdf3a98c9bf311697a7c7daca67fbf9dd9b75"
     },
     "tests/research/test_csmar_security_fixes.py": {
       "blob": "5fc0ece7ae72bdfb69b02b778993102cc8fc0714",
+      "mode": "100644",
       "sha256": "50bbd567aebd4430c36761c2e9159be96ef8d1db99eb172d4b17f90ed723cde0"
     },
     "tests/research/test_csmar_source_binding.py": {
       "blob": "0ee260a467fd1c75ae2e72585f682466538a1627",
+      "mode": "100644",
       "sha256": "3e2c0b8be35d786d95d0f8b9447aa393d1a9f8c03cf870af5d78be9bd7c9cf87"
     }
   },
@@ -2156,5 +2263,5 @@
     }
   },
   "source_commit": "dabdc87b80d3c88ccf56034981a3c5cf0710ed63",
-  "version": "CSMAR_RAW_SOLO_PRESERVATION_V1"
+  "version": "CSMAR_RAW_SOLO_PRESERVATION_V2"
 }

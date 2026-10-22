@@ -26,6 +26,9 @@ def revision_clone(tmp_path):
         ["git", "clone", "--shared", "--no-checkout", str(ROOT), str(root)],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
+    entries = subprocess.check_output(["git", "ls-files", "--stage", "-z"], cwd=ROOT)
+    subprocess.run(["git", "update-index", "-z", "--index-info"],
+                   input=entries, cwd=root, check=True)
     for name in security.PRESERVATION_FILES | {security.RECEIPT, ".gitattributes", controller.SECURITY_ANCHOR, controller.SECURITY_WORKFLOW} | set(controller.SECURITY_CONTROL_FILES):
         source = ROOT / name
         if source.is_file():

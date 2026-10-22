@@ -129,9 +129,7 @@ def c01_literal_inventory(repo, name, revision, security, matches):
         "tests/research/test_csmar_source_binding.py",
     }
     if name in source_files:
-        old = subprocess.check_output(
-            ["git", "show", security.SOURCE + ":" + name], cwd=repo
-        ).decode("utf-8-sig")
+        old = security.source_content(repo, name).decode("utf-8-sig")
         values = [n.value for n in ast.walk(ast.parse(old))
                   if isinstance(n, ast.Constant) and isinstance(n.value, str)]
         original = Counter(m.group() for value in values

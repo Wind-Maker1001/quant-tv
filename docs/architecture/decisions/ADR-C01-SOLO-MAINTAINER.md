@@ -83,3 +83,27 @@ This changes publication packaging only. The original 470-object freeze,
 Golden, PIT receipts, predecessor anchors, financial policy and source runtime
 identities remain unchanged. The exact publication scanner and its targeted
 negative tests are finite migration postimages under the same workflow anchor.
+
+P1 source reachability update (2026-10-22): registry V2 reconstructs the
+source-stage inventory from independently read LEGACY Git objects and exactly
+29 workflow-authenticated postimages. Each entry binds its complete path,
+regular-file mode, Git blob identity and normalized SHA256. Current files,
+tracked modes, migration postimages and the unchanged 35 exact runtime-byte
+identities are checked again. The original 470-object freeze and predecessor
+receipts remain immutable. The publication scanner uses authenticated content
+instead of requiring the historical source commit to be present.
+
+The source commit SHA remains a provenance claim. When that commit is absent,
+V2 does not claim to replay its original tree or independently re-prove its
+ancestry. Authority for the registered content now comes from the reviewed CI
+workflow pin, which authenticates the control anchor, controller and registry;
+the registry's inventory digest is a consistency check, not self-approval.
+Rehashing a candidate registry and anchor does not replace the trusted workflow
+pin. A maintainer who can change that trusted policy remains within the Solo
+governance trust boundary. This migration adds no financial certification.
+
+A regression transfers only a synthetic squash main with LEGACY ancestry to
+a separate bare repository, then makes a fresh clone without alternates or
+development refs. It requires the source commit object to be absent while
+controller initialization, historical preservation, publication safety and
+real qualification replay pass; incomplete PIT still refuses formal admission.
