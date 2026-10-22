@@ -59,7 +59,7 @@ jobs:
           python -m pip check
       - name: Verify Solo preservation controls before importing repository code
         env:
-          SECURITY_TRUST_ANCHOR_SHA256: '547736312f9c53d3ee0bf7d663d9ff3e77c47d15a0f167d444169521e1c012e3'
+          SECURITY_TRUST_ANCHOR_SHA256: '3a594469a9436f653f2a1fbffc9cc197c8cbc66ccc1120dd25252afc038a559d'
         run: |
           python -B - <<'PY'
           import hashlib
