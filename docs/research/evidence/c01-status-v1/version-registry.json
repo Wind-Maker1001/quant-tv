@@ -2386,9 +2386,9 @@
       "sha256": "0bf77de220eba7733b3d4e9a9671d3a7ab70b8af0b625ddd7fd2987b19f2513f"
     },
     "tests/market_structure/test_delivery.py": {
-      "blob": "539ca4018966966723ae7fbddeae6efacbcbf44c",
+      "blob": "28595a639c8c3343db95ef6db8025201a92af4a4",
       "mode": "100644",
-      "sha256": "564e9766cda78006a512cfdaaae6c260120e049b8cbaf2b5f4e70b186488f6df"
+      "sha256": "ad4b6a8eb005eb3d952e10ab017ac44ae7ab38289a9b4d19e128974aba39d961"
     },
     "tests/research/status_candidate/__init__.py": {
       "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
